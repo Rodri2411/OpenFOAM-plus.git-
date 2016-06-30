@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2014 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -105,14 +105,19 @@ protected:
 
     // Protected Member Functions
 
+        template<class Type>
+        bool loadField(const word&) const;
+
+
+private:
+
+    // Private member functions
+
         //- Disallow default bitwise copy construct
         readFields(const readFields&);
 
         //- Disallow default bitwise assignment
         void operator=(const readFields&);
-
-        template<class Type>
-        void loadField(const word&) const;
 
 
 public:
@@ -178,7 +183,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "readFieldsTemplates.C"
+    #include "readFieldsTemplates.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

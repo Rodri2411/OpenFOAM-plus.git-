@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::ThermoSurfaceFilm
+
+Group
+    grpLagrangianIntermediateSurfaceFilmSubModels
 
 Description
     Thermo parcel surface film model.
@@ -254,9 +257,9 @@ public:
         ThermoSurfaceFilm(const ThermoSurfaceFilm<CloudType>& sfm);
 
         //- Construct and return a clone using supplied owner cloud
-        virtual autoPtr<SurfaceFilmModel<CloudType> > clone() const
+        virtual autoPtr<SurfaceFilmModel<CloudType>> clone() const
         {
-            return autoPtr<SurfaceFilmModel<CloudType> >
+            return autoPtr<SurfaceFilmModel<CloudType>>
             (
                 new ThermoSurfaceFilm<CloudType>(*this)
             );
@@ -295,7 +298,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "ThermoSurfaceFilm.C"
+    #include "ThermoSurfaceFilm.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

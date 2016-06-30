@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2013 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2013-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::AveragingMethod
+
+Group
+    grpLagrangianIntermediateMPPICAveragingMethods
 
 Description
     Base class for lagrangian averaging methods.
@@ -113,11 +116,11 @@ public:
         AveragingMethod(const AveragingMethod<Type>& am);
 
         //- Construct and return a clone
-        virtual autoPtr<AveragingMethod<Type> > clone() const = 0;
+        virtual autoPtr<AveragingMethod<Type>> clone() const = 0;
 
 
     //- Selector
-    static autoPtr<AveragingMethod<Type> > New
+    static autoPtr<AveragingMethod<Type>> New
     (
         const IOobject& io,
         const dictionary& dict,
@@ -164,7 +167,7 @@ public:
         virtual bool write() const;
 
         //- Return an internal field of the average
-        virtual tmp<Field<Type> > internalField() const = 0;
+        virtual tmp<Field<Type>> internalField() const = 0;
 
         //- Assign to another average
         inline void operator=(const AveragingMethod<Type>& x);
@@ -173,16 +176,16 @@ public:
         inline void operator=(const Type& x);
 
         //- Assign to tmp
-        inline void operator=(tmp<FieldField<Field, Type> > x);
+        inline void operator=(tmp<FieldField<Field, Type>> x);
 
         //- Add-equal tmp
-        inline void operator+=(tmp<FieldField<Field, Type> > x);
+        inline void operator+=(tmp<FieldField<Field, Type>> x);
 
         //- Multiply-equal tmp
-        inline void operator*=(tmp<FieldField<Field, Type> > x);
+        inline void operator*=(tmp<FieldField<Field, Type>> x);
 
         //- Divide-equal tmp
-        inline void operator/=(tmp<FieldField<Field, scalar> > x);
+        inline void operator/=(tmp<FieldField<Field, scalar>> x);
 };
 
 
@@ -197,7 +200,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "AveragingMethod.C"
+    #include "AveragingMethod.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

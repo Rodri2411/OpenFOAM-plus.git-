@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2013 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2013-2016 OpenFOAM Foundation
      \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
@@ -69,10 +69,10 @@ Description
         maxDiameter     0.5e-4;
         minDiameter     0;
         setFormat       gnuplot;
-        coordinateSystem
+        origin          (0 0 0);
+        coordinateRoation
         {
             type            cartesian;
-            origin          (0 0 0);
             e3              (0 1 1);
             e1              (1 0 0);
         }
@@ -91,7 +91,8 @@ Description
         maxDiameter  | maximum region equivalent diameter | yes |
         minDiameter  | minimum region equivalent diameter | no  | 0
         setFormat    | writing format          | yes         |
-        coordinateSystem | transformation for vector fields | no         |
+        origin       | origin of local co-ordinate system | yes    |
+        coordinateRoation | orientation of local co-ordinate system | no         |
         log          | Log to standard output  | no          | yes
     \endtable
 
@@ -171,7 +172,7 @@ class regionSizeDistribution
         wordReList fields_;
 
         //- Output formatter to write
-        autoPtr<writer<scalar> > formatterPtr_;
+        autoPtr<writer<scalar>> formatterPtr_;
 
         //- Optional coordinate system
         autoPtr<coordinateSystem> coordSysPtr_;
@@ -306,7 +307,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "regionSizeDistributionTemplates.C"
+    #include "regionSizeDistributionTemplates.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

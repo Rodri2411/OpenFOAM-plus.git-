@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2012 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::eConstThermo
+
+Group
+    grpSpecieThermo
 
 Description
     Constant properties thermodynamics package templated on an equation of
@@ -226,7 +229,7 @@ public:
 #include "eConstThermoI.H"
 
 #ifdef NoRepository
-#   include "eConstThermo.C"
+    #include "eConstThermo.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2013-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2013-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::PackingModel
+
+Group
+    grpLagrangianIntermediateMPPICPackingSubModels
 
 Description
     Base class for packing models.
@@ -52,7 +55,7 @@ class ParticleStressModel;
 
 class CorrectionLimitingMethod;
 
-template <class Type>
+template<class Type>
 class AveragingMethod;
 
 /*---------------------------------------------------------------------------*\
@@ -108,7 +111,7 @@ public:
         PackingModel(const PackingModel<CloudType>& cm);
 
         //- Construct and return a clone
-        virtual autoPtr<PackingModel<CloudType> > clone() const = 0;
+        virtual autoPtr<PackingModel<CloudType>> clone() const = 0;
 
 
     //- Destructor
@@ -116,7 +119,7 @@ public:
 
 
     //- Selector
-    static autoPtr<PackingModel<CloudType> > New
+    static autoPtr<PackingModel<CloudType>> New
     (
         const dictionary& dict,
         CloudType& owner
@@ -167,14 +170,14 @@ public:
                                                                                \
     Foam::PackingModel<MPPICCloudType>::                                       \
         adddictionaryConstructorToTable                                        \
-        <Foam::PackingModels::SS<MPPICCloudType> >                             \
+        <Foam::PackingModels::SS<MPPICCloudType>>                              \
             add##SS##CloudType##MPPICCloudType##ConstructorToTable_;
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "PackingModel.C"
+    #include "PackingModel.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

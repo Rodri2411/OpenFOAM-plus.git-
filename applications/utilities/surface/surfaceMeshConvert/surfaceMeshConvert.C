@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Application
     surfaceMeshConvert
+
+Group
+    grpSurfaceUtilities
 
 Description
     Converts between surface formats with optional scaling or
@@ -194,9 +197,10 @@ int main(int argc, char *argv[])
         }
 
 
-        if (!csDictIoPtr->headerOk())
+        if (!csDictIoPtr->typeHeaderOk<coordinateSystems>(false))
         {
             FatalErrorInFunction
+                << "Cannot open coordinateSystems file\n    "
                 << csDictIoPtr->objectPath() << nl
                 << exit(FatalError);
         }
@@ -240,6 +244,7 @@ int main(int argc, char *argv[])
         if (fromCsys.valid() && toCsys.valid())
         {
             FatalErrorInFunction
+                << "Only allowed  '-from' or '-to' option at the moment."
                 << exit(FatalError);
         }
     }

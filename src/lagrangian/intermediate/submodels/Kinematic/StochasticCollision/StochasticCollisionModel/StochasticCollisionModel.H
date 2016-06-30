@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::StochasticCollisionModel
+
+Group
+    grpLagrangianIntermediateCollisionSubModels
 
 Description
     Templated stochastic collision model class
@@ -97,7 +100,7 @@ public:
         StochasticCollisionModel(const StochasticCollisionModel<CloudType>& cm);
 
         //- Construct and return a clone
-        virtual autoPtr<StochasticCollisionModel<CloudType> > clone() const = 0;
+        virtual autoPtr<StochasticCollisionModel<CloudType>> clone() const = 0;
 
 
     //- Destructor
@@ -105,7 +108,7 @@ public:
 
 
     //- Selector
-    static autoPtr<StochasticCollisionModel<CloudType> > New
+    static autoPtr<StochasticCollisionModel<CloudType>> New
     (
         const dictionary& dict,
         CloudType& owner
@@ -143,13 +146,13 @@ public:
     }
 
 
-#define makeStochasticCollisionModelType(SS, CloudType)                       \
-                                                                              \
-    typedef Foam::CloudType::kinematicCloudType kinematicCloudType;           \
-    defineNamedTemplateTypeNameAndDebug(Foam::SS<kinematicCloudType>, 0);     \
-                                                                              \
-    Foam::StochasticCollisionModel<kinematicCloudType>::                      \
-        adddictionaryConstructorToTable<Foam::SS<kinematicCloudType> >        \
+#define makeStochasticCollisionModelType(SS, CloudType)                        \
+                                                                               \
+    typedef Foam::CloudType::kinematicCloudType kinematicCloudType;            \
+    defineNamedTemplateTypeNameAndDebug(Foam::SS<kinematicCloudType>, 0);      \
+                                                                               \
+    Foam::StochasticCollisionModel<kinematicCloudType>::                       \
+        adddictionaryConstructorToTable<Foam::SS<kinematicCloudType>>          \
             add##SS##CloudType##kinematicCloudType##ConstructorToTable_;
 
 
@@ -157,7 +160,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "StochasticCollisionModel.C"
+    #include "StochasticCollisionModel.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::NoDispersion
+
+Group
+    grpLagrangianIntermediateDispersionSubModels
 
 Description
     Place holder for 'none' option
@@ -63,9 +66,9 @@ public:
         NoDispersion(const NoDispersion<CloudType>& dm);
 
         //- Construct and return a clone
-        virtual autoPtr<DispersionModel<CloudType> > clone() const
+        virtual autoPtr<DispersionModel<CloudType>> clone() const
         {
-            return autoPtr<DispersionModel<CloudType> >
+            return autoPtr<DispersionModel<CloudType>>
             (
                 new NoDispersion<CloudType>(*this)
             );
@@ -101,7 +104,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "NoDispersion.C"
+    #include "NoDispersion.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

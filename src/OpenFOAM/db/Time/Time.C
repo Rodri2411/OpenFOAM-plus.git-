@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -26,6 +26,8 @@ License
 #include "Time.H"
 #include "PstreamReduceOps.H"
 #include "argList.H"
+#include "HashSet.H"
+#include "profiling.H"
 
 #include <sstream>
 
@@ -332,6 +334,72 @@ void Foam::Time::setControls()
 }
 
 
+void Foam::Time::setMonitoring(bool forceProfiling)
+{
+    const dictionary* profilingDict = controlDict_.subDictPtr("profiling");
+
+    // initialize profiling on request
+    // otherwise rely on profiling entry within controlDict
+    // and skip if 'active' keyword is explicitly set to false
+    if (forceProfiling)
+    {
+        profiling::initialize
+        (
+            IOobject
+            (
+                "profiling",
+                timeName(),
+                "uniform",
+                *this,
+                IOobject::NO_READ,
+                IOobject::AUTO_WRITE
+            ),
+            *this
+        );
+    }
+    else if
+    (
+        profilingDict
+     && profilingDict->lookupOrDefault<Switch>("active", true)
+    )
+    {
+        profiling::initialize
+        (
+            *profilingDict,
+            IOobject
+            (
+                "profiling",
+                timeName(),
+                "uniform",
+                *this,
+                IOobject::NO_READ,
+                IOobject::AUTO_WRITE
+            ),
+            *this
+        );
+    }
+
+    // Time objects not registered so do like objectRegistry::checkIn ourselves.
+    if (runTimeModifiable_)
+    {
+        monitorPtr_.reset
+        (
+            new fileMonitor
+            (
+                regIOobject::fileModificationChecking == inotify
+             || regIOobject::fileModificationChecking == inotifyMaster
+            )
+        );
+
+        // Monitor all files that controlDict depends on
+        addWatches(controlDict_, controlDict_.files());
+    }
+
+    // Clear dependent files - not needed now
+    controlDict_.files().clear();
+}
+
+
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 Foam::Time::Time
@@ -400,32 +468,7 @@ Foam::Time::Time
     readOpt() = IOobject::MUST_READ_IF_MODIFIED;
 
     setControls();
-
-    // Time objects not registered so do like objectRegistry::checkIn ourselves.
-    if (runTimeModifiable_)
-    {
-        monitorPtr_.reset
-        (
-            new fileMonitor
-            (
-                regIOobject::fileModificationChecking == inotify
-             || regIOobject::fileModificationChecking == inotifyMaster
-            )
-        );
-
-        // File might not exist yet.
-        fileName f(controlDict_.filePath());
-
-        if (!f.size())
-        {
-            // We don't have this file but would like to re-read it.
-            // Possibly if in master-only reading mode. Use a non-existing
-            // file to keep fileMonitor synced.
-            f = controlDict_.objectPath();
-        }
-
-        controlDict_.watchIndex() = addWatch(f);
-    }
+    setMonitoring();
 }
 
 
@@ -502,31 +545,8 @@ Foam::Time::Time
 
     setControls();
 
-    // Time objects not registered so do like objectRegistry::checkIn ourselves.
-    if (runTimeModifiable_)
-    {
-        monitorPtr_.reset
-        (
-            new fileMonitor
-            (
-                regIOobject::fileModificationChecking == inotify
-             || regIOobject::fileModificationChecking == inotifyMaster
-            )
-        );
-
-        // File might not exist yet.
-        fileName f(controlDict_.filePath());
-
-        if (!f.size())
-        {
-            // We don't have this file but would like to re-read it.
-            // Possibly if in master-only reading mode. Use a non-existing
-            // file to keep fileMonitor synced.
-            f = controlDict_.objectPath();
-        }
-
-        controlDict_.watchIndex() = addWatch(f);
-    }
+    // '-profiling' = force profiling, ignore controlDict entry
+    setMonitoring(args.optionFound("profiling"));
 }
 
 
@@ -601,32 +621,7 @@ Foam::Time::Time
     controlDict_.readOpt() = IOobject::MUST_READ_IF_MODIFIED;
 
     setControls();
-
-    // Time objects not registered so do like objectRegistry::checkIn ourselves.
-    if (runTimeModifiable_)
-    {
-        monitorPtr_.reset
-        (
-            new fileMonitor
-            (
-                regIOobject::fileModificationChecking == inotify
-             || regIOobject::fileModificationChecking == inotifyMaster
-            )
-        );
-
-        // File might not exist yet.
-        fileName f(controlDict_.filePath());
-
-        if (!f.size())
-        {
-            // We don't have this file but would like to re-read it.
-            // Possibly if in master-only reading mode. Use a non-existing
-            // file to keep fileMonitor synced.
-            f = controlDict_.objectPath();
-        }
-
-        controlDict_.watchIndex() = addWatch(f);
-    }
+    setMonitoring();
 }
 
 
@@ -687,6 +682,7 @@ Foam::Time::Time
     functionObjects_(*this, enableFunctionObjects)
 {
     libs_.open(controlDict_, "libs");
+    setMonitoring(); // for profiling etc
 }
 
 
@@ -694,19 +690,73 @@ Foam::Time::Time
 
 Foam::Time::~Time()
 {
-    if (controlDict_.watchIndex() != -1)
+    forAllReverse(controlDict_.watchIndices(), i)
     {
-        removeWatch(controlDict_.watchIndex());
+        removeWatch(controlDict_.watchIndices()[i]);
     }
 
     // destroy function objects first
     functionObjects_.clear();
+
+    // cleanup profiling
+    profiling::stop(*this);
 }
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-Foam::label Foam::Time::addWatch(const fileName& fName) const
+void Foam::Time::addWatches(regIOobject& rio, const fileNameList& files) const
+{
+    const labelList& watchIndices = rio.watchIndices();
+
+    DynamicList<label> newWatchIndices;
+    labelHashSet removedWatches(watchIndices);
+
+    forAll(files, i)
+    {
+        const fileName& f = files[i];
+        label index = findWatch(watchIndices, f);
+
+        if (index == -1)
+        {
+            newWatchIndices.append(addTimeWatch(f));
+        }
+        else
+        {
+            // Existing watch
+            newWatchIndices.append(watchIndices[index]);
+            removedWatches.erase(index);
+        }
+    }
+
+    // Remove any unused watches
+    forAllConstIter(labelHashSet, removedWatches, iter)
+    {
+        removeWatch(watchIndices[iter.key()]);
+    }
+
+    rio.watchIndices() = newWatchIndices;
+}
+
+
+Foam::label Foam::Time::findWatch
+(
+    const labelList& watchIndices,
+    const fileName& fName
+) const
+{
+    forAll(watchIndices, i)
+    {
+        if (getFile(watchIndices[i]) == fName)
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
+
+Foam::label Foam::Time::addTimeWatch(const fileName& fName) const
 {
     return monitorPtr_().addWatch(fName);
 }
@@ -754,18 +804,18 @@ Foam::word Foam::Time::timeName() const
 }
 
 
-// Search the construction path for times
 Foam::instantList Foam::Time::times() const
 {
     return findTimes(path(), constant());
 }
 
 
-Foam::word Foam::Time::findInstancePath(const instant& t) const
+Foam::word Foam::Time::findInstancePath
+(
+    const fileName& directory,
+    const instant& t
+) const
 {
-    const fileName directory = path();
-    const word& constantName = constant();
-
     // Read directory entries into a list
     fileNameList dirEntries(readDir(directory, fileName::DIRECTORY));
 
@@ -780,6 +830,8 @@ Foam::word Foam::Time::findInstancePath(const instant& t) const
 
     if (t.equal(0.0))
     {
+        const word& constantName = constant();
+
         // Looking for 0 or constant. 0 already checked above.
         if (isDir(directory/constantName))
         {
@@ -791,11 +843,17 @@ Foam::word Foam::Time::findInstancePath(const instant& t) const
 }
 
 
+Foam::word Foam::Time::findInstancePath(const instant& t) const
+{
+    return findInstancePath(path(), t);
+}
+
+
 Foam::instant Foam::Time::findClosestTime(const scalar t) const
 {
     instantList timeDirs = findTimes(path(), constant());
 
-    // there is only one time (likely "constant") so return it
+    // There is only one time (likely "constant") so return it
     if (timeDirs.size() == 1)
     {
         return timeDirs[0];
@@ -826,16 +884,6 @@ Foam::instant Foam::Time::findClosestTime(const scalar t) const
     return timeDirs[nearestIndex];
 }
 
-
-// This should work too,
-// if we don't worry about checking "constant" explicitly
-//
-// Foam::instant Foam::Time::findClosestTime(const scalar t) const
-// {
-//     instantList timeDirs = findTimes(path(), constant());
-//     label timeIndex = min(findClosestTimeIndex(timeDirs, t), 0, constant());
-//     return timeDirs[timeIndex];
-// }
 
 Foam::label Foam::Time::findClosestTimeIndex
 (
@@ -893,9 +941,13 @@ bool Foam::Time::run() const
         {
             // Ensure functionObjects execute on last time step
             // (and hence write uptodate functionObjectProperties)
+            addProfiling(foExec, "functionObjects.execute()");
             functionObjects_.execute();
+            endProfiling(foExec);
 
+            addProfiling(foEnd, "functionObjects.end()");
             functionObjects_.end();
+            endProfiling(foEnd);
         }
     }
 
@@ -907,10 +959,12 @@ bool Foam::Time::run() const
 
             if (timeIndex_ == startTimeIndex_)
             {
+                addProfiling(functionObjects, "functionObjects.start()");
                 functionObjects_.start();
             }
             else
             {
+                addProfiling(functionObjects, "functionObjects.execute()");
                 functionObjects_.execute();
             }
         }

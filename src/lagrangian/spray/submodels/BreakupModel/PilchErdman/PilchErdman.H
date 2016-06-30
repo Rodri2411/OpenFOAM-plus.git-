@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::PilchErdman
+
+Group
+    grpLagrangianIntermediateBreakupSubModels
 
 Description
     Particle secondary breakup model, based on the reference:
@@ -96,9 +99,9 @@ public:
         PilchErdman(const PilchErdman<CloudType>& bum);
 
         //- Construct and return a clone
-        virtual autoPtr<BreakupModel<CloudType> > clone() const
+        virtual autoPtr<BreakupModel<CloudType>> clone() const
         {
-            return autoPtr<BreakupModel<CloudType> >
+            return autoPtr<BreakupModel<CloudType>>
             (
                 new PilchErdman<CloudType>(*this)
             );
@@ -146,7 +149,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "PilchErdman.C"
+    #include "PilchErdman.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

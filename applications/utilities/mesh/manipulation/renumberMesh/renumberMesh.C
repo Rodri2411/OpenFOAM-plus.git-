@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Application
     renumberMesh
+
+Group
+    grpMeshManipulationUtilities
 
 Description
     Renumbers the cell list in order to reduce the bandwidth, reading and
@@ -84,7 +87,7 @@ tmp<volScalarField> createScalarField
             zeroGradientFvPatchScalarField::typeName
         )
     );
-    volScalarField& fld = tfld();
+    volScalarField& fld = tfld.ref();
 
     forAll(fld, cellI)
     {
@@ -1456,7 +1459,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    Info<< "\nEnd\n" << endl;
+    Info<< "End\n" << endl;
 
     return 0;
 }

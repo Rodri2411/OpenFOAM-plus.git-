@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::sutherlandTransport
+
+Group
+    grpSpecieTransport
 
 Description
     Transport package using Sutherland's formula.
@@ -186,7 +189,7 @@ public:
 
     // Member operators
 
-        inline sutherlandTransport& operator=(const sutherlandTransport&);
+        inline void operator=(const sutherlandTransport&);
 
         inline void operator+=(const sutherlandTransport&);
 
@@ -241,7 +244,7 @@ public:
 #include "sutherlandTransportI.H"
 
 #ifdef NoRepository
-#   include "sutherlandTransport.C"
+    #include "sutherlandTransport.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

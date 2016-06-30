@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::fv::SemiImplicitSource
+
+Group
+    grpFvOptionsSources
 
 Description
     Semi-implicit source, described using an input dictionary.  The injection
@@ -129,7 +132,7 @@ protected:
         scalar VDash_;
 
         //- Source field values
-        List<Tuple2<Type, scalar> > injectionRate_;
+        List<Tuple2<Type, scalar>> injectionRate_;
 
 
     // Protected functions
@@ -170,7 +173,7 @@ public:
             inline const volumeModeType& volumeMode() const;
 
             //- Return const access to the source field values
-            inline const List<Tuple2<Type, scalar> >& injectionRate() const;
+            inline const List<Tuple2<Type, scalar>>& injectionRate() const;
 
 
         // Edit
@@ -179,7 +182,7 @@ public:
             inline volumeModeType& volumeMode();
 
             //- Return access to the source field values
-            inline List<Tuple2<Type, scalar> >& injectionRate();
+            inline List<Tuple2<Type, scalar>>& injectionRate();
 
 
         // Evaluation
@@ -215,8 +218,8 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "SemiImplicitSource.C"
-#   include "SemiImplicitSourceIO.C"
+    #include "SemiImplicitSource.C"
+    #include "SemiImplicitSourceIO.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

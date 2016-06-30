@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::radiation::opaqueSolid
+
+Group
+    grpRadiationModels
 
 Description
     Radiation for solid opaque solids - does nothing to energy equation source
@@ -96,7 +99,7 @@ public:
             tmp<volScalarField> Rp() const;
 
             //- Source term component (constant)
-            tmp<DimensionedField<scalar, volMesh> > Ru() const;
+            tmp<DimensionedField<scalar, volMesh>> Ru() const;
 };
 
 

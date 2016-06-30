@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2013 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::PressureGradientForce
+
+Group
+    grpLagrangianIntermediateForceSubModels
 
 Description
     Calculates particle pressure gradient force
@@ -62,7 +65,7 @@ protected:
         const word UName_;
 
         //- Rate of change of carrier phase velocity interpolator
-        autoPtr<interpolation<vector> > DUcDtInterpPtr_;
+        autoPtr<interpolation<vector>> DUcDtInterpPtr_;
 
 
 public:
@@ -86,9 +89,9 @@ public:
         PressureGradientForce(const PressureGradientForce& pgf);
 
         //- Construct and return a clone
-        virtual autoPtr<ParticleForce<CloudType> > clone() const
+        virtual autoPtr<ParticleForce<CloudType>> clone() const
         {
-            return autoPtr<ParticleForce<CloudType> >
+            return autoPtr<ParticleForce<CloudType>>
             (
                 new PressureGradientForce<CloudType>(*this)
             );

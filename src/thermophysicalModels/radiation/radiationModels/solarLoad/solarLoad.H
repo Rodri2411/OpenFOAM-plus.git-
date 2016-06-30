@@ -24,6 +24,9 @@ License
 Class
     Foam::radiation::solarLoad
 
+Group
+    grpRadiationModels
+
 Description
 
     The solar load radiation model includes Sun primary hits, their
@@ -147,7 +150,7 @@ private:
         bool wallCoupled_;
 
         //- Absorptivity list
-        List<List<tmp<scalarField> > > absorptivity_;
+        List<List<tmp<scalarField>>> absorptivity_;
 
         //- Update absorptivity
         bool updateAbsorptivity_;
@@ -233,7 +236,7 @@ public:
             virtual tmp<volScalarField> Rp() const;
 
             //- Source term component (constant)
-            virtual tmp<DimensionedField<scalar, volMesh> > Ru() const;
+            virtual tmp<DimensionedField<scalar, volMesh>> Ru() const;
 
 
     // Access

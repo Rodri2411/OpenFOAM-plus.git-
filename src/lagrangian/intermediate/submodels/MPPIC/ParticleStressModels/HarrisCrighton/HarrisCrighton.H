@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2013-2014 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2013-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::ParticleStressModels::HarrisCrighton
+
+Group
+    grpLagrangianIntermediateMPPICParticleStressSubModels
 
 Description
     Inter-particle stress model of Harris and Crighton
@@ -85,7 +88,7 @@ class HarrisCrighton
     // Private member functions
 
         //- Return the limited denominator of the radial distribution function
-        tmp<Field<scalar> > denominator(const Field<scalar>& alpha) const;
+        tmp<Field<scalar>> denominator(const Field<scalar>& alpha) const;
 
 
 public:
@@ -119,7 +122,7 @@ public:
     //- Member Functions
 
         //- Collision stress
-        tmp<Field<scalar> > tau
+        tmp<Field<scalar>> tau
         (
             const Field<scalar>& alpha,
             const Field<scalar>& rho,
@@ -127,7 +130,7 @@ public:
         ) const;
 
         //- Collision stress derivaive w.r.t. the volume fraction
-        tmp<Field<scalar> > dTaudTheta
+        tmp<Field<scalar>> dTaudTheta
         (
             const Field<scalar>& alpha,
             const Field<scalar>& rho,

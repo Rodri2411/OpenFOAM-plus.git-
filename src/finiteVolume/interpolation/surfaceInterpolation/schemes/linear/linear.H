@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::linear
+
+Group
+    grpFvSurfaceInterpolationSchemes
 
 Description
     Central-differencing interpolation scheme class
@@ -104,7 +107,7 @@ public:
 
 
 template<class Type>
-tmp<GeometricField<Type, fvsPatchField, surfaceMesh> >
+tmp<GeometricField<Type, fvsPatchField, surfaceMesh>>
 linearInterpolate(const GeometricField<Type, fvPatchField, volMesh>& vf)
 {
     return surfaceInterpolationScheme<Type>::interpolate
@@ -116,10 +119,10 @@ linearInterpolate(const GeometricField<Type, fvPatchField, volMesh>& vf)
 
 
 template<class Type>
-tmp<GeometricField<Type, fvsPatchField, surfaceMesh> >
-linearInterpolate(const tmp<GeometricField<Type, fvPatchField, volMesh> >& tvf)
+tmp<GeometricField<Type, fvsPatchField, surfaceMesh>>
+linearInterpolate(const tmp<GeometricField<Type, fvPatchField, volMesh>>& tvf)
 {
-    tmp<GeometricField<Type, fvsPatchField, surfaceMesh> > tinterp =
+    tmp<GeometricField<Type, fvsPatchField, surfaceMesh>> tinterp =
         linearInterpolate(tvf());
     tvf.clear();
     return tinterp;

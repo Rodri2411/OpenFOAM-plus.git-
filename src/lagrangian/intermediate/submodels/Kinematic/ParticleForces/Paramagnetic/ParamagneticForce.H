@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::ParamagneticForce
+
+Group
+    grpLagrangianIntermediateForceSubModels
 
 Description
     Calculates particle paramagnetic (magnetic field) force
@@ -87,9 +90,9 @@ public:
         ParamagneticForce(const ParamagneticForce& gf);
 
         //- Construct and return a clone
-        virtual autoPtr<ParticleForce<CloudType> > clone() const
+        virtual autoPtr<ParticleForce<CloudType>> clone() const
         {
-            return autoPtr<ParticleForce<CloudType> >
+            return autoPtr<ParticleForce<CloudType>>
             (
                 new ParamagneticForce<CloudType>(*this)
             );

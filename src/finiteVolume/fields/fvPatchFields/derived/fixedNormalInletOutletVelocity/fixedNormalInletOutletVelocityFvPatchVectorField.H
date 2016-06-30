@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2014 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2014-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -28,10 +28,11 @@ Group
     grpInletletBoundaryConditions grpOutletBoundaryConditions
 
 Description
-
     This velocity inlet/outlet boundary condition combines a fixed normal
     component obtained from the "normalVelocity" patchField supplied with a
-    fixed or zero-gradiented tangential component depending on the direction
+    fixed or zero-gradiented tangential component.
+
+    The tangential component is set depending on the direction
     of the flow and the setting of "fixTangentialInflow":
     - Outflow: apply zero-gradient condition to tangential components
     - Inflow:
@@ -59,16 +60,20 @@ Description
         fixTangentialInflow false;
         normalVelocity
         {
-            type            oscillatingFixedValue;
-            refValue        uniform (0 1 0);
-            offset          (0 -1 0);
-            amplitude       table
-            (
-                (   0     0)
-                (   2 0.088)
-                (   8 0.088)
-            );
-            frequency       constant 1;
+            type            uniformFixedValue;
+            uniformValue    sine;
+            uniformValueCoeffs
+            {
+                frequency 1;
+                amplitude table
+                (
+                    (0  0)
+                    (2  0.088)
+                    (8  0.088)
+                );
+                scale     (0 1 0);
+                level     (0 0 0);
+            }
         }
 
         value           uniform (0 0 0);
@@ -181,6 +186,15 @@ public:
 
 
     // Member functions
+
+        // Attributes
+
+            //- Return true: this patch field is altered by assignment
+            virtual bool assignable() const
+            {
+                return true;
+            }
+
 
         // Access
 

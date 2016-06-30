@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2012 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2014 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Application
     Q
+
+Group
+    grpPostProcessingUtilities
 
 Description
     Calculates and writes the second invariant of the velocity gradient tensor.
@@ -51,7 +54,7 @@ void Foam::calc(const argList& args, const Time& runTime, const fvMesh& mesh)
         IOobject::MUST_READ
     );
 
-    if (Uheader.headerOk())
+    if (Uheader.typeHeaderOk<volVectorField>(true))
     {
         Info<< "    Reading U" << endl;
         volVectorField U(Uheader, mesh);

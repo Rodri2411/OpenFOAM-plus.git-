@@ -4,7 +4,7 @@ cd ${0%/*} || exit 1    # run from this directory
 # Source tutorial run functions
 . $WM_PROJECT_DIR/bin/tools/RunFunctions
 
-application=`getApplication`
+application=$(getApplication)
 
 runApplication blockMesh
 
@@ -17,4 +17,4 @@ while [ "$i" -lt 3 ] ; do
     i=`expr $i + 1`
 done
 
-# ----------------------------------------------------------------- end-of-file
+#------------------------------------------------------------------------------

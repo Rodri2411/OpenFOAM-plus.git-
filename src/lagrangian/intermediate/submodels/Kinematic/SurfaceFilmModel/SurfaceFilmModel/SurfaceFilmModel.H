@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::SurfaceFilmModel
+
+Group
+    grpLagrangianIntermediateSurfaceFilmSubModels
 
 Description
     Templated wall surface film model class.
@@ -161,7 +164,7 @@ public:
         SurfaceFilmModel(const SurfaceFilmModel<CloudType>& sfm);
 
         //- Construct and return a clone
-        virtual autoPtr<SurfaceFilmModel<CloudType> > clone() const = 0;
+        virtual autoPtr<SurfaceFilmModel<CloudType>> clone() const = 0;
 
 
     //- Destructor
@@ -169,7 +172,7 @@ public:
 
 
     //- Selector
-    static autoPtr<SurfaceFilmModel<CloudType> > New
+    static autoPtr<SurfaceFilmModel<CloudType>> New
     (
         const dictionary& dict,
         CloudType& owner
@@ -253,7 +256,7 @@ public:
     defineNamedTemplateTypeNameAndDebug(Foam::SS<kinematicCloudType>, 0);      \
                                                                                \
     Foam::SurfaceFilmModel<kinematicCloudType>::                               \
-        adddictionaryConstructorToTable<Foam::SS<kinematicCloudType> >         \
+        adddictionaryConstructorToTable<Foam::SS<kinematicCloudType>>          \
             add##SS##CloudType##kinematicCloudType##ConstructorToTable_;
 
 
@@ -264,7 +267,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "SurfaceFilmModel.C"
+    #include "SurfaceFilmModel.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

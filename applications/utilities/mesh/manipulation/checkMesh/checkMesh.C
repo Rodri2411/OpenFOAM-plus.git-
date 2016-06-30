@@ -24,6 +24,9 @@ License
 Application
     checkMesh
 
+Group
+    grpMeshManipulationUtilities
+
 Description
     Checks validity of a mesh.
 
@@ -174,9 +177,6 @@ int main(int argc, char *argv[])
         )
         {
             Info<< "Time = " << runTime.timeName() << nl << endl;
-
-            // Clear mesh before checking
-            mesh.clearOut();
 
             // Reconstruct globalMeshData
             mesh.globalData();

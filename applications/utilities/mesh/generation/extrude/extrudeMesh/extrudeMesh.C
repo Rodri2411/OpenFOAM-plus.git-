@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Application
     extrudeMesh
+
+Group
+    grpMeshGenerationUtilities
 
 Description
     Extrude mesh from existing patch (by default outwards facing normals;
@@ -96,7 +99,7 @@ void createDummyFvMeshFiles(const polyMesh& mesh, const word& regionName)
 
         Info<< "Testing:" << io.objectPath() << endl;
 
-        if (!io.headerOk())
+        if (!io.typeHeaderOk<IOdictionary>(false))
         {
             Info<< "Writing dummy " << regionName/io.name() << endl;
             dictionary dummyDict;
@@ -122,7 +125,7 @@ void createDummyFvMeshFiles(const polyMesh& mesh, const word& regionName)
             false
         );
 
-        if (!io.headerOk())
+        if (!io.typeHeaderOk<IOdictionary>(false))
         {
             Info<< "Writing dummy " << regionName/io.name() << endl;
             dictionary dummyDict;
@@ -549,24 +552,15 @@ int main(int argc, char *argv[])
             {
                 label nbrProcI = patchToNbrProc[patchI];
 
-                word name =
-                        "procBoundary"
-                      + Foam::name(Pstream::myProcNo())
-                      + "to"
-                      + Foam::name(nbrProcI);
-
                 Pout<< "Adding patch " << patchI
-                    << " name:" << name
                     << " between " << Pstream::myProcNo()
                     << " and " << nbrProcI
                     << endl;
-
 
                 newPatches.append
                 (
                     new processorPolyPatch
                     (
-                        name,
                         0,                  // size
                         mesh.nFaces(),      // start
                         patchI,             // index

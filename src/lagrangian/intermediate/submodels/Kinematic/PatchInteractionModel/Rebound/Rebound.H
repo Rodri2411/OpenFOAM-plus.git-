@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::Rebound
+
+Group
+    grpLagrangianIntermediatePatchInteractionSubModels
 
 Description
     Simple rebound patch interaction model
@@ -69,9 +72,9 @@ public:
         Rebound(const Rebound<CloudType>& pim);
 
         //- Construct and return a clone
-        virtual autoPtr<PatchInteractionModel<CloudType> > clone() const
+        virtual autoPtr<PatchInteractionModel<CloudType>> clone() const
         {
-            return autoPtr<PatchInteractionModel<CloudType> >
+            return autoPtr<PatchInteractionModel<CloudType>>
             (
                 new Rebound<CloudType>(*this)
             );
@@ -103,7 +106,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "Rebound.C"
+    #include "Rebound.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

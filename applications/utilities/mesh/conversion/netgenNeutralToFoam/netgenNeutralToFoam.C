@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Application
     netgenNeutralToFoam
+
+Group
+    grpMeshConversionUtilities
 
 Description
     Converts neutral file format as written by Netgen v4.4.
@@ -163,7 +166,7 @@ int main(int argc, char *argv[])
     label maxPatch = 0;
 
     // Boundary faces as three vertices
-    HashTable<label, triFace, Hash<triFace> > vertsToBoundary(nFaces);
+    HashTable<label, triFace, Hash<triFace>> vertsToBoundary(nFaces);
 
     forAll(boundaryFaces, faceI)
     {
@@ -212,7 +215,7 @@ int main(int argc, char *argv[])
 
             // Is there any boundary face with same vertices?
             // (uses commutative hash)
-            HashTable<label, triFace, Hash<triFace> >::iterator iter =
+            HashTable<label, triFace, Hash<triFace>>::iterator iter =
                 vertsToBoundary.find(triFace(f[0], f[1], f[2]));
 
             if (iter != vertsToBoundary.end())
@@ -266,7 +269,7 @@ int main(int argc, char *argv[])
 
     {
         // Sort boundaryFaces by patch.
-        List<DynamicList<face> > allPatchFaces(nPatches);
+        List<DynamicList<face>> allPatchFaces(nPatches);
 
         forAll(boundaryPatch, faceI)
         {

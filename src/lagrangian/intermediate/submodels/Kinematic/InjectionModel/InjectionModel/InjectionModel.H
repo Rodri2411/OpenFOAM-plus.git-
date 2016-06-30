@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::InjectionModel
+
+Group
+    grpLagrangianIntermediateInjectionSubModels
 
 Description
     Templated injection model class.
@@ -53,7 +56,7 @@ SourceFiles
 #include "runTimeSelectionTables.H"
 #include "CloudSubModelBase.H"
 #include "vector.H"
-#include "TimeDataEntry.H"
+#include "TimeFunction1.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -104,7 +107,7 @@ protected:
             scalar massTotal_;
 
             //- Mass flow rate profile for steady calculations
-            TimeDataEntry<scalar> massFlowRate_;
+            TimeFunction1<scalar> massFlowRate_;
 
             //- Total mass injected to date [kg]
             scalar massInjected_;
@@ -223,7 +226,7 @@ public:
         InjectionModel(const InjectionModel<CloudType>& im);
 
         //- Construct and return a clone
-        virtual autoPtr<InjectionModel<CloudType> > clone() const = 0;
+        virtual autoPtr<InjectionModel<CloudType>> clone() const = 0;
 
 
     //- Destructor
@@ -233,14 +236,14 @@ public:
     // Selectors
 
         //- Selector with lookup from dictionary
-        static autoPtr<InjectionModel<CloudType> > New
+        static autoPtr<InjectionModel<CloudType>> New
         (
             const dictionary& dict,
             CloudType& owner
         );
 
         //- Selector with name and type
-        static autoPtr<InjectionModel<CloudType> > New
+        static autoPtr<InjectionModel<CloudType>> New
         (
             const dictionary& dict,
             const word& modelName,
@@ -352,32 +355,32 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-#define makeInjectionModel(CloudType)                                         \
-                                                                              \
-    typedef Foam::CloudType::kinematicCloudType kinematicCloudType;           \
-    defineNamedTemplateTypeNameAndDebug                                       \
-    (                                                                         \
-        Foam::InjectionModel<kinematicCloudType>,                             \
-        0                                                                     \
-    );                                                                        \
-                                                                              \
-    namespace Foam                                                            \
-    {                                                                         \
-        defineTemplateRunTimeSelectionTable                                   \
-        (                                                                     \
-            InjectionModel<kinematicCloudType>,                               \
-            dictionary                                                        \
-        );                                                                    \
+#define makeInjectionModel(CloudType)                                          \
+                                                                               \
+    typedef Foam::CloudType::kinematicCloudType kinematicCloudType;            \
+    defineNamedTemplateTypeNameAndDebug                                        \
+    (                                                                          \
+        Foam::InjectionModel<kinematicCloudType>,                              \
+        0                                                                      \
+    );                                                                         \
+                                                                               \
+    namespace Foam                                                             \
+    {                                                                          \
+        defineTemplateRunTimeSelectionTable                                    \
+        (                                                                      \
+            InjectionModel<kinematicCloudType>,                                \
+            dictionary                                                         \
+        );                                                                     \
     }
 
 
-#define makeInjectionModelType(SS, CloudType)                                 \
-                                                                              \
-    typedef Foam::CloudType::kinematicCloudType kinematicCloudType;           \
-    defineNamedTemplateTypeNameAndDebug(Foam::SS<kinematicCloudType>, 0);     \
-                                                                              \
-    Foam::InjectionModel<kinematicCloudType>::                                \
-        adddictionaryConstructorToTable<Foam::SS<kinematicCloudType> >        \
+#define makeInjectionModelType(SS, CloudType)                                  \
+                                                                               \
+    typedef Foam::CloudType::kinematicCloudType kinematicCloudType;            \
+    defineNamedTemplateTypeNameAndDebug(Foam::SS<kinematicCloudType>, 0);      \
+                                                                               \
+    Foam::InjectionModel<kinematicCloudType>::                                 \
+        adddictionaryConstructorToTable<Foam::SS<kinematicCloudType>>          \
             add##SS##CloudType##kinematicCloudType##ConstructorToTable_;
 
 
@@ -388,7 +391,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "InjectionModel.C"
+    #include "InjectionModel.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

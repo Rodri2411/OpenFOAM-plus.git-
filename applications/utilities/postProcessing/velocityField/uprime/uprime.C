@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2014 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Application
     uprime
+
+Group
+    grpPostProcessingUtilities
 
 Description
     Calculates and writes the scalar field of uprime (sqrt(2/3 k)).
@@ -49,7 +52,7 @@ void Foam::calc(const argList& args, const Time& runTime, const fvMesh& mesh)
         IOobject::MUST_READ
     );
 
-    if (kheader.headerOk())
+    if (kheader.typeHeaderOk<volScalarField>(true))
     {
         Info<< "    Reading k" << endl;
         volScalarField k(kheader, mesh);

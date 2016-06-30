@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::radiation::P1
+
+Group
+    grpRadiationModels
 
 Description
     Works well for combustion applications where optical thickness, tau is
@@ -122,7 +125,7 @@ public:
             virtual tmp<volScalarField> Rp() const;
 
             //- Source term component (constant)
-            virtual tmp<DimensionedField<scalar, volMesh> > Ru() const;
+            virtual tmp<DimensionedField<scalar, volMesh>> Ru() const;
 };
 
 

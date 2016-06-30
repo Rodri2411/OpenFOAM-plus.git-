@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Application
     patchSummary
+
+Group
+    grpMiscUtilities
 
 Description
     Writes fields and boundary condition info for each patch at each requested
@@ -106,7 +109,7 @@ int main(int argc, char *argv[])
                 IOobject::MUST_READ
             );
 
-            if (obj.headerOk())
+            if (obj.typeHeaderOk<volScalarField>(false))
             {
                 addToFieldList(vsf, obj, objI, mesh);
                 addToFieldList(vvf, obj, objI, mesh);
@@ -152,9 +155,9 @@ int main(int argc, char *argv[])
             // patches.
 
             // Per 'group', the map from fieldname to patchfield type
-            DynamicList<HashTable<word> > fieldToTypes(bm.size());
+            DynamicList<HashTable<word>> fieldToTypes(bm.size());
             // Per 'group' the patches
-            DynamicList<DynamicList<label> > groupToPatches(bm.size());
+            DynamicList<DynamicList<label>> groupToPatches(bm.size());
             forAll(bm, patchI)
             {
                 HashTable<word> fieldToType;

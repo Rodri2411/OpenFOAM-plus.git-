@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::RanzMarshall
+
+Group
+    grpLagrangianIntermediateHeatTransferSubModels
 
 Description
     The Ranz-Marshall correlation for heat transfer
@@ -64,9 +67,9 @@ public:
         RanzMarshall(const RanzMarshall<CloudType>& im);
 
         //- Construct and return a clone
-        virtual autoPtr<HeatTransferModel<CloudType> > clone() const
+        virtual autoPtr<HeatTransferModel<CloudType>> clone() const
         {
-            return autoPtr<HeatTransferModel<CloudType> >
+            return autoPtr<HeatTransferModel<CloudType>>
             (
                 new RanzMarshall<CloudType>(*this)
             );
@@ -97,7 +100,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "RanzMarshall.C"
+    #include "RanzMarshall.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

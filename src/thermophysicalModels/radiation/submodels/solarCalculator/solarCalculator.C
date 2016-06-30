@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2015 OpenCFD Ltd
+    \\  /    A nd           | Copyright (C) 2015 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -123,7 +123,7 @@ void Foam::solarCalculator::calculateSunDirection()
 
     coord_.reset
     (
-        new coordinateSystem("grid", vector::zero, gridUp_, eastDir_)
+        new coordinateSystem("grid", Zero, gridUp_, eastDir_)
     );
 
     direction_.z() = -sin(beta_);
@@ -236,7 +236,7 @@ Foam::solarCalculator::solarCalculator
 :
     mesh_(mesh),
     dict_(dict),
-    direction_(vector::zero),
+    direction_(Zero),
     directSolarRad_(0.0),
     diffuseSolarRad_(0.0),
     groundReflectivity_(0.0),

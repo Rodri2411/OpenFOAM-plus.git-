@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2013 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::SingleKineticRateDevolatilisation
+
+Group
+    grpLagrangianIntermediateDevolatilisationSubModels
 
 Description
     Single kinetic rate devolatisation model.
@@ -210,9 +213,9 @@ public:
         );
 
         //- Construct and return a clone
-        virtual autoPtr<DevolatilisationModel<CloudType> > clone() const
+        virtual autoPtr<DevolatilisationModel<CloudType>> clone() const
         {
-            return autoPtr<DevolatilisationModel<CloudType> >
+            return autoPtr<DevolatilisationModel<CloudType>>
             (
                 new SingleKineticRateDevolatilisation<CloudType>(*this)
             );
@@ -249,7 +252,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "SingleKineticRateDevolatilisation.C"
+    #include "SingleKineticRateDevolatilisation.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

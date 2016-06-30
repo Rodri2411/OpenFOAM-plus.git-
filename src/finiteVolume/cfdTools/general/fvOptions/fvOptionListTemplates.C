@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -23,10 +23,12 @@ License
 
 \*---------------------------------------------------------------------------*/
 
+#include "profiling.H"
+
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class Type>
-Foam::tmp<Foam::fvMatrix<Type> > Foam::fv::optionList::operator()
+Foam::tmp<Foam::fvMatrix<Type>> Foam::fv::optionList::operator()
 (
     GeometricField<Type, fvPatchField, volMesh>& field
 )
@@ -36,7 +38,7 @@ Foam::tmp<Foam::fvMatrix<Type> > Foam::fv::optionList::operator()
 
 
 template<class Type>
-Foam::tmp<Foam::fvMatrix<Type> > Foam::fv::optionList::operator()
+Foam::tmp<Foam::fvMatrix<Type>> Foam::fv::optionList::operator()
 (
     GeometricField<Type, fvPatchField, volMesh>& field,
     const word& fieldName
@@ -46,8 +48,8 @@ Foam::tmp<Foam::fvMatrix<Type> > Foam::fv::optionList::operator()
 
     const dimensionSet ds = field.dimensions()/dimTime*dimVolume;
 
-    tmp<fvMatrix<Type> > tmtx(new fvMatrix<Type>(field, ds));
-    fvMatrix<Type>& mtx = tmtx();
+    tmp<fvMatrix<Type>> tmtx(new fvMatrix<Type>(field, ds));
+    fvMatrix<Type>& mtx = tmtx.ref();
 
     forAll(*this, i)
     {
@@ -57,6 +59,8 @@ Foam::tmp<Foam::fvMatrix<Type> > Foam::fv::optionList::operator()
 
         if (fieldI != -1)
         {
+            addProfiling(fvopt, "fvOption()." + source.name());
+
             source.setApplied(fieldI);
 
             if (source.isActive())
@@ -77,7 +81,7 @@ Foam::tmp<Foam::fvMatrix<Type> > Foam::fv::optionList::operator()
 
 
 template<class Type>
-Foam::tmp<Foam::fvMatrix<Type> > Foam::fv::optionList::operator()
+Foam::tmp<Foam::fvMatrix<Type>> Foam::fv::optionList::operator()
 (
     const volScalarField& rho,
     GeometricField<Type, fvPatchField, volMesh>& field
@@ -88,7 +92,7 @@ Foam::tmp<Foam::fvMatrix<Type> > Foam::fv::optionList::operator()
 
 
 template<class Type>
-Foam::tmp<Foam::fvMatrix<Type> > Foam::fv::optionList::operator()
+Foam::tmp<Foam::fvMatrix<Type>> Foam::fv::optionList::operator()
 (
     const volScalarField& rho,
     GeometricField<Type, fvPatchField, volMesh>& field,
@@ -102,8 +106,8 @@ Foam::tmp<Foam::fvMatrix<Type> > Foam::fv::optionList::operator()
         rho.dimensions()*field.dimensions()/dimTime*dimVolume
     );
 
-    tmp<fvMatrix<Type> > tmtx(new fvMatrix<Type>(field, ds));
-    fvMatrix<Type>& mtx = tmtx();
+    tmp<fvMatrix<Type>> tmtx(new fvMatrix<Type>(field, ds));
+    fvMatrix<Type>& mtx = tmtx.ref();
 
     forAll(*this, i)
     {
@@ -113,6 +117,8 @@ Foam::tmp<Foam::fvMatrix<Type> > Foam::fv::optionList::operator()
 
         if (fieldI != -1)
         {
+            addProfiling(fvopt, "fvOption()." + source.name());
+
             source.setApplied(fieldI);
 
             if (source.isActive())
@@ -133,7 +139,7 @@ Foam::tmp<Foam::fvMatrix<Type> > Foam::fv::optionList::operator()
 
 
 template<class Type>
-Foam::tmp<Foam::fvMatrix<Type> > Foam::fv::optionList::operator()
+Foam::tmp<Foam::fvMatrix<Type>> Foam::fv::optionList::operator()
 (
     const volScalarField& alpha,
     const volScalarField& rho,
@@ -145,7 +151,7 @@ Foam::tmp<Foam::fvMatrix<Type> > Foam::fv::optionList::operator()
 
 
 template<class Type>
-Foam::tmp<Foam::fvMatrix<Type> > Foam::fv::optionList::operator()
+Foam::tmp<Foam::fvMatrix<Type>> Foam::fv::optionList::operator()
 (
     const volScalarField& alpha,
     const volScalarField& rho,
@@ -161,8 +167,8 @@ Foam::tmp<Foam::fvMatrix<Type> > Foam::fv::optionList::operator()
        /dimTime*dimVolume
     );
 
-    tmp<fvMatrix<Type> > tmtx(new fvMatrix<Type>(field, ds));
-    fvMatrix<Type>& mtx = tmtx();
+    tmp<fvMatrix<Type>> tmtx(new fvMatrix<Type>(field, ds));
+    fvMatrix<Type>& mtx = tmtx.ref();
 
     forAll(*this, i)
     {
@@ -172,6 +178,8 @@ Foam::tmp<Foam::fvMatrix<Type> > Foam::fv::optionList::operator()
 
         if (fieldI != -1)
         {
+            addProfiling(fvopt, "fvOption()." + source.name());
+
             source.setApplied(fieldI);
 
             if (source.isActive())
@@ -192,7 +200,7 @@ Foam::tmp<Foam::fvMatrix<Type> > Foam::fv::optionList::operator()
 
 
 template<class Type>
-Foam::tmp<Foam::fvMatrix<Type> > Foam::fv::optionList::operator()
+Foam::tmp<Foam::fvMatrix<Type>> Foam::fv::optionList::operator()
 (
     const geometricOneField& alpha,
     const geometricOneField& rho,
@@ -204,7 +212,7 @@ Foam::tmp<Foam::fvMatrix<Type> > Foam::fv::optionList::operator()
 
 
 template<class Type>
-Foam::tmp<Foam::fvMatrix<Type> > Foam::fv::optionList::operator()
+Foam::tmp<Foam::fvMatrix<Type>> Foam::fv::optionList::operator()
 (
     const volScalarField& alpha,
     const geometricOneField& rho,
@@ -231,7 +239,7 @@ Foam::tmp<Foam::fvMatrix<Type> > Foam::fv::optionList::operator()
 
 
 template<class Type>
-Foam::tmp<Foam::fvMatrix<Type> > Foam::fv::optionList::operator()
+Foam::tmp<Foam::fvMatrix<Type>> Foam::fv::optionList::operator()
 (
     const geometricOneField& alpha,
     const volScalarField& rho,
@@ -255,6 +263,8 @@ void Foam::fv::optionList::constrain(fvMatrix<Type>& eqn)
 
         if (fieldI != -1)
         {
+            addProfiling(fvopt, "fvOption::constrain." + eqn.psi().name());
+
             source.setApplied(fieldI);
 
             if (source.isActive())
@@ -288,6 +298,8 @@ void Foam::fv::optionList::correct
 
         if (fieldI != -1)
         {
+            addProfiling(fvopt, "fvOption::correct." + source.name());
+
             source.setApplied(fieldI);
 
             if (source.isActive())

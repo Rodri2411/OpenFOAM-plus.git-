@@ -24,6 +24,9 @@ License
 Application
     refineMesh
 
+Group
+    grpMeshManipulationUtilities
+
 Description
     Utility to refine cells in multiple directions.
 
@@ -187,7 +190,7 @@ int main(int argc, char *argv[])
             IOobject::MUST_READ
         );
 
-        if (!dictIO.headerOk())
+        if (!dictIO.typeHeaderOk<IOdictionary>(true))
         {
             FatalErrorInFunction
                 << "Cannot open specified refinement dictionary "
@@ -209,7 +212,7 @@ int main(int argc, char *argv[])
             IOobject::MUST_READ
         );
 
-        if (dictIO.headerOk())
+        if (dictIO.typeHeaderOk<IOdictionary>(true))
         {
             Info<< "Refining according to " << dictName << nl << endl;
 

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2012 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::IrreversibleReaction
+
+Group
+    grpSpecieReactions
 
 Description
     Simple extension of Reaction to handle reversible reactions using
@@ -120,9 +123,9 @@ public:
         );
 
         //- Construct and return a clone
-        virtual autoPtr<Reaction<ReactionThermo> > clone() const
+        virtual autoPtr<Reaction<ReactionThermo>> clone() const
         {
-            return autoPtr<Reaction<ReactionThermo> >
+            return autoPtr<Reaction<ReactionThermo>>
             (
                 new IrreversibleReaction
                 <
@@ -134,12 +137,12 @@ public:
         }
 
         //- Construct and return a clone with new speciesTable
-        virtual autoPtr<Reaction<ReactionThermo> > clone
+        virtual autoPtr<Reaction<ReactionThermo>> clone
         (
             const speciesTable& species
         ) const
         {
-            return autoPtr<Reaction<ReactionThermo> >
+            return autoPtr<Reaction<ReactionThermo>>
             (
                 new IrreversibleReaction
                 <
@@ -185,7 +188,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "IrreversibleReaction.C"
+    #include "IrreversibleReaction.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

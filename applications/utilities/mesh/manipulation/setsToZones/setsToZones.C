@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Application
     setsToZones
+
+Group
+    grpMeshManipulationUtilities
 
 Description
     Add pointZones/faceZones/cellZones to the mesh from similar named
@@ -333,7 +336,7 @@ int main(int argc, char *argv[])
             << exit(FatalError);
     }
 
-    Info<< "\nEnd\n" << endl;
+    Info<< "End\n" << endl;
 
     return 0;
 }

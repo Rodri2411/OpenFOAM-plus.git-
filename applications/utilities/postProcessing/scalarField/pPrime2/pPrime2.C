@@ -24,6 +24,9 @@ License
 Application
     pPrime2
 
+Group
+    grpPostProcessingUtilities
+
 Description
     Calculates and writes the scalar field of pPrime2 (sqr(p - pMean)) at
     each time
@@ -76,7 +79,7 @@ int main(int argc, char *argv[])
         );
 
         // Check p exists
-        if (pheader.headerOk())
+        if (pheader.typeHeaderOk<volScalarField>(true))
         {
             mesh.readUpdate();
 

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::midPoint
+
+Group
+    grpFvSurfaceInterpolationSchemes
 
 Description
     Mid-point interpolation (weighting factors = 0.5) scheme class.
@@ -117,7 +120,7 @@ public:
             );
 
             surfaceScalarField::GeometricBoundaryField& awbf =
-                taw().boundaryField();
+                taw.ref().boundaryField();
 
             forAll(awbf, patchi)
             {

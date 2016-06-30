@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2015 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -51,7 +51,7 @@ Foam::functionObjectLine::functionObjectLine
 (
     const runTimePostProcessing& parent,
     const dictionary& dict,
-    const HashPtrTable<DataEntry<vector>, word>& colours
+    const HashPtrTable<Function1<vector>, word>& colours
 )
 :
     pathline(parent, dict, colours),
@@ -110,7 +110,7 @@ void Foam::functionObjectLine::addGeometryToScene
 
         vtkSmartPointer<vtkPolyDataMapper> mapper =
             vtkSmartPointer<vtkPolyDataMapper>::New();
-        setField(position, fieldName_, mapper, renderer);
+        setField(position, fieldName_, mapper, renderer, lines->GetOutput());
 
         actor_->SetMapper(mapper);
 

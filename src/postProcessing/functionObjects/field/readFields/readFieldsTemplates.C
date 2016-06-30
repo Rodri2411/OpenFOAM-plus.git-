@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
@@ -31,7 +31,7 @@ License
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 template<class Type>
-void Foam::readFields::loadField(const word& fieldName) const
+bool Foam::readFields::loadField(const word& fieldName) const
 {
     typedef GeometricField<Type, fvPatchField, volMesh> vfType;
     typedef GeometricField<Type, fvsPatchField, surfaceMesh> sfType;
@@ -69,7 +69,7 @@ void Foam::readFields::loadField(const word& fieldName) const
 
         if
         (
-            fieldHeader.headerOk()
+            fieldHeader.typeHeaderOk<vfType>(false)
          && fieldHeader.headerClassName() == vfType::typeName
         )
         {
@@ -77,10 +77,11 @@ void Foam::readFields::loadField(const word& fieldName) const
             if (log_) Info<< "    Reading " << fieldName << endl;
             vfType* vfPtr = new vfType(fieldHeader, mesh);
             mesh.objectRegistry::store(vfPtr);
+            return true;
         }
         else if
         (
-            fieldHeader.headerOk()
+            fieldHeader.typeHeaderOk<sfType>(false)
          && fieldHeader.headerClassName() == sfType::typeName
         )
         {
@@ -88,8 +89,11 @@ void Foam::readFields::loadField(const word& fieldName) const
             if (log_) Info<< "    Reading " << fieldName << endl;
             sfType* sfPtr = new sfType(fieldHeader, mesh);
             mesh.objectRegistry::store(sfPtr);
+            return true;
         }
     }
+
+    return false;
 }
 
 

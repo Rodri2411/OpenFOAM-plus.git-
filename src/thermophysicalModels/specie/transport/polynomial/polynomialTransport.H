@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2012 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::polynomialTransport
+
+Group
+    grpSpecieTransport
 
 Description
     Transport package using polynomial functions for mu and kappa
@@ -166,7 +169,7 @@ public:
 
     // Member operators
 
-        inline polynomialTransport& operator=(const polynomialTransport&);
+        inline void operator=(const polynomialTransport&);
         inline void operator+=(const polynomialTransport&);
         inline void operator-=(const polynomialTransport&);
         inline void operator*=(const scalar);
@@ -218,7 +221,7 @@ public:
 #include "polynomialTransportI.H"
 
 #ifdef NoRepository
-#   include "polynomialTransport.C"
+    #include "polynomialTransport.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

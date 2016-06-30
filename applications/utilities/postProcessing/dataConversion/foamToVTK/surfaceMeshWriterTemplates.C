@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2013 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -29,15 +29,15 @@ License
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 template<class Type>
-Foam::tmp<Field<Type> > Foam::surfaceMeshWriter::getFaceField
+Foam::tmp<Field<Type>> Foam::surfaceMeshWriter::getFaceField
 (
     const GeometricField<Type, fvsPatchField, surfaceMesh>& sfld
 ) const
 {
     const polyBoundaryMesh& patches = sfld.mesh().boundaryMesh();
 
-    tmp<Field<Type> > tfld(new Field<Type>(pp_.size()));
-    Field<Type>& fld = tfld();
+    tmp<Field<Type>> tfld(new Field<Type>(pp_.size()));
+    Field<Type>& fld = tfld.ref();
 
     forAll(pp_.addressing(), i)
     {
@@ -63,7 +63,7 @@ Foam::tmp<Field<Type> > Foam::surfaceMeshWriter::getFaceField
 template<class Type>
 void Foam::surfaceMeshWriter::write
 (
-    const PtrList<GeometricField<Type, fvsPatchField, surfaceMesh> >& sflds
+    const PtrList<GeometricField<Type, fvsPatchField, surfaceMesh>>& sflds
 )
 {
     forAll(sflds, fieldI)
@@ -71,7 +71,8 @@ void Foam::surfaceMeshWriter::write
         const GeometricField<Type, fvsPatchField, surfaceMesh>& fld =
             sflds[fieldI];
 
-        os_ << fld.name() << ' ' << pTraits<Type>::nComponents << ' '
+        os_ << fld.name() << ' '
+            << int(pTraits<Type>::nComponents) << ' '
             << pp_.size() << " float" << std::endl;
 
         DynamicList<floatScalar> fField(pTraits<Type>::nComponents*pp_.size());

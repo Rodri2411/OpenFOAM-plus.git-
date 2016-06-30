@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2015 OpenCFD Ltd
+    \\  /    A nd           | Copyright (C) 2015 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -24,8 +24,11 @@ License
 Class
     Foam::radiation::constantTransmissivity
 
+Group
+    grpRadiationTransmissivitySubModels
+
 Description
-    Constant radiation scatter coefficient
+    Constant radiation transmissivity coefficient
 
 SourceFiles
     constantTransmissivity.C
@@ -45,7 +48,7 @@ namespace radiation
 {
 
 /*---------------------------------------------------------------------------*\
-                       Class constantTransmissivity Declaration
+                   Class constantTransmissivity Declaration
 \*---------------------------------------------------------------------------*/
 
 class constantTransmissivity

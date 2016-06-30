@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -24,6 +24,9 @@ License
 Application
     foamFormatConvert
 
+Group
+    grpMiscUtilities
+
 Description
     Converts all IOobjects associated with a case into the format specified
     in the controlDict.
@@ -37,6 +40,16 @@ Description
     not labelFields and these go wrong. For now hacked a solution where
     we detect the keywords in zones and redo the dictionary entries
     to be labelLists.
+
+Usage
+
+    - foamFormatConvert [OPTION]
+
+    \param -noConstant \n
+    Exclude the constant/ directory from the times list
+
+    \param -enableFunctionEntries \n
+    By default all dictionary preprocessing of fields is disabled
 
 \*---------------------------------------------------------------------------*/
 
@@ -79,7 +92,7 @@ bool writeZones(const word& name, const fileName& meshDir, Time& runTime)
 
     bool writeOk = false;
 
-    if (io.headerOk())
+    if (io.typeHeaderOk<cellZoneMesh>(false))
     {
         Info<< "        Reading " << io.headerClassName()
             << " : " << name << endl;
@@ -148,6 +161,11 @@ int main(int argc, char *argv[])
         "noConstant",
         "exclude the 'constant/' dir in the times list"
     );
+    argList::addBoolOption
+    (
+        "enableFunctionEntries",
+        "enable expansion of dictionary directives - #include, #codeStream etc"
+    );
 
     #include "addRegionOption.H"
     #include "setRootCase.H"
@@ -166,6 +184,19 @@ int main(int argc, char *argv[])
 
     #include "createTime.H"
 
+    const bool enableEntries = args.optionFound("enableFunctionEntries");
+    if (enableEntries)
+    {
+        Info<< "Allowing dictionary preprocessing ('#include', '#codeStream')."
+            << endl;
+    }
+
+    int oldFlag = entry::disableFunctionEntries;
+    if (!enableEntries)
+    {
+        // By default disable dictionary expansion for fields
+        entry::disableFunctionEntries = 1;
+    }
 
     // Make sure we do not use the master-only reading since we read
     // fields (different per processor) as dictionaries.
@@ -266,6 +297,8 @@ int main(int argc, char *argv[])
 
         Info<< endl;
     }
+
+    entry::disableFunctionEntries = oldFlag;
 
     Info<< "End\n" << endl;
 

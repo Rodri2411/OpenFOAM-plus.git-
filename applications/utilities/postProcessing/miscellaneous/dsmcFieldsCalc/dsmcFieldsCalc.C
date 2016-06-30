@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2013 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Application
     dsmcFieldsCalc
+
+Group
+    grpPostProcessingUtilities
 
 Description
     Calculate intensive fields (U and T) from averaged extensive fields from a
@@ -45,7 +48,7 @@ namespace Foam
     bool addFieldsToList
     (
         const fvMesh& mesh,
-        PtrList<GeometricField<Type, fvPatchField, volMesh> >& list,
+        PtrList<GeometricField<Type, fvPatchField, volMesh>>& list,
         const wordList& fieldNames
     )
     {
@@ -62,7 +65,11 @@ namespace Foam
                 IOobject::MUST_READ
             );
 
-            if (obj.headerOk() && obj.headerClassName() == fieldType::typeName)
+            if
+            (
+                obj.typeHeaderOk<fieldType>(false)
+             && obj.headerClassName() == fieldType::typeName
+            )
             {
                 list.set(index++, new fieldType(obj, mesh));
             }

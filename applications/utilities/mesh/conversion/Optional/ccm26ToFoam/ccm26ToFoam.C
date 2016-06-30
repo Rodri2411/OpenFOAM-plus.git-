@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -20,6 +20,12 @@ License
 
     You should have received a copy of the GNU General Public License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
+
+Application
+    ccm26ToFoam
+
+Group
+    grpMeshConversionUtilities
 
 Description
     Reads CCM files as written by Prostar/ccm using ccm 2.6 (not 2.4)
@@ -43,7 +49,7 @@ Description
 #include "SortableList.H"
 #include "cellSet.H"
 
-#include <ccmio.h>
+#include "libccmio/ccmio.h"
 #include <vector>
 
 using namespace Foam;
@@ -131,7 +137,7 @@ void storeCellInZone
     const label cellI,
     const label cellType,
     Map<label>& typeToZone,
-    List<DynamicList<label> >& zoneCells
+    List<DynamicList<label>>& zoneCells
 )
 {
     if (cellType >= 0)
@@ -213,7 +219,7 @@ void ReadVertices
 
     // Convert to foamPoints
     foamPoints.setSize(nVertices);
-    foamPoints = vector::zero;
+    foamPoints = Zero;
     foamPointMap.setSize(nVertices);
 
     forAll(foamPointMap, i)
@@ -1022,7 +1028,7 @@ int main(int argc, char *argv[])
         // From foamCellType physical region to Foam cellZone
         Map<label> typeToZone;
         // Storage for cell zones.
-        List<DynamicList<label> > zoneCells(0);
+        List<DynamicList<label>> zoneCells(0);
 
         forAll(foamCellType, cellI)
         {

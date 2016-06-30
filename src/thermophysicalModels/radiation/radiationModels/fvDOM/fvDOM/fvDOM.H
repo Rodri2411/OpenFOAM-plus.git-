@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::radiation::fvDOM
+
+Group
+    grpRadiationModels
 
 Description
 
@@ -46,7 +49,7 @@ Description
             maxIter     4;          // maximum number of iterations
             cacheDiv    true;       // cache the div of the RTE equation.
             //NOTE: Caching div is "only" accurate if the upwind scheme is used
-            //in div(Ji,Ii_h)
+            //in div(Ji,Ii_h) and Ii_h is constant in time.
              meshOrientation    (1 1 1); //Mesh ortientation used for 2D and 1D
         }
 
@@ -139,7 +142,7 @@ class fvDOM
         scalar maxIter_;
 
         //- List of cached fvMatrices for rays
-        List<PtrList<fvScalarMatrix> >fvRayDiv_;
+        List<PtrList<fvScalarMatrix>>fvRayDiv_;
 
         //- Cache convection div matrix
         bool cacheDiv_;
@@ -217,7 +220,7 @@ public:
             virtual tmp<volScalarField> Rp() const;
 
             //- Source term component (constant)
-            virtual tmp<DimensionedField<scalar, volMesh> > Ru() const;
+            virtual tmp<DimensionedField<scalar, volMesh>> Ru() const;
 
 
         // Access

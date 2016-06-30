@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::chemkinReader
+
+Group
+    grpReactionThermophysicalChemistryReaders
 
 Description
     Foam::chemkinReader
@@ -203,7 +206,7 @@ private:
         HashPtrTable<gasHThermoPhysics> speciesThermo_;
 
         //- Table of species composition
-        HashTable<List<specieElement> > specieComposition_;
+        HashTable<List<specieElement>> specieComposition_;
 
         //- List of the reactions
         ReactionList<gasHThermoPhysics> reactions_;
@@ -382,7 +385,7 @@ public:
         }
 
         //- Table of species composition
-        const HashTable<List<specieElement> >& specieComposition() const
+        const HashTable<List<specieElement>>& specieComposition() const
         {
             return specieComposition_;
         }

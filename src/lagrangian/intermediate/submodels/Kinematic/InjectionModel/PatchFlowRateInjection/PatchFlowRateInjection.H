@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -24,18 +24,21 @@ License
 Class
     Foam::PatchFlowRateInjection
 
-Description
-    Patch injection
-    - uses patch flow rate to determine concentration and velociy
+Group
+    grpLagrangianIntermediateInjectionSubModels
 
-    - User specifies
-      - Total mass to inject
-      - Name of patch
-      - Injection duration
-      - Injection target concentration/carrier volume flow rate
-    - Initial parcel velocity given by local flow velocity
-    - Parcel diameters obtained by distribution model
-    - Parcels injected randomly across the patch
+Description
+    Patch injection, by using patch flow rate to determine concentration and
+    velocity.
+
+    \li User specifies
+        - Total mass to inject
+        - Name of patch
+        - Injection duration
+        - Injection target concentration/carrier volume flow rate
+    \li Initial parcel velocity given by local flow velocity
+    \li Parcel diameters obtained by distribution model
+    \li Parcels injected randomly across the patch
 
 SourceFiles
     PatchFlowRateInjection.C
@@ -47,7 +50,7 @@ SourceFiles
 
 #include "InjectionModel.H"
 #include "patchInjectionBase.H"
-#include "TimeDataEntry.H"
+#include "TimeFunction1.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -78,7 +81,7 @@ class PatchFlowRateInjection
         scalar duration_;
 
         //- Concentration profile of particle volume to carrier volume [-]
-        const TimeDataEntry<scalar> concentration_;
+        const TimeFunction1<scalar> concentration_;
 
         //- Parcels to introduce per unit volume flow rate m3 [n/m3]
         const scalar parcelConcentration_;
@@ -107,9 +110,9 @@ public:
         PatchFlowRateInjection(const PatchFlowRateInjection<CloudType>& im);
 
         //- Construct and return a clone
-        virtual autoPtr<InjectionModel<CloudType> > clone() const
+        virtual autoPtr<InjectionModel<CloudType>> clone() const
         {
-            return autoPtr<InjectionModel<CloudType> >
+            return autoPtr<InjectionModel<CloudType>>
             (
                 new PatchFlowRateInjection<CloudType>(*this)
             );
@@ -182,7 +185,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "PatchFlowRateInjection.C"
+    #include "PatchFlowRateInjection.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

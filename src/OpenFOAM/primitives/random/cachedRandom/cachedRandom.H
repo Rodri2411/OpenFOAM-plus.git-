@@ -143,6 +143,10 @@ public:
                 template<class Type>
                 void randomise01(Type& value);
 
+                //- Shuffle the values in the list
+                template<class Type>
+                void shuffle(UList<Type>& values);
+
 
             // Global random numbers - consistent across all processors
 

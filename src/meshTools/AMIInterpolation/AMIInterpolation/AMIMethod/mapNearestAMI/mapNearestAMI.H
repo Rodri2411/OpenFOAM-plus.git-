@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2013-2014 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2013-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -86,7 +86,7 @@ private:
             label findMappedSrcFace
             (
                 const label tgtFaceI,
-                const List<DynamicList<label> >& tgtToSrc
+                const List<DynamicList<label>>& tgtToSrc
             ) const;
 
 
@@ -139,6 +139,14 @@ public:
                 label srcFaceI = -1,
                 label tgtFaceI = -1
             );
+
+            //- Normalise the weight. Can optionally subset addressing
+            //  (e.g. for mapNearest)
+            virtual void normaliseWeights
+            (
+                const bool verbose,
+                AMIInterpolation<SourcePatch, TargetPatch>& inter
+            );
 };
 
 
@@ -149,7 +157,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "mapNearestAMI.C"
+    #include "mapNearestAMI.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2014 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Application
     enstrophy
+
+Group
+    grpPostProcessingUtilities
 
 Description
     Calculates and writes the enstrophy of the velocity field U.
@@ -49,7 +52,7 @@ void Foam::calc(const argList& args, const Time& runTime, const fvMesh& mesh)
         IOobject::MUST_READ
     );
 
-    if (Uheader.headerOk())
+    if (Uheader.typeHeaderOk<volVectorField>(true))
     {
         Info<< "    Reading U" << endl;
         volVectorField U(Uheader, mesh);

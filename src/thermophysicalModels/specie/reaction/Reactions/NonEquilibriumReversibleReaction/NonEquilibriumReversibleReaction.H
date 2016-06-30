@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2012 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::NonEquilibriumReversibleReaction
+
+Group
+    grpSpecieReactions
 
 Description
     Simple extension of Reaction to handle reversible reactions using
@@ -114,9 +117,9 @@ public:
         );
 
         //- Construct and return a clone
-        virtual autoPtr<ReactionType<ReactionThermo> > clone() const
+        virtual autoPtr<ReactionType<ReactionThermo>> clone() const
         {
-            return autoPtr<ReactionType<ReactionThermo> >
+            return autoPtr<ReactionType<ReactionThermo>>
             (
                 new NonEquilibriumReversibleReaction
                     <ReactionType, ReactionThermo, ReactionRate>(*this)
@@ -124,12 +127,12 @@ public:
         }
 
         //- Construct and return a clone with new speciesTable
-        virtual autoPtr<ReactionType<ReactionThermo> > clone
+        virtual autoPtr<ReactionType<ReactionThermo>> clone
         (
             const speciesTable& species
         ) const
         {
-            return autoPtr<ReactionType<ReactionThermo> >
+            return autoPtr<ReactionType<ReactionThermo>>
             (
                 new NonEquilibriumReversibleReaction
                     <ReactionType, ReactionThermo, ReactionRate>
@@ -187,7 +190,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "NonEquilibriumReversibleReaction.C"
+    #include "NonEquilibriumReversibleReaction.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

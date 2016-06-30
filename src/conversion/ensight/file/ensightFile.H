@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -36,13 +36,16 @@ Description
 #include "OFstream.H"
 #include "IOstream.H"
 
+#include "ensightFileName.H"
+#include "ensightVarName.H"
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                        Class ensightFile Declaration
+                         Class ensightFile Declaration
 \*---------------------------------------------------------------------------*/
 
 class ensightFile
@@ -66,21 +69,38 @@ class ensightFile
 
     // Private Member Functions
 
+        //- Initialize by setting the ASCII output formatting
+        void initialize();
+
         //- Disallow default bitwise assignment
-        void operator=(const ensightFile&);
+        void operator=(const ensightFile&) = delete;
 
         //- Disallow default copy constructor
-        ensightFile(const ensightFile&);
-
+        ensightFile(const ensightFile&) = delete;
 
 public:
 
+    // Forward declarations
+    class FileName;
+    class VarName;
+
+
     // Constructors
 
-        //- Construct from pathname
+        //- Construct from pathname.
+        //  The entire pathname is checked for valid ensight naming.
         ensightFile
         (
             const fileName& pathname,
+            IOstream::streamFormat format=IOstream::BINARY
+        );
+
+        //- Construct from path and name.
+        //  Only the name portion is checked for valid ensight naming.
+        ensightFile
+        (
+            const fileName& path,
+            const fileName& name,
             IOstream::streamFormat format=IOstream::BINARY
         );
 
@@ -124,10 +144,10 @@ public:
         using Ostream::write;
 
         //- Binary write
-        virtual Ostream& write(const char* buf, std::streamsize count);
+        virtual Ostream& write(const char*, std::streamsize count);
 
         //- Write element keyword with trailing newline, optionally with undef
-        virtual Ostream& writeKeyword(const string& key);
+        virtual Ostream& writeKeyword(const keyType&);
 
         //- Write "C Binary" for binary files (eg, geometry/measured)
         Ostream& writeBinaryHeader();
@@ -135,20 +155,20 @@ public:
         //- Write undef value
         Ostream& writeUndef();
 
-        //- Write C-string as "%80s" or as binary
-        Ostream& write(const char* value);
+        //- Write C-string as "%79s" or as binary (max 80 chars)
+        Ostream& write(const char*);
 
-        //- Write string as "%80s" or as binary
-        Ostream& write(const string& value);
+        //- Write string as "%79s" or as binary (max 80 chars)
+        Ostream& write(const string&);
 
         //- Write integer as "%10d" or as binary
-        Ostream& write(const label value);
+        Ostream& write(const label);
 
         //- Write integer with specified width or as binary
-        Ostream& write(const label value, const label fieldWidth);
+        Ostream& write(const label, const label fieldWidth);
 
         //- Write float as "%12.5e" or as binary
-        Ostream& write(const scalar value);
+        Ostream& write(const scalar);
 
         //- Add carriage return to ascii stream
         void newline();

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2013-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2013-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::adiabaticPerfectFluid
+
+Group
+    grpSpecieEquationOfState
 
 Description
     AdiabaticPerfect gas equation of state.
@@ -167,6 +170,12 @@ public:
             //- Return density [kg/m^3]
             inline scalar rho(scalar p, scalar T) const;
 
+            //- Return enthalpy departure [J/kmol]
+            inline scalar h(const scalar p, const scalar T) const;
+
+            //- Return cp departure [J/(kmol K]
+            inline scalar cp(scalar p, scalar T) const;
+
             //- Return entropy [J/(kmol K)]
             inline scalar s(const scalar p, const scalar T) const;
 
@@ -240,7 +249,7 @@ public:
 #include "adiabaticPerfectFluidI.H"
 
 #ifdef NoRepository
-#   include "adiabaticPerfectFluid.C"
+    #include "adiabaticPerfectFluid.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

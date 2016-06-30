@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2013 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2013-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::TimeScaleModels::equilibrium
+
+Group
+    grpLagrangianIntermediateMPPICTimeScaleSubModels
 
 Description
     Equlibrium model for the time scale over which properties of a dispersed
@@ -92,7 +95,7 @@ public:
     //- Member Functions
 
         //- Time scale
-        tmp<FieldField<Field, scalar> > oneByTau
+        tmp<FieldField<Field, scalar>> oneByTau
         (
             const FieldField<Field, scalar>& alpha,
             const FieldField<Field, scalar>& r32,

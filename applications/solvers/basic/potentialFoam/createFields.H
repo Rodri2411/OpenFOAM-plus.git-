@@ -13,7 +13,7 @@ volVectorField U
 );
 
 // Initialise the velocity internal field to zero
-U = dimensionedVector("0", U.dimensions(), vector::zero);
+U = dimensionedVector("0", U.dimensions(), Zero);
 
 surfaceScalarField phi
 (
@@ -25,13 +25,13 @@ surfaceScalarField phi
         IOobject::NO_READ,
         IOobject::AUTO_WRITE
     ),
-    fvc::interpolate(U) & mesh.Sf()
+    fvc::flux(U)
 );
 
 if (args.optionFound("initialiseUBCs"))
 {
     U.correctBoundaryConditions();
-    phi = fvc::interpolate(U) & mesh.Sf();
+    phi = fvc::flux(U);
 }
 
 
@@ -93,20 +93,47 @@ if (args.optionFound("writep"))
 
 
 Info<< "Constructing velocity potential field Phi\n" << endl;
-volScalarField Phi
+autoPtr<volScalarField> PhiPtr;
+
+IOobject io
 (
-    IOobject
-    (
-        "Phi",
-        runTime.timeName(),
-        mesh,
-        IOobject::READ_IF_PRESENT,
-        IOobject::NO_WRITE
-    ),
+    "Phi",
+    runTime.timeName(),
     mesh,
-    dimensionedScalar("Phi", dimLength*dimVelocity, 0),
-    p.boundaryField().types()
+    IOobject::MUST_READ,
+    IOobject::NO_WRITE
 );
+
+if (io.typeHeaderOk<volScalarField>())
+{
+    PhiPtr.reset(new volScalarField(io, mesh));
+}
+else
+{
+    // Cannot just use p.boundaryField().types() since does not initialise
+    // complex boundary types. Instead re-clone them from p.
+
+    io.readOpt() = IOobject::NO_READ;
+    PhiPtr.reset
+    (
+        new volScalarField
+        (
+            io,
+            mesh,
+            dimensionedScalar("Phi", dimLength*dimVelocity, 0),
+            p.boundaryField().types()
+        )
+    );
+
+    const volScalarField::GeometricBoundaryField& bp = p.boundaryField();
+    volScalarField::GeometricBoundaryField& bPhi = PhiPtr().boundaryField();
+
+    forAll(bp, patchI)
+    {
+        bPhi.set(patchI, bp[patchI].clone(PhiPtr().dimensionedInternalField()));
+    }
+}
+volScalarField& Phi = PhiPtr();
 
 label PhiRefCell = 0;
 scalar PhiRefValue = 0;

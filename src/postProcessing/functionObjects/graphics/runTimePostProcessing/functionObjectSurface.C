@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2015 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -51,7 +51,7 @@ Foam::functionObjectSurface::functionObjectSurface
 (
     const runTimePostProcessing& parent,
     const dictionary& dict,
-    const HashPtrTable<DataEntry<vector>, word>& colours
+    const HashPtrTable<Function1<vector>, word>& colours
 )
 :
     geometrySurface(parent, dict, colours, List<fileName>()),
@@ -124,7 +124,7 @@ void Foam::functionObjectSurface::addGeometryToScene
     }
     else
     {
-        if ((colourBy_ == cbField) && (fName.ext() == "vtk"))
+        if (fName.ext() == "vtk")
         {
             vtkSmartPointer<vtkPolyDataReader> surf =
                 vtkSmartPointer<vtkPolyDataReader>::New();
@@ -137,7 +137,7 @@ void Foam::functionObjectSurface::addGeometryToScene
                 vtkSmartPointer<vtkPolyDataMapper>::New();
             mapper->SetInputConnection(surf->GetOutputPort());
 
-            setField(position, fieldName_, mapper, renderer);
+            setField(position, fieldName_, mapper, renderer, surf->GetOutput());
 
             surfaceActor_->SetMapper(mapper);
 
@@ -147,7 +147,9 @@ void Foam::functionObjectSurface::addGeometryToScene
         }
         else
         {
-            geometrySurface::addGeometryToScene(position, renderer);
+            WarningInFunction
+                << "Only VTK file types are supported"
+                << endl;
         }
     }
 }

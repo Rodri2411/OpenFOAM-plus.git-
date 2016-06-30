@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2015 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -99,9 +99,9 @@ void Foam::streamLineBase::initInterpolations
     const label nSeeds,
     label& UIndex,
     PtrList<volScalarField>& vsFlds,
-    PtrList<interpolation<scalar> >& vsInterp,
+    PtrList<interpolation<scalar>>& vsInterp,
     PtrList<volVectorField>& vvFlds,
-    PtrList<interpolation<vector> >& vvInterp
+    PtrList<interpolation<vector>>& vvInterp
 )
 {
     const Time& runTime = obr_.time();
@@ -316,9 +316,9 @@ void Foam::streamLineBase::trimToBox
 (
     const treeBoundBox& bb,
     const label trackI,
-    PtrList<DynamicList<point> >& newTracks,
-    PtrList<DynamicList<scalarList> >& newScalars,
-    PtrList<DynamicList<vectorList> >& newVectors
+    PtrList<DynamicList<point>>& newTracks,
+    PtrList<DynamicList<scalarList>>& newScalars,
+    PtrList<DynamicList<vectorList>>& newVectors
 ) const
 {
     const List<point>& track = allTracks_[trackI];
@@ -471,9 +471,9 @@ void Foam::streamLineBase::trimToBox(const treeBoundBox& bb)
 {
     // Storage for new tracks. Per track, per sample the coordinate (newTracks)
     // or values for all the sampled fields (newScalars, newVectors)
-    PtrList<DynamicList<point> > newTracks;
-    PtrList<DynamicList<scalarList> > newScalars;
-    PtrList<DynamicList<vectorList> > newVectors;
+    PtrList<DynamicList<point>> newTracks;
+    PtrList<DynamicList<scalarList>> newScalars;
+    PtrList<DynamicList<vectorList>> newVectors;
 
     forAll(allTracks_, trackI)
     {
@@ -778,6 +778,10 @@ void Foam::streamLineBase::write()
         }
 
 
+        // Note: filenames scattered below since used in global call
+        fileName scalarVtkFile;
+        fileName vectorVtkFile;
+
         if (Pstream::master())
         {
             if (bounds_ != boundBox::greatBox)
@@ -854,7 +858,7 @@ void Foam::streamLineBase::write()
 
             if (allScalars_.size() > 0)
             {
-                List<List<scalarField> > scalarValues(allScalars_.size());
+                List<List<scalarField>> scalarValues(allScalars_.size());
 
                 forAll(allScalars_, scalarI)
                 {
@@ -873,7 +877,7 @@ void Foam::streamLineBase::write()
                     }
                 }
 
-                fileName vtkFile
+                scalarVtkFile = fileName
                 (
                     vtkPath
                   / scalarFormatterPtr_().getFileName
@@ -884,7 +888,7 @@ void Foam::streamLineBase::write()
                 );
 
                 if (log_) Info
-                    << "    Writing data to " << vtkFile.path() << endl;
+                    << "    Writing data to " << scalarVtkFile.path() << endl;
 
                 scalarFormatterPtr_().write
                 (
@@ -892,23 +896,15 @@ void Foam::streamLineBase::write()
                     tracks,
                     scalarNames_,
                     scalarValues,
-                    OFstream(vtkFile)()
+                    OFstream(scalarVtkFile)()
                 );
-
-                forAll(scalarNames_, nameI)
-                {
-                    dictionary propsDict;
-                    propsDict.add("file", vtkFile);
-                    const word& fieldName = scalarNames_[nameI];
-                    setProperty(fieldName, propsDict);
-                }
             }
 
             // Convert vector values
 
             if (allVectors_.size() > 0)
             {
-                List<List<vectorField> > vectorValues(allVectors_.size());
+                List<List<vectorField>> vectorValues(allVectors_.size());
 
                 forAll(allVectors_, vectorI)
                 {
@@ -927,7 +923,7 @@ void Foam::streamLineBase::write()
                     }
                 }
 
-                fileName vtkFile
+                vectorVtkFile = fileName
                 (
                     vtkPath
                   / vectorFormatterPtr_().getFileName
@@ -937,7 +933,8 @@ void Foam::streamLineBase::write()
                     )
                 );
 
-                //if (log_) Info<< "    Writing vector data to " << vtkFile << endl;
+                //if (log_) Info<< "    Writing vector data to "
+                //   << vectorVtkFile << endl;
 
                 vectorFormatterPtr_().write
                 (
@@ -945,17 +942,30 @@ void Foam::streamLineBase::write()
                     tracks,
                     vectorNames_,
                     vectorValues,
-                    OFstream(vtkFile)()
+                    OFstream(vectorVtkFile)()
                 );
-
-                forAll(vectorNames_, nameI)
-                {
-                    dictionary propsDict;
-                    propsDict.add("file", vtkFile);
-                    const word& fieldName = vectorNames_[nameI];
-                    setProperty(fieldName, propsDict);
-                }
             }
+        }
+
+
+        // fileNames are generated on the master but setProperty needs to
+        // be across all procs
+        Pstream::scatter(scalarVtkFile);
+        forAll(scalarNames_, nameI)
+        {
+            dictionary propsDict;
+            propsDict.add("file", scalarVtkFile);
+            const word& fieldName = scalarNames_[nameI];
+            setProperty(fieldName, propsDict);
+        }
+
+        Pstream::scatter(vectorVtkFile);
+        forAll(vectorNames_, nameI)
+        {
+            dictionary propsDict;
+            propsDict.add("file", vectorVtkFile);
+            const word& fieldName = vectorNames_[nameI];
+            setProperty(fieldName, propsDict);
         }
     }
 }

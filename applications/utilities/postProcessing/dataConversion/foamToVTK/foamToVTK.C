@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Application
     foamToVTK
+
+Group
+    grpPostProcessingUtilities
 
 Description
     Legacy VTK file format writer.
@@ -160,6 +163,7 @@ Note
 #include "surfaceMeshWriter.H"
 #include "writeSurfFields.H"
 
+#include "memInfo.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -319,23 +323,30 @@ int main(int argc, char *argv[])
     );
 
     #include "setRootCase.H"
+
+    cpuTime timer;
+    memInfo mem;
+    Info<< "Initial memory "
+        << mem.update().size() << " kB" << endl;
+
     #include "createTime.H"
 
     const bool doWriteInternal = !args.optionFound("noInternal");
     const bool doFaceZones     = !args.optionFound("noFaceZones");
     const bool doLinks         = !args.optionFound("noLinks");
-    const bool binary          = !args.optionFound("ascii");
+    bool binary                = !args.optionFound("ascii");
     const bool useTimeName     = args.optionFound("useTimeName");
 
-    // decomposition of polyhedral cells into tets/pyramids cells
+    // Decomposition of polyhedral cells into tets/pyramids cells
     vtkTopo::decomposePoly     = !args.optionFound("poly");
 
     if (binary && (sizeof(floatScalar) != 4 || sizeof(label) != 4))
     {
-        FatalErrorInFunction
-            << "floatScalar and/or label are not 4 bytes in size" << nl
-            << "Hence cannot use binary VTK format. Please use -ascii"
-            << exit(FatalError);
+        WarningInFunction
+            << "Using ASCII rather than binary VTK format because "
+               "floatScalar and/or label are not 4 bytes in size."
+            << nl << endl;
+        binary = false;
     }
 
     const bool nearCellValue = args.optionFound("nearCellValue");
@@ -428,9 +439,12 @@ int main(int argc, char *argv[])
 
     mkDir(fvPath);
 
-
     // Mesh wrapper; does subsetting and decomposition
     vtkMesh vMesh(mesh, cellSetName);
+
+    Info<< "VTK mesh topology: "
+        << timer.cpuTimeIncrement() << " s, "
+        << mem.update().size() << " kB" << endl;
 
 
     // Scan for all possible lagrangian clouds
@@ -727,9 +741,7 @@ int main(int argc, char *argv[])
 
         if (doWriteInternal)
         {
-            //
             // Create file and write header
-            //
             fileName vtkFileName
             (
                 fvPath/vtkName
@@ -1243,6 +1255,10 @@ int main(int argc, char *argv[])
                 writer.writeParcelHeader(0);
             }
         }
+
+        Info<< "Wrote in "
+            << timer.cpuTimeIncrement() << " s, "
+            << mem.update().size() << " kB" << endl;
     }
 
 
@@ -1303,7 +1319,9 @@ int main(int argc, char *argv[])
         }
     }
 
-    Info<< "End\n" << endl;
+    Info<< "\nEnd: "
+        << timer.elapsedCpuTime() << " s, "
+        << mem.update().peak() << " kB (peak)\n" << endl;
 
     return 0;
 }

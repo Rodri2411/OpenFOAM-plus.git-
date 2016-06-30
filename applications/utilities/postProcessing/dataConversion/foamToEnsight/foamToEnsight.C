@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2014 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Application
     foamToEnsight
+
+Group
+    grpPostProcessingUtilitie
 
 Description
     Translates OpenFOAM data to EnSight format.
@@ -77,6 +80,8 @@ Note
 
 #include "cellSet.H"
 #include "fvMeshSubset.H"
+
+#include "memInfo.H"
 
 using namespace Foam;
 
@@ -152,6 +157,11 @@ int main(int argc, char *argv[])
     // Check options
     const bool binary = !args.optionFound("ascii");
     const bool nodeValues = args.optionFound("nodeValues");
+
+    cpuTime timer;
+    memInfo mem;
+    Info<< "Initial memory "
+        << mem.update().size() << " kB" << endl;
 
     #include "createTime.H"
 
@@ -334,7 +344,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    HashTable<HashTable<word> > allCloudFields;
+    HashTable<HashTable<word>> allCloudFields;
     forAllConstIter(wordHashSet, allCloudNames, cloudIter)
     {
         // Add the name of the cloud(s) to the case file header
@@ -354,7 +364,7 @@ int main(int argc, char *argv[])
         allCloudFields.insert(cloudIter.key(), HashTable<word>());
 
         // Identify the new cloud in the hash table
-        HashTable<HashTable<word> >::iterator newCloudIter =
+        HashTable<HashTable<word>>::iterator newCloudIter =
             allCloudFields.find(cloudIter.key());
 
         // Loop over all times to build list of fields and field types
@@ -672,7 +682,7 @@ int main(int argc, char *argv[])
         // Cloud field data output
         // ~~~~~~~~~~~~~~~~~~~~~~~
 
-        forAllConstIter(HashTable<HashTable<word> >, allCloudFields, cloudIter)
+        forAllConstIter(HashTable<HashTable<word>>, allCloudFields, cloudIter)
         {
             const word& cloudName = cloudIter.key();
 
@@ -706,7 +716,10 @@ int main(int argc, char *argv[])
                     IOobject::MUST_READ
                 );
 
-                bool fieldExists = fieldObject.headerOk();
+                bool fieldExists = fieldObject.typeHeaderOk<IOField<scalar>>
+                (
+                    false
+                );
                 if (fieldType == scalarIOField::typeName)
                 {
                     ensightCloudField<scalar>
@@ -740,6 +753,10 @@ int main(int argc, char *argv[])
                 }
             }
         }
+
+        Info<< "Wrote in "
+            << timer.cpuTimeIncrement() << " s, "
+            << mem.update().size() << " kB" << endl;
     }
 
     #include "ensightCaseTail.H"
@@ -749,7 +766,9 @@ int main(int argc, char *argv[])
         delete ensightCaseFilePtr;
     }
 
-    Info<< "End\n" << endl;
+    Info<< "\nEnd: "
+        << timer.elapsedCpuTime() << " s, "
+        << mem.update().peak() << " kB (peak)\n" << endl;
 
     return 0;
 }

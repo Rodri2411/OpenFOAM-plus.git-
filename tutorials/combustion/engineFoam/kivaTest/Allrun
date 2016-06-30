@@ -5,10 +5,10 @@ cd ${0%/*} || exit 1    # Run from this directory
 . $WM_PROJECT_DIR/bin/tools/RunFunctions
 
 # Get application name
-application=`getApplication`
+application=$(getApplication)
 
 runApplication kivaToFoam -file otape17
 
 runApplication $application
 
-# ----------------------------------------------------------------- end-of-file
+#------------------------------------------------------------------------------
