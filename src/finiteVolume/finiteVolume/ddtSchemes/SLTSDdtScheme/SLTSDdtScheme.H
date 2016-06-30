@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::fv::SLTSDdtScheme
+
+Group
+    grpFvDdtSchemes
 
 Description
     Stabilised local time-step first-order Euler implicit/explicit ddt.
@@ -119,53 +122,53 @@ public:
             return fv::ddtScheme<Type>::mesh();
         }
 
-        tmp<GeometricField<Type, fvPatchField, volMesh> > fvcDdt
+        tmp<GeometricField<Type, fvPatchField, volMesh>> fvcDdt
         (
             const dimensioned<Type>&
         );
 
-        tmp<GeometricField<Type, fvPatchField, volMesh> > fvcDdt
+        tmp<GeometricField<Type, fvPatchField, volMesh>> fvcDdt
         (
             const GeometricField<Type, fvPatchField, volMesh>&
         );
 
-        tmp<GeometricField<Type, fvPatchField, volMesh> > fvcDdt
+        tmp<GeometricField<Type, fvPatchField, volMesh>> fvcDdt
         (
             const dimensionedScalar&,
             const GeometricField<Type, fvPatchField, volMesh>&
         );
 
-        tmp<GeometricField<Type, fvPatchField, volMesh> > fvcDdt
+        tmp<GeometricField<Type, fvPatchField, volMesh>> fvcDdt
         (
             const volScalarField&,
             const GeometricField<Type, fvPatchField, volMesh>&
         );
 
-        tmp<GeometricField<Type, fvPatchField, volMesh> > fvcDdt
+        tmp<GeometricField<Type, fvPatchField, volMesh>> fvcDdt
         (
             const volScalarField& alpha,
             const volScalarField& rho,
             const GeometricField<Type, fvPatchField, volMesh>& psi
         );
 
-        tmp<fvMatrix<Type> > fvmDdt
+        tmp<fvMatrix<Type>> fvmDdt
         (
             const GeometricField<Type, fvPatchField, volMesh>&
         );
 
-        tmp<fvMatrix<Type> > fvmDdt
+        tmp<fvMatrix<Type>> fvmDdt
         (
             const dimensionedScalar&,
             const GeometricField<Type, fvPatchField, volMesh>&
         );
 
-        tmp<fvMatrix<Type> > fvmDdt
+        tmp<fvMatrix<Type>> fvmDdt
         (
             const volScalarField&,
             const GeometricField<Type, fvPatchField, volMesh>&
         );
 
-        tmp<fvMatrix<Type> > fvmDdt
+        tmp<fvMatrix<Type>> fvmDdt
         (
             const volScalarField& alpha,
             const volScalarField& rho,
@@ -249,7 +252,7 @@ tmp<surfaceScalarField> SLTSDdtScheme<scalar>::fvcDdtPhiCorr
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "SLTSDdtScheme.C"
+    #include "SLTSDdtScheme.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

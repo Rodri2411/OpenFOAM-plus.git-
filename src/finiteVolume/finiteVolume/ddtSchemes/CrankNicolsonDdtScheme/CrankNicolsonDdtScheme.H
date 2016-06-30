@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::fv::CrankNicolsonDdtScheme
+
+Group
+    grpFvDdtSchemes
 
 Description
     Second-oder Crank-Nicolson implicit ddt using the current and
@@ -232,53 +235,53 @@ public:
             return ocCoeff_;
         }
 
-        tmp<GeometricField<Type, fvPatchField, volMesh> > fvcDdt
+        tmp<GeometricField<Type, fvPatchField, volMesh>> fvcDdt
         (
             const dimensioned<Type>&
         );
 
-        tmp<GeometricField<Type, fvPatchField, volMesh> > fvcDdt
+        tmp<GeometricField<Type, fvPatchField, volMesh>> fvcDdt
         (
             const GeometricField<Type, fvPatchField, volMesh>&
         );
 
-        tmp<GeometricField<Type, fvPatchField, volMesh> > fvcDdt
+        tmp<GeometricField<Type, fvPatchField, volMesh>> fvcDdt
         (
             const dimensionedScalar&,
             const GeometricField<Type, fvPatchField, volMesh>&
         );
 
-        tmp<GeometricField<Type, fvPatchField, volMesh> > fvcDdt
+        tmp<GeometricField<Type, fvPatchField, volMesh>> fvcDdt
         (
             const volScalarField&,
             const GeometricField<Type, fvPatchField, volMesh>&
         );
 
-        tmp<GeometricField<Type, fvPatchField, volMesh> > fvcDdt
+        tmp<GeometricField<Type, fvPatchField, volMesh>> fvcDdt
         (
             const volScalarField& alpha,
             const volScalarField& rho,
             const GeometricField<Type, fvPatchField, volMesh>& psi
         );
 
-        tmp<fvMatrix<Type> > fvmDdt
+        tmp<fvMatrix<Type>> fvmDdt
         (
             const GeometricField<Type, fvPatchField, volMesh>&
         );
 
-        tmp<fvMatrix<Type> > fvmDdt
+        tmp<fvMatrix<Type>> fvmDdt
         (
             const dimensionedScalar&,
             const GeometricField<Type, fvPatchField, volMesh>&
         );
 
-        tmp<fvMatrix<Type> > fvmDdt
+        tmp<fvMatrix<Type>> fvmDdt
         (
             const volScalarField&,
             const GeometricField<Type, fvPatchField, volMesh>&
         );
 
-        tmp<fvMatrix<Type> > fvmDdt
+        tmp<fvMatrix<Type>> fvmDdt
         (
             const volScalarField& alpha,
             const volScalarField& rho,
@@ -363,7 +366,7 @@ tmp<surfaceScalarField> CrankNicolsonDdtScheme<scalar>::fvcDdtPhiCorr
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "CrankNicolsonDdtScheme.C"
+    #include "CrankNicolsonDdtScheme.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::janafThermo
+
+Group
+    grpSpecieThermo
 
 Description
     JANAF tables based thermodynamics package templated
@@ -254,7 +257,7 @@ public:
 #include "janafThermoI.H"
 
 #ifdef NoRepository
-#   include "janafThermo.C"
+    #include "janafThermo.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

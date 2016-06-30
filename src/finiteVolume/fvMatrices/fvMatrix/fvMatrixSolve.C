@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -25,6 +25,7 @@ License
 
 #include "LduMatrix.H"
 #include "diagTensorField.H"
+#include "profiling.H"
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
@@ -58,6 +59,8 @@ Foam::SolverPerformance<Type> Foam::fvMatrix<Type>::solve
     const dictionary& solverControls
 )
 {
+    addProfiling(solve, "fvMatrix::solve." + psi_.name());
+
     if (debug)
     {
         Info.masterStream(this->mesh().comm())
@@ -327,9 +330,9 @@ Foam::SolverPerformance<Type> Foam::fvMatrix<Type>::solve()
 
 
 template<class Type>
-Foam::tmp<Foam::Field<Type> > Foam::fvMatrix<Type>::residual() const
+Foam::tmp<Foam::Field<Type>> Foam::fvMatrix<Type>::residual() const
 {
-    tmp<Field<Type> > tres(new Field<Type>(source_));
+    tmp<Field<Type>> tres(new Field<Type>(source_));
     Field<Type>& res = tres();
 
     addBoundarySource(res);

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2012 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::hPolynomialThermo
+
+Group
+    grpSpecieThermo
 
 Description
     Thermodynamics package templated on the equation of state, using polynomial
@@ -187,7 +190,7 @@ public:
 
     // Member operators
 
-        inline hPolynomialThermo& operator=(const hPolynomialThermo&);
+        inline void operator=(const hPolynomialThermo&);
         inline void operator+=(const hPolynomialThermo&);
         inline void operator-=(const hPolynomialThermo&);
         inline void operator*=(const scalar);
@@ -239,7 +242,7 @@ public:
 #include "hPolynomialThermoI.H"
 
 #ifdef NoRepository
-#   include "hPolynomialThermo.C"
+    #include "hPolynomialThermo.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

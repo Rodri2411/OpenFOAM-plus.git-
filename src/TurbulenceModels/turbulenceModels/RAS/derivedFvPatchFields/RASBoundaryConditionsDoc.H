@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2012-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2012-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,10 +23,11 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-\defgroup grpRASBoundaryConditions RAS boundary conditions
+\defgroup grpRASBoundaryConditions Boundary conditions
 @{
     \ingroup grpRASTurbulence
     This group contains RAS turbulence model boundary conditions
 @}
+
 
 \*---------------------------------------------------------------------------*/

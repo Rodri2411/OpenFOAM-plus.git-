@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2013-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2013-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::IsotropyModel
+
+Group
+    grpLagrangianIntermediateMPPICIsotropySubModels
 
 Description
     Base class for collisional return-to-isotropy models.
@@ -101,7 +104,7 @@ public:
         IsotropyModel(const IsotropyModel<CloudType>& cm);
 
         //- Construct and return a clone
-        virtual autoPtr<IsotropyModel<CloudType> > clone() const = 0;
+        virtual autoPtr<IsotropyModel<CloudType>> clone() const = 0;
 
 
     //- Destructor
@@ -109,7 +112,7 @@ public:
 
 
     //- Selector
-    static autoPtr<IsotropyModel<CloudType> > New
+    static autoPtr<IsotropyModel<CloudType>> New
     (
         const dictionary& dict,
         CloudType& owner
@@ -156,14 +159,14 @@ public:
                                                                                \
     Foam::IsotropyModel<MPPICCloudType>::                                      \
         adddictionaryConstructorToTable                                        \
-        <Foam::IsotropyModels::SS<MPPICCloudType> >                            \
+        <Foam::IsotropyModels::SS<MPPICCloudType>>                             \
             add##SS##CloudType##MPPICCloudType##ConstructorToTable_;
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "IsotropyModel.C"
+    #include "IsotropyModel.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

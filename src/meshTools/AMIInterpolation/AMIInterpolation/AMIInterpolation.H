@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -372,15 +372,28 @@ public:
                 //- Return const access to source patch face areas
                 inline const scalarField& srcMagSf() const;
 
+                //- Return access to source patch face areas
+                inline scalarField& srcMagSf();
+
                 //- Return const access to source patch addressing
                 inline const labelListList& srcAddress() const;
+
+                //- Return access to source patch addressing
+                inline labelListList& srcAddress();
 
                 //- Return const access to source patch weights
                 inline const scalarListList& srcWeights() const;
 
+                //- Return access to source patch weights
+                inline scalarListList& srcWeights();
+
                 //- Return const access to normalisation factor of source
                 //  patch weights (i.e. the sum before normalisation)
                 inline const scalarField& srcWeightsSum() const;
+
+                //- Return access to normalisation factor of source
+                //  patch weights (i.e. the sum before normalisation)
+                inline scalarField& srcWeightsSum();
 
                 //- Source map pointer - valid only if singlePatchProc = -1
                 //  This gets source data into a form to be consumed by
@@ -393,15 +406,28 @@ public:
                 //- Return const access to target patch face areas
                 inline const scalarField& tgtMagSf() const;
 
+                //- Return access to target patch face areas
+                inline scalarField& tgtMagSf();
+
                 //- Return const access to target patch addressing
                 inline const labelListList& tgtAddress() const;
+
+                //- Return access to target patch addressing
+                inline labelListList& tgtAddress();
 
                 //- Return const access to target patch weights
                 inline const scalarListList& tgtWeights() const;
 
+                //- Return access to target patch weights
+                inline scalarListList& tgtWeights();
+
                 //- Return const access to normalisation factor of target
                 //  patch weights (i.e. the sum before normalisation)
                 inline const scalarField& tgtWeightsSum() const;
+
+                //- Return access to normalisation factor of target
+                //  patch weights (i.e. the sum before normalisation)
+                inline scalarField& tgtWeightsSum();
 
                 //- Target map pointer -  valid only if singlePatchProc=-1.
                 //  This gets target data into a form to be consumed by
@@ -458,7 +484,7 @@ public:
 
             //- Interpolate from target to source with supplied op
             template<class Type, class CombineOp>
-            tmp<Field<Type> > interpolateToSource
+            tmp<Field<Type>> interpolateToSource
             (
                 const Field<Type>& fld,
                 const CombineOp& cop,
@@ -467,16 +493,16 @@ public:
 
             //- Interpolate from target tmp field to source with supplied op
             template<class Type, class CombineOp>
-            tmp<Field<Type> > interpolateToSource
+            tmp<Field<Type>> interpolateToSource
             (
-                const tmp<Field<Type> >& tFld,
+                const tmp<Field<Type>>& tFld,
                 const CombineOp& cop,
                 const UList<Type>& defaultValues = UList<Type>::null()
             ) const;
 
             //- Interpolate from source to target with supplied op
             template<class Type, class CombineOp>
-            tmp<Field<Type> > interpolateToTarget
+            tmp<Field<Type>> interpolateToTarget
             (
                 const Field<Type>& fld,
                 const CombineOp& cop,
@@ -485,16 +511,16 @@ public:
 
             //- Interpolate from source tmp field to target with supplied op
             template<class Type, class CombineOp>
-            tmp<Field<Type> > interpolateToTarget
+            tmp<Field<Type>> interpolateToTarget
             (
-                const tmp<Field<Type> >& tFld,
+                const tmp<Field<Type>>& tFld,
                 const CombineOp& cop,
                 const UList<Type>& defaultValues = UList<Type>::null()
             ) const;
 
             //- Interpolate from target to source
             template<class Type>
-            tmp<Field<Type> > interpolateToSource
+            tmp<Field<Type>> interpolateToSource
             (
                 const Field<Type>& fld,
                 const UList<Type>& defaultValues = UList<Type>::null()
@@ -502,15 +528,15 @@ public:
 
             //- Interpolate from target tmp field
             template<class Type>
-            tmp<Field<Type> > interpolateToSource
+            tmp<Field<Type>> interpolateToSource
             (
-                const tmp<Field<Type> >& tFld,
+                const tmp<Field<Type>>& tFld,
                 const UList<Type>& defaultValues = UList<Type>::null()
             ) const;
 
             //- Interpolate from source to target
             template<class Type>
-            tmp<Field<Type> > interpolateToTarget
+            tmp<Field<Type>> interpolateToTarget
             (
                 const Field<Type>& fld,
                 const UList<Type>& defaultValues = UList<Type>::null()
@@ -518,9 +544,9 @@ public:
 
             //- Interpolate from source tmp field
             template<class Type>
-            tmp<Field<Type> > interpolateToTarget
+            tmp<Field<Type>> interpolateToTarget
             (
-                const tmp<Field<Type> >& tFld,
+                const tmp<Field<Type>>& tFld,
                 const UList<Type>& defaultValues = UList<Type>::null()
             ) const;
 
@@ -533,7 +559,7 @@ public:
                 const SourcePatch& srcPatch,
                 const TargetPatch& tgtPatch,
                 const vector& n,
-                const label tgtFaceI,
+                const label tgtFacei,
                 point& tgtPoint
             )
             const;
@@ -544,7 +570,7 @@ public:
                 const SourcePatch& srcPatch,
                 const TargetPatch& tgtPatch,
                 const vector& n,
-                const label srcFaceI,
+                const label srcFacei,
                 point& srcPoint
             )
             const;
@@ -573,8 +599,8 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "AMIInterpolation.C"
-#   include "AMIInterpolationParallelOps.C"
+    #include "AMIInterpolation.C"
+    #include "AMIInterpolationParallelOps.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

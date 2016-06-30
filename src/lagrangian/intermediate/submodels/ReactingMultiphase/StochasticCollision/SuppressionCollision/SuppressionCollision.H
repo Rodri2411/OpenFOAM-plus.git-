@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2013 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2013-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::SuppressionCollision
+
+Group
+    grpLagrangianIntermediateCollisionSubModels
 
 Description
     Inter-cloud collision model, whereby the \c canReact flag can be used
@@ -80,9 +83,9 @@ public:
         SuppressionCollision(const SuppressionCollision<CloudType>& cm);
 
         //- Construct and return a clone
-        virtual autoPtr<StochasticCollisionModel<CloudType> > clone() const
+        virtual autoPtr<StochasticCollisionModel<CloudType>> clone() const
         {
-            return autoPtr<StochasticCollisionModel<CloudType> >
+            return autoPtr<StochasticCollisionModel<CloudType>>
             (
                 new SuppressionCollision<CloudType>(*this)
             );
@@ -101,7 +104,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "SuppressionCollision.C"
+    #include "SuppressionCollision.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

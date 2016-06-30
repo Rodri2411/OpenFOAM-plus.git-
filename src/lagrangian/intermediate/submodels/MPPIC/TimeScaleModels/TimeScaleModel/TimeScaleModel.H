@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2013-2014 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2013-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::TimeScaleModel
+
+Group
+    grpLagrangianIntermediateMPPICTimeScaleSubModels
 
 Description
     Base class for time scale models.
@@ -113,7 +116,7 @@ public:
     //- Member Functions
 
         //- Time scale
-        virtual tmp<FieldField<Field, scalar> > oneByTau
+        virtual tmp<FieldField<Field, scalar>> oneByTau
         (
             const FieldField<Field, scalar>& alpha,
             const FieldField<Field, scalar>& r32,

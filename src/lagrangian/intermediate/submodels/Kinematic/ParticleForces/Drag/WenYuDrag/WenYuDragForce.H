@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2013 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2013-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::WenYuDragForce
+
+Group
+    grpLagrangianIntermediateForceSubModels
 
 Description
     Wen-Yu drag model for solid spheres.
@@ -81,9 +84,9 @@ public:
         WenYuDragForce(const WenYuDragForce<CloudType>& df);
 
         //- Construct and return a clone
-        virtual autoPtr<ParticleForce<CloudType> > clone() const
+        virtual autoPtr<ParticleForce<CloudType>> clone() const
         {
-            return autoPtr<ParticleForce<CloudType> >
+            return autoPtr<ParticleForce<CloudType>>
             (
                 new WenYuDragForce<CloudType>(*this)
             );
@@ -117,7 +120,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "WenYuDragForce.C"
+    #include "WenYuDragForce.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

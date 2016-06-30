@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::reactingMixture
+
+Group
+    grpReactionThermophysicalMixtures
 
 Description
     Foam::reactingMixture
@@ -52,9 +55,9 @@ template<class ThermoType>
 class reactingMixture
 :
     public speciesTable,
-    public autoPtr<chemistryReader<ThermoType> >,
+    public autoPtr<chemistryReader<ThermoType>>,
     public multiComponentMixture<ThermoType>,
-    public PtrList<Reaction<ThermoType> >
+    public PtrList<Reaction<ThermoType>>
 {
     // Private Member Functions
 
@@ -89,17 +92,17 @@ public:
 
         label size() const
         {
-            return PtrList<Reaction<ThermoType> >::size();
+            return PtrList<Reaction<ThermoType>>::size();
         }
 
         Reaction<ThermoType>& operator [] (const label i)
         {
-            return PtrList<Reaction<ThermoType> >::operator[](i);
+            return PtrList<Reaction<ThermoType>>::operator[](i);
         }
 
         const Reaction<ThermoType>& operator [] (const label i) const
         {
-            return PtrList<Reaction<ThermoType> >::operator[](i);
+            return PtrList<Reaction<ThermoType>>::operator[](i);
         }
 };
 
@@ -111,7 +114,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "reactingMixture.C"
+    #include "reactingMixture.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2015-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::hRefConstThermo
+
+Group
+    grpSpecieThermo
 
 Description
     Constant properties thermodynamics package
@@ -223,7 +226,7 @@ public:
 #include "hRefConstThermoI.H"
 
 #ifdef NoRepository
-#   include "hRefConstThermo.C"
+    #include "hRefConstThermo.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

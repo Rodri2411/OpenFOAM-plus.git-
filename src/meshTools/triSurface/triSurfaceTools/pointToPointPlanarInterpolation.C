@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2012-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2012-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -37,7 +37,7 @@ License
 
 namespace Foam
 {
-defineTypeNameAndDebug(pointToPointPlanarInterpolation, 0);
+    defineTypeNameAndDebug(pointToPointPlanarInterpolation, 0);
 }
 
 
@@ -112,7 +112,7 @@ Foam::pointToPointPlanarInterpolation::calcCoordinateSystem
 
     if (debug)
     {
-        Info<< "pointToPointPlanarInterpolation::calcCoordinateSystem :"
+        InfoInFunction
             << " Used points " << p0 << ' ' << points[index1]
             << ' ' << points[index2]
             << " to define coordinate system with normal " << n << endl;
@@ -197,14 +197,14 @@ void Foam::pointToPointPlanarInterpolation::calcWeights
         (
             referenceCS_.localPosition(sourcePoints)
         );
-        vectorField& localVertices = tlocalVertices();
+        vectorField& localVertices = tlocalVertices.ref();
 
         const boundBox bb(localVertices, true);
         const point bbMid(bb.midpoint());
 
         if (debug)
         {
-            Info<< "pointToPointPlanarInterpolation::calcWeights :"
+            InfoInFunction
                 << " Perturbing points with " << perturb_
                 << " fraction of a random position inside " << bb
                 << " to break any ties on regular meshes."
@@ -272,6 +272,10 @@ void Foam::pointToPointPlanarInterpolation::calcWeights
                     << endl;
             }
 
+            OBJstream str("stencil.obj");
+            Pout<< "pointToPointPlanarInterpolation::calcWeights :"
+                << " Dumping stencil to " << str.name() << endl;
+
             forAll(destPoints, i)
             {
                 label v0 = nearestVertex_[i][0];
@@ -285,17 +289,21 @@ void Foam::pointToPointPlanarInterpolation::calcWeights
                     << " at:" << sourcePoints[v0]
                     << " weight:" << nearestVertexWeight_[i][0] << nl;
 
+                str.write(linePointRef(destPoints[i], sourcePoints[v0]));
+
                 if (v1 != -1)
                 {
                     Pout<< "    " << v1
                         << " at:" << sourcePoints[v1]
                         << " weight:" << nearestVertexWeight_[i][1] << nl;
+                    str.write(linePointRef(destPoints[i], sourcePoints[v1]));
                 }
                 if (v2 != -1)
                 {
                     Pout<< "    " << v2
                         << " at:" << sourcePoints[v2]
                         << " weight:" << nearestVertexWeight_[i][2] << nl;
+                    str.write(linePointRef(destPoints[i], sourcePoints[v2]));
                 }
 
                 Pout<< endl;
@@ -317,7 +325,10 @@ Foam::pointToPointPlanarInterpolation::pointToPointPlanarInterpolation
 :
     perturb_(perturb),
     nearestOnly_(nearestOnly),
-    referenceCS_(calcCoordinateSystem(sourcePoints)),
+    referenceCS_
+    (
+        nearestOnly ? coordinateSystem() : calcCoordinateSystem(sourcePoints)
+    ),
     nPoints_(sourcePoints.size())
 {
     calcWeights(sourcePoints, destPoints);
@@ -338,6 +349,43 @@ Foam::pointToPointPlanarInterpolation::pointToPointPlanarInterpolation
     nPoints_(sourcePoints.size())
 {
     calcWeights(sourcePoints, destPoints);
+}
+
+
+Foam::pointToPointPlanarInterpolation::pointToPointPlanarInterpolation
+(
+    const scalar perturb,
+    const bool nearestOnly,
+    const coordinateSystem& referenceCS,
+    const label sourceSize,
+    const List<FixedList<label, 3> >& nearestVertex,
+    const List<FixedList<scalar, 3> >& nearestVertexWeight
+)
+:
+    perturb_(perturb),
+    nearestOnly_(nearestOnly),
+    referenceCS_(referenceCS),
+    nPoints_(sourceSize),
+    nearestVertex_(nearestVertex),
+    nearestVertexWeight_(nearestVertexWeight)
+{}
+
+
+Foam::autoPtr<Foam::pointToPointPlanarInterpolation>
+Foam::pointToPointPlanarInterpolation::clone() const
+{
+    return autoPtr<pointToPointPlanarInterpolation>
+    (
+        new pointToPointPlanarInterpolation
+        (
+            perturb_,
+            nearestOnly_,
+            referenceCS_,
+            nPoints_,
+            nearestVertex_,
+            nearestVertexWeight_
+        )
+    );
 }
 
 

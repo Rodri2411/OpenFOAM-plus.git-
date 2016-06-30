@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::NoDevolatilisation
+
+Group
+    grpLagrangianIntermediateDevolatilisationSubModels
 
 Description
     Dummy devolatilisation model for 'none'
@@ -63,9 +66,9 @@ public:
         NoDevolatilisation(const NoDevolatilisation<CloudType>& dm);
 
         //- Construct and return a clone
-        virtual autoPtr<DevolatilisationModel<CloudType> > clone() const
+        virtual autoPtr<DevolatilisationModel<CloudType>> clone() const
         {
-            return autoPtr<DevolatilisationModel<CloudType> >
+            return autoPtr<DevolatilisationModel<CloudType>>
             (
                 new NoDevolatilisation<CloudType>(*this)
             );
@@ -105,7 +108,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "NoDevolatilisation.C"
+    #include "NoDevolatilisation.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2013 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::FacePostProcessing
+
+Group
+    grpLagrangianIntermediateFunctionObjects
 
 Description
     Records particle face quantities on used-specified face zone
@@ -135,9 +138,9 @@ public:
         FacePostProcessing(const FacePostProcessing<CloudType>& ppm);
 
         //- Construct and return a clone
-        virtual autoPtr<CloudFunctionObject<CloudType> > clone() const
+        virtual autoPtr<CloudFunctionObject<CloudType>> clone() const
         {
-            return autoPtr<CloudFunctionObject<CloudType> >
+            return autoPtr<CloudFunctionObject<CloudType>>
             (
                 new FacePostProcessing<CloudType>(*this)
             );
@@ -179,7 +182,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "FacePostProcessing.C"
+    #include "FacePostProcessing.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

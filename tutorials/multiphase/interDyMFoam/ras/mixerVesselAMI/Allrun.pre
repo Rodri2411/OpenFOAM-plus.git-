@@ -5,7 +5,7 @@ cd ${0%/*} || exit 1    # Run from this directory
 . $WM_PROJECT_DIR/bin/tools/RunFunctions
 
 # Set application name
-application=`getApplication`
+application=$(getApplication)
 
 \rm -rf 0
 
@@ -16,13 +16,10 @@ runApplication snappyHexMesh -overwrite
 runApplication createBaffles -overwrite
 runApplication mergeOrSplitBaffles -split -overwrite
 
-# Get rid of zero faced patches
-runApplication createPatch -overwrite
-
-# Copy fields after meshing to avoind the generation of unnecessary patch fields
-\cp -r 0.org 0
+# Copy fields after meshing to avoid the generation of unnecessary patch fields
+restore0Dir
 
 # Initialize alpha
 runApplication setFields
 
-# ----------------------------------------------------------------- end-of-file
+#------------------------------------------------------------------------------

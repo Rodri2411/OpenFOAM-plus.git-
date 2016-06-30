@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -20,6 +20,12 @@ License
 
     You should have received a copy of the GNU General Public License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
+
+Application
+    setFields
+
+Group
+    grpPreProcessingUtilities
 
 Description
     Set values on a selected set of cells/patchfaces through a dictionary.
@@ -64,7 +70,7 @@ bool setCellFieldType
     );
 
     // Check the "constant" directory
-    if (!fieldHeader.headerOk())
+    if (!fieldHeader.typeHeaderOk<fieldType>(true))
     {
         fieldHeader = IOobject
         (
@@ -76,7 +82,7 @@ bool setCellFieldType
     }
 
     // Check field exists
-    if (fieldHeader.headerOk())
+    if (fieldHeader.typeHeaderOk<fieldType>(true))
     {
         Info<< "    Setting internal values of "
             << fieldHeader.headerClassName()
@@ -208,7 +214,7 @@ bool setFaceFieldType
     );
 
     // Check the "constant" directory
-    if (!fieldHeader.headerOk())
+    if (!fieldHeader.typeHeaderOk<fieldType>(true))
     {
         fieldHeader = IOobject
         (
@@ -220,7 +226,7 @@ bool setFaceFieldType
     }
 
     // Check field exists
-    if (fieldHeader.headerOk())
+    if (fieldHeader.typeHeaderOk<fieldType>(true))
     {
         Info<< "    Setting patchField values of "
             << fieldHeader.headerClassName()
@@ -240,7 +246,7 @@ bool setFaceFieldType
                 field.boundaryField()[patchi].size(),
                 field.boundaryField()[patchi].patch().start()
               - mesh.nInternalFaces()
-            ).assign(field.boundaryField()[patchi]);
+            ) = field.boundaryField()[patchi];
         }
 
         // Override

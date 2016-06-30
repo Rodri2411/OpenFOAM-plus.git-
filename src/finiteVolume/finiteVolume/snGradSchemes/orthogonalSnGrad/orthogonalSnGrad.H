@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::fv::orthogonalSnGrad
+
+Group
+    grpFvSnGradSchemes
 
 Description
     Simple central-difference snGrad scheme without non-orthogonal correction.
@@ -107,7 +110,7 @@ public:
 
         //- Return the explicit correction to the orthogonalSnGrad
         //  for the given field
-        virtual tmp<GeometricField<Type, fvsPatchField, surfaceMesh> >
+        virtual tmp<GeometricField<Type, fvsPatchField, surfaceMesh>>
         correction(const GeometricField<Type, fvPatchField, volMesh>&) const;
 };
 
@@ -123,7 +126,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "orthogonalSnGrad.C"
+    #include "orthogonalSnGrad.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

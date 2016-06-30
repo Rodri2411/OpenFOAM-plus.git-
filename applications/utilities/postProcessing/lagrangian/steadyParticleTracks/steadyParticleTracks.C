@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2014 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,10 @@ License
 
 Application
     steadyParticleTracks
+
+Group
+    grpPostProcessingUtilitie
+
 
 Description
     Generates a VTK file of particle tracks for cases that were computed using
@@ -129,7 +133,7 @@ int main(int argc, char *argv[])
     fileName vtkPath(runTime.path()/"VTK");
     mkDir(vtkPath);
 
-    typedef HashTable<label, labelPair, labelPair::Hash<> > trackTableType;
+    typedef HashTable<label, labelPair, labelPair::Hash<>> trackTableType;
 
     forAll(timeDirs, timeI)
     {
@@ -204,8 +208,8 @@ int main(int argc, char *argv[])
             }
 
             // particle "age" property used to sort the tracks
-            List<SortableList<scalar> > agePerTrack(nTracks);
-            List<List<label> > particleMap(nTracks);
+            List<SortableList<scalar>> agePerTrack(nTracks);
+            List<List<label>> particleMap(nTracks);
 
             forAll(trackLengths, i)
             {

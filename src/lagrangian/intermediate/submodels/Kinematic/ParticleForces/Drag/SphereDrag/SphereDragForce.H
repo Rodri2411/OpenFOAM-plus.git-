@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::SphereDragForce
+
+Group
+    grpLagrangianIntermediateForceSubModels
 
 Description
     Drag model based on assumption of solid spheres
@@ -73,9 +76,9 @@ public:
         SphereDragForce(const SphereDragForce<CloudType>& df);
 
         //- Construct and return a clone
-        virtual autoPtr<ParticleForce<CloudType> > clone() const
+        virtual autoPtr<ParticleForce<CloudType>> clone() const
         {
-            return autoPtr<ParticleForce<CloudType> >
+            return autoPtr<ParticleForce<CloudType>>
             (
                 new SphereDragForce<CloudType>(*this)
             );
@@ -109,7 +112,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "SphereDragForce.C"
+    #include "SphereDragForce.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::SRFForce
+
+Group
+    grpLagrangianIntermediateForceSubModels
 
 Description
     Calculates particle SRF reference frame force
@@ -80,9 +83,9 @@ public:
         SRFForce(const SRFForce& srff);
 
         //- Construct and return a clone
-        virtual autoPtr<ParticleForce<CloudType> > clone() const
+        virtual autoPtr<ParticleForce<CloudType>> clone() const
         {
-            return autoPtr<ParticleForce<CloudType> >
+            return autoPtr<ParticleForce<CloudType>>
             (
                 new ParticleForce<CloudType>(*this)
             );

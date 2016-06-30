@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2013-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2013-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::AveragingMethods::Dual
+
+Group
+    grpLagrangianIntermediateMPPICAveragingMethods
 
 Description
     Dual-mesh lagrangian averaging procedure.
@@ -136,9 +139,9 @@ public:
         Dual(const Dual<Type>& am);
 
         //- Construct and return a clone
-        virtual autoPtr<AveragingMethod<Type> > clone() const
+        virtual autoPtr<AveragingMethod<Type>> clone() const
         {
-            return autoPtr<AveragingMethod<Type> >
+            return autoPtr<AveragingMethod<Type>>
             (
                 new Dual<Type>(*this)
             );
@@ -178,10 +181,10 @@ public:
         void average(const AveragingMethod<scalar>& weight);
 
         //- Return an internal field of the average
-        tmp<Field<Type> > internalField() const;
+        tmp<Field<Type>> internalField() const;
 
         //- Return an internal field of the gradient
-        tmp<Field<TypeGrad> > internalFieldGrad() const;
+        tmp<Field<TypeGrad>> internalFieldGrad() const;
 };
 
 
@@ -193,7 +196,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "Dual.C"
+    #include "Dual.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

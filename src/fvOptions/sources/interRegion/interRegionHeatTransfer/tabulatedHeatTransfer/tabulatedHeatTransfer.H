@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::fv::tabulatedHeatTransfer
+
+Group
+    grpFvOptionsSources
 
 Description
     Tabulated heat transfer model. The heat exchange area per unit volume
@@ -64,7 +67,7 @@ private:
         word UNbrName_;
 
         //- 2D look up table
-        autoPtr<interpolation2DTable<scalar> > hTable_;
+        autoPtr<interpolation2DTable<scalar>> hTable_;
 
         //- Area per unit volume of heat exchanger
         autoPtr<volScalarField> AoV_;

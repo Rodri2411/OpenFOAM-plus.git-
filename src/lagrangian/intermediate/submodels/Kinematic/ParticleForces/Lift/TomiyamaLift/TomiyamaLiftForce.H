@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2012 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2012-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::TomiyamaLiftForce
+
+Group
+    grpLagrangianIntermediateForceSubModels
 
 Description
     Tomiyama particle lift force model applicable to deformable bubbles.
@@ -92,9 +95,9 @@ public:
         TomiyamaLiftForce(const TomiyamaLiftForce& lf);
 
         //- Construct and return a clone
-        virtual autoPtr<ParticleForce<CloudType> > clone() const
+        virtual autoPtr<ParticleForce<CloudType>> clone() const
         {
-            return autoPtr<ParticleForce<CloudType> >
+            return autoPtr<ParticleForce<CloudType>>
             (
                 new TomiyamaLiftForce<CloudType>(*this)
             );

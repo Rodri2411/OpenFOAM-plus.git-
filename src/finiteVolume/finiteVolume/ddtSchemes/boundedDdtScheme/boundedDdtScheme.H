@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2012-2014 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2012-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::fv::boundedDdtScheme
+
+Group
+    grpFvDdtSchemes
 
 Description
     Bounded form of the selected ddt scheme.
@@ -65,7 +68,7 @@ class boundedDdtScheme
 {
     // Private data
 
-        tmp<fv::ddtScheme<Type> > scheme_;
+        tmp<fv::ddtScheme<Type>> scheme_;
 
 
     // Private Member Functions
@@ -104,53 +107,53 @@ public:
             return fv::ddtScheme<Type>::mesh();
         }
 
-        tmp<GeometricField<Type, fvPatchField, volMesh> > fvcDdt
+        tmp<GeometricField<Type, fvPatchField, volMesh>> fvcDdt
         (
             const dimensioned<Type>&
         );
 
-        tmp<GeometricField<Type, fvPatchField, volMesh> > fvcDdt
+        tmp<GeometricField<Type, fvPatchField, volMesh>> fvcDdt
         (
             const GeometricField<Type, fvPatchField, volMesh>&
         );
 
-        tmp<GeometricField<Type, fvPatchField, volMesh> > fvcDdt
+        tmp<GeometricField<Type, fvPatchField, volMesh>> fvcDdt
         (
             const dimensionedScalar&,
             const GeometricField<Type, fvPatchField, volMesh>&
         );
 
-        tmp<GeometricField<Type, fvPatchField, volMesh> > fvcDdt
+        tmp<GeometricField<Type, fvPatchField, volMesh>> fvcDdt
         (
             const volScalarField&,
             const GeometricField<Type, fvPatchField, volMesh>&
         );
 
-        tmp<GeometricField<Type, fvPatchField, volMesh> > fvcDdt
+        tmp<GeometricField<Type, fvPatchField, volMesh>> fvcDdt
         (
             const volScalarField& alpha,
             const volScalarField& rho,
             const GeometricField<Type, fvPatchField, volMesh>& psi
         );
 
-        tmp<fvMatrix<Type> > fvmDdt
+        tmp<fvMatrix<Type>> fvmDdt
         (
             const GeometricField<Type, fvPatchField, volMesh>&
         );
 
-        tmp<fvMatrix<Type> > fvmDdt
+        tmp<fvMatrix<Type>> fvmDdt
         (
             const dimensionedScalar&,
             const GeometricField<Type, fvPatchField, volMesh>&
         );
 
-        tmp<fvMatrix<Type> > fvmDdt
+        tmp<fvMatrix<Type>> fvmDdt
         (
             const volScalarField&,
             const GeometricField<Type, fvPatchField, volMesh>&
         );
 
-        tmp<fvMatrix<Type> > fvmDdt
+        tmp<fvMatrix<Type>> fvmDdt
         (
             const volScalarField& alpha,
             const volScalarField& rho,
@@ -234,7 +237,7 @@ tmp<surfaceScalarField> boundedDdtScheme<scalar>::fvcDdtPhiCorr
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "boundedDdtScheme.C"
+    #include "boundedDdtScheme.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

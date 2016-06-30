@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -85,7 +85,8 @@ void Foam::vtkSetWriter<Type>::write
 
     forAll(valueSetNames, setI)
     {
-        os  << valueSetNames[setI] << ' ' << pTraits<Type>::nComponents << ' '
+        os  << valueSetNames[setI] << ' '
+            << int(pTraits<Type>::nComponents) << ' '
             << points.size() << " float" << nl;
 
         const Field<Type>& fld = *valueSets[setI];
@@ -109,7 +110,7 @@ void Foam::vtkSetWriter<Type>::write
     const bool writeTracks,
     const PtrList<coordSet>& tracks,
     const wordList& valueSetNames,
-    const List<List<Field<Type> > >& valueSets,
+    const List<List<Field<Type>>>& valueSets,
     Ostream& os
 ) const
 {
@@ -169,10 +170,11 @@ void Foam::vtkSetWriter<Type>::write
 
     forAll(valueSetNames, setI)
     {
-        os  << valueSetNames[setI] << ' ' << pTraits<Type>::nComponents << ' '
+        os  << valueSetNames[setI] << ' '
+            << int(pTraits<Type>::nComponents) << ' '
             << nPoints << " float" << nl;
 
-        const List<Field<Type> >& fieldVals = valueSets[setI];
+        const List<Field<Type>>& fieldVals = valueSets[setI];
 
         forAll(fieldVals, i)
         {

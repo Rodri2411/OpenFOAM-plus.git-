@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::HeatTransferModel
+
+Group
+    grpLagrangianIntermediateHeatTransferSubModels
 
 Description
     Templated heat transfer model class
@@ -97,7 +100,7 @@ public:
         HeatTransferModel(const HeatTransferModel<CloudType>& htm);
 
         //- Construct and return a clone
-        virtual autoPtr<HeatTransferModel<CloudType> > clone() const = 0;
+        virtual autoPtr<HeatTransferModel<CloudType>> clone() const = 0;
 
 
     //- Destructor
@@ -105,7 +108,7 @@ public:
 
 
     //- Selector
-    static autoPtr<HeatTransferModel<CloudType> > New
+    static autoPtr<HeatTransferModel<CloudType>> New
     (
         const dictionary& dict,
         CloudType& owner
@@ -147,38 +150,38 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-#define makeHeatTransferModel(CloudType)                                      \
-                                                                              \
-    typedef Foam::CloudType::thermoCloudType thermoCloudType;                 \
-    defineNamedTemplateTypeNameAndDebug                                       \
-    (                                                                         \
-        Foam::HeatTransferModel<thermoCloudType>,                             \
-        0                                                                     \
-    );                                                                        \
-    namespace Foam                                                            \
-    {                                                                         \
-        defineTemplateRunTimeSelectionTable                                   \
-        (                                                                     \
-            HeatTransferModel<thermoCloudType>,                               \
-            dictionary                                                        \
-        );                                                                    \
+#define makeHeatTransferModel(CloudType)                                       \
+                                                                               \
+    typedef Foam::CloudType::thermoCloudType thermoCloudType;                  \
+    defineNamedTemplateTypeNameAndDebug                                        \
+    (                                                                          \
+        Foam::HeatTransferModel<thermoCloudType>,                              \
+        0                                                                      \
+    );                                                                         \
+    namespace Foam                                                             \
+    {                                                                          \
+        defineTemplateRunTimeSelectionTable                                    \
+        (                                                                      \
+            HeatTransferModel<thermoCloudType>,                                \
+            dictionary                                                         \
+        );                                                                     \
     }
 
 
-#define makeHeatTransferModelType(SS, CloudType)                              \
-                                                                              \
-    typedef Foam::CloudType::thermoCloudType thermoCloudType;                 \
-    defineNamedTemplateTypeNameAndDebug(Foam::SS<thermoCloudType>, 0);        \
-                                                                              \
-    Foam::HeatTransferModel<thermoCloudType>::                                \
-        adddictionaryConstructorToTable<Foam::SS<thermoCloudType> >           \
+#define makeHeatTransferModelType(SS, CloudType)                               \
+                                                                               \
+    typedef Foam::CloudType::thermoCloudType thermoCloudType;                  \
+    defineNamedTemplateTypeNameAndDebug(Foam::SS<thermoCloudType>, 0);         \
+                                                                               \
+    Foam::HeatTransferModel<thermoCloudType>::                                 \
+        adddictionaryConstructorToTable<Foam::SS<thermoCloudType>>             \
             add##SS##CloudType##thermoCloudType##ConstructorToTable_;
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "HeatTransferModel.C"
+    #include "HeatTransferModel.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::localMax
+
+Group
+    grpFvSurfaceInterpolationSchemes
 
 Description
     LocalMax-mean differencing scheme class.
@@ -114,7 +117,7 @@ public:
         }
 
         //- Return the face-interpolate of the given cell field
-        virtual tmp<GeometricField<Type, fvsPatchField, surfaceMesh> >
+        virtual tmp<GeometricField<Type, fvsPatchField, surfaceMesh>>
         interpolate
         (
             const GeometricField<Type, fvPatchField, volMesh>& vf
@@ -122,7 +125,7 @@ public:
         {
             const fvMesh& mesh = vf.mesh();
 
-            tmp<GeometricField<Type, fvsPatchField, surfaceMesh> > tvff
+            tmp<GeometricField<Type, fvsPatchField, surfaceMesh>> tvff
             (
                 new GeometricField<Type, fvsPatchField, surfaceMesh>
                 (
@@ -136,7 +139,7 @@ public:
                     vf.dimensions()
                 )
             );
-            GeometricField<Type, fvsPatchField, surfaceMesh>& vff = tvff();
+            GeometricField<Type, fvsPatchField, surfaceMesh>& vff = tvff.ref();
 
             forAll(vff.boundaryField(), patchi)
             {

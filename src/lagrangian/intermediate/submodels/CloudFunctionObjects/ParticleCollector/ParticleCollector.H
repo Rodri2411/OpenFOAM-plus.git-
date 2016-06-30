@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2012-2014 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2012-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::ParticleCollector
+
+Group
+    grpLagrangianIntermediateFunctionObjects
 
 Description
     Function object to collect the parcel mass- and mass flow rate over a
@@ -147,7 +150,7 @@ private:
         // Polygon collector
 
             //- Triangulation of faces
-            List<List<face> > faceTris_;
+            List<List<face>> faceTris_;
 
         // Concentric circles collector
 
@@ -212,7 +215,7 @@ private:
         );
 
         //- Initialise polygon collectors
-        void initPolygons(const List<Field<point> >& polygons);
+        void initPolygons(const List<Field<point>>& polygons);
 
         //- Initialise concentric circle collectors
         void initConcentricCircles();
@@ -260,9 +263,9 @@ public:
         ParticleCollector(const ParticleCollector<CloudType>& pc);
 
         //- Construct and return a clone
-        virtual autoPtr<CloudFunctionObject<CloudType> > clone() const
+        virtual autoPtr<CloudFunctionObject<CloudType>> clone() const
         {
-            return autoPtr<CloudFunctionObject<CloudType> >
+            return autoPtr<CloudFunctionObject<CloudType>>
             (
                 new ParticleCollector<CloudType>(*this)
             );
@@ -306,7 +309,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "ParticleCollector.C"
+    #include "ParticleCollector.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

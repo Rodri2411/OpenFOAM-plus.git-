@@ -24,6 +24,9 @@ License
 Application
     deformedGeom
 
+Group
+    grpMeshManipulationUtilities
+
 Description
     Deforms a polyMesh using a displacement field U and a scaling factor
     supplied as an argument.
@@ -74,7 +77,7 @@ int main(int argc, char *argv[])
         );
 
         // Check U exists
-        if (Uheader.headerOk())
+        if (Uheader.typeHeaderOk<volVectorField>(true))
         {
             Info<< "    Reading U" << endl;
             volVectorField U(Uheader, mesh);

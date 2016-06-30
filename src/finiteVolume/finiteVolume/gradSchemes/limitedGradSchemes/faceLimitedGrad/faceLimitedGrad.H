@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::fv::faceLimitedGrad
+
+Group
+    grpFvGradSchemes
 
 Description
     faceLimitedGrad gradient scheme applied to a runTime selected base gradient
@@ -63,7 +66,7 @@ class faceLimitedGrad
 {
     // Private Data
 
-        tmp<fv::gradScheme<Type> > basicGradScheme_;
+        tmp<fv::gradScheme<Type>> basicGradScheme_;
 
         //- Limiter coefficient
         const scalar k_;

@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2013-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2013-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpcnCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -47,6 +47,8 @@ SourceFiles
 
 namespace Foam
 {
+
+template<class SourcePatch, class TargetPatch> class AMIInterpolation;
 
 /*---------------------------------------------------------------------------*\
                           Class AMIMethod Declaration
@@ -100,7 +102,7 @@ protected:
         labelList srcNonOverlap_;
 
         //- Octree used to find face seeds
-        autoPtr<indexedOctree<treeType> > treePtr_;
+        autoPtr<indexedOctree<treeType>> treePtr_;
 
         //- Face triangulation mode
         const faceAreaIntersect::triangulationMode triMode_;
@@ -238,6 +240,14 @@ public:
                 label srcFaceI = -1,
                 label tgtFaceI = -1
             ) = 0;
+
+            //- Normalise the weight. Can optionally subset addressing
+            //  (e.g. for mapNearest)
+            virtual void normaliseWeights
+            (
+                const bool verbose,
+                AMIInterpolation<SourcePatch, TargetPatch>& inter
+            ) = 0;
 };
 
 
@@ -247,24 +257,24 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-#define makeAMIMethod(AMIType)                                                \
-                                                                              \
-    typedef AMIMethod<AMIType::sourcePatchType,AMIType::targetPatchType>      \
-        AMIMethod##AMIType;                                                   \
-                                                                              \
-    defineNamedTemplateTypeNameAndDebug(AMIMethod##AMIType, 0);               \
+#define makeAMIMethod(AMIType)                                                 \
+                                                                               \
+    typedef AMIMethod<AMIType::sourcePatchType,AMIType::targetPatchType>       \
+        AMIMethod##AMIType;                                                    \
+                                                                               \
+    defineNamedTemplateTypeNameAndDebug(AMIMethod##AMIType, 0);                \
     defineTemplateRunTimeSelectionTable(AMIMethod##AMIType, components);
 
 
-#define makeAMIMethodType(AMIType, Method)                                    \
-                                                                              \
-    typedef Method<AMIType::sourcePatchType,AMIType::targetPatchType>         \
-        Method##AMIType;                                                      \
-                                                                              \
-    defineNamedTemplateTypeNameAndDebug(Method##AMIType, 0);                  \
-                                                                              \
-    AMIMethod<AMIType::sourcePatchType,AMIType::targetPatchType>::            \
-        addcomponentsConstructorToTable<Method##AMIType>                      \
+#define makeAMIMethodType(AMIType, Method)                                     \
+                                                                               \
+    typedef Method<AMIType::sourcePatchType,AMIType::targetPatchType>          \
+        Method##AMIType;                                                       \
+                                                                               \
+    defineNamedTemplateTypeNameAndDebug(Method##AMIType, 0);                   \
+                                                                               \
+    AMIMethod<AMIType::sourcePatchType,AMIType::targetPatchType>::             \
+        addcomponentsConstructorToTable<Method##AMIType>                       \
         add##Method##AMIType##ConstructorToTable_;
 
 
@@ -275,8 +285,8 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "AMIMethod.C"
-#   include "AMIMethodNew.C"
+    #include "AMIMethod.C"
+    #include "AMIMethodNew.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

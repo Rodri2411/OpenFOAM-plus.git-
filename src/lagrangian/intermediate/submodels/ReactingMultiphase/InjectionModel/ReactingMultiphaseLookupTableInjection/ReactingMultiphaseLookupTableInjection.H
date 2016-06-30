@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2013 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::ReactingMultiphaseLookupTableInjection
+
+Group
+    grpLagrangianIntermediateInjectionSubModels
 
 Description
     Particle injection sources read from look-up table. Each row corresponds to
@@ -123,9 +126,9 @@ public:
         );
 
         //- Construct and return a clone
-        virtual autoPtr<InjectionModel<CloudType> > clone() const
+        virtual autoPtr<InjectionModel<CloudType>> clone() const
         {
-            return autoPtr<InjectionModel<CloudType> >
+            return autoPtr<InjectionModel<CloudType>>
             (
                 new ReactingMultiphaseLookupTableInjection<CloudType>(*this)
             );
@@ -190,7 +193,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "ReactingMultiphaseLookupTableInjection.C"
+    #include "ReactingMultiphaseLookupTableInjection.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

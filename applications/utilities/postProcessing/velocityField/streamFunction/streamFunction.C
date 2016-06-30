@@ -24,6 +24,9 @@ License
 Application
     streamFunction
 
+Group
+    grpPostProcessingUtilities
+
 Description
     Calculates and writes the stream function of velocity field U at each
     time.
@@ -86,7 +89,7 @@ int main(int argc, char *argv[])
             IOobject::NO_READ
         );
 
-        if (phiHeader.headerOk())
+        if (phiHeader.typeHeaderOk<surfaceScalarField>(true))
         {
             mesh.readUpdate();
 

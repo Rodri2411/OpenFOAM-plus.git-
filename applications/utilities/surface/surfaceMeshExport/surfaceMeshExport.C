@@ -24,6 +24,9 @@ License
 Application
     surfaceMeshExport
 
+Group
+    grpSurfaceUtilities
+
 Description
     Export from surfMesh to various third-party surface formats with
     optional scaling or transformations (rotate/translate) on a
@@ -174,7 +177,7 @@ int main(int argc, char *argv[])
         }
 
 
-        if (!ioPtr->headerOk())
+        if (!ioPtr->typeHeaderOk<coordinateSystems>(false))
         {
             FatalErrorInFunction
                 << ioPtr->objectPath() << nl

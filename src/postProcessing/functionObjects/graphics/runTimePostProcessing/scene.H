@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::camera
+    Foam::scene
 
 Description
 
@@ -36,7 +36,7 @@ SourceFiles
 
 // OpenFOAM includes
 #include "dictionary.H"
-#include "DataEntry.H"
+#include "Function1.H"
 #include "vector.H"
 #include "point.H"
 #include "boundBox.H"
@@ -99,7 +99,7 @@ protected:
     // Protected data
 
         //- Colours
-        HashPtrTable<DataEntry<vector>, word> colours_;
+        HashPtrTable<Function1<vector>, word> colours_;
 
 
         // Camera settings
@@ -108,19 +108,16 @@ protected:
             modeType mode_;
 
             //- Position
-            autoPtr<DataEntry<point> > cameraPosition_;
+            autoPtr<Function1<point>> cameraPosition_;
 
             //- Focal point
-            autoPtr<DataEntry<point> > cameraFocalPoint_;
+            autoPtr<Function1<point>> cameraFocalPoint_;
 
             //- Up direction
-            autoPtr<DataEntry<vector> > cameraUp_;
-
-            //- Zoom level
-            autoPtr<DataEntry<scalar> > cameraZoom_;
+            autoPtr<Function1<vector>> cameraUp_;
 
             //- View angle
-            autoPtr<DataEntry<scalar> > cameraViewAngle_;
+            autoPtr<Function1<scalar>> cameraViewAngle_;
 
 
         // Scene management
@@ -133,6 +130,9 @@ protected:
 
             //- Number of frames
             label nFrameTotal_;
+
+            //- Start position [0-1]
+            scalar startPosition_;
 
             //- Position [0-1]
             scalar position_;
@@ -149,7 +149,7 @@ protected:
 
     // Protected Member Functions
 
-        void setCamera(vtkRenderer* renderer, const bool override) const;
+        void setCamera(vtkRenderer* renderer) const;
 
         string frameIndexStr() const;
 
@@ -171,7 +171,7 @@ public:
         // Access
 
             //- Return the colours
-            const HashPtrTable<DataEntry<vector>, word>& colours() const;
+            const HashPtrTable<Function1<vector>, word>& colours() const;
 
             //- Return the current frame index
             label frameIndex() const;

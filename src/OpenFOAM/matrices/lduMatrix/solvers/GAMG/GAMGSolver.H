@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2014 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -24,10 +24,13 @@ License
 Class
     Foam::GAMGSolver
 
+Group
+    grpLduMatrixSolvers
+
 Description
     Geometric agglomerated algebraic multigrid solver.
 
-  Characteristics:
+    Characteristics:
       - Requires positive definite, diagonally dominant matrix.
       - Agglomeration algorithm: selectable and optionally cached.
       - Restriction operator: summation.
@@ -65,7 +68,7 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                           Class GAMGSolver Declaration
+                         Class GAMGSolver Declaration
 \*---------------------------------------------------------------------------*/
 
 class GAMGSolver
@@ -116,16 +119,16 @@ class GAMGSolver
         PtrList<lduMatrix> matrixLevels_;
 
         //- Hierarchy of interfaces.
-        PtrList<PtrList<lduInterfaceField> > primitiveInterfaceLevels_;
+        PtrList<PtrList<lduInterfaceField>> primitiveInterfaceLevels_;
 
         //- Hierarchy of interfaces in lduInterfaceFieldPtrs form
         PtrList<lduInterfaceFieldPtrsList> interfaceLevels_;
 
         //- Hierarchy of interface boundary coefficients
-        PtrList<FieldField<Field, scalar> > interfaceLevelsBouCoeffs_;
+        PtrList<FieldField<Field, scalar>> interfaceLevelsBouCoeffs_;
 
         //- Hierarchy of interface internal coefficients
-        PtrList<FieldField<Field, scalar> > interfaceLevelsIntCoeffs_;
+        PtrList<FieldField<Field, scalar>> interfaceLevelsIntCoeffs_;
 
         //- LU decompsed coarsest matrix
         autoPtr<LUscalarMatrix> coarsestLUMatrixPtr_;
@@ -191,10 +194,10 @@ class GAMGSolver
             const lduInterfaceFieldPtrsList& interfaces,
 
             PtrList<lduMatrix>& otherMats,
-            PtrList<FieldField<Field, scalar> >& otherBouCoeffs,
-            PtrList<FieldField<Field, scalar> >& otherIntCoeffs,
+            PtrList<FieldField<Field, scalar>>& otherBouCoeffs,
+            PtrList<FieldField<Field, scalar>>& otherIntCoeffs,
             List<boolList>& otherTransforms,
-            List<List<label> >& otherRanks
+            List<List<label>>& otherRanks
         ) const;
 
         //- Agglomerate processor matrices

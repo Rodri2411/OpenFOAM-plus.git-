@@ -5,33 +5,32 @@ cd ${0%/*} || exit 1    # Run from this directory
 targetType=libso
 . $WM_PROJECT_DIR/wmake/scripts/AllwmakeParseArguments
 
-## get ZOLTAN_ARCH_PATH
-#if settings=`$WM_PROJECT_DIR/bin/foamEtcFile config/zoltan.sh`
+## Get ZOLTAN_ARCH_PATH
+#if settings=`$WM_PROJECT_DIR/bin/foamEtcFile config.sh/zoltan`
 #then
 #    . $settings
 #    echo "using ZOLTAN_ARCH_PATH=$ZOLTAN_ARCH_PATH"
 #else
 #    echo
-#    echo "Error: no config/zoltan.sh settings"
+#    echo "Error: no config.sh/zoltan settings"
 #    echo
 #fi
-
 
 set -x
 
 wmake $targetType renumberMethods
 
-if [ -n "$BOOST_ARCH_PATH" ]
+if [ -d "$BOOST_ARCH_PATH/include/boost" ] || \
+   [ "${BOOST_ARCH_PATH##*-}" = system -a -d /usr/include/boost ]
 then
     wmake $targetType SloanRenumber
 else
     echo
-    echo "Skipping SloanRenumber"
+    echo "Skipping SloanRenumber (no boost)"
     echo
 fi
 
-
-if [ -n "$ZOLTAN_ARCH_PATH" ]
+if [ -d "$ZOLTAN_ARCH_PATH" ]
 then
     wmake $targetType zoltanRenumber
 else
@@ -40,4 +39,4 @@ else
     echo
 fi
 
-# ----------------------------------------------------------------- end-of-file
+#------------------------------------------------------------------------------

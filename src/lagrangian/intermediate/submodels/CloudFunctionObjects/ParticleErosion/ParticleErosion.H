@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2013 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::ParticleErosion
+
+Group
+    grpLagrangianIntermediateFunctionObjects
 
 Description
     Creates particle erosion field, Q
@@ -107,9 +110,9 @@ public:
         ParticleErosion(const ParticleErosion<CloudType>& pe);
 
         //- Construct and return a clone
-        virtual autoPtr<CloudFunctionObject<CloudType> > clone() const
+        virtual autoPtr<CloudFunctionObject<CloudType>> clone() const
         {
-            return autoPtr<CloudFunctionObject<CloudType> >
+            return autoPtr<CloudFunctionObject<CloudType>>
             (
                 new ParticleErosion<CloudType>(*this)
             );
@@ -146,7 +149,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "ParticleErosion.C"
+    #include "ParticleErosion.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

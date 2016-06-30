@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2013 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2013-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -24,7 +24,11 @@ License
 Class
     Foam::PackingModel::NoPacking
 
+Group
+    grpLagrangianIntermediateMPPICPackingSubModels
+
 Description
+    Place holder for the 'none' option
 
 SourceFiles
     NoPacking.C
@@ -66,9 +70,9 @@ public:
         NoPacking(const NoPacking<CloudType>& cm);
 
         //- Construct and return a clone
-        virtual autoPtr<PackingModel<CloudType> > clone() const
+        virtual autoPtr<PackingModel<CloudType>> clone() const
         {
-            return autoPtr<PackingModel<CloudType> >
+            return autoPtr<PackingModel<CloudType>>
             (
                 new NoPacking<CloudType>(*this)
             );
@@ -101,7 +105,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "NoPacking.C"
+    #include "NoPacking.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

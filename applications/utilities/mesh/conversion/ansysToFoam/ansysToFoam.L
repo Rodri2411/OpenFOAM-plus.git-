@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Application
     ansysToFoam
+
+Group
+    grpMeshConversionUtilities
 
 Description
     Converts an ANSYS input mesh file, exported from I-DEAS,
@@ -66,8 +69,8 @@ SLList<label> slCellMap;
 SLList<label> slCellType;
 label maxCelli = 0;
 
-PtrList<SLList<label> > slPatchCells;
-PtrList<SLList<label> > slPatchCellFaces;
+PtrList<SLList<label>> slPatchCells;
+PtrList<SLList<label>> slPatchCellFaces;
 
 // Cell types
 Map<word> cellTypes;
@@ -77,7 +80,7 @@ label currentTypei = -1;
 // Dummy yywrap to keep yylex happy at compile time.
 // It is called by yylex but is not used as the mechanism to change file.
 // See <<EOF>>
-#if YY_FLEX_SUBMINOR_VERSION < 34
+#if YY_FLEX_MINOR_VERSION < 6 && YY_FLEX_SUBMINOR_VERSION < 34
 extern "C" int yywrap()
 #else
 int yyFlexLexer::yywrap()

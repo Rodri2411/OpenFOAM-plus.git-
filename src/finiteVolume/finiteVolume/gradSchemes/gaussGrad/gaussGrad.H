@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::fv::gaussGrad
+
+Group
+    grpFvGradSchemes
 
 Description
     Basic second-order gradient scheme using face-interpolation
@@ -61,7 +64,7 @@ class gaussGrad
 {
     // Private data
 
-        tmp<surfaceInterpolationScheme<Type> > tinterpScheme_;
+        tmp<surfaceInterpolationScheme<Type>> tinterpScheme_;
 
 
     // Private Member Functions
@@ -97,7 +100,7 @@ public:
             if (is.eof())
             {
                 tinterpScheme_ =
-                    tmp<surfaceInterpolationScheme<Type> >
+                    tmp<surfaceInterpolationScheme<Type>>
                     (
                         new linear<Type>(mesh)
                     );
@@ -105,7 +108,7 @@ public:
             else
             {
                 tinterpScheme_ =
-                    tmp<surfaceInterpolationScheme<Type> >
+                    tmp<surfaceInterpolationScheme<Type>>
                     (
                         surfaceInterpolationScheme<Type>::New(mesh, is)
                     );
@@ -162,7 +165,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "gaussGrad.C"
+    #include "gaussGrad.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -24,6 +24,9 @@ License
 Application
     Pe
 
+Group
+    grpPostProcessingUtilities
+
 Description
     Calculates the Peclet number Pe from the flux phi and writes the maximum
     value, the surfaceScalarField Pef and volScalarField Pe.
@@ -55,7 +58,7 @@ void Foam::calc(const argList& args, const Time& runTime, const fvMesh& mesh)
         IOobject::MUST_READ
     );
 
-    if (phiHeader.headerOk())
+    if (phiHeader.typeHeaderOk<surfaceScalarField>(true))
     {
         autoPtr<surfaceScalarField> PePtr;
 
@@ -87,7 +90,7 @@ void Foam::calc(const argList& args, const Time& runTime, const fvMesh& mesh)
 
         if (phi.dimensions() == dimensionSet(0, 3, -1, 0, 0))
         {
-            if (turbulencePropertiesHeader.headerOk())
+            if (turbulencePropertiesHeader.typeHeaderOk<IOdictionary>(true))
             {
                 singlePhaseTransportModel laminarTransport(U, phi);
 
@@ -144,7 +147,8 @@ void Foam::calc(const argList& args, const Time& runTime, const fvMesh& mesh)
                         (
                             "Pef",
                             runTime.timeName(),
-                            mesh
+                            mesh,
+                            IOobject::NO_READ
                         ),
                         mag(phi)
                        /(
@@ -158,7 +162,7 @@ void Foam::calc(const argList& args, const Time& runTime, const fvMesh& mesh)
         }
         else if (phi.dimensions() == dimensionSet(1, 0, -1, 0, 0))
         {
-            if (turbulencePropertiesHeader.headerOk())
+            if (turbulencePropertiesHeader.typeHeaderOk<IOdictionary>(true))
             {
                 autoPtr<fluidThermo> thermo(fluidThermo::New(mesh));
 

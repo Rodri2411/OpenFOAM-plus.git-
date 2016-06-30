@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Application
     setSet
+
+Group
+    grpMeshManipulationUtilities
 
 Description
     Manipulate a cell/face/point/ set or zone interactively.
@@ -847,12 +850,12 @@ int main(int argc, char *argv[])
     printAllSets(mesh, Info);
 
     // Read history if interactive
-#   ifdef HAS_READLINE
+    #ifdef HAS_READLINE
     if (!batch && !read_history((runTime.path()/historyFile).c_str()))
     {
         Info<< "Successfully read history from " << historyFile << endl;
     }
-#   endif
+    #endif
 
 
     // Exit status
@@ -929,7 +932,7 @@ int main(int argc, char *argv[])
             }
             else
             {
-#               ifdef HAS_READLINE
+                #ifdef HAS_READLINE
                 {
                     char* linePtr = readline("readline>");
 
@@ -950,7 +953,7 @@ int main(int argc, char *argv[])
                         break;
                     }
                 }
-#               else
+                #else
                 {
                     if (!std::cin.good())
                     {
@@ -961,7 +964,7 @@ int main(int argc, char *argv[])
                     Info<< "Command>" << flush;
                     std::getline(std::cin, rawLine);
                 }
-#               endif
+                #endif
             }
 
             // Strip off anything after #
@@ -1029,7 +1032,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    Info<< "\nEnd\n" << endl;
+    Info<< "End\n" << endl;
 
     return status;
 }

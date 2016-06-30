@@ -18,6 +18,9 @@ fluxSummary/fluxSummaryFunctionObject.C
 Lambda2/Lambda2.C
 Lambda2/Lambda2FunctionObject.C
 
+mapFields/mapFields.C
+mapFields/mapFieldsFunctionObject.C
+
 Peclet/Peclet.C
 Peclet/PecletFunctionObject.C
 
@@ -26,6 +29,9 @@ pressureTools/pressureToolsFunctionObject.C
 
 Q/Q.C
 Q/QFunctionObject.C
+
+residuals/residuals.C
+residuals/residualsFunctionObject.C
 
 scalarTransport/scalarTransport.C
 scalarTransport/scalarTransportFunctionObject.C
@@ -46,5 +52,7 @@ yPlus/yPlus.C
 yPlus/yPlusFunctionObject.C
 
 setTimeStep/setTimeStepFunctionObject.C
+
+reactionSensitivityAnalysis/reactionsSensitivityAnalysisFunctionObject.C
 
 LIB = $(FOAM_LIBBIN)/libutilityFunctionObjects

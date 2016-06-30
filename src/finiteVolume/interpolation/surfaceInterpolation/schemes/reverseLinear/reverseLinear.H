@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::reverseLinear
+
+Group
+    grpFvSurfaceInterpolationSchemes
 
 Description
     Inversed weight central-differencing interpolation scheme class.
@@ -46,7 +49,7 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                           Class reverseLinear Declaration
+                       Class reverseLinear Declaration
 \*---------------------------------------------------------------------------*/
 
 template<class Type>
@@ -122,7 +125,8 @@ public:
                     dimless
                 )
             );
-            surfaceScalarField& reverseLinearWeights = treverseLinearWeights();
+            surfaceScalarField& reverseLinearWeights =
+                treverseLinearWeights.ref();
 
             reverseLinearWeights.internalField() =
                 1.0 - cdWeights.internalField();

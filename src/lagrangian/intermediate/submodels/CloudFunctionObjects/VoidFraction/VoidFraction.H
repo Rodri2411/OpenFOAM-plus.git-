@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2014 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::VoidFraction
+
+Group
+    grpLagrangianIntermediateFunctionObjects
 
 Description
     Creates particle void fraction field on carrier phase
@@ -92,9 +95,9 @@ public:
         VoidFraction(const VoidFraction<CloudType>& vf);
 
         //- Construct and return a clone
-        virtual autoPtr<CloudFunctionObject<CloudType> > clone() const
+        virtual autoPtr<CloudFunctionObject<CloudType>> clone() const
         {
-            return autoPtr<CloudFunctionObject<CloudType> >
+            return autoPtr<CloudFunctionObject<CloudType>>
             (
                 new VoidFraction<CloudType>(*this)
             );
@@ -134,7 +137,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "VoidFraction.C"
+    #include "VoidFraction.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

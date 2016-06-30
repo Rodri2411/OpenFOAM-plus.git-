@@ -24,6 +24,9 @@ License
 Application
     mapFieldsPar
 
+Group
+    grpPreProcessingUtilities
+
 Description
     Maps volume fields from one mesh to another, reading and
     interpolating all fields present in the time directory of both cases.
@@ -118,34 +121,6 @@ void mapSubMesh
             noLagrangian
         );
     }
-}
-
-
-wordList addProcessorPatches
-(
-    const fvMesh& meshTarget,
-    const wordList& cuttingPatches
-)
-{
-    // Add the processor patches to the cutting list
-    HashSet<word> cuttingPatchTable;
-    forAll(cuttingPatches, i)
-    {
-        cuttingPatchTable.insert(cuttingPatches[i]);
-    }
-
-    const polyBoundaryMesh& pbm = meshTarget.boundaryMesh();
-
-    forAll(pbm, patchI)
-    {
-        if (isA<processorPolyPatch>(pbm[patchI]))
-        {
-            const word& patchName = pbm[patchI].name();
-            cuttingPatchTable.insert(patchName);
-        }
-    }
-
-    return cuttingPatchTable.toc();
 }
 
 
@@ -369,7 +344,7 @@ int main(int argc, char *argv[])
             meshSource,
             meshTarget,
             patchMap,
-            addProcessorPatches(meshTarget, cuttingPatches),
+            cuttingPatches,
             mapMethod,
             patchMapMethod,
             subtract,

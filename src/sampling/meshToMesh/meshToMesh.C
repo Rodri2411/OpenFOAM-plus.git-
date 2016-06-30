@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2012-2014 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2012-2016 OpenFOAM Foundation
      \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
@@ -581,7 +581,7 @@ void Foam::meshToMesh::calculate(const word& methodName)
         );
 
         // cache maps and reset addresses
-        List<Map<label> > cMap;
+        List<Map<label>> cMap;
         srcMapPtr_.reset
         (
             new mapDistribute(globalSrcCells, tgtToSrcCellAddr_, cMap)
@@ -713,7 +713,11 @@ void Foam::meshToMesh::constructNoCuttingPatches
         forAll(srcBM, patchI)
         {
             const polyPatch& pp = srcBM[patchI];
-            if (!polyPatch::constraintType(pp.type()))
+
+            // We want to map all the global patches, including constraint
+            // patches (since they might have mappable properties, e.g.
+            // jumpCyclic). We'll fix the value afterwards.
+            if (!isA<processorPolyPatch>(pp))
             {
                 srcPatchID.append(pp.index());
 
@@ -764,7 +768,10 @@ void Foam::meshToMesh::constructFromCuttingPatches
 
         const polyPatch& srcPatch = srcRegion_.boundaryMesh()[srcPatchName];
 
-        if (!polyPatch::constraintType(srcPatch.type()))
+        // We want to map all the global patches, including constraint
+        // patches (since they might have mappable properties, e.g.
+        // jumpCyclic). We'll fix the value afterwards.
+        if (!isA<processorPolyPatch>(srcPatch))
         {
             const polyPatch& tgtPatch = tgtRegion_.boundaryMesh()[tgtPatchName];
 

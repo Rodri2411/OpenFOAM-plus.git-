@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2013 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::ThermoLookupTableInjection
+
+Group
+    grpLagrangianIntermediateInjectionSubModels
 
 Description
     Particle injection sources read from look-up table. Each row corresponds to
@@ -120,9 +123,9 @@ public:
         );
 
         //- Construct and return a clone using supplied owner cloud
-        virtual autoPtr<InjectionModel<CloudType> > clone() const
+        virtual autoPtr<InjectionModel<CloudType>> clone() const
         {
-            return autoPtr<InjectionModel<CloudType> >
+            return autoPtr<InjectionModel<CloudType>>
             (
                 new ThermoLookupTableInjection<CloudType>(*this)
             );
@@ -191,7 +194,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "ThermoLookupTableInjection.C"
+    #include "ThermoLookupTableInjection.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

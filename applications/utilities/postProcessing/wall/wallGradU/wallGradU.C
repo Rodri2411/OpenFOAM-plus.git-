@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,6 +23,9 @@ License
 
 Application
     wallGradU
+
+Group
+    grpPostProcessingUtilities
 
 Description
     Calculates and writes the gradient of U at the wall.
@@ -60,7 +63,7 @@ int main(int argc, char *argv[])
         );
 
         // Check U exists
-        if (Uheader.headerOk())
+        if (Uheader.typeHeaderOk<volVectorField>(true))
         {
             mesh.readUpdate();
 
@@ -84,7 +87,7 @@ int main(int argc, char *argv[])
                 (
                     "wallGradU",
                     U.dimensions()/dimLength,
-                    vector::zero
+                    Zero
                 )
             );
 
@@ -109,7 +112,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    Info<< "End" << endl;
+    Info<< "End\n" << endl;
 
     return 0;
 }

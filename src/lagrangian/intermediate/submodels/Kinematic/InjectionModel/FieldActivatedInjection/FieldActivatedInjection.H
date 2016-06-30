@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2012 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -24,20 +24,22 @@ License
 Class
     Foam::FieldActivatedInjection
 
+Group
+    grpLagrangianIntermediateInjectionSubModels
+
 Description
     Conditional injection at specified positions.
 
-    For injection to be allowed, the equality must be satisfied:
-
+    \li for injection to be allowed
+        \verbatim
         factor*referenceField[cellI] >= thresholdField[cellI]
+        \endverbatim
+        where:
+        - \c referenceField is the field used to supply the look-up values
+        - \c thresholdField supplies the values beyond which the injection is
+            permitted.
 
-        Where:
-        - referenceField is the field used to supply the look-up values
-        - thresholdField supplies the values beyond which the injection is
-            permitted
-
-    Note:
-    - Limited to a user-supplied number of injections per injector location
+    \li limited to a user-supllied number of injections per injector location
 
 SourceFiles
     FieldActivatedInjection.C
@@ -50,6 +52,7 @@ SourceFiles
 #include "InjectionModel.H"
 #include "distributionModel.H"
 #include "volFieldsFwd.H"
+#include "globalIOFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -85,7 +88,7 @@ class FieldActivatedInjection
             const word positionsFile_;
 
             //- Field of injector (x,y,z) positions
-            vectorIOField positions_;
+            vectorGlobalIOField positions_;
 
             //- List of cell labels corresponding to injector positions
             labelList injectorCells_;
@@ -136,9 +139,9 @@ public:
         FieldActivatedInjection(const FieldActivatedInjection<CloudType>& im);
 
         //- Construct and return a clone
-        virtual autoPtr<InjectionModel<CloudType> > clone() const
+        virtual autoPtr<InjectionModel<CloudType>> clone() const
         {
-            return autoPtr<InjectionModel<CloudType> >
+            return autoPtr<InjectionModel<CloudType>>
             (
                 new FieldActivatedInjection<CloudType>(*this)
             );
@@ -203,7 +206,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "FieldActivatedInjection.C"
+    #include "FieldActivatedInjection.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

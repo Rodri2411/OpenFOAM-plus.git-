@@ -5,7 +5,7 @@ cd ${0%/*} || exit 1    # Run from this directory
 . $WM_PROJECT_DIR/bin/tools/RunFunctions
 
 # Get application directory
-application=`getApplication`
+application=$(getApplication)
 
 runApplication blockMesh
 
@@ -14,9 +14,9 @@ runApplication blockMesh
 
 #- Run parallel
 runApplication decomposePar -cellDist
-runParallel $application 4
+runParallel $application
 runApplication reconstructPar
 
 runApplication postChannel
 
-# ----------------------------------------------------------------- end-of-file
+#------------------------------------------------------------------------------

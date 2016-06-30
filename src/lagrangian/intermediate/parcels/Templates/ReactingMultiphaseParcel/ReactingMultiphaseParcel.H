@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -23,6 +23,9 @@ License
 
 Class
     Foam::ReactingMultiphaseParcel
+
+Group
+    grpLagrangianIntermediateParcels
 
 Description
     Multiphase variant of the reacting parcel class with one/two-way coupling
@@ -66,13 +69,11 @@ class ReactingMultiphaseParcel
 :
     public ParcelType
 {
-    // Private data
-
-        //- Size in bytes of the fields
-        static const std::size_t sizeofFields_;
-
-
 public:
+
+    //- Size in bytes of the fields
+    static const std::size_t sizeofFields;
+
 
     // IDs of phases in ReacingParcel phase list (Y)
 
@@ -267,6 +268,15 @@ public:
           + " nSolid(Y1..YN)"
         );
 
+        //- String representation of property types
+        AddToPropertyTypes
+        (
+            ParcelType,
+            " List<scalar>"
+          + " List<scalar>"
+          + " List<Scalar>"
+        );
+
 
     // Constructors
 
@@ -348,12 +358,12 @@ public:
                 mesh_(mesh)
             {}
 
-            autoPtr<ReactingMultiphaseParcel<ParcelType> > operator()
+            autoPtr<ReactingMultiphaseParcel<ParcelType>> operator()
             (
                 Istream& is
             ) const
             {
-                return autoPtr<ReactingMultiphaseParcel<ParcelType> >
+                return autoPtr<ReactingMultiphaseParcel<ParcelType>>
                 (
                     new ReactingMultiphaseParcel<ParcelType>(mesh_, is, true)
                 );
