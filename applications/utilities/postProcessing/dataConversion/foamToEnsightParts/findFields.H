@@ -8,7 +8,10 @@ HashTable<HashTable<word>> cloudFields;
 
 if (timeDirs.size())
 {
-    IOobjectList objs(mesh, timeDirs.last().name());
+    const fileName& cloudPrefix = regionPrefix/cloud::prefix;
+    const word& lastTimeName = timeDirs.last().name();
+
+    IOobjectList objs(mesh, lastTimeName);
 
     forAllConstIter(IOobjectList, objs, fieldIter)
     {
@@ -16,13 +19,9 @@ if (timeDirs.size())
         const word& fieldName = obj.name();
         const word& fieldType = obj.headerClassName();
 
-        if (fieldName.size() > 2 && fieldName(fieldName.size()-2, 2) == "_0")
+        if (volFieldTypes.found(fieldType) && !fieldName.endsWith("_0"))
         {
-            // ignore _0 fields
-        }
-        else if (volFieldTypes.found(fieldType))
-        {
-            // simply ignore types that we don't handle
+            // ignore types that we don't handle, and ignore _0 fields
             volumeFields.insert(fieldName, fieldType);
         }
     }
@@ -31,14 +30,17 @@ if (timeDirs.size())
     //
     // now check for lagrangian/<cloudName>
     //
-    fileNameList cloudDirs = readDir
-    (
-        runTime.path()
-      / timeDirs.last().name()
-      / regionPrefix
-      / cloud::prefix,
-        fileName::DIRECTORY
-    );
+    fileNameList cloudDirs;
+    if (!noLagrangian)
+    {
+        cloudDirs = readDir
+        (
+            runTime.path()
+          / lastTimeName
+          / cloudPrefix,
+            fileName::DIRECTORY
+        );
+    }
 
     forAll(cloudDirs, cloudI)
     {
@@ -54,8 +56,8 @@ if (timeDirs.size())
         IOobjectList objs
         (
             mesh,
-            timeDirs.last().name(),
-            cloud::prefix/cloudName
+            lastTimeName,
+            cloudPrefix/cloudName
         );
 
         bool hasPositions = false;
@@ -89,17 +91,27 @@ if (timeDirs.size())
     //
     for (label i=0; volumeFields.size() && i < timeDirs.size(); ++i)
     {
-        IOobjectList objs(mesh, timeDirs[i].name());
+        const word& timeName = timeDirs[i].name();
 
-        forAllIter(HashTable<word>, volumeFields, fieldIter)
+        // Everything is potentially missing, unless we discover otherwise
+        wordHashSet missing(volumeFields);
+
+        // Avoid  -->>  IOobjectList objs(mesh, timeName);  <<--
+        // Too much overhead when done so frequently.
+
+        fileNameList contents = readDir
+        (
+            runTime.path()
+          / timeName,
+            fileName::FILE
+        );
+
+        forAll(contents, fileI)
         {
-            const word& fieldName = fieldIter.key();
-
-            if (!objs.found(fieldName))
-            {
-                volumeFields.erase(fieldIter);
-            }
+            missing.erase(contents[fileI].name());
         }
+
+        volumeFields.erase(missing);
     }
 }
 

@@ -27,7 +27,7 @@ License
 #include "products.H"
 #include "VectorSpaceOps.H"
 #include "ops.H"
-#include "StaticAssert.H"
+#include <type_traits>
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -79,7 +79,11 @@ VectorSpace<Form, Cmpt, Ncmpts>::ConstBlock<SubVector, BStart>::ConstBlock
 :
     vs_(vs)
 {
-    StaticAssert(vsType::nComponents >= BStart + nComponents);
+    static_assert
+    (
+        vsType::nComponents >= BStart + nComponents,
+        "Requested block size > VectorSpace size"
+    );
 }
 
 
@@ -235,11 +239,11 @@ inline const Cmpt&
 VectorSpace<Form, Cmpt, Ncmpts>::
 ConstBlock<SubVector, BStart>::operator[]
 (
-    const direction i
+    const direction d
 ) const
 {
     #ifdef FULLDEBUG
-    if (i >= Ncmpts)
+    if (d >= Ncmpts)
     {
         FatalErrorInFunction
             << "index out of range"
@@ -247,7 +251,7 @@ ConstBlock<SubVector, BStart>::operator[]
     }
     #endif
 
-    return vs_[BStart + i];
+    return vs_[BStart + d];
 }
 
 
@@ -265,14 +269,14 @@ ConstBlock<SubVector, BStart>::operator()
     if (i >= Ncmpts)
     {
         FatalErrorInFunction
-            << "index out of range"
+            << "index " << i << " out of range"
             << abort(FatalError);
     }
 
     if (j != 0)
     {
         FatalErrorInFunction
-            << "j != 0"
+            << "index " << j << " != 0"
             << abort(FatalError);
     }
     #endif
@@ -530,6 +534,18 @@ inline Cmpt cmptProduct
     Cmpt product = vs.v_[0];
     VectorSpaceOps<Ncmpts,1>::SeqOp(product, vs, multiplyEqOp<Cmpt>());
     return product;
+}
+
+
+template<class Form, class Cmpt, direction Ncmpts>
+inline Form cmptSqr
+(
+    const VectorSpace<Form, Cmpt, Ncmpts>& vs
+)
+{
+    Form v;
+    VectorSpaceOps<Ncmpts,0>::eqOp(v, vs, eqSqrOp<Cmpt>());
+    return v;
 }
 
 

@@ -29,29 +29,28 @@ Group
 
 Description
     This boundary conditon averages the field over the "outlet" patch specified
-    by name "outletPatchName" and applies this as the uniform value of the
+    by name "outletPatch" and applies this as the uniform value of the
     field over this patch.
 
-    \heading Patch usage
-
+Usage
     \table
         Property        | Description             | Required    | Default value
-        outletPatchName | name of outlet patch    | yes         |
+        outletPatch     | name of outlet patch    | yes         |
         phi             | flux field name         | no          | phi
     \endtable
 
     Example of the boundary condition specification:
     \verbatim
-    myPatch
+    <patchName>
     {
         type            outletMappedUniformInlet;
-        outletPatchName aPatch;
+        outletPatch     aPatch;
         phi             phi;
         value           uniform 0;
     }
     \endverbatim
 
-SeeAlso
+See also
     Foam::fixedValueFvPatchField
 
 SourceFiles

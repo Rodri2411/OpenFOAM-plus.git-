@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -31,8 +31,7 @@ Description
     This boundary condition provides a grey-diffuse condition for radiative
     heat flux, \c Qr, for use with the view factor model
 
-    \heading Patch usage
-
+Usage
     \table
         Property     | Description             | Required    | Default value
         Qro          | external radiative heat flux | yes    |
@@ -40,7 +39,7 @@ Description
 
     Example of the boundary condition specification:
     \verbatim
-    myPatch
+    <patchName>
     {
         type            greyDiffusiveRadiationViewFactor;
         Qro             uniform 0;
@@ -48,7 +47,7 @@ Description
     }
     \endverbatim
 
-SeeAlso
+See also
     Foam::radiation::radiationModel
     Foam::radiation::viewFactor
     Foam::radiationCoupledBase
@@ -171,6 +170,22 @@ public:
 
             //- Update the coefficients associated with the patch field
             virtual void updateCoeffs();
+
+
+        // Mapping functions
+
+            //- Map (and resize as needed) from self given a mapping object
+            virtual void autoMap
+            (
+                const fvPatchFieldMapper&
+            );
+
+            //- Reverse map the given fvPatchField onto this fvPatchField
+            virtual void rmap
+            (
+                const fvPatchScalarField&,
+                const labelList&
+            );
 
 
         // I-O

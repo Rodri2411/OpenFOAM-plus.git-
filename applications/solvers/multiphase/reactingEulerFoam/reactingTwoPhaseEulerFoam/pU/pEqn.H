@@ -83,8 +83,10 @@ tmp<surfaceScalarField> phiF2;
 // --- Pressure corrector loop
 while (pimple.correct())
 {
-    // Update continuity errors due to temperature changes
-    fluid.correct();
+    volScalarField rho("rho", fluid.rho());
+
+    // Correct p_rgh for consistency with p and the updated densities
+    p_rgh = p - rho*gh;
 
     // Correct fixed-flux BCs to be consistent with the velocity BCs
     MRF.correctBoundaryFlux(U1, phi1);
@@ -116,9 +118,6 @@ while (pimple.correct())
            *rho2*U2.oldTime()/runTime.deltaT()
         );
 
-    // Mean density for buoyancy force and p_rgh -> p
-    volScalarField rho("rho", fluid.rho());
-
     surfaceScalarField ghSnGradRho
     (
         "ghSnGradRho",
@@ -149,17 +148,25 @@ while (pimple.correct())
     surfaceScalarField phiCorrCoeff1(pos(alphaf1Bar - 0.99));
     surfaceScalarField phiCorrCoeff2(pos(0.01 - alphaf1Bar));
 
-    forAll(mesh.boundary(), patchi)
     {
-        // Set ddtPhiCorr to 0 on non-coupled boundaries
-        if
-        (
-            !mesh.boundary()[patchi].coupled()
-         || isA<cyclicAMIFvPatch>(mesh.boundary()[patchi])
-        )
+        surfaceScalarField::Boundary& phiCorrCoeff1Bf =
+            phiCorrCoeff1.boundaryFieldRef();
+
+        surfaceScalarField::Boundary& phiCorrCoeff2Bf =
+            phiCorrCoeff2.boundaryFieldRef();
+
+        forAll(mesh.boundary(), patchi)
         {
-            phiCorrCoeff1.boundaryField()[patchi] = 0;
-            phiCorrCoeff2.boundaryField()[patchi] = 0;
+            // Set ddtPhiCorr to 0 on non-coupled boundaries
+            if
+            (
+               !mesh.boundary()[patchi].coupled()
+             || isA<cyclicAMIFvPatch>(mesh.boundary()[patchi])
+            )
+            {
+                phiCorrCoeff1Bf[patchi] = 0;
+                phiCorrCoeff2Bf[patchi] = 0;
+            }
         }
     }
 
@@ -215,7 +222,7 @@ while (pimple.correct())
     // Update the fixedFluxPressure BCs to ensure flux consistency
     setSnGrad<fixedFluxPressureFvPatchScalarField>
     (
-        p_rgh.boundaryField(),
+        p_rgh.boundaryFieldRef(),
         (
             phiHbyA.boundaryField()
           - (

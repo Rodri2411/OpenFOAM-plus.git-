@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -139,6 +139,27 @@ Foam::mappedFieldFvPatchField<Type>::mappedFieldFvPatchField
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class Type>
+void Foam::mappedFieldFvPatchField<Type>::autoMap
+(
+    const fvPatchFieldMapper& m
+)
+{
+    mappedPatchBase::clearOut();
+}
+
+
+template<class Type>
+void Foam::mappedFieldFvPatchField<Type>::rmap
+(
+    const fvPatchField<Type>& ptf,
+    const labelList& addr
+)
+{
+    mappedPatchBase::clearOut();
+}
+
+
+template<class Type>
 void Foam::mappedFieldFvPatchField<Type>::updateCoeffs()
 {
     if (this->updated())
@@ -150,7 +171,7 @@ void Foam::mappedFieldFvPatchField<Type>::updateCoeffs()
 
     if (debug)
     {
-        Info<< "operating on field:" << this->dimensionedInternalField().name()
+        Info<< "operating on field:" << this->internalField().name()
             << " patch:" << this->patch().name()
             << "  avg:" << gAverage(*this)
             << "  min:" << gMin(*this)

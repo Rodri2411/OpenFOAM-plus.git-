@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -50,7 +50,6 @@ bool Foam::fileFormats::OFFsurfaceFormat<Face>::read
     const fileName& filename
 )
 {
-    const bool mustTriangulate = this->isTri();
     this->clear();
 
     IFstream is(filename);
@@ -82,7 +81,7 @@ bool Foam::fileFormats::OFFsurfaceFormat<Face>::read
 
     // Read points
     pointField pointLst(nPoints);
-    forAll(pointLst, pointI)
+    forAll(pointLst, pointi)
     {
         scalar x, y, z;
         line = this->getLineNoComment(is);
@@ -90,14 +89,14 @@ bool Foam::fileFormats::OFFsurfaceFormat<Face>::read
             IStringStream lineStream(line);
             lineStream >> x >> y >> z;
         }
-        pointLst[pointI] = point(x, y, z);
+        pointLst[pointi] = point(x, y, z);
     }
 
     // Read faces - ignore optional zone information
     // use a DynamicList for possible on-the-fly triangulation
     DynamicList<Face>  dynFaces(nElems);
 
-    for (label faceI = 0; faceI < nElems; ++faceI)
+    for (label facei = 0; facei < nElems; ++facei)
     {
         line = this->getLineNoComment(is);
 
@@ -116,7 +115,7 @@ bool Foam::fileFormats::OFFsurfaceFormat<Face>::read
 
             labelUList& f = static_cast<labelUList&>(verts);
 
-            if (mustTriangulate && f.size() > 3)
+            if (MeshedSurface<Face>::isTri() && f.size() > 3)
             {
                 // simple face triangulation about f[0]
                 // cannot use face::triangulation (points may be incomplete)
@@ -149,7 +148,7 @@ void Foam::fileFormats::OFFsurfaceFormat<Face>::write
 )
 {
     const pointField& pointLst = surf.points();
-    const List<Face>&  faceLst = surf.faces();
+    const List<Face>&  faceLst = surf.surfFaces();
     const List<label>& faceMap = surf.faceMap();
     const List<surfZone>& zoneLst = surf.surfZones();
 
@@ -201,7 +200,7 @@ void Foam::fileFormats::OFFsurfaceFormat<Face>::write
 
         if (surf.useFaceMap())
         {
-            forAll(zoneLst[zoneI], localFaceI)
+            forAll(zoneLst[zoneI], localFacei)
             {
                 const Face& f = faceLst[faceMap[faceIndex++]];
 
@@ -217,7 +216,7 @@ void Foam::fileFormats::OFFsurfaceFormat<Face>::write
         }
         else
         {
-            forAll(zoneLst[zoneI], localFaceI)
+            forAll(zoneLst[zoneI], localFacei)
             {
                 const Face& f = faceLst[faceIndex++];
 

@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright 2015-2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -63,6 +63,7 @@ Description
 #include "decompositionModel.H"
 #include "fvMeshTools.H"
 #include "profiling.H"
+#include "processorMeshes.H"
 
 using namespace Foam;
 
@@ -91,39 +92,39 @@ autoPtr<refinementSurfaces> createRefinementSurfaces
     autoPtr<refinementSurfaces> surfacePtr;
 
     // Count number of surfaces.
-    label surfI = 0;
-    forAll(allGeometry.names(), geomI)
+    label surfi = 0;
+    forAll(allGeometry.names(), geomi)
     {
-        const word& geomName = allGeometry.names()[geomI];
+        const word& geomName = allGeometry.names()[geomi];
 
         if (surfacesDict.found(geomName))
         {
-            surfI++;
+            surfi++;
         }
     }
 
-    labelList surfaces(surfI);
-    wordList names(surfI);
-    PtrList<surfaceZonesInfo> surfZones(surfI);
+    labelList surfaces(surfi);
+    wordList names(surfi);
+    PtrList<surfaceZonesInfo> surfZones(surfi);
 
-    labelList regionOffset(surfI);
+    labelList regionOffset(surfi);
 
-    labelList globalMinLevel(surfI, 0);
-    labelList globalMaxLevel(surfI, 0);
-    labelList globalLevelIncr(surfI, 0);
-    PtrList<dictionary> globalPatchInfo(surfI);
-    List<Map<label>> regionMinLevel(surfI);
-    List<Map<label>> regionMaxLevel(surfI);
-    List<Map<label>> regionLevelIncr(surfI);
-    List<Map<scalar>> regionAngle(surfI);
-    List<Map<autoPtr<dictionary>>> regionPatchInfo(surfI);
+    labelList globalMinLevel(surfi, 0);
+    labelList globalMaxLevel(surfi, 0);
+    labelList globalLevelIncr(surfi, 0);
+    PtrList<dictionary> globalPatchInfo(surfi);
+    List<Map<label>> regionMinLevel(surfi);
+    List<Map<label>> regionMaxLevel(surfi);
+    List<Map<label>> regionLevelIncr(surfi);
+    List<Map<scalar>> regionAngle(surfi);
+    List<Map<autoPtr<dictionary>>> regionPatchInfo(surfi);
 
     HashSet<word> unmatchedKeys(surfacesDict.toc());
 
-    surfI = 0;
-    forAll(allGeometry.names(), geomI)
+    surfi = 0;
+    forAll(allGeometry.names(), geomi)
     {
-        const word& geomName = allGeometry.names()[geomI];
+        const word& geomName = allGeometry.names()[geomi];
 
         const entry* ePtr = surfacesDict.lookupEntryPtr(geomName, false, true);
 
@@ -132,10 +133,10 @@ autoPtr<refinementSurfaces> createRefinementSurfaces
             const dictionary& shapeDict = ePtr->dict();
             unmatchedKeys.erase(ePtr->keyword());
 
-            names[surfI] = geomName;
-            surfaces[surfI] = geomI;
+            names[surfi] = geomName;
+            surfaces[surfi] = geomi;
 
-            const searchableSurface& surface = allGeometry[geomI];
+            const searchableSurface& surface = allGeometry[geomi];
 
             // Find the index in shapeControlDict
             // Invert surfaceCellSize to get the refinementLevel
@@ -154,12 +155,12 @@ autoPtr<refinementSurfaces> createRefinementSurfaces
                 surfaceCellSize
             );
 
-            globalMinLevel[surfI] = refLevel;
-            globalMaxLevel[surfI] = refLevel;
-            globalLevelIncr[surfI] = gapLevelIncrement;
+            globalMinLevel[surfi] = refLevel;
+            globalMaxLevel[surfi] = refLevel;
+            globalLevelIncr[surfi] = gapLevelIncrement;
 
             // Surface zones
-            surfZones.set(surfI, new surfaceZonesInfo(surface, shapeDict));
+            surfZones.set(surfi, new surfaceZonesInfo(surface, shapeDict));
 
 
             // Global perpendicular angle
@@ -167,7 +168,7 @@ autoPtr<refinementSurfaces> createRefinementSurfaces
             {
                 globalPatchInfo.set
                 (
-                    surfI,
+                    surfi,
                     shapeDict.subDict("patchInfo").clone()
                 );
             }
@@ -179,23 +180,23 @@ autoPtr<refinementSurfaces> createRefinementSurfaces
             {
                 const dictionary& regionsDict = shapeDict.subDict("regions");
                 const wordList& regionNames =
-                    allGeometry[surfaces[surfI]].regions();
+                    allGeometry[surfaces[surfi]].regions();
 
-                forAll(regionNames, regionI)
+                forAll(regionNames, regioni)
                 {
-                    if (regionsDict.found(regionNames[regionI]))
+                    if (regionsDict.found(regionNames[regioni]))
                     {
                         // Get the dictionary for region
                         const dictionary& regionDict = regionsDict.subDict
                         (
-                            regionNames[regionI]
+                            regionNames[regioni]
                         );
 
                         if (regionDict.found("patchInfo"))
                         {
-                            regionPatchInfo[surfI].insert
+                            regionPatchInfo[surfi].insert
                             (
-                                regionI,
+                                regioni,
                                 regionDict.subDict("patchInfo").clone()
                             );
                         }
@@ -209,16 +210,16 @@ autoPtr<refinementSurfaces> createRefinementSurfaces
                 const dictionary& shapeControlRegionsDict =
                     shapeDict.subDict("regions");
                 const wordList& regionNames =
-                    allGeometry[surfaces[surfI]].regions();
+                    allGeometry[surfaces[surfi]].regions();
 
-                forAll(regionNames, regionI)
+                forAll(regionNames, regioni)
                 {
-                    if (shapeControlRegionsDict.found(regionNames[regionI]))
+                    if (shapeControlRegionsDict.found(regionNames[regioni]))
                     {
                         const dictionary& shapeControlRegionDict =
                             shapeControlRegionsDict.subDict
                             (
-                                regionNames[regionI]
+                                regionNames[regioni]
                             );
 
                         const word scsFuncName =
@@ -244,24 +245,24 @@ autoPtr<refinementSurfaces> createRefinementSurfaces
                             surfaceCellSize
                         );
 
-                        regionMinLevel[surfI].insert(regionI, refLevel);
-                        regionMaxLevel[surfI].insert(regionI, refLevel);
-                        regionLevelIncr[surfI].insert(regionI, 0);
+                        regionMinLevel[surfi].insert(regioni, refLevel);
+                        regionMaxLevel[surfi].insert(regioni, refLevel);
+                        regionLevelIncr[surfi].insert(regioni, 0);
                     }
                 }
             }
 
-            surfI++;
+            surfi++;
         }
     }
 
     // Calculate local to global region offset
     label nRegions = 0;
 
-    forAll(surfaces, surfI)
+    forAll(surfaces, surfi)
     {
-        regionOffset[surfI] = nRegions;
-        nRegions += allGeometry[surfaces[surfI]].regions().size();
+        regionOffset[surfi] = nRegions;
+        nRegions += allGeometry[surfaces[surfi]].regions().size();
     }
 
     // Rework surface specific information into information per global region
@@ -270,47 +271,47 @@ autoPtr<refinementSurfaces> createRefinementSurfaces
     labelList gapLevel(nRegions, -1);
     PtrList<dictionary> patchInfo(nRegions);
 
-    forAll(globalMinLevel, surfI)
+    forAll(globalMinLevel, surfi)
     {
-        label nRegions = allGeometry[surfaces[surfI]].regions().size();
+        label nRegions = allGeometry[surfaces[surfi]].regions().size();
 
         // Initialise to global (i.e. per surface)
         for (label i = 0; i < nRegions; i++)
         {
-            label globalRegionI = regionOffset[surfI] + i;
-            minLevel[globalRegionI] = globalMinLevel[surfI];
-            maxLevel[globalRegionI] = globalMaxLevel[surfI];
-            gapLevel[globalRegionI] =
-                maxLevel[globalRegionI]
-              + globalLevelIncr[surfI];
+            label globalRegioni = regionOffset[surfi] + i;
+            minLevel[globalRegioni] = globalMinLevel[surfi];
+            maxLevel[globalRegioni] = globalMaxLevel[surfi];
+            gapLevel[globalRegioni] =
+                maxLevel[globalRegioni]
+              + globalLevelIncr[surfi];
 
-            if (globalPatchInfo.set(surfI))
+            if (globalPatchInfo.set(surfi))
             {
                 patchInfo.set
                 (
-                    globalRegionI,
-                    globalPatchInfo[surfI].clone()
+                    globalRegioni,
+                    globalPatchInfo[surfi].clone()
                 );
             }
         }
 
         // Overwrite with region specific information
-        forAllConstIter(Map<label>, regionMinLevel[surfI], iter)
+        forAllConstIter(Map<label>, regionMinLevel[surfi], iter)
         {
-            label globalRegionI = regionOffset[surfI] + iter.key();
+            label globalRegioni = regionOffset[surfi] + iter.key();
 
-            minLevel[globalRegionI] = iter();
-            maxLevel[globalRegionI] = regionMaxLevel[surfI][iter.key()];
-            gapLevel[globalRegionI] =
-                maxLevel[globalRegionI]
-              + regionLevelIncr[surfI][iter.key()];
+            minLevel[globalRegioni] = iter();
+            maxLevel[globalRegioni] = regionMaxLevel[surfi][iter.key()];
+            gapLevel[globalRegioni] =
+                maxLevel[globalRegioni]
+              + regionLevelIncr[surfi][iter.key()];
         }
 
-        const Map<autoPtr<dictionary>>& localInfo = regionPatchInfo[surfI];
+        const Map<autoPtr<dictionary>>& localInfo = regionPatchInfo[surfi];
         forAllConstIter(Map<autoPtr<dictionary>>, localInfo, iter)
         {
-            label globalRegionI = regionOffset[surfI] + iter.key();
-            patchInfo.set(globalRegionI, iter()().clone());
+            label globalRegioni = regionOffset[surfi] + iter.key();
+            patchInfo.set(globalRegioni, iter()().clone());
         }
     }
 
@@ -336,13 +337,13 @@ autoPtr<refinementSurfaces> createRefinementSurfaces
 
     // Determine maximum region name length
     label maxLen = 0;
-    forAll(rf.surfaces(), surfI)
+    forAll(rf.surfaces(), surfi)
     {
-        label geomI = rf.surfaces()[surfI];
-        const wordList& regionNames = allGeometry.regionNames()[geomI];
-        forAll(regionNames, regionI)
+        label geomi = rf.surfaces()[surfi];
+        const wordList& regionNames = allGeometry.regionNames()[geomi];
+        forAll(regionNames, regioni)
         {
-            maxLen = Foam::max(maxLen, label(regionNames[regionI].size()));
+            maxLen = Foam::max(maxLen, label(regionNames[regioni].size()));
         }
     }
 
@@ -356,22 +357,22 @@ autoPtr<refinementSurfaces> createRefinementSurfaces
         << setw(10) << "---------"
         << setw(10) << "---------" << endl;
 
-    forAll(rf.surfaces(), surfI)
+    forAll(rf.surfaces(), surfi)
     {
-        label geomI = rf.surfaces()[surfI];
+        label geomi = rf.surfaces()[surfi];
 
-        Info<< rf.names()[surfI] << ':' << nl;
+        Info<< rf.names()[surfi] << ':' << nl;
 
-        const wordList& regionNames = allGeometry.regionNames()[geomI];
+        const wordList& regionNames = allGeometry.regionNames()[geomi];
 
-        forAll(regionNames, regionI)
+        forAll(regionNames, regioni)
         {
-            label globalI = rf.globalRegion(surfI, regionI);
+            label globali = rf.globalRegion(surfi, regioni);
 
-            Info<< setw(maxLen) << regionNames[regionI]
-                << setw(10) << rf.minLevel()[globalI]
-                << setw(10) << rf.maxLevel()[globalI]
-                << setw(10) << rf.gapLevel()[globalI] << endl;
+            Info<< setw(maxLen) << regionNames[regioni]
+                << setw(10) << rf.minLevel()[globali]
+                << setw(10) << rf.maxLevel()[globali]
+                << setw(10) << rf.gapLevel()[globali] << endl;
         }
     }
 
@@ -417,10 +418,10 @@ void extractSurface
     labelList patchToCompactZone(bMesh.size(), -1);
     forAllConstIter(HashTable<label>, compactZoneID, iter)
     {
-        label patchI = bMesh.findPatchID(iter.key());
-        if (patchI != -1)
+        label patchi = bMesh.findPatchID(iter.key());
+        if (patchi != -1)
         {
-            patchToCompactZone[patchI] = iter();
+            patchToCompactZone[patchi] = iter();
         }
     }
 
@@ -577,6 +578,73 @@ scalar getMergeDistance(const polyMesh& mesh, const scalar mergeTol)
 }
 
 
+void removeZeroSizedPatches(fvMesh& mesh)
+{
+    // Remove any zero-sized ones. Assumes
+    // - processor patches are already only there if needed
+    // - all other patches are available on all processors
+    // - but coupled ones might still be needed, even if zero-size
+    //   (e.g. processorCyclic)
+    // See also logic in createPatch.
+    const polyBoundaryMesh& pbm = mesh.boundaryMesh();
+
+    labelList oldToNew(pbm.size(), -1);
+    label newPatchi = 0;
+    forAll(pbm, patchi)
+    {
+        const polyPatch& pp = pbm[patchi];
+
+        if (!isA<processorPolyPatch>(pp))
+        {
+            if
+            (
+                isA<coupledPolyPatch>(pp)
+             || returnReduce(pp.size(), sumOp<label>())
+            )
+            {
+                // Coupled (and unknown size) or uncoupled and used
+                oldToNew[patchi] = newPatchi++;
+            }
+        }
+    }
+
+    forAll(pbm, patchi)
+    {
+        const polyPatch& pp = pbm[patchi];
+
+        if (isA<processorPolyPatch>(pp))
+        {
+            oldToNew[patchi] = newPatchi++;
+        }
+    }
+
+
+    const label nKeepPatches = newPatchi;
+
+    // Shuffle unused ones to end
+    if (nKeepPatches != pbm.size())
+    {
+        Info<< endl
+            << "Removing zero-sized patches:" << endl << incrIndent;
+
+        forAll(oldToNew, patchi)
+        {
+            if (oldToNew[patchi] == -1)
+            {
+                Info<< indent << pbm[patchi].name()
+                    << " type " << pbm[patchi].type()
+                    << " at position " << patchi << endl;
+                oldToNew[patchi] = newPatchi++;
+            }
+        }
+        Info<< decrIndent;
+
+        fvMeshTools::reorderPatches(mesh, oldToNew, nKeepPatches, true);
+        Info<< endl;
+    }
+}
+
+
 // Write mesh and additional information
 void writeMesh
 (
@@ -590,6 +658,13 @@ void writeMesh
 
     meshRefiner.printMeshInfo(debugLevel, msg);
     Info<< "Writing mesh to time " << meshRefiner.timeName() << endl;
+
+    processorMeshes::removeFiles(mesh);
+    if (!debugLevel)
+    {
+        topoSet::removeFiles(mesh);
+    }
+    refinementHistory::removeFiles(mesh);
 
     //label flag = meshRefinement::MESH;
     //if (writeLevel)
@@ -613,6 +688,7 @@ void writeMesh
 
 int main(int argc, char *argv[])
 {
+    #include "addRegionOption.H"
     #include "addOverwriteOption.H"
     Foam::argList::addBoolOption
     (
@@ -728,7 +804,7 @@ int main(int argc, char *argv[])
 //        {
 //            hexRef8 meshCutter(meshPtr(), false);
 //
-//            for (label refineI = 0; refineI < initialRefLevels; ++refineI)
+//            for (label refinei = 0; refinei < initialRefLevels; ++refinei)
 //            {
 //                // Mesh changing engine.
 //                polyTopoChange meshMod(meshPtr(), true);
@@ -750,7 +826,7 @@ int main(int argc, char *argv[])
 //                // Delete mesh volumes.
 //                meshPtr().clearOut();
 //
-//                Info<< "Refinement Iteration " << refineI + 1
+//                Info<< "Refinement Iteration " << refinei + 1
 //                    << ", Mesh size = " << meshPtr().nCells() << endl;
 //            }
 //        }
@@ -762,20 +838,29 @@ int main(int argc, char *argv[])
 //    }
 //    else
     {
-        Foam::Info
-            << "Create mesh for time = "
-            << runTime.timeName() << Foam::nl << Foam::endl;
+        word regionName;
+        if (args.optionReadIfPresent("region", regionName))
+        {
+            Info<< "Create mesh " << regionName << " for time = "
+                << runTime.timeName() << nl << endl;
+        }
+        else
+        {
+            regionName = fvMesh::defaultRegion;
+            Info<< "Create mesh for time = "
+                << runTime.timeName() << nl << endl;
+        }
 
         meshPtr.set
         (
             new fvMesh
             (
-                Foam::IOobject
+                IOobject
                 (
-                    Foam::fvMesh::defaultRegion,
+                    regionName,
                     runTime.timeName(),
                     runTime,
-                    Foam::IOobject::MUST_READ
+                    IOobject::MUST_READ
                 )
             )
         );
@@ -821,41 +906,45 @@ int main(int argc, char *argv[])
 
     const Switch keepPatches(meshDict.lookupOrDefault("keepPatches", false));
 
+
     // Read decomposePar dictionary
     dictionary decomposeDict;
+    if (Pstream::parRun())
     {
-        if (Pstream::parRun())
-        {
-            fileName decompDictFile;
-            if (args.optionReadIfPresent("decomposeParDict", decompDictFile))
-            {
-                if (isDir(decompDictFile))
-                {
-                    decompDictFile = decompDictFile/"decomposeParDict";
-                }
-            }
+        fileName decompDictFile;
+        args.optionReadIfPresent("decomposeParDict", decompDictFile);
 
-            decomposeDict = IOdictionary
+        // A demand-driven decompositionMethod can have issues finding
+        // an alternative decomposeParDict location.
+
+        IOdictionary* dictPtr = new IOdictionary
+        (
+            decompositionModel::selectIO
             (
-                decompositionModel::selectIO
+                IOobject
                 (
-                    IOobject
-                    (
-                        "decomposeParDict",
-                        runTime.system(),
-                        mesh,
-                        IOobject::MUST_READ_IF_MODIFIED,
-                        IOobject::NO_WRITE
-                    ),
-                    decompDictFile
-                )
-            );
-        }
-        else
-        {
-            decomposeDict.add("method", "none");
-            decomposeDict.add("numberOfSubdomains", 1);
-        }
+                    "decomposeParDict",
+                    runTime.system(),
+                    runTime,
+                    IOobject::MUST_READ,
+                    IOobject::NO_WRITE
+                ),
+                decompDictFile
+            )
+        );
+
+        // Store it on the object registry, but to be found it must also
+        // have the expected "decomposeParDict" name.
+
+        dictPtr->rename("decomposeParDict");
+        runTime.store(dictPtr);
+
+        decomposeDict = *dictPtr;
+    }
+    else
+    {
+        decomposeDict.add("method", "none");
+        decomposeDict.add("numberOfSubdomains", 1);
     }
 
 
@@ -1039,24 +1128,24 @@ int main(int argc, char *argv[])
 
         const PtrList<dictionary>& patchInfo = surfaces.patchInfo();
         const labelList& surfaceGeometry = surfaces.surfaces();
-        forAll(surfaceGeometry, surfI)
+        forAll(surfaceGeometry, surfi)
         {
-            label geomI = surfaceGeometry[surfI];
-            const wordList& regNames = allGeometry.regionNames()[geomI];
+            label geomi = surfaceGeometry[surfi];
+            const wordList& regNames = allGeometry.regionNames()[geomi];
 
-            patchTypes[geomI].setSize(regNames.size());
-            forAll(regNames, regionI)
+            patchTypes[geomi].setSize(regNames.size());
+            forAll(regNames, regioni)
             {
-                label globalRegionI = surfaces.globalRegion(surfI, regionI);
+                label globalRegioni = surfaces.globalRegion(surfi, regioni);
 
-                if (patchInfo.set(globalRegionI))
+                if (patchInfo.set(globalRegioni))
                 {
-                    patchTypes[geomI][regionI] =
-                        word(patchInfo[globalRegionI].lookup("type"));
+                    patchTypes[geomi][regioni] =
+                        word(patchInfo[globalRegioni].lookup("type"));
                 }
                 else
                 {
-                    patchTypes[geomI][regionI] = wallPolyPatch::typeName;
+                    patchTypes[geomi][regioni] = wallPolyPatch::typeName;
                 }
             }
         }
@@ -1230,31 +1319,31 @@ int main(int argc, char *argv[])
         const PtrList<dictionary>& surfacePatchInfo = surfaces.patchInfo();
         const polyBoundaryMesh& pbm = mesh.boundaryMesh();
 
-        forAll(surfaceGeometry, surfI)
+        forAll(surfaceGeometry, surfi)
         {
-            label geomI = surfaceGeometry[surfI];
+            label geomi = surfaceGeometry[surfi];
 
-            const wordList& regNames = allGeometry.regionNames()[geomI];
+            const wordList& regNames = allGeometry.regionNames()[geomi];
 
-            Info<< surfaces.names()[surfI] << ':' << nl << nl;
+            Info<< surfaces.names()[surfi] << ':' << nl << nl;
 
-            const word& fzName = surfaces.surfZones()[surfI].faceZoneName();
+            const word& fzName = surfaces.surfZones()[surfi].faceZoneName();
 
             if (fzName.empty())
             {
                 // 'Normal' surface
                 forAll(regNames, i)
                 {
-                    label globalRegionI = surfaces.globalRegion(surfI, i);
+                    label globalRegioni = surfaces.globalRegion(surfi, i);
 
-                    label patchI;
+                    label patchi;
 
-                    if (surfacePatchInfo.set(globalRegionI))
+                    if (surfacePatchInfo.set(globalRegioni))
                     {
-                        patchI = meshRefiner.addMeshedPatch
+                        patchi = meshRefiner.addMeshedPatch
                         (
                             regNames[i],
-                            surfacePatchInfo[globalRegionI]
+                            surfacePatchInfo[globalRegioni]
                         );
                     }
                     else
@@ -1262,7 +1351,7 @@ int main(int argc, char *argv[])
                         dictionary patchInfo;
                         patchInfo.set("type", wallPolyPatch::typeName);
 
-                        patchI = meshRefiner.addMeshedPatch
+                        patchi = meshRefiner.addMeshedPatch
                         (
                             regNames[i],
                             patchInfo
@@ -1270,12 +1359,12 @@ int main(int argc, char *argv[])
                     }
 
                     Info<< setf(ios_base::left)
-                        << setw(6) << patchI
-                        << setw(20) << pbm[patchI].type()
+                        << setw(6) << patchi
+                        << setw(20) << pbm[patchi].type()
                         << setw(30) << regNames[i] << nl;
 
-                    globalToMasterPatch[globalRegionI] = patchI;
-                    globalToSlavePatch[globalRegionI] = patchI;
+                    globalToMasterPatch[globalRegioni] = patchi;
+                    globalToSlavePatch[globalRegioni] = patchi;
                 }
             }
             else
@@ -1283,18 +1372,18 @@ int main(int argc, char *argv[])
                 // Zoned surface
                 forAll(regNames, i)
                 {
-                    label globalRegionI = surfaces.globalRegion(surfI, i);
+                    label globalRegioni = surfaces.globalRegion(surfi, i);
 
                     // Add master side patch
                     {
-                        label patchI;
+                        label patchi;
 
-                        if (surfacePatchInfo.set(globalRegionI))
+                        if (surfacePatchInfo.set(globalRegioni))
                         {
-                            patchI = meshRefiner.addMeshedPatch
+                            patchi = meshRefiner.addMeshedPatch
                             (
                                 regNames[i],
-                                surfacePatchInfo[globalRegionI]
+                                surfacePatchInfo[globalRegioni]
                             );
                         }
                         else
@@ -1302,7 +1391,7 @@ int main(int argc, char *argv[])
                             dictionary patchInfo;
                             patchInfo.set("type", wallPolyPatch::typeName);
 
-                            patchI = meshRefiner.addMeshedPatch
+                            patchi = meshRefiner.addMeshedPatch
                             (
                                 regNames[i],
                                 patchInfo
@@ -1310,23 +1399,23 @@ int main(int argc, char *argv[])
                         }
 
                         Info<< setf(ios_base::left)
-                            << setw(6) << patchI
-                            << setw(20) << pbm[patchI].type()
+                            << setw(6) << patchi
+                            << setw(20) << pbm[patchi].type()
                             << setw(30) << regNames[i] << nl;
 
-                        globalToMasterPatch[globalRegionI] = patchI;
+                        globalToMasterPatch[globalRegioni] = patchi;
                     }
                     // Add slave side patch
                     {
                         const word slaveName = regNames[i] + "_slave";
-                        label patchI;
+                        label patchi;
 
-                        if (surfacePatchInfo.set(globalRegionI))
+                        if (surfacePatchInfo.set(globalRegioni))
                         {
-                            patchI = meshRefiner.addMeshedPatch
+                            patchi = meshRefiner.addMeshedPatch
                             (
                                 slaveName,
-                                surfacePatchInfo[globalRegionI]
+                                surfacePatchInfo[globalRegioni]
                             );
                         }
                         else
@@ -1334,7 +1423,7 @@ int main(int argc, char *argv[])
                             dictionary patchInfo;
                             patchInfo.set("type", wallPolyPatch::typeName);
 
-                            patchI = meshRefiner.addMeshedPatch
+                            patchi = meshRefiner.addMeshedPatch
                             (
                                 slaveName,
                                 patchInfo
@@ -1342,11 +1431,11 @@ int main(int argc, char *argv[])
                         }
 
                         Info<< setf(ios_base::left)
-                            << setw(6) << patchI
-                            << setw(20) << pbm[patchI].type()
+                            << setw(6) << patchi
+                            << setw(20) << pbm[patchi].type()
                             << setw(30) << slaveName << nl;
 
-                        globalToSlavePatch[globalRegionI] = patchI;
+                        globalToSlavePatch[globalRegioni] = patchi;
                     }
                 }
 
@@ -1354,14 +1443,14 @@ int main(int argc, char *argv[])
                 // region in surface for patch for zoneing
                 if (regNames.size())
                 {
-                    label globalRegionI = surfaces.globalRegion(surfI, 0);
+                    label globalRegioni = surfaces.globalRegion(surfi, 0);
 
                     meshRefiner.addFaceZone
                     (
                         fzName,
-                        pbm[globalToMasterPatch[globalRegionI]].name(),
-                        pbm[globalToSlavePatch[globalRegionI]].name(),
-                        surfaces.surfZones()[surfI].faceType()
+                        pbm[globalToMasterPatch[globalRegioni]].name(),
+                        pbm[globalToSlavePatch[globalRegioni]].name(),
+                        surfaces.surfZones()[surfi].faceType()
                     );
                 }
             }
@@ -1378,9 +1467,9 @@ int main(int argc, char *argv[])
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     HashTable<Pair<word>> faceZoneToPatches;
-    forAll(mesh.faceZones(), zoneI)
+    forAll(mesh.faceZones(), zonei)
     {
-        const word& fzName = mesh.faceZones()[zoneI].name();
+        const word& fzName = mesh.faceZones()[zonei].name();
 
         label mpI, spI;
         surfaceZonesInfo::faceZoneType fzType;
@@ -1703,13 +1792,13 @@ int main(int argc, char *argv[])
         }
         else
         {
-            forAll(bMesh, patchI)
+            forAll(bMesh, patchi)
             {
-                const polyPatch& patch = bMesh[patchI];
+                const polyPatch& patch = bMesh[patchi];
 
                 if (!isA<processorPolyPatch>(patch))
                 {
-                    includePatches.insert(patchI);
+                    includePatches.insert(patchi);
                 }
             }
         }

@@ -70,14 +70,14 @@ void Foam::meshToMesh0::calcAddressing()
     // set reference to boundary
     const polyPatchList& patchesFrom = fromMesh_.boundaryMesh();
 
-    forAll(patchesFrom, patchI)
+    forAll(patchesFrom, patchi)
     {
         // get reference to cells next to the boundary
-        const labelUList& bCells = patchesFrom[patchI].faceCells();
+        const labelUList& bCells = patchesFrom[patchi].faceCells();
 
-        forAll(bCells, faceI)
+        forAll(bCells, facei)
         {
-            boundaryCell[bCells[faceI]] = true;
+            boundaryCell[bCells[facei]] = true;
         }
     }
 
@@ -156,6 +156,7 @@ void Foam::meshToMesh0::calcAddressing()
                     << "Source patch " << fromPatch.name()
                     << " has no faces. Not performing mapping for it."
                     << endl;
+                boundaryAddressing_[patchi].setSize(toPatch.size());
                 boundaryAddressing_[patchi] = -1;
             }
             else

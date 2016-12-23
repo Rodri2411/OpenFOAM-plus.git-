@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -98,13 +98,11 @@ tmp<volScalarField> SpalartAllmarasIDDES<BasicTurbulenceModel>::rd
             scalar(10)
         )
     );
-    tr.ref().boundaryField() == 0.0;
+    tr.ref().boundaryFieldRef() == 0.0;
 
     return tr;
 }
 
-
-// * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * //
 
 template<class BasicTurbulenceModel>
 tmp<volScalarField> SpalartAllmarasIDDES<BasicTurbulenceModel>::fdt
@@ -115,6 +113,8 @@ tmp<volScalarField> SpalartAllmarasIDDES<BasicTurbulenceModel>::fdt
     return 1 - tanh(pow(Cdt1_*rd(this->nut_, magGradU), Cdt2_));
 }
 
+
+// * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * //
 
 template<class BasicTurbulenceModel>
 tmp<volScalarField> SpalartAllmarasIDDES<BasicTurbulenceModel>::dTilda

@@ -133,7 +133,7 @@ public:
 
 
     //- Helper class for finding nearest
-    // Nearest:
+    //  Nearest:
     //  - point+local index
     //  - sqr(distance)
     //  - processor
@@ -414,7 +414,7 @@ public:
             static pointIndexHit facePoint
             (
                 const polyMesh&,
-                const label faceI,
+                const label facei,
                 const polyMesh::cellDecomposition
             );
 

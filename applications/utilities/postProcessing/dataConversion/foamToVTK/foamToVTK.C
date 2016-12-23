@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -30,73 +30,77 @@ Group
 Description
     Legacy VTK file format writer.
 
-    - handles volScalar, volVector, pointScalar, pointVector, surfaceScalar
+    - Handles volFields, pointFields, surfaceScalarField, surfaceVectorField
       fields.
-    - mesh topo changes.
-    - both ascii and binary.
-    - single time step writing.
-    - write subset only.
-    - automatic decomposition of cells; polygons on boundary undecomposed since
+    - Mesh topo changes.
+    - Both ascii and binary.
+    - Single time step writing.
+    - Write subset only.
+    - Automatic decomposition of cells; polygons on boundary undecomposed since
       handled by vtk.
 
 Usage
+    \b foamToVTK [OPTION]
 
-    - foamToVTK [OPTION]
+    Options:
+      - \par -ascii
+        Write VTK data in ASCII format instead of binary.
 
-    \param -ascii \n
-    Write VTK data in ASCII format instead of binary.
+      - \par -mesh \<name\>
+        Use a different mesh name (instead of -region)
 
-    \param -mesh \<name\>\n
-    Use a different mesh name (instead of -region)
+      - \par -fields \<fields\>
+        Convert selected fields only. For example,
+        \verbatim
+          -fields "( p T U )"
+        \endverbatim
+        The quoting is required to avoid shell expansions and to pass the
+        information as a single argument.
 
-    \param -fields \<fields\>\n
-    Convert selected fields only. For example,
-    \verbatim
-         -fields "( p T U )"
-    \endverbatim
-    The quoting is required to avoid shell expansions and to pass the
-    information as a single argument.
+      - \par -surfaceFields
+        Write surfaceScalarFields (e.g., phi)
 
-    \param -surfaceFields \n
-    Write surfaceScalarFields (e.g., phi)
+      - \par -cellSet \<name\>
+      - \par -faceSet \<name\>
 
-    \param -cellSet \<name\>\n
-    \param -faceSet \<name\>\n
-    \param -pointSet \<name\>\n
-    Restrict conversion to the cellSet, faceSet or pointSet.
+      - \par -pointSet \<name\>
+        Restrict conversion to the cellSet, faceSet or pointSet.
 
-    \param -nearCellValue \n
-    Output cell value on patches instead of patch value itself
+      - \par -nearCellValue
+        Output cell value on patches instead of patch value itself
 
-    \param -noInternal \n
-    Do not generate file for mesh, only for patches
+      - \par -noInternal
+        Do not generate file for mesh, only for patches
 
-    \param -noPointValues \n
-    No pointFields
+      - \par -noLagrangian
+        Suppress writing lagrangian positions and fields.
 
-    \param -noFaceZones \n
-    No faceZones
+      - \par -noPointValues
+        No pointFields
 
-    \param -noLinks \n
-    (in parallel) do not link processor files to master
+      - \par -noFaceZones
+        No faceZones
 
-    \param poly \n
-    write polyhedral cells without tet/pyramid decomposition
+      - \par -noLinks
+        (in parallel) do not link processor files to master
 
-    \param -allPatches \n
-    Combine all patches into a single file
+      - \par poly
+        write polyhedral cells without tet/pyramid decomposition
 
-    \param -excludePatches \<patchNames\>\n
-    Specify patches (wildcards) to exclude. For example,
-    \verbatim
-         -excludePatches '( inlet_1 inlet_2 "proc.*")'
-    \endverbatim
-    The quoting is required to avoid shell expansions and to pass the
-    information as a single argument. The double quotes denote a regular
-    expression.
+      - \par -allPatches
+        Combine all patches into a single file
 
-    \param -useTimeName \n
-    use the time index in the VTK file name instead of the time index
+      - \par -excludePatches \<patchNames\>
+        Specify patches (wildcards) to exclude. For example,
+        \verbatim
+          -excludePatches '( inlet_1 inlet_2 "proc.*")'
+        \endverbatim
+        The quoting is required to avoid shell expansions and to pass the
+        information as a single argument. The double quotes denote a regular
+        expression.
+
+      - \par -useTimeName
+        use the time index in the VTK file name instead of the time index
 
 Note
     mesh subset is handled by vtkMesh. Slight inconsistency in
@@ -108,7 +112,7 @@ Note
     whole-mesh values onto the subset patch.
 
 Note
-    new file format: \n
+    \par new file format:
     no automatic timestep recognition.
     However can have .pvd file format which refers to time simulation
     if XML *.vtu files are available:
@@ -168,7 +172,7 @@ Note
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 template<class GeoField>
-void print(const char* msg, Ostream& os, const PtrList<GeoField>& flds)
+void print(const char* msg, Ostream& os, const PtrList<const GeoField>& flds)
 {
     if (flds.size())
     {
@@ -195,35 +199,35 @@ void print(Ostream& os, const wordList& flds)
 labelList getSelectedPatches
 (
     const polyBoundaryMesh& patches,
-    const List<wordRe>& excludePatches  //HashSet<word>& excludePatches
+    const List<wordRe>& excludePatches
 )
 {
     DynamicList<label> patchIDs(patches.size());
 
     Info<< "Combining patches:" << endl;
 
-    forAll(patches, patchI)
+    forAll(patches, patchi)
     {
-        const polyPatch& pp = patches[patchI];
+        const polyPatch& pp = patches[patchi];
 
         if
         (
             isType<emptyPolyPatch>(pp)
-            || (Pstream::parRun() && isType<processorPolyPatch>(pp))
+         || (Pstream::parRun() && isType<processorPolyPatch>(pp))
         )
         {
-            Info<< "    discarding empty/processor patch " << patchI
+            Info<< "    discarding empty/processor patch " << patchi
                 << " " << pp.name() << endl;
         }
         else if (findStrings(excludePatches, pp.name()))
         {
-            Info<< "    excluding patch " << patchI
+            Info<< "    excluding patch " << patchi
                 << " " << pp.name() << endl;
         }
         else
         {
-            patchIDs.append(patchI);
-            Info<< "    patch " << patchI << " " << pp.name() << endl;
+            patchIDs.append(patchi);
+            Info<< "    patch " << patchi << " " << pp.name() << endl;
         }
     }
     return patchIDs.shrink();
@@ -292,6 +296,12 @@ int main(int argc, char *argv[])
     );
     argList::addBoolOption
     (
+        "noLagrangian",
+        "suppress writing lagrangian positions and fields"
+    );
+
+    argList::addBoolOption
+    (
         "noPointValues",
         "no pointFields"
     );
@@ -336,6 +346,7 @@ int main(int argc, char *argv[])
     const bool doLinks         = !args.optionFound("noLinks");
     bool binary                = !args.optionFound("ascii");
     const bool useTimeName     = args.optionFound("useTimeName");
+    const bool noLagrangian    = args.optionFound("noLagrangian");
 
     // Decomposition of polyhedral cells into tets/pyramids cells
     vtkTopo::decomposePoly     = !args.optionFound("poly");
@@ -399,16 +410,15 @@ int main(int argc, char *argv[])
     args.optionReadIfPresent("pointSet", pointSetName);
 
 
-
     instantList timeDirs = timeSelector::select0(runTime, args);
 
     #include "createNamedMesh.H"
 
     // VTK/ directory in the case
     fileName fvPath(runTime.path()/"VTK");
-    // Directory of mesh (region0 gets filtered out)
-    fileName regionPrefix = "";
 
+    // Directory of mesh (region0 gets filtered out)
+    fileName regionPrefix;
     if (regionName != polyMesh::defaultRegion)
     {
         fvPath = fvPath/regionName;
@@ -439,50 +449,14 @@ int main(int argc, char *argv[])
 
     mkDir(fvPath);
 
-    // Mesh wrapper; does subsetting and decomposition
+    // Mesh wrapper: does subsetting and decomposition
     vtkMesh vMesh(mesh, cellSetName);
 
     Info<< "VTK mesh topology: "
         << timer.cpuTimeIncrement() << " s, "
         << mem.update().size() << " kB" << endl;
 
-
-    // Scan for all possible lagrangian clouds
-    HashSet<fileName> allCloudDirs;
-    forAll(timeDirs, timeI)
-    {
-        runTime.setTime(timeDirs[timeI], timeI);
-        fileNameList cloudDirs
-        (
-            readDir
-            (
-                runTime.timePath()/regionPrefix/cloud::prefix,
-                fileName::DIRECTORY
-            )
-        );
-        forAll(cloudDirs, i)
-        {
-            IOobjectList sprayObjs
-            (
-                mesh,
-                runTime.timeName(),
-                cloud::prefix/cloudDirs[i]
-            );
-
-            IOobject* positionsPtr = sprayObjs.lookup(word("positions"));
-
-            if (positionsPtr)
-            {
-                if (allCloudDirs.insert(cloudDirs[i]))
-                {
-                    Info<< "At time: " << runTime.timeName()
-                        << " detected cloud directory : " << cloudDirs[i]
-                        << endl;
-                }
-            }
-        }
-    }
-
+    #include "findClouds.H"
 
     forAll(timeDirs, timeI)
     {
@@ -490,7 +464,7 @@ int main(int argc, char *argv[])
 
         Info<< "Time: " << runTime.timeName() << endl;
 
-        word timeDesc =
+        const word timeDesc =
             useTimeName ? runTime.timeName() : Foam::name(runTime.timeIndex());
 
         // Check for new polyMesh/ and update mesh, fvMeshSubset and cell
@@ -528,7 +502,7 @@ int main(int argc, char *argv[])
 
             Info<< "    FaceSet   : " << patchFileName << endl;
 
-            writeFaceSet(binary, vMesh, set, patchFileName);
+            writeFaceSet(binary, vMesh.mesh(), set, patchFileName);
 
             continue;
         }
@@ -551,7 +525,7 @@ int main(int argc, char *argv[])
 
             Info<< "    pointSet   : " << patchFileName << endl;
 
-            writePointSet(binary, vMesh, set, patchFileName);
+            writePointSet(binary, vMesh.mesh(), set, patchFileName);
 
             continue;
         }
@@ -569,11 +543,11 @@ int main(int argc, char *argv[])
 
         // Construct the vol fields (on the original mesh if subsetted)
 
-        PtrList<volScalarField> vsf;
-        PtrList<volVectorField> vvf;
-        PtrList<volSphericalTensorField> vSpheretf;
-        PtrList<volSymmTensorField> vSymmtf;
-        PtrList<volTensorField> vtf;
+        PtrList<const volScalarField> vsf;
+        PtrList<const volVectorField> vvf;
+        PtrList<const volSphericalTensorField> vSpheretf;
+        PtrList<const volSymmTensorField> vSymmtf;
+        PtrList<const volTensorField> vtf;
 
         if (!specifiedFields || selectedFields.size())
         {
@@ -616,11 +590,11 @@ int main(int argc, char *argv[])
 
 
         // Construct dimensioned fields
-        PtrList<volScalarField::DimensionedInternalField> dsf;
-        PtrList<volVectorField::DimensionedInternalField> dvf;
-        PtrList<volSphericalTensorField::DimensionedInternalField> dSpheretf;
-        PtrList<volSymmTensorField::DimensionedInternalField> dSymmtf;
-        PtrList<volTensorField::DimensionedInternalField> dtf;
+        PtrList<const volScalarField::Internal> dsf;
+        PtrList<const volVectorField::Internal> dvf;
+        PtrList<const volSphericalTensorField::Internal> dSpheretf;
+        PtrList<const volSymmTensorField::Internal> dSymmtf;
+        PtrList<const volTensorField::Internal> dtf;
 
         if (!specifiedFields || selectedFields.size())
         {
@@ -662,7 +636,7 @@ int main(int argc, char *argv[])
               + dtf.size();
 
 
-        // Construct pointMesh only if nessecary since constructs edge
+        // Construct pointMesh only if necessary since constructs edge
         // addressing (expensive on polyhedral meshes)
         if (noPointValues)
         {
@@ -672,11 +646,11 @@ int main(int argc, char *argv[])
                 << " (\"-noPointValues\" (at your option)\n";
         }
 
-        PtrList<pointScalarField> psf;
-        PtrList<pointVectorField> pvf;
-        PtrList<pointSphericalTensorField> pSpheretf;
-        PtrList<pointSymmTensorField> pSymmtf;
-        PtrList<pointTensorField> ptf;
+        PtrList<const pointScalarField> psf;
+        PtrList<const pointVectorField> pvf;
+        PtrList<const pointSphericalTensorField> pSpheretf;
+        PtrList<const pointSymmTensorField> pSymmtf;
+        PtrList<const pointTensorField> ptf;
 
         if (!noPointValues && !(specifiedFields && selectedFields.empty()))
         {
@@ -820,7 +794,7 @@ int main(int argc, char *argv[])
 
         if (args.optionFound("surfaceFields"))
         {
-            PtrList<surfaceScalarField> ssf;
+            PtrList<const surfaceScalarField> ssf;
             readFields
             (
                 vMesh,
@@ -831,7 +805,7 @@ int main(int argc, char *argv[])
             );
             print("    surfScalarFields  :", Info, ssf);
 
-            PtrList<surfaceVectorField> svf;
+            PtrList<const surfaceVectorField> svf;
             readFields
             (
                 vMesh,
@@ -853,8 +827,9 @@ int main(int argc, char *argv[])
 
                 forAll(ssf, i)
                 {
-                    svf.set(sz+i, ssf[i]*n);
-                    svf[sz+i].rename(ssf[i].name());
+                    surfaceVectorField* ssfiPtr = (ssf[i]*n).ptr();
+                    ssfiPtr->rename(ssf[i].name());
+                    svf.set(sz+i, ssfiPtr);
                 }
                 ssf.clear();
 
@@ -873,7 +848,7 @@ int main(int argc, char *argv[])
                 writeSurfFields
                 (
                     binary,
-                    vMesh,
+                    vMesh.mesh(),
                     surfFileName,
                     svf
                 );
@@ -916,7 +891,7 @@ int main(int argc, char *argv[])
 
             patchWriter writer
             (
-                vMesh,
+                vMesh.mesh(),
                 binary,
                 nearCellValue,
                 patchFileName,
@@ -963,9 +938,9 @@ int main(int argc, char *argv[])
         }
         else
         {
-            forAll(patches, patchI)
+            forAll(patches, patchi)
             {
-                const polyPatch& pp = patches[patchI];
+                const polyPatch& pp = patches[patchi];
 
                 if (!findStrings(excludePatches, pp.name()))
                 {
@@ -994,11 +969,11 @@ int main(int argc, char *argv[])
 
                     patchWriter writer
                     (
-                        vMesh,
+                        vMesh.mesh(),
                         binary,
                         nearCellValue,
                         patchFileName,
-                        labelList(1, patchI)
+                        labelList(1, patchi)
                     );
 
                     if (!isA<emptyPolyPatch>(pp))
@@ -1063,7 +1038,7 @@ int main(int argc, char *argv[])
 
         if (doFaceZones)
         {
-            PtrList<surfaceScalarField> ssf;
+            PtrList<const surfaceScalarField> ssf;
             readFields
             (
                 vMesh,
@@ -1074,7 +1049,7 @@ int main(int argc, char *argv[])
             );
             print("    surfScalarFields  :", Info, ssf);
 
-            PtrList<surfaceVectorField> svf;
+            PtrList<const surfaceVectorField> svf;
             readFields
             (
                 vMesh,
@@ -1149,9 +1124,9 @@ int main(int argc, char *argv[])
         //
         //---------------------------------------------------------------------
 
-        forAllConstIter(HashSet<fileName>, allCloudDirs, iter)
+        forAll(cloudNames, cloudNo)
         {
-            const fileName& cloudName = iter.key();
+            const fileName& cloudName = cloudNames[cloudNo];
 
             // Always create the cloud directory.
             mkDir(fvPath/cloud::prefix/cloudName);
@@ -1172,9 +1147,7 @@ int main(int argc, char *argv[])
                 cloud::prefix/cloudName
             );
 
-            IOobject* positionsPtr = sprayObjs.lookup(word("positions"));
-
-            if (positionsPtr)
+            if (sprayObjs.found("positions"))
             {
                 wordList labelNames(sprayObjs.names(labelIOField::typeName));
                 Info<< "        labels            :";
@@ -1214,7 +1187,7 @@ int main(int argc, char *argv[])
 
                 lagrangianWriter writer
                 (
-                    vMesh,
+                    vMesh.mesh(),
                     binary,
                     lagrFileName,
                     cloudName,
@@ -1244,7 +1217,7 @@ int main(int argc, char *argv[])
             {
                 lagrangianWriter writer
                 (
-                    vMesh,
+                    vMesh.mesh(),
                     binary,
                     lagrFileName,
                     cloudName,
@@ -1309,7 +1282,7 @@ int main(int argc, char *argv[])
                       + "_"
                       + procFile.name()
                     );
-                    if (system(cmd.c_str()) == -1)
+                    if (Foam::system(cmd.c_str()) == -1)
                     {
                         WarningInFunction
                             << "Could not execute command " << cmd << endl;

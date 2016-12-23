@@ -94,7 +94,7 @@ bool setCellFieldType
 
         if (selectedCells.size() == field.size())
         {
-            field.internalField() = value;
+            field.primitiveFieldRef() = value;
         }
         else
         {
@@ -104,10 +104,12 @@ bool setCellFieldType
             }
         }
 
+        typename GeometricField<Type, fvPatchField, volMesh>::
+            Boundary& fieldBf = field.boundaryFieldRef();
+
         forAll(field.boundaryField(), patchi)
         {
-            field.boundaryField()[patchi] =
-                field.boundaryField()[patchi].patchInternalField();
+            fieldBf[patchi] = fieldBf[patchi].patchInternalField();
         }
 
         if (!field.write())
@@ -271,14 +273,17 @@ bool setFaceFieldType
             }
             else
             {
-                label bFaceI = facei-mesh.nInternalFaces();
-                allBoundaryValues[bFaceI] = value;
-                nChanged[mesh.boundaryMesh().patchID()[bFaceI]]++;
+                label bFacei = facei-mesh.nInternalFaces();
+                allBoundaryValues[bFacei] = value;
+                nChanged[mesh.boundaryMesh().patchID()[bFacei]]++;
             }
         }
 
         Pstream::listCombineGather(nChanged, plusEqOp<label>());
         Pstream::listCombineScatter(nChanged);
+
+        typename GeometricField<Type, fvPatchField, volMesh>::
+            Boundary& fieldBf = field.boundaryFieldRef();
 
         // Reassign.
         forAll(field.boundaryField(), patchi)
@@ -288,11 +293,11 @@ bool setFaceFieldType
                 Info<< "    On patch "
                     << field.boundaryField()[patchi].patch().name()
                     << " set " << nChanged[patchi] << " values" << endl;
-                field.boundaryField()[patchi] == SubField<Type>
+                fieldBf[patchi] == SubField<Type>
                 (
                     allBoundaryValues,
-                    field.boundaryField()[patchi].size(),
-                    field.boundaryField()[patchi].patch().start()
+                    fieldBf[patchi].size(),
+                    fieldBf[patchi].patch().start()
                   - mesh.nInternalFaces()
                 );
             }
@@ -379,24 +384,18 @@ public:
 
 int main(int argc, char *argv[])
 {
+    #include "addDictOption.H"
     #include "addRegionOption.H"
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createNamedMesh.H"
 
-    Info<< "Reading setFieldsDict\n" << endl;
+    const word dictName("setFieldsDict");
+    #include "setSystemMeshDictionaryIO.H"
 
-    IOdictionary setFieldsDict
-    (
-        IOobject
-        (
-            "setFieldsDict",
-            runTime.system(),
-            mesh,
-            IOobject::MUST_READ_IF_MODIFIED,
-            IOobject::NO_WRITE
-        )
-    );
+    Info<< "Reading " << dictName << "\n" << endl;
+
+    IOdictionary setFieldsDict(dictIO);
 
     if (setFieldsDict.found("defaultFieldValues"))
     {

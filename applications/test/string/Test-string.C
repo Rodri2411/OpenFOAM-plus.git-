@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2013 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -30,6 +30,12 @@ Description
 #include "stringOps.H"
 #include "dictionary.H"
 #include "IOstreams.H"
+
+#include "int.H"
+#include "uint.H"
+#include "scalar.H"
+#include "Switch.H"
+#include "stringList.H"
 
 using namespace Foam;
 
@@ -118,6 +124,8 @@ int main(int argc, char *argv[])
         Info<< "after replace: " << test2 << endl;
     }
 
+    cout<< "\nEnter some string to test:\n";
+
     string s;
     Sin.getLine(s);
 
@@ -126,7 +134,109 @@ int main(int argc, char *argv[])
     cout<< "output string with " << s2.length() << " characters\n";
     cout<< "ostream<<  >" << s2 << "<\n";
     Info<< "Ostream<<  >" << s2 << "<\n";
-    Info<< "hash:" << hex << string::hash()(s2) << endl;
+    Info<< "hash:" << hex << string::hash()(s2) << dec << endl;
+
+    cout<< "\ntest Foam::name()\n";
+
+    Info<< "hash: = " << Foam::name("0x%012X", string::hash()(s2)) << endl;
+
+    // test formatting on int
+    {
+        label val = 25;
+        Info<<"val: " << val << "\n";
+
+        Info<< "int " << val << " as word >"
+            << Foam::name(val) << "< or "
+            << Foam::name("formatted >%08d<", val) << "\n";
+    }
+
+    // test formatting on scalar
+    {
+        scalar val = 3.1415926535897931;
+        Info<< "scalar " << val << " as word >"
+            << Foam::name(val) << "< or "
+            << Foam::name("formatted >%.9f<", val) << "\n";
+    }
+
+    // test formatting on uint
+    {
+        uint64_t val = 25000000ul;
+        Info<<"val: " << val << "\n";
+
+        Info<< "uint64 " << val << " as word >"
+            << Foam::name(val) << "< or "
+            << Foam::name("formatted >%08d<", val) << "\n";
+    }
+
+    // test startsWith, endsWith methods
+    {
+        string empty; //;
+        string input1 = "shorter input";
+        string input2 = "longer input text";
+
+        stringList checks{"match", "long", "", "short", "text", "s", "l", "t"};
+
+        Info<< nl;
+        Info<< "check startsWith:" << nl
+            << "~~~~~~~~~~~~~~~~~" << nl;
+
+        Info<<"input: " << empty << nl;
+        for (const string& test : checks)
+        {
+            Info<< "    startsWith(" << test << ") = "
+                << Switch(empty.startsWith(test)) << nl;
+        }
+        Info<<"input: " << input1 << nl;
+        for (const string& test : checks)
+        {
+            Info<< "    startsWith(" << test << ") = "
+                << Switch(input1.startsWith(test)) << nl;
+        }
+        Info<<"input: " << input2 << nl;
+        for (const string& test : checks)
+        {
+            Info<< "    startsWith(" << test << ") = "
+                << Switch(input2.startsWith(test)) << nl;
+        }
+
+
+        Info<< nl;
+        Info<< "check endsWith:" << nl
+            << "~~~~~~~~~~~~~~~~~" << nl;
+
+        Info<<"input: " << empty << nl;
+        for (const string& test : checks)
+        {
+            Info<< "    endsWith(" << test << ") = "
+                << Switch(empty.endsWith(test)) << nl;
+        }
+        Info<<"input: " << input1 << nl;
+        for (const string& test : checks)
+        {
+            Info<< "    endsWith(" << test << ") = "
+                << Switch(input1.endsWith(test)) << nl;
+        }
+        Info<<"input: " << input2 << nl;
+        for (const string& test : checks)
+        {
+            Info<< "    endsWith(" << test << ") = "
+                << Switch(input2.endsWith(test)) << nl;
+        }
+
+        Info<< nl;
+        Info<< "check endsWith as applied to field names:" << nl
+            << "~~~~~~~~~~~~~~~~~" << nl;
+
+        string input3 = "field_0";
+        string input4 = "_0";
+
+        Info<<input3 << " endsWith(\"_0\") = "
+            << Switch(input3.endsWith("_0")) << nl;
+
+        Info<<input4 << " endsWith(\"_0\") = "
+            << Switch(input4.endsWith("_0")) << nl;
+    }
+
 
     Info<< "\nEnd\n" << endl;
     return 0;

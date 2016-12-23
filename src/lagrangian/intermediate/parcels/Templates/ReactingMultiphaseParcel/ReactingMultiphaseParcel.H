@@ -233,7 +233,7 @@ protected:
         (
             TrackData& td,
             const scalar dt,           // timestep
-            const label cellI,         // owner cell
+            const label celli,         // owner cell
             const scalar d,            // diameter
             const scalar T,            // temperature
             const scalar mass,         // mass
@@ -272,9 +272,7 @@ public:
         AddToPropertyTypes
         (
             ParcelType,
-            " List<scalar>"
-          + " List<scalar>"
-          + " List<Scalar>"
+            " scalars scalars scalars"
         );
 
 
@@ -286,9 +284,9 @@ public:
         (
             const polyMesh& mesh,
             const vector& position,
-            const label cellI,
-            const label tetFaceI,
-            const label tetPtI
+            const label celli,
+            const label tetFacei,
+            const label tetPti
         );
 
 
@@ -297,9 +295,9 @@ public:
         (
             const polyMesh& mesh,
             const vector& position,
-            const label cellI,
-            const label tetFaceI,
-            const label tetPtI,
+            const label celli,
+            const label tetFacei,
+            const label tetPti,
             const label typeId,
             const scalar nParticle0,
             const scalar d0,
@@ -411,7 +409,7 @@ public:
             (
                 TrackData& td,
                 const scalar dt,
-                const label cellI
+                const label celli
             );
 
             //- Correct cell values using latest transfer information
@@ -420,7 +418,7 @@ public:
             (
                 TrackData& td,
                 const scalar dt,
-                const label cellI
+                const label celli
             );
 
             //- Update parcel properties over the time interval
@@ -429,13 +427,13 @@ public:
             (
                 TrackData& td,
                 const scalar dt,
-                const label cellI
+                const label celli
             );
 
 
         // I-O
 
-            //- Read
+            //- Read - composition supplied
             template<class CloudType, class CompositionType>
             static void readFields
             (
@@ -447,7 +445,7 @@ public:
             template<class CloudType>
             static void readFields(CloudType& c);
 
-            //- Write
+            //- Write - composition supplied
             template<class CloudType, class CompositionType>
             static void writeFields
             (
@@ -455,9 +453,27 @@ public:
                 const CompositionType& compModel
             );
 
-            //- Read - composition supplied
+            //- Read - no composition
             template<class CloudType>
             static void writeFields(const CloudType& c);
+
+            //- Write particle fields as objects into the obr registry
+            //  - no composition
+            template<class CloudType>
+            static void writeObjects
+            (
+                const CloudType& c,
+                objectRegistry& obr
+            );
+
+            //- Write particle fields as objects into the obr registry
+            template<class CloudType, class CompositionType>
+            static void writeObjects
+            (
+                const CloudType& c,
+                const CompositionType& compModel,
+                objectRegistry& obr
+            );
 
 
     // Ostream Operator

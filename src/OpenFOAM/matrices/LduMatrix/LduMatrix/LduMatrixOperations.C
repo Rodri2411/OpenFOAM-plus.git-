@@ -34,8 +34,8 @@ void Foam::LduMatrix<Type, DType, LUType>::sumDiag()
     const Field<LUType>& Upper = const_cast<const LduMatrix&>(*this).upper();
     Field<DType>& Diag = diag();
 
-    const unallocLabelList& l = lduAddr().lowerAddr();
-    const unallocLabelList& u = lduAddr().upperAddr();
+    const labelUList& l = lduAddr().lowerAddr();
+    const labelUList& u = lduAddr().upperAddr();
 
     for (label face=0; face<l.size(); face++)
     {
@@ -52,8 +52,8 @@ void Foam::LduMatrix<Type, DType, LUType>::negSumDiag()
     const Field<LUType>& Upper = const_cast<const LduMatrix&>(*this).upper();
     Field<DType>& Diag = diag();
 
-    const unallocLabelList& l = lduAddr().lowerAddr();
-    const unallocLabelList& u = lduAddr().upperAddr();
+    const labelUList& l = lduAddr().lowerAddr();
+    const labelUList& u = lduAddr().upperAddr();
 
     for (label face=0; face<l.size(); face++)
     {
@@ -72,8 +72,8 @@ void Foam::LduMatrix<Type, DType, LUType>::sumMagOffDiag
     const Field<LUType>& Lower = const_cast<const LduMatrix&>(*this).lower();
     const Field<LUType>& Upper = const_cast<const LduMatrix&>(*this).upper();
 
-    const unallocLabelList& l = lduAddr().lowerAddr();
-    const unallocLabelList& u = lduAddr().upperAddr();
+    const labelUList& l = lduAddr().lowerAddr();
+    const labelUList& u = lduAddr().upperAddr();
 
     for (label face = 0; face < l.size(); face++)
     {
@@ -135,9 +135,9 @@ Foam::LduMatrix<Type, DType, LUType>::faceH(const Field<Type>& psi) const
     const Field<LUType>& Lower = const_cast<const LduMatrix&>(*this).lower();
     const Field<LUType>& Upper = const_cast<const LduMatrix&>(*this).upper();
 
-    // Take refereces to addressing
-    const unallocLabelList& l = lduAddr().lowerAddr();
-    const unallocLabelList& u = lduAddr().upperAddr();
+    // Take references to addressing
+    const labelUList& l = lduAddr().lowerAddr();
+    const labelUList& u = lduAddr().upperAddr();
 
     tmp<Field<Type>> tfaceHpsi(new Field<Type> (Lower.size()));
     Field<Type> & faceHpsi = tfaceHpsi();
@@ -185,7 +185,7 @@ void Foam::LduMatrix<Type, DType, LUType>::operator=(const LduMatrix& A)
     else if (upperPtr_)
     {
         delete upperPtr_;
-        upperPtr_ = NULL;
+        upperPtr_ = nullptr;
     }
 
     if (A.lowerPtr_)
@@ -195,7 +195,7 @@ void Foam::LduMatrix<Type, DType, LUType>::operator=(const LduMatrix& A)
     else if (lowerPtr_)
     {
         delete lowerPtr_;
-        lowerPtr_ = NULL;
+        lowerPtr_ = nullptr;
     }
 
     if (A.sourcePtr_)
@@ -413,8 +413,8 @@ void Foam::LduMatrix<Type, DType, LUType>::operator*=
         Field<LUType>& upper = this->upper();
         Field<LUType>& lower = this->lower();
 
-        const unallocLabelList& l = lduAddr().lowerAddr();
-        const unallocLabelList& u = lduAddr().upperAddr();
+        const labelUList& l = lduAddr().lowerAddr();
+        const labelUList& u = lduAddr().upperAddr();
 
         for (label face=0; face<upper.size(); face++)
         {

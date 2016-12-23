@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  v1606+                                |
+|  \\    /   O peration     | Version:  plus                                  |
 |   \\  /    A nd           | Web:      www.OpenFOAM.com                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -62,6 +62,15 @@ OptimisationSwitches
     floatTransfer   0;
     nProcsSimpleSum 0;
 
+    // Optional max size (bytes) for unstructured data exchanges. In some
+    // phases of OpenFOAM it can send over very large data chunks
+    // (e.g. in parallel load balancing) and some Pstream implementations have
+    // problems with this. Setting this variable > 0 indicates that the
+    // data exchange needs to be done in multiple passes, each of maxCommsSize.
+    // This is not switched on by default since it requires an additional
+    // global reduction, even if multi-pass is not needed)
+    maxCommsSize    0;
+
     // Force dumping (at next timestep) upon signal (-1 to disable)
     writeNowSignal              -1; // 10;
 
@@ -75,7 +84,6 @@ DebugSwitches
     Analytical          0;
     APIdiffCoefFunc     0;
     Ar                  0;
-    BICCG               0;
     BirdCarreau         0;
     C10H22              0;
     C12H26              0;
@@ -158,7 +166,6 @@ DebugSwitches
     HerschelBulkley     0;
     HrenyaSinclair      0;
     IC8H18              0;
-    ICCG                0;
     IDDESDelta          0;
     IDEA                0;
     IFstream            0;
@@ -683,19 +690,19 @@ DebugSwitches
     pointIndexHitList   0;
     pointPatchField     0;
     pointScalarField    0;
-    pointScalarField::DimensionedInternalField 0;
+    pointScalarField::Internal 0;
     pointSet            0;
     pointSphericalTensorField 0;
-    pointSphericalTensorField::DimensionedInternalField 0;
+    pointSphericalTensorField::Internal 0;
     pointSymmTensorField 0;
-    pointSymmTensorField::DimensionedInternalField 0;
+    pointSymmTensorField::Internal 0;
     pointTensorField    0;
-    pointTensorField::DimensionedInternalField 0;
+    pointTensorField::Internal 0;
     pointToCell         0;
     pointToFace         0;
     pointToPoint        0;
     pointVectorField    0;
-    pointVectorField::DimensionedInternalField 0;
+    pointVectorField::Internal 0;
     pointZone           0;
     polyBoundaryMesh    0;
     polyMesh            0;
@@ -796,20 +803,19 @@ DebugSwitches
     surfaceIntersection 0;
     surfaceNormalFixedValue 0;
     surfacePatch        0;
-    surfacePatchIOList  0;
     surfaceScalarField  0;
-    surfaceScalarField::DimensionedInternalField 0;
+    surfaceScalarField::Internal 0;
     surfaceSlipDisplacement 0;
     surfaceSphericalTensorField 0;
-    surfaceSphericalTensorField::DimensionedInternalField 0;
+    surfaceSphericalTensorField::Internal 0;
     surfaceSymmTensorField 0;
-    surfaceSymmTensorField::DimensionedInternalField 0;
+    surfaceSymmTensorField::Internal 0;
     surfaceTensorField 0;
-    surfaceTensorField::DimensionedInternalField 0;
+    surfaceTensorField::Internal 0;
     surfaceToCell       0;
     surfaceToPoint      0;
     surfaceVectorField  0;
-    surfaceVectorField::DimensionedInternalField 0;
+    surfaceVectorField::Internal 0;
     surfaceWriter       0;
     surfaces            0;
     swirlInjector       0;
@@ -876,22 +882,21 @@ DebugSwitches
     viscosityModel      0;
     volPointInterpolation 0;
     volScalarField      0;
-    volScalarField::DimensionedInternalField 0;
+    volScalarField::Internal 0;
     volSphericalTensorField 0;
-    volSphericalTensorField::DimensionedInternalField 0;
+    volSphericalTensorField::Internal 0;
     volSymmTensorField  0;
-    volSymmTensorField::DimensionedInternalField 0;
+    volSymmTensorField::Internal 0;
     volTensorField      0;
-    volTensorField::DimensionedInternalField 0;
+    volTensorField::Internal 0;
     volVectorField      0;
-    volVectorField::DimensionedInternalField 0;
+    volVectorField::Internal 0;
     vtk                 0;
     walkPatch           0;
     wall                0;
     wallHeatTransfer    0;
     wallLayerCells      0;
     wallModel           0;
-    warnUnboundedGauss  1;
     waveTransmissive    0;
     wedge               0;
     weighted            0;

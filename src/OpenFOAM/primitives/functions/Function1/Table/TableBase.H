@@ -64,10 +64,10 @@ public:
         //- Enumeration for handling out-of-bound values
         enum boundsHandling
         {
-            ERROR,          /*!< Exit with a FatalError */
-            WARN,           /*!< Issue warning and clamp value (default) */
-            CLAMP,          /*!< Clamp value to the start/end value */
-            REPEAT          /*!< Treat as a repeating list */
+            ERROR,          //!< Exit with a FatalError
+            WARN,           //!< Issue warning and clamp value (default)
+            CLAMP,          //!< Clamp value to the start/end value
+            REPEAT          //!< Treat as a repeating list
         };
 
 
@@ -103,6 +103,9 @@ protected:
 
         //- Return (demand driven) interpolator
         const interpolationWeights& interpolator() const;
+
+
+private:
 
         //- Disallow default bitwise assignment
         void operator=(const TableBase<Type>&);

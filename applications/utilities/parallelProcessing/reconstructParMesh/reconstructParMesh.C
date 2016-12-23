@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -52,7 +52,8 @@ Description
 #include "faceCoupleInfo.H"
 #include "fvMeshAdder.H"
 #include "polyTopoChange.H"
-#include "zeroGradientFvPatchFields.H"
+#include "extrapolatedCalculatedFvPatchFields.H"
+#include "topoSet.H"
 
 using namespace Foam;
 
@@ -81,12 +82,12 @@ static void renumber
 
 // Determine which faces are coupled. Uses geometric merge distance.
 // Looks either at all boundaryFaces (fullMatch) or only at the
-// procBoundaries for procI. Assumes that masterMesh contains already merged
-// all the processors < procI.
+// procBoundaries for proci. Assumes that masterMesh contains already merged
+// all the processors < proci.
 autoPtr<faceCoupleInfo> determineCoupledFaces
 (
     const bool fullMatch,
-    const label procI,
+    const label proci,
     const polyMesh& masterMesh,
     const polyMesh& meshToAdd,
     const scalar mergeDist
@@ -108,11 +109,11 @@ autoPtr<faceCoupleInfo> determineCoupledFaces
     else
     {
         // Pick up all patches on masterMesh ending in "toDDD" where DDD is
-        // the processor number procI.
+        // the processor number proci.
 
         const polyBoundaryMesh& masterPatches = masterMesh.boundaryMesh();
 
-        const string toProcString("to" + name(procI));
+        const string toProcString("to" + name(proci));
 
         DynamicList<label> masterFaces
         (
@@ -120,9 +121,9 @@ autoPtr<faceCoupleInfo> determineCoupledFaces
           - masterMesh.nInternalFaces()
         );
 
-        forAll(masterPatches, patchI)
+        forAll(masterPatches, patchi)
         {
-            const polyPatch& pp = masterPatches[patchI];
+            const polyPatch& pp = masterPatches[patchi];
 
             if
             (
@@ -133,10 +134,10 @@ autoPtr<faceCoupleInfo> determineCoupledFaces
                 )
             )
             {
-                label meshFaceI = pp.start();
+                label meshFacei = pp.start();
                 forAll(pp, i)
                 {
-                    masterFaces.append(meshFaceI++);
+                    masterFaces.append(meshFacei++);
                 }
             }
         }
@@ -144,7 +145,7 @@ autoPtr<faceCoupleInfo> determineCoupledFaces
 
 
         // Pick up all patches on meshToAdd ending in "procBoundaryDDDtoYYY"
-        // where DDD is the processor number procI and YYY is < procI.
+        // where DDD is the processor number proci and YYY is < proci.
 
         const polyBoundaryMesh& addPatches = meshToAdd.boundaryMesh();
 
@@ -154,19 +155,19 @@ autoPtr<faceCoupleInfo> determineCoupledFaces
           - meshToAdd.nInternalFaces()
         );
 
-        forAll(addPatches, patchI)
+        forAll(addPatches, patchi)
         {
-            const polyPatch& pp = addPatches[patchI];
+            const polyPatch& pp = addPatches[patchi];
 
             if (isA<processorPolyPatch>(pp))
             {
                 bool isConnected = false;
 
-                for (label mergedProcI = 0; mergedProcI < procI; mergedProcI++)
+                for (label mergedProci = 0; mergedProci < proci; mergedProci++)
                 {
                     const word fromProcString
                     (
-                        processorPolyPatch::newName(procI, mergedProcI)
+                        processorPolyPatch::newName(proci, mergedProci)
                     );
 
                     if (pp.name() == fromProcString)
@@ -178,10 +179,10 @@ autoPtr<faceCoupleInfo> determineCoupledFaces
 
                 if (isConnected)
                 {
-                    label meshFaceI = pp.start();
+                    label meshFacei = pp.start();
                     forAll(pp, i)
                     {
-                        addFaces.append(meshFaceI++);
+                        addFaces.append(meshFacei++);
                     }
                 }
             }
@@ -230,7 +231,7 @@ autoPtr<mapPolyMesh> mergeSharedPoints
 
     if (returnReduce(pointToMaster.size(), sumOp<label>()) == 0)
     {
-        return autoPtr<mapPolyMesh>(NULL);
+        return autoPtr<mapPolyMesh>(nullptr);
     }
 
     polyTopoChange meshMod(mesh);
@@ -247,30 +248,30 @@ autoPtr<mapPolyMesh> mergeSharedPoints
     // for changed point numbering.
 
     // Adapt constructMaps for merged points.
-    forAll(pointProcAddressing, procI)
+    forAll(pointProcAddressing, proci)
     {
-        labelList& constructMap = pointProcAddressing[procI];
+        labelList& constructMap = pointProcAddressing[proci];
 
         forAll(constructMap, i)
         {
-            label oldPointI = constructMap[i];
+            label oldPointi = constructMap[i];
 
             // New label of point after changeMesh.
-            label newPointI = map().reversePointMap()[oldPointI];
+            label newPointi = map().reversePointMap()[oldPointi];
 
-            if (newPointI < -1)
+            if (newPointi < -1)
             {
-                constructMap[i] = -newPointI-2;
+                constructMap[i] = -newPointi-2;
             }
-            else if (newPointI >= 0)
+            else if (newPointi >= 0)
             {
-                constructMap[i] = newPointI;
+                constructMap[i] = newPointi;
             }
             else
             {
                 FatalErrorInFunction
-                    << "Problem. oldPointI:" << oldPointI
-                    << " newPointI:" << newPointI << abort(FatalError);
+                    << "Problem. oldPointi:" << oldPointi
+                    << " newPointi:" << newPointi << abort(FatalError);
             }
         }
     }
@@ -288,21 +289,21 @@ boundBox procBounds
 {
     boundBox bb = boundBox::invertedBox;
 
-    forAll(databases, procI)
+    forAll(databases, proci)
     {
         fileName pointsInstance
         (
-            databases[procI].findInstance
+            databases[proci].findInstance
             (
                 regionDir/polyMesh::meshSubDir,
                 "points"
             )
         );
 
-        if (pointsInstance != databases[procI].timeName())
+        if (pointsInstance != databases[proci].timeName())
         {
             FatalErrorInFunction
-                << "Your time was specified as " << databases[procI].timeName()
+                << "Your time was specified as " << databases[proci].timeName()
                 << " but there is no polyMesh/points in that time." << endl
                 << "(there is a points file in " << pointsInstance
                 << ")" << endl
@@ -313,8 +314,8 @@ boundBox procBounds
         }
 
         Info<< "Reading points from "
-            << databases[procI].caseName()
-            << " for time = " << databases[procI].timeName()
+            << databases[proci].caseName()
+            << " for time = " << databases[proci].timeName()
             << nl << endl;
 
         pointIOField points
@@ -322,13 +323,13 @@ boundBox procBounds
             IOobject
             (
                 "points",
-                databases[procI].findInstance
+                databases[proci].findInstance
                 (
                     regionDir/polyMesh::meshSubDir,
                     "points"
                 ),
                 regionDir/polyMesh::meshSubDir,
-                databases[procI],
+                databases[proci],
                 IOobject::MUST_READ,
                 IOobject::NO_WRITE,
                 false
@@ -369,10 +370,10 @@ void writeCellDistance
         masterMesh.nCells()
     );
 
-    forAll(cellProcAddressing, procI)
+    forAll(cellProcAddressing, proci)
     {
-        const labelList& pCells = cellProcAddressing[procI];
-        UIndirectList<label>(cellDecomposition, pCells) = procI;
+        const labelList& pCells = cellProcAddressing[proci];
+        UIndirectList<label>(cellDecomposition, pCells) = proci;
     }
 
     cellDecomposition.write();
@@ -404,13 +405,14 @@ void writeCellDistance
             ),
             masterMesh,
             dimensionedScalar("cellDist", dimless, 0),
-            zeroGradientFvPatchScalarField::typeName
+            extrapolatedCalculatedFvPatchScalarField::typeName
         );
 
-        forAll(cellDecomposition, cellI)
+        forAll(cellDecomposition, celli)
         {
-            cellDist[cellI] = cellDecomposition[cellI];
+            cellDist[celli] = cellDecomposition[celli];
         }
+        cellDist.correctBoundaryConditions();
 
         cellDist.write();
 
@@ -545,20 +547,20 @@ int main(int argc, char *argv[])
     // Read all time databases
     PtrList<Time> databases(nProcs);
 
-    forAll(databases, procI)
+    forAll(databases, proci)
     {
         Info<< "Reading database "
-            << args.caseName()/fileName(word("processor") + name(procI))
+            << args.caseName()/fileName(word("processor") + name(proci))
             << endl;
 
         databases.set
         (
-            procI,
+            proci,
             new Time
             (
                 Time::controlDictName,
                 args.rootPath(),
-                args.caseName()/fileName(word("processor") + name(procI))
+                args.caseName()/fileName(word("processor") + name(proci))
             )
         );
     }
@@ -580,9 +582,9 @@ int main(int argc, char *argv[])
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
         // Set time for all databases
-        forAll(databases, procI)
+        forAll(databases, proci)
         {
-            databases[procI].setTime(timeDirs[timeI], timeI);
+            databases[proci].setTime(timeDirs[timeI], timeI);
         }
 
         const fileName meshPath =
@@ -639,11 +641,11 @@ int main(int argc, char *argv[])
                 xferCopy(cellList())
             );
 
-            for (label procI = 0; procI < nProcs; procI++)
+            for (label proci = 0; proci < nProcs; proci++)
             {
                 Info<< "Reading mesh to add from "
-                    << databases[procI].caseName()
-                    << " for time = " << databases[procI].timeName()
+                    << databases[proci].caseName()
+                    << " for time = " << databases[proci].timeName()
                     << nl << endl;
 
                 fvMesh meshToAdd
@@ -651,16 +653,16 @@ int main(int argc, char *argv[])
                     IOobject
                     (
                         regionName,
-                        databases[procI].timeName(),
-                        databases[procI]
+                        databases[proci].timeName(),
+                        databases[proci]
                     )
                 );
 
                 // Initialize its addressing
-                cellProcAddressing[procI] = identity(meshToAdd.nCells());
-                faceProcAddressing[procI] = identity(meshToAdd.nFaces());
-                pointProcAddressing[procI] = identity(meshToAdd.nPoints());
-                boundaryProcAddressing[procI] =
+                cellProcAddressing[proci] = identity(meshToAdd.nCells());
+                faceProcAddressing[proci] = identity(meshToAdd.nFaces());
+                pointProcAddressing[proci] = identity(meshToAdd.nPoints());
+                boundaryProcAddressing[proci] =
                     identity(meshToAdd.boundaryMesh().size());
 
 
@@ -668,7 +670,7 @@ int main(int argc, char *argv[])
                 autoPtr<faceCoupleInfo> couples = determineCoupledFaces
                 (
                     fullMatch,
-                    procI,
+                    proci,
                     masterMesh,
                     meshToAdd,
                     mergeDist
@@ -689,7 +691,7 @@ int main(int argc, char *argv[])
                 // item in masterMesh.
 
                 // Processors that were already in masterMesh
-                for (label mergedI = 0; mergedI < procI; mergedI++)
+                for (label mergedI = 0; mergedI < proci; mergedI++)
                 {
                     renumber(map().oldCellMap(), cellProcAddressing[mergedI]);
                     renumber(map().oldFaceMap(), faceProcAddressing[mergedI]);
@@ -703,10 +705,10 @@ int main(int argc, char *argv[])
                 }
 
                 // Added processor
-                renumber(map().addedCellMap(), cellProcAddressing[procI]);
-                renumber(map().addedFaceMap(), faceProcAddressing[procI]);
-                renumber(map().addedPointMap(), pointProcAddressing[procI]);
-                renumber(map().addedPatchMap(), boundaryProcAddressing[procI]);
+                renumber(map().addedCellMap(), cellProcAddressing[proci]);
+                renumber(map().addedFaceMap(), faceProcAddressing[proci]);
+                renumber(map().addedPointMap(), pointProcAddressing[proci]);
+                renumber(map().addedPatchMap(), boundaryProcAddressing[proci]);
 
                 Info<< endl;
             }
@@ -730,6 +732,7 @@ int main(int argc, char *argv[])
                     << "Failed writing polyMesh."
                     << exit(FatalError);
             }
+            topoSet::removeFiles(masterMesh);
 
             if (writeCellDist)
             {
@@ -743,18 +746,18 @@ int main(int argc, char *argv[])
         Info<< "Reconstructing the addressing from the processor meshes"
             << " to the newly reconstructed mesh" << nl << endl;
 
-        forAll(databases, procI)
+        forAll(databases, proci)
         {
-            Info<< "Reading processor " << procI << " mesh from "
-                << databases[procI].caseName() << endl;
+            Info<< "Reading processor " << proci << " mesh from "
+                << databases[proci].caseName() << endl;
 
             polyMesh procMesh
             (
                 IOobject
                 (
                     regionName,
-                    databases[procI].timeName(),
-                    databases[procI]
+                    databases[proci].timeName(),
+                    databases[proci]
                 )
             );
 
@@ -762,7 +765,7 @@ int main(int argc, char *argv[])
             // From processor point to reconstructed mesh point
 
             Info<< "Writing pointProcAddressing to "
-                << databases[procI].caseName()
+                << databases[proci].caseName()
                   /procMesh.facesInstance()
                   /polyMesh::meshSubDir
                 << endl;
@@ -779,14 +782,14 @@ int main(int argc, char *argv[])
                     IOobject::NO_WRITE,
                     false                       // Do not register
                 ),
-                pointProcAddressing[procI]
+                pointProcAddressing[proci]
             ).write();
 
 
             // From processor face to reconstructed mesh face
 
             Info<< "Writing faceProcAddressing to "
-                << databases[procI].caseName()
+                << databases[proci].caseName()
                   /procMesh.facesInstance()
                   /polyMesh::meshSubDir
                 << endl;
@@ -803,43 +806,43 @@ int main(int argc, char *argv[])
                     IOobject::NO_WRITE,
                     false                       // Do not register
                 ),
-                faceProcAddressing[procI]
+                faceProcAddressing[proci]
             );
 
             // Now add turning index to faceProcAddressing.
             // See reconstructPar for meaning of turning index.
-            forAll(faceProcAddr, procFaceI)
+            forAll(faceProcAddr, procFacei)
             {
-                label masterFaceI = faceProcAddr[procFaceI];
+                label masterFacei = faceProcAddr[procFacei];
 
                 if
                 (
-                   !procMesh.isInternalFace(procFaceI)
-                 && masterFaceI < masterInternalFaces
+                   !procMesh.isInternalFace(procFacei)
+                 && masterFacei < masterInternalFaces
                 )
                 {
                     // proc face is now external but used to be internal face.
                     // Check if we have owner or neighbour.
 
-                    label procOwn = procMesh.faceOwner()[procFaceI];
-                    label masterOwn = masterOwner[masterFaceI];
+                    label procOwn = procMesh.faceOwner()[procFacei];
+                    label masterOwn = masterOwner[masterFacei];
 
-                    if (cellProcAddressing[procI][procOwn] == masterOwn)
+                    if (cellProcAddressing[proci][procOwn] == masterOwn)
                     {
                         // No turning. Offset by 1.
-                        faceProcAddr[procFaceI]++;
+                        faceProcAddr[procFacei]++;
                     }
                     else
                     {
                         // Turned face.
-                        faceProcAddr[procFaceI] =
-                            -1 - faceProcAddr[procFaceI];
+                        faceProcAddr[procFacei] =
+                            -1 - faceProcAddr[procFacei];
                     }
                 }
                 else
                 {
                     // No turning. Offset by 1.
-                    faceProcAddr[procFaceI]++;
+                    faceProcAddr[procFacei]++;
                 }
             }
 
@@ -849,7 +852,7 @@ int main(int argc, char *argv[])
             // From processor cell to reconstructed mesh cell
 
             Info<< "Writing cellProcAddressing to "
-                << databases[procI].caseName()
+                << databases[proci].caseName()
                   /procMesh.facesInstance()
                   /polyMesh::meshSubDir
                 << endl;
@@ -866,7 +869,7 @@ int main(int argc, char *argv[])
                     IOobject::NO_WRITE,
                     false                       // Do not register
                 ),
-                cellProcAddressing[procI]
+                cellProcAddressing[proci]
             ).write();
 
 
@@ -874,7 +877,7 @@ int main(int argc, char *argv[])
             // From processor patch to reconstructed mesh patch
 
             Info<< "Writing boundaryProcAddressing to "
-                << databases[procI].caseName()
+                << databases[proci].caseName()
                   /procMesh.facesInstance()
                   /polyMesh::meshSubDir
                 << endl;
@@ -891,7 +894,7 @@ int main(int argc, char *argv[])
                     IOobject::NO_WRITE,
                     false                       // Do not register
                 ),
-                boundaryProcAddressing[procI]
+                boundaryProcAddressing[proci]
             ).write();
 
             Info<< endl;

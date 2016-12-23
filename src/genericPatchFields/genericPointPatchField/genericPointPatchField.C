@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -99,9 +99,9 @@ Foam::genericPointPatchField<Type>::genericPointPatchField
                                   "is not a compound"
                                 << "\n    on patch " << this->patch().name()
                                 << " of field "
-                                << this->dimensionedInternalField().name()
+                                << this->internalField().name()
                                 << " in file "
-                                << this->dimensionedInternalField().objectPath()
+                                << this->internalField().objectPath()
                             << exit(FatalIOError);
                         }
                     }
@@ -131,9 +131,9 @@ Foam::genericPointPatchField<Type>::genericPointPatchField
                                 << this->size() << ')'
                                 << "\n    on patch " << this->patch().name()
                                 << " of field "
-                                << this->dimensionedInternalField().name()
+                                << this->internalField().name()
                                 << " in file "
-                                << this->dimensionedInternalField().objectPath()
+                                << this->internalField().objectPath()
                                 << exit(FatalIOError);
                         }
 
@@ -165,9 +165,9 @@ Foam::genericPointPatchField<Type>::genericPointPatchField
                                 << this->size() << ')'
                                 << "\n    on patch " << this->patch().name()
                                 << " of field "
-                                << this->dimensionedInternalField().name()
+                                << this->internalField().name()
                                 << " in file "
-                                << this->dimensionedInternalField().objectPath()
+                                << this->internalField().objectPath()
                                 << exit(FatalIOError);
                         }
 
@@ -202,9 +202,9 @@ Foam::genericPointPatchField<Type>::genericPointPatchField
                                 << this->size() << ')'
                                 << "\n    on patch " << this->patch().name()
                                 << " of field "
-                                << this->dimensionedInternalField().name()
+                                << this->internalField().name()
                                 << " in file "
-                                << this->dimensionedInternalField().objectPath()
+                                << this->internalField().objectPath()
                                 << exit(FatalIOError);
                         }
 
@@ -239,9 +239,9 @@ Foam::genericPointPatchField<Type>::genericPointPatchField
                                 << this->size() << ')'
                                 << "\n    on patch " << this->patch().name()
                                 << " of field "
-                                << this->dimensionedInternalField().name()
+                                << this->internalField().name()
                                 << " in file "
-                                << this->dimensionedInternalField().objectPath()
+                                << this->internalField().objectPath()
                                 << exit(FatalIOError);
                         }
 
@@ -273,9 +273,9 @@ Foam::genericPointPatchField<Type>::genericPointPatchField
                                 << this->size() << ')'
                                 << "\n    on patch " << this->patch().name()
                                 << " of field "
-                                << this->dimensionedInternalField().name()
+                                << this->internalField().name()
                                 << " in file "
-                                << this->dimensionedInternalField().objectPath()
+                                << this->internalField().objectPath()
                                 << exit(FatalIOError);
                         }
 
@@ -290,9 +290,9 @@ Foam::genericPointPatchField<Type>::genericPointPatchField
                             << " not supported"
                             << "\n    on patch " << this->patch().name()
                             << " of field "
-                            << this->dimensionedInternalField().name()
+                            << this->internalField().name()
                             << " in file "
-                            << this->dimensionedInternalField().objectPath()
+                            << this->internalField().objectPath()
                             << exit(FatalIOError);
                     }
                 }
@@ -554,6 +554,13 @@ void Foam::genericPointPatchField<Type>::rmap
             iter()->rmap(*dptfIter(), addr);
         }
     }
+}
+
+
+template<class Type>
+const Foam::word& Foam::genericPointPatchField<Type>::actualType() const
+{
+    return actualTypeName_;
 }
 
 

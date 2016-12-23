@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2013 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::fixedValue
+    Foam::distributionModels::fixedValue
 
 Description
     Returns a fixed value
@@ -32,8 +32,8 @@ SourceFiles
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef distributionModelFixedValue_H
-#define distributionModelFixedValue_H
+#ifndef distributionModels_fixedValue_H
+#define distributionModels_fixedValue_H
 
 #include "distributionModel.H"
 
@@ -44,7 +44,7 @@ namespace Foam
 namespace distributionModels
 {
 /*---------------------------------------------------------------------------*\
-                       Class fixedValue Declaration
+                         Class fixedValue Declaration
 \*---------------------------------------------------------------------------*/
 
 class fixedValue
@@ -84,7 +84,7 @@ public:
 
     // Member Functions
 
-         //- Sample the distributionModel
+        //- Sample the distributionModel
         virtual scalar sample() const;
 
         //- Return the minimum value

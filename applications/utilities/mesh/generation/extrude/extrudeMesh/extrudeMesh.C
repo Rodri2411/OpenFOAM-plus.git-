@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -56,6 +56,7 @@ Description
 #include "wedgePolyPatch.H"
 #include "planeExtrusion.H"
 #include "emptyPolyPatch.H"
+#include "processorMeshes.H"
 
 using namespace Foam;
 
@@ -186,11 +187,11 @@ void updateFaceLabels(const mapPolyMesh& map, labelList& faceLabels)
 
     forAll(faceLabels, i)
     {
-        label oldFaceI = faceLabels[i];
+        label oldFacei = faceLabels[i];
 
-        if (reverseMap[oldFaceI] >= 0)
+        if (reverseMap[oldFacei] >= 0)
         {
-            newFaceLabels[newI++] = reverseMap[oldFaceI];
+            newFaceLabels[newI++] = reverseMap[oldFacei];
         }
     }
     newFaceLabels.setSize(newI);
@@ -206,11 +207,11 @@ void updateCellSet(const mapPolyMesh& map, labelHashSet& cellLabels)
 
     forAll(cellLabels, i)
     {
-        label oldCellI = cellLabels[i];
+        label oldCelli = cellLabels[i];
 
-        if (reverseMap[oldCellI] >= 0)
+        if (reverseMap[oldCelli] >= 0)
         {
-            newCellLabels.insert(reverseMap[oldCellI]);
+            newCellLabels.insert(reverseMap[oldCelli]);
         }
     }
     cellLabels.transfer(newCellLabels);
@@ -227,16 +228,16 @@ void changeFrontBackPatches
 {
     const polyBoundaryMesh& patches = mesh.boundaryMesh();
 
-    label frontPatchI = findPatchID(patches, frontPatchName);
-    label backPatchI = findPatchID(patches, backPatchName);
+    label frontPatchi = findPatchID(patches, frontPatchName);
+    label backPatchi = findPatchID(patches, backPatchName);
 
     DynamicList<polyPatch*> newPatches(patches.size());
 
-    forAll(patches, patchI)
+    forAll(patches, patchi)
     {
-        const polyPatch& pp(patches[patchI]);
+        const polyPatch& pp(patches[patchi]);
 
-        if (patchI == frontPatchI || patchI == backPatchI)
+        if (patchi == frontPatchi || patchi == backPatchi)
         {
             newPatches.append
             (
@@ -398,32 +399,32 @@ int main(int argc, char *argv[])
             polyTopoChange meshMod(mesh);
             forAll(meshFaces, i)
             {
-                label meshFaceI = meshFaces[i];
+                label meshFacei = meshFaces[i];
 
-                label patchI = patches.whichPatch(meshFaceI);
-                label own = mesh.faceOwner()[meshFaceI];
+                label patchi = patches.whichPatch(meshFacei);
+                label own = mesh.faceOwner()[meshFacei];
                 label nei = -1;
-                if (patchI == -1)
+                if (patchi == -1)
                 {
-                    nei = mesh.faceNeighbour()[meshFaceI];
+                    nei = mesh.faceNeighbour()[meshFacei];
                 }
 
-                label zoneI = mesh.faceZones().whichZone(meshFaceI);
+                label zoneI = mesh.faceZones().whichZone(meshFacei);
                 bool zoneFlip = false;
                 if (zoneI != -1)
                 {
-                    label index = mesh.faceZones()[zoneI].whichFace(meshFaceI);
+                    label index = mesh.faceZones()[zoneI].whichFace(meshFacei);
                     zoneFlip = mesh.faceZones()[zoneI].flipMap()[index];
                 }
 
                 meshMod.modifyFace
                 (
-                    mesh.faces()[meshFaceI].reverseFace(),  // modified face
-                    meshFaceI,                      // label of face
+                    mesh.faces()[meshFacei].reverseFace(),  // modified face
+                    meshFacei,                      // label of face
                     own,                            // owner
                     nei,                            // neighbour
                     true,                           // face flip
-                    patchI,                         // patch for face
+                    patchi,                         // patch for face
                     zoneI,                          // zone for face
                     zoneFlip                        // face flip in zone
                 );
@@ -533,11 +534,11 @@ int main(int argc, char *argv[])
         if (nAdded > 0)
         {
             DynamicList<polyPatch*> newPatches(nPatches);
-            forAll(mesh.boundaryMesh(), patchI)
+            forAll(mesh.boundaryMesh(), patchi)
             {
                 newPatches.append
                 (
-                    mesh.boundaryMesh()[patchI].clone
+                    mesh.boundaryMesh()[patchi].clone
                     (
                         mesh.boundaryMesh()
                     ).ptr()
@@ -545,16 +546,16 @@ int main(int argc, char *argv[])
             }
             for
             (
-                label patchI = mesh.boundaryMesh().size();
-                patchI < nPatches;
-                patchI++
+                label patchi = mesh.boundaryMesh().size();
+                patchi < nPatches;
+                patchi++
             )
             {
-                label nbrProcI = patchToNbrProc[patchI];
+                label nbrProci = patchToNbrProc[patchi];
 
-                Pout<< "Adding patch " << patchI
+                Pout<< "Adding patch " << patchi
                     << " between " << Pstream::myProcNo()
-                    << " and " << nbrProcI
+                    << " and " << nbrProci
                     << endl;
 
                 newPatches.append
@@ -563,10 +564,10 @@ int main(int argc, char *argv[])
                     (
                         0,                  // size
                         mesh.nFaces(),      // start
-                        patchI,             // index
+                        patchi,             // index
                         mesh.boundaryMesh(),// polyBoundaryMesh
                         Pstream::myProcNo(),// myProcNo
-                        nbrProcI            // neighbProcNo
+                        nbrProci            // neighbProcNo
                     )
                 );
             }
@@ -593,25 +594,25 @@ int main(int argc, char *argv[])
         // Determine points and extrusion
         pointField layer0Points(extrudePatch.nPoints());
         pointField displacement(extrudePatch.nPoints());
-        forAll(displacement, pointI)
+        forAll(displacement, pointi)
         {
-            const vector& patchNormal = extrudePatchPointNormals[pointI];
+            const vector& patchNormal = extrudePatchPointNormals[pointi];
 
             // layer0 point
-            layer0Points[pointI] = model()
+            layer0Points[pointi] = model()
             (
-                extrudePatch.localPoints()[pointI],
+                extrudePatch.localPoints()[pointi],
                 patchNormal,
                 0
             );
             // layerN point
             point extrudePt = model()
             (
-                extrudePatch.localPoints()[pointI],
+                extrudePatch.localPoints()[pointi],
                 patchNormal,
                 model().nLayers()
             );
-            displacement[pointI] = extrudePt - layer0Points[pointI];
+            displacement[pointi] = extrudePt - layer0Points[pointi];
         }
 
 
@@ -676,27 +677,27 @@ int main(int argc, char *argv[])
         );
 
         // Reset points according to extrusion model
-        forAll(layerExtrude.addedPoints(), pointI)
+        forAll(layerExtrude.addedPoints(), pointi)
         {
-            const labelList& pPoints = layerExtrude.addedPoints()[pointI];
-            forAll(pPoints, pPointI)
+            const labelList& pPoints = layerExtrude.addedPoints()[pointi];
+            forAll(pPoints, pPointi)
             {
-                label meshPointI = pPoints[pPointI];
+                label meshPointi = pPoints[pPointi];
 
                 point modelPt
                 (
                     model()
                     (
-                        extrudePatch.localPoints()[pointI],
-                        extrudePatchPointNormals[pointI],
-                        pPointI+1       // layer
+                        extrudePatch.localPoints()[pointi],
+                        extrudePatchPointNormals[pointi],
+                        pPointi+1       // layer
                     )
                 );
 
                 const_cast<DynamicList<point>&>
                 (
                     meshMod().points()
-                )[meshPointI] = modelPt;
+                )[meshPointi] = modelPt;
             }
         }
 
@@ -705,10 +706,10 @@ int main(int argc, char *argv[])
         const labelListList& layerFaces = layerExtrude.layerFaces();
         backPatchFaces.setSize(layerFaces.size());
         frontPatchFaces.setSize(layerFaces.size());
-        forAll(backPatchFaces, patchFaceI)
+        forAll(backPatchFaces, patchFacei)
         {
-            backPatchFaces[patchFaceI]  = layerFaces[patchFaceI].first();
-            frontPatchFaces[patchFaceI] = layerFaces[patchFaceI].last();
+            backPatchFaces[patchFacei]  = layerFaces[patchFacei].first();
+            frontPatchFaces[patchFacei] = layerFaces[patchFacei].last();
         }
 
 
@@ -761,9 +762,9 @@ int main(int argc, char *argv[])
                     layerExtrude.layerFaces()
                 )
             );
-            forAll(addedCells, faceI)
+            forAll(addedCells, facei)
             {
-                const labelList& aCells = addedCells[faceI];
+                const labelList& aCells = addedCells[facei];
                 forAll(aCells, i)
                 {
                     addedCellsSet.insert(aCells[i]);
@@ -785,7 +786,7 @@ int main(int argc, char *argv[])
         if (flipNormals)
         {
             Info<< "Flipping faces." << nl << endl;
-            faceList& faces = const_cast<faceList&>(fMesh.faces());
+            faceList& faces = const_cast<faceList&>(fMesh.surfFaces());
             forAll(faces, i)
             {
                 faces[i] = fMesh[i].reverseFace();
@@ -1058,6 +1059,8 @@ int main(int argc, char *argv[])
         FatalErrorInFunction
             << exit(FatalError);
     }
+    // Remove any left-over files
+    processorMeshes::removeFiles(mesh);
 
     // Need writing cellSet
     label nAdded = returnReduce(addedCellsSet.size(), sumOp<label>());

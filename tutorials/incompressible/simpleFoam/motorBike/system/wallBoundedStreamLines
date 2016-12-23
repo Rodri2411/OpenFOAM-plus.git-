@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  v1606+                                |
+|  \\    /   O peration     | Version:  plus                                  |
 |   \\  /    A nd           | Web:      www.OpenFOAM.com                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -10,12 +10,15 @@
 near
 {
     // Where to load it from
-    functionObjectLibs ("libfieldFunctionObjects.so");
+    libs            ("libfieldFunctionObjects.so");
 
     type nearWallFields;
 
     // Output every
-    outputControl   outputTime;
+    writeControl    writeTime;
+
+    // Calculate every
+    executeControl  writeTime;
 
     // Fields to be sampled. Per field original name and mapped field to
     // create.
@@ -26,29 +29,29 @@ near
     );
 
     // Patches/groups to sample (regular expressions)
-    patches (motorBikeGroup);
+    patches         (motorBikeGroup);
 
     // Distance to sample
-    distance 0.001;
+    distance        0.001;
 }
 
 // Use UNear to track along wall
 wallBoundedStreamLines
 {
     // Where to load it from (if not already in solver)
-    functionObjectLibs ("libfieldFunctionObjects.so");
+    libs            ("libfieldFunctionObjects.so");
     type            wallBoundedStreamLine;
 
     // Output every
-    outputControl   outputTime;
+    writeControl    writeTime;
 
     setFormat       vtk; //gnuplot; //xmgr; //raw; //jplot;
 
     // Velocity field to use for tracking.
-    UName UNear;
+    U               UNear;
 
-    // Interpolation method. Default is cellPoint. See sampleDict.
-    //interpolationScheme pointMVC;
+    // Interpolation method. Default is cellPoint.
+    // interpolationScheme pointMVC;
 
     // Tracked forwards (+U) or backwards (-U)
     trackForward    true;
@@ -62,10 +65,10 @@ wallBoundedStreamLines
     lifeTime        100;
 
     // Cloud name to use
-    cloudName       wallBoundedParticleTracks;
+    cloud           wallBoundedParticleTracks;
 
-    // Seeding method. See the sampleSets in sampleDict.
-    seedSampleSet   patchSeed;    //cloud;//triSurfaceMeshPointSet;
+    // Seeding method.
+    seedSampleSet   patchSeed;    //cloud; //triSurfaceMeshPointSet;
 
     uniformCoeffs
     {

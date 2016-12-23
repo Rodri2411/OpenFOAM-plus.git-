@@ -252,7 +252,7 @@ protected:
         (
             TrackData& td,
             const scalar dt,           // timestep
-            const label cellI,         // owner cell
+            const label celli,         // owner cell
             const scalar Re,           // Reynolds number
             const scalar Pr,           // Prandtl number - surface
             const scalar kappa,        // Thermal conductivity - surface
@@ -282,8 +282,7 @@ public:
         AddToPropertyTypes
         (
             ParcelType,
-            " scalar"
-          + " scalar"
+            "{scalar scalar}"
         );
 
 
@@ -295,9 +294,9 @@ public:
         (
             const polyMesh& mesh,
             const vector& position,
-            const label cellI,
-            const label tetFaceI,
-            const label tetPtI
+            const label celli,
+            const label tetFacei,
+            const label tetPti
         );
 
         //- Construct from components
@@ -305,9 +304,9 @@ public:
         (
             const polyMesh& mesh,
             const vector& position,
-            const label cellI,
-            const label tetFaceI,
-            const label tetPtI,
+            const label celli,
+            const label tetFacei,
+            const label tetPti,
             const label typeId,
             const scalar nParticle0,
             const scalar d0,
@@ -405,7 +404,7 @@ public:
             (
                 TrackData& td,
                 const scalar dt,
-                const label cellI
+                const label celli
             );
 
             //- Correct cell values using latest transfer information
@@ -414,7 +413,7 @@ public:
             (
                 TrackData& td,
                 const scalar dt,
-                const label cellI
+                const label celli
             );
 
             //- Calculate surface thermo properties
@@ -422,7 +421,7 @@ public:
             void calcSurfaceValues
             (
                 TrackData& td,
-                const label cellI,
+                const label celli,
                 const scalar T,
                 scalar& Ts,
                 scalar& rhos,
@@ -437,7 +436,7 @@ public:
             (
                 TrackData& td,
                 const scalar dt,
-                const label cellI
+                const label celli
             );
 
 
@@ -450,6 +449,10 @@ public:
             //- Write
             template<class CloudType>
             static void writeFields(const CloudType& c);
+
+            //- Write particle fields as objects into the obr registry
+            template<class CloudType>
+            static void writeObjects(const CloudType& c, objectRegistry& obr);
 
 
     // Ostream Operator

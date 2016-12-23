@@ -204,7 +204,8 @@ Foam::Function1Types::CSV<Type>::CSV
 (
     const word& entryName,
     const dictionary& dict,
-    const word& ext
+    const word& ext,
+    const fileName& fName
 )
 :
     TableBase<Type>(entryName, dict.subDict(entryName + ext)),
@@ -214,7 +215,7 @@ Foam::Function1Types::CSV<Type>::CSV
     componentColumns_(coeffs_.lookup("componentColumns")),
     separator_(coeffs_.lookupOrDefault<string>("separator", string(","))[0]),
     mergeSeparators_(readBool(coeffs_.lookup("mergeSeparators"))),
-    fName_(coeffs_.lookup("fileName"))
+    fName_(fName != fileName::null ? fName : coeffs_.lookup("fileName"))
 {
     if (componentColumns_.size() != pTraits<Type>::nComponents)
     {
@@ -263,41 +264,28 @@ template<class Type>
 void Foam::Function1Types::CSV<Type>::writeData(Ostream& os) const
 {
     Function1<Type>::writeData(os);
-    os  << token::END_STATEMENT << nl;
+    os.endEntry();
 
-    os.beginBlock(word(this->name() + "Coeffs")) << nl;
+    os.beginBlock(word(this->name() + "Coeffs"));
 
     // Note: for TableBase write the dictionary entries it needs but not
     // the values themselves
     TableBase<Type>::writeEntries(os);
 
-    os.writeKeyword("nHeaderLine") << nHeaderLine_
-        << token::END_STATEMENT << nl;
-    os.writeKeyword("refColumn") << refColumn_
-        << token::END_STATEMENT << nl;
+    os.writeEntry("nHeaderLine", nHeaderLine_);
+    os.writeEntry("refColumn",   refColumn_);
 
     // Force writing labelList in ascii
-    os.writeKeyword("componentColumns");
-    if (os.format() == IOstream::BINARY)
-    {
-        os.format(IOstream::ASCII);
-        os  << componentColumns_;
-        os.format(IOstream::BINARY);
-    }
-    else
-    {
-        os  << componentColumns_;
-    }
-    os  << token::END_STATEMENT << nl;
+    const enum IOstream::streamFormat fmt = os.format();
+    os.format(IOstream::ASCII);
+    os.writeEntry("componentColumns", componentColumns_);
+    os.format(fmt);
 
-    os.writeKeyword("separator") << string(separator_)
-        << token::END_STATEMENT << nl;
-    os.writeKeyword("mergeSeparators") << mergeSeparators_
-        << token::END_STATEMENT << nl;
-    os.writeKeyword("fileName") << fName_
-        << token::END_STATEMENT << nl;
+    os.writeEntry("separator",       string(separator_));
+    os.writeEntry("mergeSeparators", mergeSeparators_);
+    os.writeEntry("fileName",        fName_);
 
-    os.endBlock() << endl;
+    os.endBlock() << flush;
 }
 
 

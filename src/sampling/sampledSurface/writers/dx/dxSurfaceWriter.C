@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -39,19 +39,21 @@ namespace Foam
 void Foam::dxSurfaceWriter::writeGeometry
 (
     Ostream& os,
-    const pointField& points,
-    const faceList& faces
+    const meshedSurf& surf
 )
 {
+    const pointField& points = surf.points();
+    const faceList&    faces = surf.faces();
+
     // Write vertex coordinates
 
     os  << "# The irregular positions" << nl
         << "object 1 class array type float rank 1 shape 3 items "
         << points.size() << " data follows" << nl;
 
-    forAll(points, pointI)
+    forAll(points, pointi)
     {
-        const point& pt = points[pointI];
+        const point& pt = points[pointi];
 
         os  << float(pt.x()) << ' ' << float(pt.y()) << ' ' << float(pt.z())
             << nl;
@@ -63,14 +65,14 @@ void Foam::dxSurfaceWriter::writeGeometry
         << "object 2 class array type int rank 1 shape 3 items "
         << faces.size() << " data follows" << nl;
 
-    forAll(faces, faceI)
+    forAll(faces, facei)
     {
-        const face& f = faces[faceI];
+        const face& f = faces[facei];
 
         if (f.size() != 3)
         {
             FatalErrorInFunction
-                << "Face " << faceI << " vertices " << f
+                << "Face " << facei << " vertices " << f
                 << " is not a triangle."
                 << exit(FatalError);
         }

@@ -1,23 +1,23 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  v1606+                                |
+|  \\    /   O peration     | Version:  plus                                  |
 |   \\  /    A nd           | Web:      www.OpenFOAM.com                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
 
 streamLines
 {
+    // Where to load it from
+    libs            ("libfieldFunctionObjects.so");
+
     type            streamLine;
 
     // Output every
-    outputControl   outputTime;
-    // outputInterval 10;
+    writeControl    writeTime;
+    // writeInterval 10;
 
     setFormat       vtk; //gnuplot; //xmgr; //raw; //jplot; //csv; //ensight;
-
-    // Velocity field to use for tracking.
-    UName U;
 
     // Tracked forwards (+U) or backwards (-U)
     trackForward    true;
@@ -39,10 +39,10 @@ streamLines
 
 
     // Cloud name to use
-    cloudName       particleTracks;
+    cloud           particleTracks;
 
-    // Seeding method. See the sampleSets in sampleDict.
-    seedSampleSet   uniform;  //cloud;//triSurfaceMeshPointSet;
+    // Seeding method.
+    seedSampleSet   uniform;  //cloud; //triSurfaceMeshPointSet;
 
     uniformCoeffs
     {

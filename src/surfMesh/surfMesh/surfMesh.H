@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -98,10 +98,10 @@ private:
     // Private Member Functions
 
         //- Disallow construct as copy
-        surfMesh(const surfMesh&);
+        surfMesh(const surfMesh&) = delete;
 
         //- Disallow default bitwise assignment
-        void operator=(const surfMesh&);
+        void operator=(const surfMesh&) = delete;
 
 
 protected:
@@ -155,7 +155,11 @@ public:
     // Constructors
 
         //- Construct from IOobject, with alternative surface name
-        explicit surfMesh(const IOobject&, const word& surfName="");
+        explicit surfMesh
+        (
+            const IOobject&,
+            const word& surfName = word::null
+        );
 
         //- Construct by transferring components (points, faces) without zones.
         //  surfZones are added using addZones() member function
@@ -164,7 +168,7 @@ public:
             const IOobject&,
             const Xfer<pointField>&,
             const Xfer<faceList>&,
-            const word& surfName=""
+            const word& surfName = word::null
         );
 
         //- Construct copy/move from MeshedSurface
@@ -172,7 +176,7 @@ public:
         (
             const IOobject&,
             const Xfer<MeshedSurface<face>>& surf,
-            const word& surfName=""
+            const word& surfName = word::null
         );
 
 
@@ -182,7 +186,7 @@ public:
 
     // Member Functions
 
-        // Database
+      // Database
 
             //- Return the local mesh directory (dbDir()/meshSubDir)
             fileName meshDir() const;
@@ -196,10 +200,17 @@ public:
             const fileName& facesInstance() const;
 
             //- Set the instance for mesh files
-            void setInstance(const fileName&);
+            void setInstance
+            (
+                const fileName&,
+                IOobject::writeOption = IOobject::AUTO_WRITE
+            );
+
+            //- Adjust the write option for all components
+            void setWriteOption(IOobject::writeOption);
 
 
-        // Access
+      // Access
 
             //- Return the number of raw points
             virtual label nPoints() const;
@@ -229,6 +240,25 @@ public:
             //- Check the surface zone definitions
             void checkZones();
 
+
+            //- Return face area vectors (normals)
+            inline const vectorField& Sf() const
+            {
+                return MeshReference::faceAreas();
+            }
+
+            //- Return face area magnitudes
+            inline const scalarField& magSf() const
+            {
+                return MeshReference::magFaceAreas();
+            }
+
+            //- Face centres
+            inline const vectorField& Cf() const
+            {
+                return MeshReference::faceCentres();
+            }
+
             //- Add surface zones
             void addZones
             (
@@ -240,7 +270,6 @@ public:
             //  time directories
             virtual readUpdateState readUpdate();
 
-            //- Update the mesh corresponding to given map
 
             //- Remove surface zones
             void removeZones();
@@ -254,13 +283,32 @@ public:
                 const bool validate = true
             );
 
+            //- Reset mesh primitive data.
+            void resetPrimitives
+            (
+                const Xfer<List<point>>& points,
+                const Xfer<faceList>& faces,
+                const Xfer<surfZoneList>& zones,
+                const bool validate = true
+            );
+
 
             //- Transfer the contents of the argument and annul the argument
             void transfer(MeshedSurface<face>&);
 
 
+      // Writing
+
         //- Avoid masking the normal objectRegistry write
         using surfaceRegistry::write;
+
+        //- Write all components using given format, version and compression
+        virtual bool writeObject
+        (
+            IOstream::streamFormat fmt,
+            IOstream::versionNumber ver,
+            IOstream::compressionType cmp
+        ) const;
 
         //- Write to file
         static void write(const fileName&, const surfMesh&);
@@ -268,7 +316,8 @@ public:
         //- Write to file
         void write(const fileName&);
 
-        //  Storage management
+
+      // Storage management
 
             //- Transfer contents to the Xfer container as a MeshedSurface
             Xfer<MeshedSurface<face>> xfer();
@@ -290,6 +339,7 @@ public:
 
             //- Remove all files from mesh instance()
             void removeFiles() const;
+
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

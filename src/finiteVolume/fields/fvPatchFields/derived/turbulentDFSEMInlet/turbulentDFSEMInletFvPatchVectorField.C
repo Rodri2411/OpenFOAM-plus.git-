@@ -29,6 +29,7 @@ License
 #include "fvPatchFieldMapper.H"
 #include "momentOfInertia.H"
 #include "cartesianCS.H"
+#include "IFstream.H"
 #include "OFstream.H"
 #include "globalIndex.H"
 
@@ -106,19 +107,18 @@ void Foam::turbulentDFSEMInletFvPatchVectorField::writeLumleyCoeffs() const
     // Before interpolation/raw data
     if (interpolateR_)
     {
-        AverageIOField<symmTensor> Rexp
+        fileName valsFile
         (
-            IOobject
-            (
-                "R",
-                this->db().time().caseConstant(),
-                "boundaryData"/patch().name()/"0",
-                this->db(),
-                IOobject::MUST_READ,
-                IOobject::AUTO_WRITE,
-                false
-            )
+            this->db().time().caseConstant()
+           /"boundaryData"
+           /this->patch().name()
+           /"0"
+           /"R"
         );
+
+        IFstream is(valsFile);
+
+        Field<symmTensor> Rexp(is);
 
         OFstream os(db().time().path()/"lumley_input.out");
 
@@ -507,7 +507,7 @@ void Foam::turbulentDFSEMInletFvPatchVectorField::initialiseEddies()
     {
         WarningInFunction
             << "Patch: " << patch().patch().name()
-            << " on field " << dimensionedInternalField().name()
+            << " on field " << internalField().name()
             << ": No eddies seeded - please check your set-up" << endl;
     }
 }
@@ -726,7 +726,7 @@ turbulentDFSEMInletFvPatchVectorField
 
     perturb_(1e-5),
     mapMethod_("planarInterpolation"),
-    mapperPtr_(NULL),
+    mapperPtr_(nullptr),
     interpolateR_(false),
     R_(),
     interpolateL_(false),
@@ -772,7 +772,7 @@ turbulentDFSEMInletFvPatchVectorField
 
     perturb_(ptf.perturb_),
     mapMethod_(ptf.mapMethod_),
-    mapperPtr_(NULL),
+    mapperPtr_(nullptr),
     interpolateR_(ptf.interpolateR_),
     R_(ptf.R_, mapper),
     interpolateL_(ptf.interpolateL_),
@@ -817,7 +817,7 @@ turbulentDFSEMInletFvPatchVectorField
 
     perturb_(dict.lookupOrDefault<scalar>("perturb", 1e-5)),
     mapMethod_(dict.lookup("mapMethod")),
-    mapperPtr_(NULL),
+    mapperPtr_(nullptr),
     interpolateR_(false),
     R_(interpolateOrRead<symmTensor>("R", dict, interpolateR_)),
     interpolateL_(false),
@@ -848,7 +848,7 @@ turbulentDFSEMInletFvPatchVectorField
     eddy::debug = debug;
 
     // Set UMean as patch area average value
-    UMean_ = gSum(U_*patch().magSf())/gSum(patch().magSf());
+    UMean_ = gSum(U_*patch().magSf())/(gSum(patch().magSf()) + ROOTVSMALL);
 }
 
 
@@ -865,7 +865,7 @@ turbulentDFSEMInletFvPatchVectorField
 
     perturb_(ptf.perturb_),
     mapMethod_(ptf.mapMethod_),
-    mapperPtr_(NULL),
+    mapperPtr_(nullptr),
     interpolateR_(ptf.interpolateR_),
     R_(ptf.R_),
     interpolateL_(ptf.interpolateL_),
@@ -909,7 +909,7 @@ turbulentDFSEMInletFvPatchVectorField
 
     perturb_(ptf.perturb_),
     mapMethod_(ptf.mapMethod_),
-    mapperPtr_(NULL),
+    mapperPtr_(nullptr),
     interpolateR_(ptf.interpolateR_),
     R_(ptf.R_),
     interpolateL_(ptf.interpolateL_),
@@ -1104,9 +1104,9 @@ void Foam::turbulentDFSEMInletFvPatchVectorField::write(Ostream& os) const
     fvPatchField<vector>::write(os);
     writeEntry("value", os);
     os.writeKeyword("delta") << delta_ << token::END_STATEMENT << nl;
-    writeEntryIfDifferent(os, "d", 1.0, d_);
-    writeEntryIfDifferent(os, "kappa", 0.41, kappa_);
-    writeEntryIfDifferent(os, "perturb", 1e-5, perturb_);
+    writeEntryIfDifferent<scalar>(os, "d", 1.0, d_);
+    writeEntryIfDifferent<scalar>(os, "kappa", 0.41, kappa_);
+    writeEntryIfDifferent<scalar>(os, "perturb", 1e-5, perturb_);
     writeEntryIfDifferent<label>(os, "nCellPerEddy", 5, nCellPerEddy_);
     writeEntryIfDifferent(os, "writeEddies", false, writeEddies_);
 

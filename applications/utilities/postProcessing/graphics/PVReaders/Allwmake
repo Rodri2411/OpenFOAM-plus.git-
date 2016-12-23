@@ -5,35 +5,28 @@ cd ${0%/*} || exit 1    # Run from this directory
 export WM_CONTINUE_ON_ERROR=true
 
 # Parse arguments for library compilation
-targetType=libso
 . $WM_PROJECT_DIR/wmake/scripts/AllwmakeParseArguments
 
 #
-# There are several prerequisites for building a plugin
+# There are several prerequisites for building plugins
 #
 #set -x
 canBuildPlugin()
 {
     [ -d "$ParaView_DIR" -a -r "$ParaView_DIR" ] || {
-        echo
-        echo "WARNING: cannot build ParaView plugin(s) without paraview directory"
+        echo "==> cannot build ParaView plugins without paraview directory"
         echo "    ParaView_DIR=$ParaView_DIR"
-        echo
         return 1
     }
 
     [ -n "$PV_PLUGIN_PATH" ] || {
-        echo
-        echo "${PWD##*/} : invalid PV_PLUGIN_PATH for building ParaView plugin(s)"
+        echo "==> ${PWD##*/} : invalid PV_PLUGIN_PATH for building ParaView plugins"
         echo "    PV_PLUGIN_PATH=${PV_PLUGIN_PATH:-unset}"
-        echo
         return 1
     }
 
     type cmake > /dev/null 2>&1 || {
-        echo
-        echo "WARNING: cannot build ParaView plugin(s) without cmake"
-        echo
+        echo "==> cannot build ParaView plugins without cmake"
         return 1
     }
 
@@ -42,29 +35,29 @@ canBuildPlugin()
 
 
 # -----------------------------------------------------------------------------
-case "$ParaView_VERSION" in
-4* | 5*)
+
+# major version as per paraview include directory:
+# Eg, "PREFIX/include/paraview-5.0" -> "5.0"
+major="${ParaView_INCLUDE_DIR##*-}"
+
+case "$major" in
+[45].[0-9]*)
     if canBuildPlugin
     then
     (
-        # C++ compiler for CMake
-        [ -n "$WM_CXX" ] && export CXX="$WM_CXX"
-
         wmake $targetType vtkPVReaders
-        PVblockMeshReader/Allwmake $*
-        PVFoamReader/Allwmake $*
+        PVblockMeshReader/Allwmake $targetType $*
+        PVFoamReader/Allwmake $targetType  $*
 
-        # dummy directory to trigger proper 'wclean all' behaviour
+        # Dummy directory to trigger proper 'wclean all' behaviour
         # - the Allwclean will otherwise not be used
         mkdir -p Make
     )
     fi
     ;;
 *)
-    echo
-    echo "NOTE: skipping build of ParaView plugin(s)"
-    echo "    different version: ParaView_VERSION=$ParaView_VERSION"
-    echo
+    echo "==> skip build of ParaView plugins"
+    echo "    include directory was for paraview major version '${major:-none}'"
     ;;
 esac
 

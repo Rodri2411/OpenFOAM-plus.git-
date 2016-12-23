@@ -41,73 +41,7 @@ namespace Foam
 
 void Foam::sampledSurface::clearGeom() const
 {
-    deleteDemandDrivenData(SfPtr_);
-    deleteDemandDrivenData(magSfPtr_);
-    deleteDemandDrivenData(CfPtr_);
     area_ = -1;
-}
-
-
-void Foam::sampledSurface::makeSf() const
-{
-    // It is an error to recalculate if the pointer is already set
-    if (SfPtr_)
-    {
-        FatalErrorInFunction
-            << "face area vectors already exist"
-            << abort(FatalError);
-    }
-
-    const faceList& theFaces = faces();
-    SfPtr_ = new vectorField(theFaces.size());
-
-    vectorField& values = *SfPtr_;
-    forAll(theFaces, faceI)
-    {
-        values[faceI] = theFaces[faceI].normal(points());
-    }
-}
-
-
-void Foam::sampledSurface::makeMagSf() const
-{
-    // It is an error to recalculate if the pointer is already set
-    if (magSfPtr_)
-    {
-        FatalErrorInFunction
-            << "mag face areas already exist"
-            << abort(FatalError);
-    }
-
-    const faceList& theFaces = faces();
-    magSfPtr_ = new scalarField(theFaces.size());
-
-    scalarField& values = *magSfPtr_;
-    forAll(theFaces, faceI)
-    {
-        values[faceI] = theFaces[faceI].mag(points());
-    }
-}
-
-
-void Foam::sampledSurface::makeCf() const
-{
-    // It is an error to recalculate if the pointer is already set
-    if (CfPtr_)
-    {
-        FatalErrorInFunction
-            << "face centres already exist"
-            << abort(FatalError);
-    }
-
-    const faceList& theFaces = faces();
-    CfPtr_ = new vectorField(theFaces.size());
-
-    vectorField& values = *CfPtr_;
-    forAll(theFaces, faceI)
-    {
-        values[faceI] = theFaces[faceI].centre(points());
-    }
 }
 
 
@@ -156,9 +90,6 @@ Foam::sampledSurface::sampledSurface
     name_(name),
     mesh_(mesh),
     interpolate_(interpolate),
-    SfPtr_(NULL),
-    magSfPtr_(NULL),
-    CfPtr_(NULL),
     area_(-1)
 {}
 
@@ -173,9 +104,6 @@ Foam::sampledSurface::sampledSurface
     name_(name),
     mesh_(mesh),
     interpolate_(dict.lookupOrDefault("interpolate", false)),
-    SfPtr_(NULL),
-    magSfPtr_(NULL),
-    CfPtr_(NULL),
     area_(-1)
 {
     dict.readIfPresent("name", name_);
@@ -191,39 +119,6 @@ Foam::sampledSurface::~sampledSurface()
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
-
-const Foam::vectorField& Foam::sampledSurface::Sf() const
-{
-    if (!SfPtr_)
-    {
-        makeSf();
-    }
-
-    return *SfPtr_;
-}
-
-
-const Foam::scalarField& Foam::sampledSurface::magSf() const
-{
-    if (!magSfPtr_)
-    {
-        makeMagSf();
-    }
-
-    return *magSfPtr_;
-}
-
-
-const Foam::vectorField& Foam::sampledSurface::Cf() const
-{
-    if (!CfPtr_)
-    {
-        makeCf();
-    }
-
-    return *CfPtr_;
-}
-
 
 Foam::scalar Foam::sampledSurface::area() const
 {
@@ -243,7 +138,7 @@ Foam::tmp<Foam::scalarField> Foam::sampledSurface::sample
 ) const
 {
     NotImplemented;
-    return tmp<scalarField>(NULL);
+    return tmp<scalarField>(nullptr);
 }
 
 
@@ -253,7 +148,7 @@ Foam::tmp<Foam::vectorField> Foam::sampledSurface::sample
 ) const
 {
     NotImplemented;
-    return tmp<vectorField>(NULL);
+    return tmp<vectorField>(nullptr);
 }
 
 
@@ -263,7 +158,7 @@ Foam::tmp<Foam::sphericalTensorField> Foam::sampledSurface::sample
 ) const
 {
     NotImplemented;
-    return tmp<sphericalTensorField>(NULL);
+    return tmp<sphericalTensorField>(nullptr);
 }
 
 
@@ -273,7 +168,7 @@ Foam::tmp<Foam::symmTensorField> Foam::sampledSurface::sample
 ) const
 {
     NotImplemented;
-    return tmp<symmTensorField>(NULL);
+    return tmp<symmTensorField>(nullptr);
 }
 
 
@@ -283,7 +178,7 @@ Foam::tmp<Foam::tensorField> Foam::sampledSurface::sample
 ) const
 {
     NotImplemented;
-    return tmp<tensorField>(NULL);
+    return tmp<tensorField>(nullptr);
 }
 
 
@@ -293,9 +188,9 @@ Foam::sampledSurface::project(const Field<scalar>& field) const
     tmp<Field<scalar>> tRes(new Field<scalar>(faces().size()));
     Field<scalar>& res = tRes.ref();
 
-    forAll(faces(), faceI)
+    forAll(faces(), facei)
     {
-        res[faceI] = field[faceI];
+        res[facei] = field[facei];
     }
 
     return tRes;

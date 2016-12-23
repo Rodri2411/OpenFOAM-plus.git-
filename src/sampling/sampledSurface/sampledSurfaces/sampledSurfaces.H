@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -29,6 +29,44 @@ Description
 
     The write() method is used to sample and write files.
 
+    Example of function object specification:
+
+    \verbatim
+    surfaces
+    {
+        type    surfaces;
+        libs    ("libsampling.so");
+
+        // Write at same frequency as fields
+        writeControl    outputTime;
+        writeInterval   1;
+
+        // Fields to be sampled
+        fields          (p U);
+
+        // Interpolation scheme to use
+        interpolationScheme cell;
+
+        // Output surface format
+        surfaceFormat   vtk;
+        formatOptions   {  }
+
+        surfaces
+        (
+            f0surf
+            {
+                type        sampledTriSurfaceMesh;
+                surface     f0surf.obj;
+                source      cells;
+                keepIds     true;
+            }
+        );
+    }
+    \endverbatim
+
+See also
+    Foam::surfMeshSamplers
+
 SourceFiles
     sampledSurfaces.C
 
@@ -37,9 +75,10 @@ SourceFiles
 #ifndef sampledSurfaces_H
 #define sampledSurfaces_H
 
-#include "functionObjectState.H"
+#include "regionFunctionObject.H"
 #include "sampledSurface.H"
 #include "surfaceWriter.H"
+#include "mergedSurf.H"
 #include "volFieldsFwd.H"
 #include "surfaceFieldsFwd.H"
 #include "wordReList.H"
@@ -50,6 +89,8 @@ SourceFiles
 namespace Foam
 {
 
+// Forward declaration of classes
+class Time;
 class fvMesh;
 class dictionary;
 
@@ -59,30 +100,9 @@ class dictionary;
 
 class sampledSurfaces
 :
-    public functionObjectState,
+    public functionObjects::regionFunctionObject,
     public PtrList<sampledSurface>
 {
-    // Private classes
-
-
-        //- Class used for surface merging information
-        class mergeInfo
-        {
-        public:
-            pointField points;
-            faceList   faces;
-            labelList  pointsMap;
-
-            //- Clear all storage
-            void clear()
-            {
-                points.clear();
-                faces.clear();
-                pointsMap.clear();
-            }
-        };
-
-
     // Static data members
 
         //- Output verbosity
@@ -94,8 +114,8 @@ class sampledSurfaces
 
     // Private data
 
-        //- Const reference to database
-        const objectRegistry& obr_;
+        //- Const reference to fvMesh
+        const fvMesh& mesh_;
 
         //- Load fields from files (not from objectRegistry)
         const bool loadFromFiles_;
@@ -115,8 +135,8 @@ class sampledSurfaces
 
         // surfaces
 
-            //- Information for merging surfaces
-            List<mergeInfo> mergeList_;
+            //- Merged meshed surfaces (parallel only)
+            List<mergedSurf> mergedList_;
 
 
         // Calculated
@@ -133,6 +153,9 @@ class sampledSurfaces
 
         //- Write geometry only
         void writeGeometry() const;
+
+        //- Write scalar field with original ids
+        void writeOriginalIds();
 
         //- Write sampled fieldName on surface and on outputDir path
         template<class Type>
@@ -174,6 +197,14 @@ public:
 
     // Constructors
 
+        //- Construct from Time and dictionary
+        sampledSurfaces
+        (
+            const word& name,
+            const Time& time,
+            const dictionary& dict
+        );
+
         //- Construct for given objectRegistry and dictionary
         //  allow the possibility to load fields from files
         sampledSurfaces
@@ -203,30 +234,17 @@ public:
         //  Return false if no surfaces required an update.
         virtual bool update();
 
-
-        //- Return name of the set of surfaces
-        virtual const word& name() const
-        {
-            return name_;
-        }
-
         //- Set verbosity level
         void verbose(const bool verbosity = true);
 
+        //- Read the sampledSurfaces dictionary
+        virtual bool read(const dictionary&);
+
         //- Execute, currently does nothing
-        virtual void execute();
-
-        //- Execute at the final time-loop, currently does nothing
-        virtual void end();
-
-        //- Called when time was set at the end of the Time::operator++
-        virtual void timeSet();
+        virtual bool execute();
 
         //- Sample and write
-        virtual void write();
-
-        //- Read the sampledSurfaces dictionary
-        virtual void read(const dictionary&);
+        virtual bool write();
 
         //- Update for changes of mesh - expires the surfaces
         virtual void updateMesh(const mapPolyMesh&);

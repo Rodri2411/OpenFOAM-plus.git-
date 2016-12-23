@@ -6,8 +6,6 @@
 .*~
 *.bak
 *.bak[0-9][0-9]
-*.orig
-*.orig[0-9][0-9]
 \#*\#
 
 # File-browser settings - anywhere
@@ -77,9 +75,10 @@ doc/Doxygen/DTAGS
 # Ignore .tags in the main directory
 /.tags
 
-# Ignore eclipse project files in the main directory
+# Ignore project files in the main directory
 /.cproject
 /.project
+/.dir-locals.el
 
 # Ignore the test directory
 /tutorialsTest

@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -229,18 +229,25 @@ Foam::surfMesh::~surfMesh()
 
 void Foam::surfMesh::updatePointsRef()
 {
-    // Assign the reference to the points (this is truly ugly)
-    reinterpret_cast<SubField<point>&>
+    // Assign the reference to the points (quite ugly)
+    // points() are returned as Field but are actually stored as SubField
+    reinterpret_cast<typename MeshReference::PointFieldType&>
     (
         const_cast<Field<point>&>(MeshReference::points())
-    ) = reinterpret_cast<SubField<point>&>(this->storedPoints());
+    ).shallowCopy
+    (
+        this->storedPoints()
+    );
 }
 
 
 void Foam::surfMesh::updateFacesRef()
 {
-    // Assign the reference to the faces
-    shallowCopy(this->storedFaces());
+    // Assign the reference to the faces (UList)
+    static_cast<MeshReference&>(*this).shallowCopy
+    (
+        this->storedFaces()
+    );
 }
 
 
@@ -260,7 +267,28 @@ void Foam::surfMesh::resetPrimitives
 )
 {
     // Clear addressing.
-    MeshReference::clearGeom();
+    clearOut();
+
+    Allocator::reset(points, faces, zones);
+    this->updateRefs();
+
+    if (validate)
+    {
+        checkZones();
+    }
+}
+
+
+void Foam::surfMesh::resetPrimitives
+(
+    const Xfer<List<point>>& points,
+    const Xfer<faceList>& faces,
+    const Xfer<surfZoneList>& zones,
+    const bool validate
+)
+{
+    // Clear addressing.
+    clearOut();
 
     Allocator::reset(points, faces, zones);
     this->updateRefs();
@@ -278,7 +306,7 @@ void Foam::surfMesh::transfer
 )
 {
     // Clear addressing.
-    MeshReference::clearGeom();
+    clearOut();
 
     this->storedIOPoints().transfer(surf.storedPoints());
     this->storedIOFaces().transfer(surf.storedFaces());
@@ -288,7 +316,8 @@ void Foam::surfMesh::transfer
 }
 
 
-Foam::Xfer<Foam::MeshedSurface<Foam::face>> Foam::surfMesh::xfer()
+Foam::Xfer<Foam::MeshedSurface<Foam::face>>
+Foam::surfMesh::xfer()
 {
     Xfer<MeshedSurface<face>> xf;
 
@@ -300,7 +329,7 @@ Foam::Xfer<Foam::MeshedSurface<Foam::face>> Foam::surfMesh::xfer()
     this->updateRefs();
 
     // Clear addressing.
-    MeshReference::clearGeom();
+    clearOut();
 
     return xf;
 }

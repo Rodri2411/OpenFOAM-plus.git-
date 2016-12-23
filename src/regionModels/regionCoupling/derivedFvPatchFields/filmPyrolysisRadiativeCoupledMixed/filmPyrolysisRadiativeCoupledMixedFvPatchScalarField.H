@@ -34,9 +34,9 @@ Description
     {
         type            filmPyrolysisRadiativeCoupledMixed;
         Tnbr            T;
-        kappa           fluidThermo;
+        kappaMethod     fluidThermo;
+        kappa           none;
         Qr              Qr;
-        kappaName       none;
         filmDeltaDry    0.0;
         filmDeltaWet    3e-4;
         value           $internalField;
@@ -66,11 +66,11 @@ Description
 
     Notes:
 
-    \li \c kappa and \c kappaName are inherited from temperatureCoupledBase.
-    \li \c Qr is the radiative flux defined in the radiation model.
+    - \c kappaMethod and \c kappa are inherited from temperatureCoupledBase.
+    - Qr is the radiative flux defined in the radiation model.
 
 
-SeeAlso
+See also
     Foam::temperatureCoupledBase
 
 SourceFiles

@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -30,12 +30,11 @@ License
 
 namespace Foam
 {
-defineTypeNameAndDebug(cloud, 0);
+    defineTypeNameAndDebug(cloud, 0);
 
-const word cloud::prefix("lagrangian");
-word cloud::defaultName("defaultCloud");
+    const word cloud::prefix("lagrangian");
+    word cloud::defaultName("defaultCloud");
 }
-
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -45,7 +44,7 @@ Foam::cloud::cloud(const objectRegistry& obr, const word& cloudName)
     (
         IOobject
         (
-            (cloudName.size() ? cloudName : defaultName),
+            cloudName,
             obr.time().timeName(),
             prefix,
             obr,
@@ -65,6 +64,12 @@ Foam::cloud::~cloud()
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 void Foam::cloud::autoMap(const mapPolyMesh&)
+{
+    NotImplemented;
+}
+
+
+void Foam::cloud::writeObjects(objectRegistry& obr) const
 {
     NotImplemented;
 }

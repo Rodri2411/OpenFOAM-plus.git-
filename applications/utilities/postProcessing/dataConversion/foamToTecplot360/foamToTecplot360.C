@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -31,44 +31,41 @@ Description
     Tecplot binary file format writer.
 
 Usage
+    \b foamToTecplot360 [OPTION]
 
-    - foamToTecplot360 [OPTION]
+    Options:
+      - \par -fields \<names\>
+        Convert selected fields only. For example,
+        \verbatim
+          -fields '( p T U )'
+        \endverbatim
+        The quoting is required to avoid shell expansions and to pass the
+        information as a single argument.
 
-    \param -fields \<names\>\n
-    Convert selected fields only. For example,
-    \verbatim
-         -fields '( p T U )'
-    \endverbatim
-    The quoting is required to avoid shell expansions and to pass the
-    information as a single argument.
+      - \par -cellSet \<name\>
+      - \par -faceSet \<name\>
+        Restrict conversion to the cellSet, faceSet.
 
-    \param -cellSet \<name\>\n
-    \param -faceSet \<name\>\n
-    Restrict conversion to the cellSet, faceSet.
+      - \par -nearCellValue
+        Output cell value on patches instead of patch value itself
 
-    \param -nearCellValue \n
-    Output cell value on patches instead of patch value itself
+      - \par -noInternal
+        Do not generate file for mesh, only for patches
 
-    \param -noInternal \n
-    Do not generate file for mesh, only for patches
+      - \par -noPointValues
+        No pointFields
 
-    \param -noPointValues \n
-    No pointFields
+      - \par -noFaceZones
+        No faceZones
 
-    \param -noFaceZones \n
-    No faceZones
-
-    \param -excludePatches \<patchNames\>\n
-    Specify patches (wildcards) to exclude. For example,
-    \verbatim
-         -excludePatches '( inlet_1 inlet_2 "proc.*")'
-    \endverbatim
-    The quoting is required to avoid shell expansions and to pass the
-    information as a single argument. The double quotes denote a regular
-    expression.
-
-    \param -useTimeName \n
-    use the time index in the VTK file name instead of the time index
+      - \par -excludePatches \<patchNames\>
+        Specify patches (wildcards) to exclude. For example,
+        \verbatim
+          -excludePatches '( inlet_1 inlet_2 "proc.*")'
+        \endverbatim
+        The quoting is required to avoid shell expansions and to pass the
+        information as a single argument. The double quotes denote a regular
+        expression.
 
 \*---------------------------------------------------------------------------*/
 
@@ -83,22 +80,17 @@ Usage
 #include "passiveParticleCloud.H"
 #include "faceSet.H"
 #include "stringListOps.H"
-#include "wordRe.H"
+#include "wordReList.H"
 
-#include "vtkMesh.H"
+#include "meshSubsetHelper.H"
 #include "readFields.H"
 #include "tecplotWriter.H"
-
-#include "TECIO.h"
-
-// Note: needs to be after TECIO to prevent Foam::Time conflicting with
-// Xlib Time.
 #include "fvCFD.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 template<class GeoField>
-void print(const char* msg, Ostream& os, const PtrList<GeoField>& flds)
+void print(const char* msg, Ostream& os, const PtrList<const GeoField>& flds)
 {
     if (flds.size())
     {
@@ -132,36 +124,35 @@ labelList getSelectedPatches
 
     Info<< "Combining patches:" << endl;
 
-    forAll(patches, patchI)
+    forAll(patches, patchi)
     {
-        const polyPatch& pp = patches[patchI];
+        const polyPatch& pp = patches[patchi];
 
         if
         (
             isType<emptyPolyPatch>(pp)
-            || (Pstream::parRun() && isType<processorPolyPatch>(pp))
+         || (Pstream::parRun() && isType<processorPolyPatch>(pp))
         )
         {
-            Info<< "    discarding empty/processor patch " << patchI
+            Info<< "    discarding empty/processor patch " << patchi
                 << " " << pp.name() << endl;
         }
         else if (findStrings(excludePatches, pp.name()))
         {
-            Info<< "    excluding patch " << patchI
+            Info<< "    excluding patch " << patchi
                 << " " << pp.name() << endl;
         }
         else
         {
-            patchIDs.append(patchI);
-            Info<< "    patch " << patchI << " " << pp.name() << endl;
+            patchIDs.append(patchi);
+            Info<< "    patch " << patchi << " " << pp.name() << endl;
         }
     }
     return patchIDs.shrink();
 }
 
 
-
-
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 int main(int argc, char *argv[])
 {
@@ -169,10 +160,8 @@ int main(int argc, char *argv[])
     (
         "Tecplot binary file format writer"
     );
-
     timeSelector::addOptions();
     #include "addRegionOption.H"
-
     argList::addOption
     (
         "fields",
@@ -189,7 +178,7 @@ int main(int argc, char *argv[])
     (
         "faceSet",
         "name",
-        "restrict conversion to the specified cellSet"
+        "restrict conversion to the specified faceSet"
     );
     argList::addBoolOption
     (
@@ -247,29 +236,26 @@ int main(int argc, char *argv[])
     }
 
     word cellSetName;
-    string vtkName;
+    word faceSetName;
+    string pltName = runTime.caseName();
 
     if (args.optionReadIfPresent("cellSet", cellSetName))
     {
-        vtkName = cellSetName;
+        pltName = cellSetName;
     }
     else if (Pstream::parRun())
     {
         // Strip off leading casename, leaving just processor_DDD ending.
-        vtkName = runTime.caseName();
+        pltName = runTime.caseName();
 
-        string::size_type i = vtkName.rfind("processor");
+        string::size_type i = pltName.rfind("processor");
 
         if (i != string::npos)
         {
-            vtkName = vtkName.substr(i);
+            pltName = pltName.substr(i);
         }
     }
-    else
-    {
-        vtkName = runTime.caseName();
-    }
-
+    args.optionReadIfPresent("faceSet", faceSetName);
 
     instantList timeDirs = timeSelector::select0(runTime, args);
 
@@ -277,9 +263,9 @@ int main(int argc, char *argv[])
 
     // TecplotData/ directory in the case
     fileName fvPath(runTime.path()/"Tecplot360");
-    // Directory of mesh (region0 gets filtered out)
-    fileName regionPrefix = "";
 
+    // Directory of mesh (region0 gets filtered out)
+    fileName regionPrefix;
     if (regionName != polyMesh::defaultRegion)
     {
         fvPath = fvPath/regionName;
@@ -293,14 +279,15 @@ int main(int argc, char *argv[])
             args.optionFound("time")
          || args.optionFound("latestTime")
          || cellSetName.size()
+         || faceSetName.size()
          || regionName != polyMesh::defaultRegion
         )
         {
-            Info<< "Keeping old files in " << fvPath << nl << endl;
+            Info<< "Keeping old tecplot files in " << fvPath << nl << endl;
         }
         else
         {
-            Info<< "Deleting old VTK files in " << fvPath << nl << endl;
+            Info<< "Deleting old tecplot files in " << fvPath << nl << endl;
 
             rmDir(fvPath);
         }
@@ -308,9 +295,8 @@ int main(int argc, char *argv[])
 
     mkDir(fvPath);
 
-
-    // mesh wrapper; does subsetting and decomposition
-    vtkMesh vMesh(mesh, cellSetName);
+    // Mesh wrapper: does subsetting
+    meshSubsetHelper myMesh(mesh, meshSubsetHelper::SET, cellSetName);
 
     forAll(timeDirs, timeI)
     {
@@ -318,20 +304,19 @@ int main(int argc, char *argv[])
 
         Info<< "Time: " << runTime.timeName() << endl;
 
-        const word timeDesc = name(timeI);    //name(runTime.timeIndex());
+        const word timeDesc = name(timeI); // Foam::name(runTime.timeIndex());
 
         // Check for new polyMesh/ and update mesh, fvMeshSubset and cell
         // decomposition.
-        polyMesh::readUpdateState meshState = vMesh.readUpdate();
+        polyMesh::readUpdateState meshState = myMesh.readUpdate();
+        const fvMesh& mesh = myMesh.mesh();
 
-        const fvMesh& mesh = vMesh.mesh();
-
-        INTEGER4 nFaceNodes = 0;
-        forAll(mesh.faces(), faceI)
+        // TotalNumFaceNodes
+        int32_t nFaceNodes = 0;
+        forAll(mesh.faces(), facei)
         {
-            nFaceNodes += mesh.faces()[faceI].size();
+            nFaceNodes += mesh.faces()[facei].size();
         }
-
 
         // Read all fields on the new mesh
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -347,24 +332,24 @@ int main(int argc, char *argv[])
 
         // Construct the vol fields (on the original mesh if subsetted)
 
-        PtrList<volScalarField> vsf;
-        readFields(vMesh, vMesh.baseMesh(), objects, selectedFields, vsf);
+        PtrList<const volScalarField> vsf;
+        readFields(myMesh, myMesh.baseMesh(), objects, selectedFields, vsf);
         print("    volScalarFields            :", Info, vsf);
 
-        PtrList<volVectorField> vvf;
-        readFields(vMesh, vMesh.baseMesh(), objects, selectedFields, vvf);
+        PtrList<const volVectorField> vvf;
+        readFields(myMesh, myMesh.baseMesh(), objects, selectedFields, vvf);
         print("    volVectorFields            :", Info, vvf);
 
-        PtrList<volSphericalTensorField> vSpheretf;
-        readFields(vMesh, vMesh.baseMesh(), objects, selectedFields, vSpheretf);
+        PtrList<const volSphericalTensorField> vSpheretf;
+        readFields(myMesh, myMesh.baseMesh(), objects, selectedFields, vSpheretf);
         print("    volSphericalTensorFields   :", Info, vSpheretf);
 
-        PtrList<volSymmTensorField> vSymmtf;
-        readFields(vMesh, vMesh.baseMesh(), objects, selectedFields, vSymmtf);
+        PtrList<const volSymmTensorField> vSymmtf;
+        readFields(myMesh, myMesh.baseMesh(), objects, selectedFields, vSymmtf);
         print("    volSymmTensorFields        :", Info, vSymmtf);
 
-        PtrList<volTensorField> vtf;
-        readFields(vMesh, vMesh.baseMesh(), objects, selectedFields, vtf);
+        PtrList<const volTensorField> vtf;
+        readFields(myMesh, myMesh.baseMesh(), objects, selectedFields, vtf);
         print("    volTensorFields            :", Info, vtf);
 
 
@@ -378,11 +363,11 @@ int main(int argc, char *argv[])
                 << " (\"-noPointValues\" (at your option)\n";
         }
 
-        PtrList<pointScalarField> psf;
-        PtrList<pointVectorField> pvf;
-        //PtrList<pointSphericalTensorField> pSpheretf;
-        //PtrList<pointSymmTensorField> pSymmtf;
-        //PtrList<pointTensorField> ptf;
+        PtrList<const pointScalarField> psf;
+        PtrList<const pointVectorField> pvf;
+        //PtrList<const pointSphericalTensorField> pSpheretf;
+        //PtrList<const pointSymmTensorField> pSymmtf;
+        //PtrList<const pointTensorField> ptf;
 
 
         if (!noPointValues)
@@ -417,8 +402,8 @@ int main(int argc, char *argv[])
 
             readFields
             (
-                vMesh,
-                pointMesh::New(vMesh.baseMesh()),
+                myMesh,
+                pointMesh::New(myMesh.baseMesh()),
                 objects,
                 selectedFields,
                 psf
@@ -427,8 +412,8 @@ int main(int argc, char *argv[])
 
             readFields
             (
-                vMesh,
-                pointMesh::New(vMesh.baseMesh()),
+                myMesh,
+                pointMesh::New(myMesh.baseMesh()),
                 objects,
                 selectedFields,
                 pvf
@@ -437,8 +422,8 @@ int main(int argc, char *argv[])
 
             //readFields
             //(
-            //    vMesh,
-            //    pointMesh::New(vMesh.baseMesh()),
+            //    myMesh,
+            //    pointMesh::New(myMesh.baseMesh()),
             //    objects,
             //    selectedFields,
             //    pSpheretf
@@ -447,8 +432,8 @@ int main(int argc, char *argv[])
             //
             //readFields
             //(
-            //    vMesh,
-            //    pointMesh::New(vMesh.baseMesh()),
+            //    myMesh,
+            //    pointMesh::New(myMesh.baseMesh()),
             //    objects,
             //    selectedFields,
             //    pSymmtf
@@ -457,8 +442,8 @@ int main(int argc, char *argv[])
             //
             //readFields
             //(
-            //    vMesh,
-            //    pointMesh::New(vMesh.baseMesh()),
+            //    myMesh,
+            //    pointMesh::New(myMesh.baseMesh()),
             //    objects,
             //    selectedFields,
             //    ptf
@@ -472,23 +457,23 @@ int main(int argc, char *argv[])
         // ~~~~~~~~~~~~~~~
 
         string varNames;
-        DynamicList<INTEGER4> varLocation;
+        DynamicList<int32_t> varLocation;
 
         string cellVarNames;
-        DynamicList<INTEGER4> cellVarLocation;
+        DynamicList<int32_t> cellVarLocation;
 
         // volFields
         tecplotWriter::getTecplotNames
         (
             vsf,
-            ValueLocation_CellCentered,
+            tecplotWriter::CELL_CENTERED,
             varNames,
             varLocation
         );
         tecplotWriter::getTecplotNames
         (
             vsf,
-            ValueLocation_CellCentered,
+            tecplotWriter::CELL_CENTERED,
             cellVarNames,
             cellVarLocation
         );
@@ -496,14 +481,14 @@ int main(int argc, char *argv[])
         tecplotWriter::getTecplotNames
         (
             vvf,
-            ValueLocation_CellCentered,
+            tecplotWriter::CELL_CENTERED,
             varNames,
             varLocation
         );
         tecplotWriter::getTecplotNames
         (
             vvf,
-            ValueLocation_CellCentered,
+            tecplotWriter::CELL_CENTERED,
             cellVarNames,
             cellVarLocation
         );
@@ -511,14 +496,14 @@ int main(int argc, char *argv[])
         tecplotWriter::getTecplotNames
         (
             vSpheretf,
-            ValueLocation_CellCentered,
+            tecplotWriter::CELL_CENTERED,
             varNames,
             varLocation
         );
         tecplotWriter::getTecplotNames
         (
             vSpheretf,
-            ValueLocation_CellCentered,
+            tecplotWriter::CELL_CENTERED,
             cellVarNames,
             cellVarLocation
         );
@@ -526,14 +511,14 @@ int main(int argc, char *argv[])
         tecplotWriter::getTecplotNames
         (
             vSymmtf,
-            ValueLocation_CellCentered,
+            tecplotWriter::CELL_CENTERED,
             varNames,
             varLocation
         );
         tecplotWriter::getTecplotNames
         (
             vSymmtf,
-            ValueLocation_CellCentered,
+            tecplotWriter::CELL_CENTERED,
             cellVarNames,
             cellVarLocation
         );
@@ -541,25 +526,24 @@ int main(int argc, char *argv[])
         tecplotWriter::getTecplotNames
         (
             vtf,
-            ValueLocation_CellCentered,
+            tecplotWriter::CELL_CENTERED,
             varNames,
             varLocation
         );
         tecplotWriter::getTecplotNames
         (
             vtf,
-            ValueLocation_CellCentered,
+            tecplotWriter::CELL_CENTERED,
             cellVarNames,
             cellVarLocation
         );
-
 
 
         // pointFields
         tecplotWriter::getTecplotNames
         (
             psf,
-            ValueLocation_Nodal,
+            tecplotWriter::NODE_CENTERED,
             varNames,
             varLocation
         );
@@ -567,44 +551,45 @@ int main(int argc, char *argv[])
         tecplotWriter::getTecplotNames
         (
             pvf,
-            ValueLocation_Nodal,
+            tecplotWriter::NODE_CENTERED,
             varNames,
             varLocation
         );
 
-        // strandID (= piece id. Gets incremented for every piece of geometry
-        // that is output)
-        INTEGER4 strandID = 1;
-
+        // strandID (= piece id).
+        // Gets incremented for every piece of geometry that is output.
+        int32_t strandID = 1;
 
         if (meshState != polyMesh::UNCHANGED)
         {
             if (doWriteInternal)
             {
                 // Output mesh and fields
-                fileName vtkFileName
+                fileName pltFileName
                 (
-                    fvPath/vtkName
+                    fvPath/pltName
                   + "_"
                   + timeDesc
                   + ".plt"
                 );
 
-                tecplotWriter writer(runTime);
-
-                string allVarNames = string("X Y Z ") + varNames;
-                DynamicList<INTEGER4> allVarLocation;
-                allVarLocation.append(ValueLocation_Nodal);
-                allVarLocation.append(ValueLocation_Nodal);
-                allVarLocation.append(ValueLocation_Nodal);
+                const string allVarNames = tecplotWriter::XYZ + " " + varNames;
+                DynamicList<int32_t> allVarLocation
+                {
+                    tecplotWriter::NODE_CENTERED,
+                    tecplotWriter::NODE_CENTERED,
+                    tecplotWriter::NODE_CENTERED
+                };
                 allVarLocation.append(varLocation);
 
+
+                tecplotWriter writer(runTime);
                 writer.writeInit
                 (
                     runTime.caseName(),
                     allVarNames,
-                    vtkFileName,
-                    DataFileType_Full
+                    pltFileName,
+                    tecplotWriter::FILETYPE_FULL
                 );
 
                 writer.writePolyhedralZone
@@ -616,41 +601,18 @@ int main(int argc, char *argv[])
                     nFaceNodes
                 );
 
-                // Write coordinates
-                writer.writeField(mesh.points().component(0)());
-                writer.writeField(mesh.points().component(1)());
-                writer.writeField(mesh.points().component(2)());
+                // Coordinates
+                writer.writeField(mesh.points());
 
                 // Write all fields
-                forAll(vsf, i)
-                {
-                    writer.writeField(vsf[i]);
-                }
-                forAll(vvf, i)
-                {
-                    writer.writeField(vvf[i]);
-                }
-                forAll(vSpheretf, i)
-                {
-                    writer.writeField(vSpheretf[i]);
-                }
-                forAll(vSymmtf, i)
-                {
-                    writer.writeField(vSymmtf[i]);
-                }
-                forAll(vtf, i)
-                {
-                    writer.writeField(vtf[i]);
-                }
+                writer.writeFields(vsf);
+                writer.writeFields(vvf);
+                writer.writeFields(vSpheretf);
+                writer.writeFields(vSymmtf);
+                writer.writeFields(vtf);
 
-                forAll(psf, i)
-                {
-                    writer.writeField(psf[i]);
-                }
-                forAll(pvf, i)
-                {
-                    writer.writeField(pvf[i]);
-                }
+                writer.writeFields(psf);
+                writer.writeFields(pvf);
 
                 writer.writeConnectivity(mesh);
                 writer.writeEnd();
@@ -663,22 +625,22 @@ int main(int argc, char *argv[])
                 if (timeI == 0)
                 {
                     // Output static mesh only
-                    fileName vtkFileName
+                    fileName pltFileName
                     (
-                        fvPath/vtkName
+                        fvPath/pltName
                       + "_grid_"
                       + timeDesc
                       + ".plt"
                     );
 
-                    tecplotWriter writer(runTime);
 
+                    tecplotWriter writer(runTime);
                     writer.writeInit
                     (
                         runTime.caseName(),
-                        "X Y Z",
-                        vtkFileName,
-                        DataFileType_Grid
+                        tecplotWriter::XYZ,
+                        pltFileName,
+                        tecplotWriter::FILETYPE_GRID
                     );
 
                     writer.writePolyhedralZone
@@ -686,36 +648,33 @@ int main(int argc, char *argv[])
                         mesh.name(),        // regionName
                         strandID,           // strandID
                         mesh,
-                        List<INTEGER4>(3, ValueLocation_Nodal),
+                        List<int32_t>(3, tecplotWriter::NODE_CENTERED),
                         nFaceNodes
                     );
 
-                    // Write coordinates
-                    writer.writeField(mesh.points().component(0)());
-                    writer.writeField(mesh.points().component(1)());
-                    writer.writeField(mesh.points().component(2)());
-
+                    // Coordinates
+                    writer.writeField(mesh.points());
                     writer.writeConnectivity(mesh);
                     writer.writeEnd();
                 }
 
                 // Output solution file
-                fileName vtkFileName
+                fileName pltFileName
                 (
-                    fvPath/vtkName
+                    fvPath/pltName
                   + "_"
                   + timeDesc
                   + ".plt"
                 );
 
-                tecplotWriter writer(runTime);
 
+                tecplotWriter writer(runTime);
                 writer.writeInit
                 (
                     runTime.caseName(),
                     varNames,
-                    vtkFileName,
-                    DataFileType_Solution
+                    pltFileName,
+                    tecplotWriter::FILETYPE_SOLUTION
                 );
 
                 writer.writePolyhedralZone
@@ -728,35 +687,15 @@ int main(int argc, char *argv[])
                 );
 
                 // Write all fields
-                forAll(vsf, i)
-                {
-                    writer.writeField(vsf[i]);
-                }
-                forAll(vvf, i)
-                {
-                    writer.writeField(vvf[i]);
-                }
-                forAll(vSpheretf, i)
-                {
-                    writer.writeField(vSpheretf[i]);
-                }
-                forAll(vSymmtf, i)
-                {
-                    writer.writeField(vSymmtf[i]);
-                }
-                forAll(vtf, i)
-                {
-                    writer.writeField(vtf[i]);
-                }
+                writer.writeFields(vsf);
+                writer.writeFields(vvf);
+                writer.writeFields(vSpheretf);
+                writer.writeFields(vSymmtf);
+                writer.writeFields(vtf);
 
-                forAll(psf, i)
-                {
-                    writer.writeField(psf[i]);
-                }
-                forAll(pvf, i)
-                {
-                    writer.writeField(pvf[i]);
-                }
+                writer.writeFields(psf);
+                writer.writeFields(pvf);
+
                 writer.writeEnd();
             }
         }
@@ -768,18 +707,17 @@ int main(int argc, char *argv[])
         //
         //---------------------------------------------------------------------
 
-        if (args.optionFound("faceSet"))
+        if (faceSetName.size())
         {
             // Load the faceSet
-            const word setName = args["faceSet"];
-            labelList faceLabels(faceSet(mesh, setName).toc());
+            labelList faceLabels(faceSet(mesh, faceSetName).toc());
 
             // Filename as if patch with same name.
-            mkDir(fvPath/setName);
+            mkDir(fvPath/faceSetName);
 
             fileName patchFileName
             (
-                fvPath/setName/setName
+                fvPath/faceSetName/faceSetName
               + "_"
               + timeDesc
               + ".plt"
@@ -787,21 +725,23 @@ int main(int argc, char *argv[])
 
             Info<< "    FaceSet   : " << patchFileName << endl;
 
-            tecplotWriter writer(runTime);
-
-            string allVarNames = string("X Y Z ") + cellVarNames;
-            DynamicList<INTEGER4> allVarLocation;
-            allVarLocation.append(ValueLocation_Nodal);
-            allVarLocation.append(ValueLocation_Nodal);
-            allVarLocation.append(ValueLocation_Nodal);
+            const string allVarNames = tecplotWriter::XYZ + " " + cellVarNames;
+            DynamicList<int32_t> allVarLocation
+            {
+                tecplotWriter::NODE_CENTERED,
+                tecplotWriter::NODE_CENTERED,
+                tecplotWriter::NODE_CENTERED
+            };
             allVarLocation.append(cellVarLocation);
 
+
+            tecplotWriter writer(runTime);
             writer.writeInit
             (
                 runTime.caseName(),
                 cellVarNames,
                 patchFileName,
-                DataFileType_Full
+                tecplotWriter::FILETYPE_FULL
             );
 
             const indirectPrimitivePatch ipp
@@ -812,16 +752,14 @@ int main(int argc, char *argv[])
 
             writer.writePolygonalZone
             (
-                setName,
+                faceSetName,
                 strandID++,
                 ipp,
                 allVarLocation
             );
 
-            // Write coordinates
-            writer.writeField(ipp.localPoints().component(0)());
-            writer.writeField(ipp.localPoints().component(1)());
-            writer.writeField(ipp.localPoints().component(2)());
+            // Coordinates
+            writer.writeField(ipp.localPoints());
 
             // Write all volfields
             forAll(vsf, i)
@@ -832,7 +770,7 @@ int main(int argc, char *argv[])
                     (
                         linearInterpolate(vsf[i])(),
                         faceLabels
-                    )()
+                    )
                 );
             }
             forAll(vvf, i)
@@ -843,7 +781,7 @@ int main(int argc, char *argv[])
                     (
                         linearInterpolate(vvf[i])(),
                         faceLabels
-                    )()
+                    )
                 );
             }
             forAll(vSpheretf, i)
@@ -854,7 +792,7 @@ int main(int argc, char *argv[])
                     (
                         linearInterpolate(vSpheretf[i])(),
                         faceLabels
-                    )()
+                    )
                 );
             }
             forAll(vSymmtf, i)
@@ -865,7 +803,7 @@ int main(int argc, char *argv[])
                     (
                         linearInterpolate(vSymmtf[i])(),
                         faceLabels
-                    )()
+                    )
                 );
             }
             forAll(vtf, i)
@@ -876,14 +814,13 @@ int main(int argc, char *argv[])
                     (
                         linearInterpolate(vtf[i])(),
                         faceLabels
-                    )()
+                    )
                 );
             }
             writer.writeConnectivity(ipp);
 
             continue;
         }
-
 
 
         //---------------------------------------------------------------------
@@ -900,7 +837,7 @@ int main(int argc, char *argv[])
 
         fileName patchFileName;
 
-        if (vMesh.useSubMesh())
+        if (myMesh.useSubMesh())
         {
             patchFileName =
                 fvPath/"boundaryMesh"/cellSetName
@@ -919,33 +856,37 @@ int main(int argc, char *argv[])
 
         Info<< "    Combined patches     : " << patchFileName << endl;
 
-        tecplotWriter writer(runTime);
-
-        string allVarNames = string("X Y Z ") + varNames;
-        DynamicList<INTEGER4> allVarLocation;
-        allVarLocation.append(ValueLocation_Nodal);
-        allVarLocation.append(ValueLocation_Nodal);
-        allVarLocation.append(ValueLocation_Nodal);
+        const string allVarNames = tecplotWriter::XYZ + " " + varNames;
+        DynamicList<int32_t> allVarLocation
+        {
+            tecplotWriter::NODE_CENTERED,
+            tecplotWriter::NODE_CENTERED,
+            tecplotWriter::NODE_CENTERED
+        };
         allVarLocation.append(varLocation);
 
+
+        tecplotWriter writer(runTime);
         writer.writeInit
         (
             runTime.caseName(),
             allVarNames,
             patchFileName,
-            DataFileType_Full
+            tecplotWriter::FILETYPE_FULL
         );
 
         forAll(patchIDs, i)
         {
             label patchID = patchIDs[i];
             const polyPatch& pp = patches[patchID];
-            //INTEGER4 strandID = 1 + i;
+            // int32_t strandID = 1 + i;
 
             if (pp.size() > 0)
             {
-                Info<< "    Writing patch " << patchID << "\t" << pp.name()
-                    << "\tstrand:" << strandID << nl << endl;
+                Info<< "    Writing patch " << patchID
+                    << tab << pp.name()
+                    << tab << "strand:" << strandID
+                    << nl << endl;
 
                 const indirectPrimitivePatch ipp
                 (
@@ -961,10 +902,8 @@ int main(int argc, char *argv[])
                     allVarLocation
                 );
 
-                // Write coordinates
-                writer.writeField(ipp.localPoints().component(0)());
-                writer.writeField(ipp.localPoints().component(1)());
-                writer.writeField(ipp.localPoints().component(2)());
+                // Coordinates
+                writer.writeField(ipp.localPoints());
 
                 // Write all fields
                 forAll(vsf, i)
@@ -976,7 +915,7 @@ int main(int argc, char *argv[])
                             nearCellValue,
                             vsf[i],
                             patchID
-                        )()
+                        )
                     );
                 }
                 forAll(vvf, i)
@@ -988,7 +927,7 @@ int main(int argc, char *argv[])
                             nearCellValue,
                             vvf[i],
                             patchID
-                        )()
+                        )
                     );
                 }
                 forAll(vSpheretf, i)
@@ -1000,7 +939,7 @@ int main(int argc, char *argv[])
                             nearCellValue,
                             vSpheretf[i],
                             patchID
-                        )()
+                        )
                     );
                 }
                 forAll(vSymmtf, i)
@@ -1012,7 +951,7 @@ int main(int argc, char *argv[])
                             nearCellValue,
                             vSymmtf[i],
                             patchID
-                        )()
+                        )
                     );
                 }
                 forAll(vtf, i)
@@ -1024,7 +963,7 @@ int main(int argc, char *argv[])
                             nearCellValue,
                             vtf[i],
                             patchID
-                        )()
+                        )
                     );
                 }
 
@@ -1032,14 +971,14 @@ int main(int argc, char *argv[])
                 {
                     writer.writeField
                     (
-                        psf[i].boundaryField()[patchID].patchInternalField()()
+                        psf[i].boundaryField()[patchID].patchInternalField()
                     );
                 }
                 forAll(pvf, i)
                 {
                     writer.writeField
                     (
-                        pvf[i].boundaryField()[patchID].patchInternalField()()
+                        pvf[i].boundaryField()[patchID].patchInternalField()
                     );
                 }
 
@@ -1048,7 +987,7 @@ int main(int argc, char *argv[])
             else
             {
                 Info<< "    Skipping zero sized patch " << patchID
-                    << "\t" << pp.name()
+                    << tab << pp.name()
                     << nl << endl;
             }
         }
@@ -1065,13 +1004,13 @@ int main(int argc, char *argv[])
 
         const faceZoneMesh& zones = mesh.faceZones();
 
-        if (doFaceZones && zones.size() > 0)
+        if (doFaceZones && !zones.empty())
         {
             mkDir(fvPath/"faceZoneMesh");
 
             fileName patchFileName;
 
-            if (vMesh.useSubMesh())
+            if (myMesh.useSubMesh())
             {
                 patchFileName =
                     fvPath/"faceZoneMesh"/cellSetName
@@ -1090,21 +1029,23 @@ int main(int argc, char *argv[])
 
             Info<< "    FaceZone  : " << patchFileName << endl;
 
-            tecplotWriter writer(runTime);
-
-            string allVarNames = string("X Y Z ") + cellVarNames;
-            DynamicList<INTEGER4> allVarLocation;
-            allVarLocation.append(ValueLocation_Nodal);
-            allVarLocation.append(ValueLocation_Nodal);
-            allVarLocation.append(ValueLocation_Nodal);
+            const string allVarNames = tecplotWriter::XYZ + " " + cellVarNames;
+            DynamicList<int32_t> allVarLocation
+            {
+                tecplotWriter::NODE_CENTERED,
+                tecplotWriter::NODE_CENTERED,
+                tecplotWriter::NODE_CENTERED
+            };
             allVarLocation.append(cellVarLocation);
 
+
+            tecplotWriter writer(runTime);
             writer.writeInit
             (
                 runTime.caseName(),
                 allVarNames,
                 patchFileName,
-                DataFileType_Full
+                tecplotWriter::FILETYPE_FULL
             );
 
             forAll(zones, zoneI)
@@ -1127,10 +1068,8 @@ int main(int argc, char *argv[])
                         allVarLocation
                     );
 
-                    // Write coordinates
-                    writer.writeField(ipp.localPoints().component(0)());
-                    writer.writeField(ipp.localPoints().component(1)());
-                    writer.writeField(ipp.localPoints().component(2)());
+                    // Coordinates
+                    writer.writeField(ipp.localPoints());
 
                     // Write all volfields
                     forAll(vsf, i)
@@ -1141,7 +1080,7 @@ int main(int argc, char *argv[])
                             (
                                 linearInterpolate(vsf[i])(),
                                 pp
-                            )()
+                            )
                         );
                     }
                     forAll(vvf, i)
@@ -1152,7 +1091,7 @@ int main(int argc, char *argv[])
                             (
                                 linearInterpolate(vvf[i])(),
                                 pp
-                            )()
+                            )
                         );
                     }
                     forAll(vSpheretf, i)
@@ -1163,7 +1102,7 @@ int main(int argc, char *argv[])
                             (
                                 linearInterpolate(vSpheretf[i])(),
                                 pp
-                            )()
+                            )
                         );
                     }
                     forAll(vSymmtf, i)
@@ -1174,7 +1113,7 @@ int main(int argc, char *argv[])
                             (
                                 linearInterpolate(vSymmtf[i])(),
                                 pp
-                            )()
+                            )
                         );
                     }
                     forAll(vtf, i)
@@ -1185,7 +1124,7 @@ int main(int argc, char *argv[])
                             (
                                 linearInterpolate(vtf[i])(),
                                 pp
-                            )()
+                            )
                         );
                     }
 
@@ -1194,14 +1133,14 @@ int main(int argc, char *argv[])
                 else
                 {
                     Info<< "    Skipping zero sized faceZone " << zoneI
-                        << "\t" << pp.name()
+                        << tab << pp.name()
                         << nl << endl;
                 }
             }
+
             writer.writeEnd();
             Info<< endl;
         }
-
 
 
         //---------------------------------------------------------------------
@@ -1294,16 +1233,18 @@ int main(int argc, char *argv[])
                 }
 
 
-                string allVarNames = string("X Y Z");
-                DynamicList<INTEGER4> allVarLocation;
-                allVarLocation.append(ValueLocation_Nodal);
-                allVarLocation.append(ValueLocation_Nodal);
-                allVarLocation.append(ValueLocation_Nodal);
+                string allVarNames = tecplotWriter::XYZ;
+                DynamicList<int32_t> allVarLocation
+                {
+                    tecplotWriter::NODE_CENTERED,
+                    tecplotWriter::NODE_CENTERED,
+                    tecplotWriter::NODE_CENTERED
+                };
 
                 tecplotWriter::getTecplotNames<label>
                 (
                     labelNames,
-                    ValueLocation_Nodal,
+                    tecplotWriter::NODE_CENTERED,
                     allVarNames,
                     allVarLocation
                 );
@@ -1311,7 +1252,7 @@ int main(int argc, char *argv[])
                 tecplotWriter::getTecplotNames<scalar>
                 (
                     scalarNames,
-                    ValueLocation_Nodal,
+                    tecplotWriter::NODE_CENTERED,
                     allVarNames,
                     allVarLocation
                 );
@@ -1319,20 +1260,19 @@ int main(int argc, char *argv[])
                 tecplotWriter::getTecplotNames<vector>
                 (
                     vectorNames,
-                    ValueLocation_Nodal,
+                    tecplotWriter::NODE_CENTERED,
                     allVarNames,
                     allVarLocation
                 );
 
 
                 tecplotWriter writer(runTime);
-
                 writer.writeInit
                 (
                     runTime.caseName(),
                     allVarNames,
                     lagrFileName,
-                    DataFileType_Full
+                    tecplotWriter::FILETYPE_FULL
                 );
 
                 writer.writeOrderedZone
@@ -1343,19 +1283,19 @@ int main(int argc, char *argv[])
                     allVarLocation
                 );
 
-                // Write coordinates
-                writer.writeField(positions.component(0)());
-                writer.writeField(positions.component(1)());
-                writer.writeField(positions.component(2)());
+                // Coordinates
+                writer.writeField(positions);
 
                 // labelFields
                 forAll(labelNames, i)
                 {
+                    const word& fieldName = labelNames[i];
+
                     IOField<label> fld
                     (
                         IOobject
                         (
-                            labelNames[i],
+                            fieldName,
                             mesh.time().timeName(),
                             cloud::prefix/cloudDirs[cloudI],
                             mesh,
@@ -1365,21 +1305,19 @@ int main(int argc, char *argv[])
                         )
                     );
 
-                    scalarField sfld(fld.size());
-                    forAll(fld, j)
-                    {
-                        sfld[j] = scalar(fld[j]);
-                    }
-                    writer.writeField(sfld);
+                    writer.writeField(fld);
                 }
+
                 // scalarFields
                 forAll(scalarNames, i)
                 {
+                    const word& fieldName = scalarNames[i];
+
                     IOField<scalar> fld
                     (
                         IOobject
                         (
-                            scalarNames[i],
+                            fieldName,
                             mesh.time().timeName(),
                             cloud::prefix/cloudDirs[cloudI],
                             mesh,
@@ -1388,16 +1326,20 @@ int main(int argc, char *argv[])
                             false
                         )
                     );
+
                     writer.writeField(fld);
                 }
+
                 // vectorFields
                 forAll(vectorNames, i)
                 {
+                    const word& fieldName = vectorNames[i];
+
                     IOField<vector> fld
                     (
                         IOobject
                         (
-                            vectorNames[i],
+                            fieldName,
                             mesh.time().timeName(),
                             cloud::prefix/cloudDirs[cloudI],
                             mesh,
@@ -1406,6 +1348,7 @@ int main(int argc, char *argv[])
                             false
                         )
                     );
+
                     writer.writeField(fld);
                 }
 

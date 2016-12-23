@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2015-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -50,7 +50,7 @@ Description
     }
     \endverbatim
 
-SeeAlso
+See also
     Foam::sixDoFSolvers::CrankNicolson
     Foam::sixDoFSolvers::Newmark
 
@@ -94,6 +94,15 @@ public:
             const dictionary& dict,
             sixDoFRigidBodyMotion& body
         );
+
+        //- Construct and return a clone
+        virtual autoPtr<sixDoFSolver> clone() const
+        {
+            return autoPtr<sixDoFSolver>
+            (
+                new symplectic(dict_, body_)
+            );
+        }
 
 
     //- Destructor

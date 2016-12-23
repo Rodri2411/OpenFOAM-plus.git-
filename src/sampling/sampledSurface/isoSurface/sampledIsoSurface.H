@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -83,9 +83,6 @@ class sampledIsoSurface
 
         mutable autoPtr<isoSurface> surfPtr_;
 
-        //- Triangles converted to faceList
-        mutable autoPtr<faceList> facesPtr_;
-
 
         // Recreated for every isoSurface
 
@@ -158,6 +155,11 @@ public:
 
     // Member Functions
 
+        const isoSurface& surface() const
+        {
+            return surfPtr_();
+        }
+
         //- Does the surface need an update?
         virtual bool needsUpdate() const;
 
@@ -180,29 +182,40 @@ public:
         //- Faces of surface
         virtual const faceList& faces() const
         {
-            if (facesPtr_.empty())
-            {
-                const triSurface& s = surface();
-
-                facesPtr_.reset(new faceList(s.size()));
-
-                forAll(s, i)
-                {
-                    facesPtr_()[i] = s[i].triFaceFace();
-                }
-            }
-            return facesPtr_;
+            return surface().surfFaces();
         }
 
-
-        const isoSurface& surface() const
+        //- Const access to per-face zone/region information
+        virtual const labelList& zoneIds() const
         {
-            return surfPtr_();
+            return Foam::emptyLabelList;
         }
 
-        //- Lookup or read isoField. Sets volFieldPtr_ and pointFieldPtr_.
+        //- Face area magnitudes
+        virtual const vectorField& Sf() const
+        {
+            return surface().Sf();
+        }
+
+        //- Face area magnitudes
+        virtual const scalarField& magSf() const
+        {
+            return surface().magSf();
+        }
+
+        //- Face centres
+        virtual const vectorField& Cf() const
+        {
+            return surface().Cf();
+        }
+
+
+        //- Lookup or read isoField.
+        //  Sets volFieldPtr_ and pointFieldPtr_.
         void getIsoField();
 
+
+    // Sample
 
         //- Sample field on surface
         virtual tmp<scalarField> sample
@@ -235,6 +248,8 @@ public:
         ) const;
 
 
+    // Interpolate
+
         //- Interpolate field on surface
         virtual tmp<scalarField> interpolate
         (
@@ -264,6 +279,9 @@ public:
         (
             const interpolation<tensor>&
         ) const;
+
+
+    // Output
 
         //- Write
         virtual void print(Ostream&) const;

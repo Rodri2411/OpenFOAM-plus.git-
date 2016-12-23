@@ -38,7 +38,7 @@ Foam::PatchInjection<CloudType>::PatchInjection
 )
 :
     InjectionModel<CloudType>(dict, owner, modelName, typeName),
-    patchInjectionBase(owner.mesh(), this->coeffDict().lookup("patchName")),
+    patchInjectionBase(owner.mesh(), this->coeffDict().lookup("patch")),
     duration_(readScalar(this->coeffDict().lookup("duration"))),
     parcelsPerSecond_
     (
@@ -171,8 +171,8 @@ void Foam::PatchInjection<CloudType>::setPositionAndCell
     const scalar,
     vector& position,
     label& cellOwner,
-    label& tetFaceI,
-    label& tetPtI
+    label& tetFacei,
+    label& tetPti
 )
 {
     patchInjectionBase::setPositionAndCell
@@ -181,8 +181,8 @@ void Foam::PatchInjection<CloudType>::setPositionAndCell
         this->owner().rndGen(),
         position,
         cellOwner,
-        tetFaceI,
-        tetPtI
+        tetFacei,
+        tetPti
     );
 }
 

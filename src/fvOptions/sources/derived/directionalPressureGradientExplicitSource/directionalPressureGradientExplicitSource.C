@@ -183,7 +183,7 @@ directionalPressureGradientExplicitSource
     dGradP_(cells_.size(), Zero),
     gradPporous_(cells_.size(), Zero),
     flowDir_(coeffs_.lookup("flowDir")),
-    invAPtr_(NULL),
+    invAPtr_(nullptr),
     D_(0),
     I_(0),
     length_(0),
@@ -196,7 +196,7 @@ directionalPressureGradientExplicitSource
     relaxationFactor_(coeffs_.lookupOrDefault<scalar>("relaxationFactor",0.3)),
     cellFaceMap_(cells_.size(), -1)
 {
-    coeffs_.lookup("fieldNames") >> fieldNames_;
+    coeffs_.lookup("fields") >> fieldNames_;
 
     flowDir_ /= mag(flowDir_);
 

@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2013 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -31,22 +31,25 @@ Description
     Converts a Star-CD (v4) pro-STAR mesh into OpenFOAM format.
 
 Usage
-    - star4ToFoam [OPTION] ccmMesh\n
-      convert pro-STAR mesh to OpenFOAM
+    \b star4ToFoam [OPTION] prostarMesh
 
-    \param -ascii \n
-    Write in ASCII format instead of binary
+    Options:
+      - \par -ascii
+        Write in ASCII format instead of binary
 
-    \param -scale \<factor\>\n
-    Specify an alternative geometry scaling factor.
-    The default is \b 0.001 (scale \em [mm] to \em [m]).
+      - \par -scale \<factor\>
+        Specify an alternative geometry scaling factor.
+        The default is \b 0.001 (scale \em [mm] to \em [m]).
 
-    \param -solids \n
-    Treat any solid cells present just like fluid cells.
-    The default is to discard them.
+      - \par -solids
+        Treat any solid cells present just like fluid cells.
+        The default is to discard them.
 
 Note
-    - baffles are written as interfaces for later use
+    Baffles are written as interfaces for later use
+
+See also
+    Foam::cellTable, Foam::meshReader and Foam::fileFormats::STARCDMeshReader
 
 \*---------------------------------------------------------------------------*/
 
@@ -85,32 +88,35 @@ int main(int argc, char *argv[])
         "retain solid cells and treat them like fluid cells"
     );
 
+
     argList args(argc, argv);
     Time runTime(args.rootPath(), args.caseName());
 
-    // default rescale from [mm] to [m]
-    scalar scaleFactor = args.optionLookupOrDefault("scale", 0.001);
-    if (scaleFactor <= 0)
-    {
-        scaleFactor = 1;
-    }
+    // Binary output, unless otherwise specified
+    const IOstream::streamFormat format =
+    (
+        args.optionFound("ascii")
+      ? IOstream::ASCII
+      : IOstream::BINARY
+    );
 
-    meshReaders::STARCD::keepSolids = args.optionFound("solids");
-
-    // default to binary output, unless otherwise specified
-    IOstream::streamFormat format = IOstream::BINARY;
-    if (args.optionFound("ascii"))
-    {
-        format = IOstream::ASCII;
-    }
-
-    // increase the precision of the points data
+    // Increase the precision of the points data
     IOstream::defaultPrecision(max(10u, IOstream::defaultPrecision()));
 
-    // remove extensions and/or trailing '.'
+
+    // Remove extensions and/or trailing '.'
     const fileName prefix = fileName(args[1]).lessExt();
 
-    meshReaders::STARCD reader(prefix, runTime, scaleFactor);
+
+    fileFormats::STARCDMeshReader reader
+    (
+        prefix,
+        runTime,
+        // Default rescale from [mm] to [m]
+        args.optionLookupOrDefault("scale", 0.001),
+        args.optionFound("solids")
+    );
+
 
     autoPtr<polyMesh> mesh = reader.mesh(runTime);
     reader.writeMesh(mesh, format);

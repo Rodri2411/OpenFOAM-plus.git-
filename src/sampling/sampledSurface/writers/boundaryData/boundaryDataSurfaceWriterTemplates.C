@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -28,7 +28,6 @@ License
 #include "IOmanip.H"
 #include "Time.H"
 #include "pointIOField.H"
-#include "AverageIOField.H"
 #include "primitivePatch.H"
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
@@ -38,8 +37,7 @@ Foam::fileName Foam::boundaryDataSurfaceWriter::writeTemplate
 (
     const fileName& outputDir,
     const fileName& surfaceName,
-    const pointField& points,
-    const faceList& faces,
+    const meshedSurf& surf,
     const word& fieldName,
     const Field<Type>& values,
     const bool isNodeValues,
@@ -48,6 +46,9 @@ Foam::fileName Foam::boundaryDataSurfaceWriter::writeTemplate
 {
     const fileName baseDir(outputDir.path()/surfaceName);
     const fileName timeName(outputDir.name());
+
+    const pointField& points = surf.points();
+    const faceList&    faces = surf.faces();
 
 
     // Construct dummy time to use as an objectRegistry
@@ -113,30 +114,9 @@ Foam::fileName Foam::boundaryDataSurfaceWriter::writeTemplate
 
     // Write field
     {
-        AverageIOField<Type> vals
-        (
-            IOobject
-            (
-                baseDir/timeName/fieldName,
-                dummyTime,
-                IOobject::NO_READ,
-                IOobject::NO_WRITE,
-                false
-            ),
-            Type(Zero),
-            values
-        );
-
-        // Do like regIOobject::writeObject but don't do instance() adaptation
-        // since this would write to e.g. 0/ instead of postProcessing/
-
-        // Try opening an OFstream for object
-        mkDir(vals.path());
-        OFstream os(vals.objectPath());
-
-        vals.writeHeader(os);
-        vals.writeData(os);
-        vals.writeEndDivider(os);
+        fileName valsFile(baseDir/timeName/fieldName);
+        OFstream os(valsFile);
+        os  << values;
     }
 
     return baseDir;

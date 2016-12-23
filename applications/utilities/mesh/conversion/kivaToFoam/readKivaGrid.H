@@ -546,14 +546,14 @@ preservePatchTypes
     defaultFacesType
 );
 // Add information to dictionary
-forAll(patchNames, patchI)
+forAll(patchNames, patchi)
 {
-    if (!patchDicts.set(patchI))
+    if (!patchDicts.set(patchi))
     {
-        patchDicts.set(patchI, new dictionary());
+        patchDicts.set(patchi, new dictionary());
     }
     // Add but not overwrite
-    patchDicts[patchI].add("type", patchTypes[patchI], false);
+    patchDicts[patchi].add("type", patchTypes[patchi], false);
 }
 
 // Build the mesh and write it out
@@ -574,7 +574,11 @@ polyMesh pShapeMesh
     defaultFacesType
 );
 
+// Set the precision of the points data to 10
+IOstream::defaultPrecision(max(10u, IOstream::defaultPrecision()));
+
 Info << "Writing polyMesh" << endl;
+pShapeMesh.removeFiles();
 pShapeMesh.write();
 
 fileName czPath

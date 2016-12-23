@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -51,7 +51,6 @@ bool Foam::fileFormats::OBJsurfaceFormat<Face>::read
     const fileName& filename
 )
 {
-    const bool mustTriangulate = this->isTri();
     this->clear();
 
     IFstream is(filename);
@@ -173,7 +172,7 @@ bool Foam::fileFormats::OBJsurfaceFormat<Face>::read
 
             labelUList& f = static_cast<labelUList&>(dynVertices);
 
-            if (mustTriangulate && f.size() > 3)
+            if (MeshedSurface<Face>::isTri() && f.size() > 3)
             {
                 // simple face triangulation about f[0]
                 // points may be incomplete
@@ -200,9 +199,9 @@ bool Foam::fileFormats::OBJsurfaceFormat<Face>::read
     this->storedPoints().transfer(dynPoints);
 
     this->sortFacesAndStore(dynFaces.xfer(), dynZones.xfer(), sorted);
+    this->addZones(dynSizes, dynNames, true); // add zones, cull empty ones
+    this->addZonesToFaces(); // for labelledTri
 
-    // add zones, culling empty ones
-    this->addZones(dynSizes, dynNames, true);
     return true;
 }
 
@@ -215,7 +214,7 @@ void Foam::fileFormats::OBJsurfaceFormat<Face>::write
 )
 {
     const pointField& pointLst = surf.points();
-    const List<Face>&  faceLst = surf.faces();
+    const List<Face>&  faceLst = surf.surfFaces();
     const List<label>& faceMap = surf.faceMap();
 
     // for no zones, suppress the group name
@@ -279,7 +278,7 @@ void Foam::fileFormats::OBJsurfaceFormat<Face>::write
 
         if (useFaceMap)
         {
-            forAll(zone, localFaceI)
+            forAll(zone, localFacei)
             {
                 const Face& f = faceLst[faceMap[faceIndex++]];
 
@@ -293,7 +292,7 @@ void Foam::fileFormats::OBJsurfaceFormat<Face>::write
         }
         else
         {
-            forAll(zone, localFaceI)
+            forAll(zone, localFacei)
             {
                 const Face& f = faceLst[faceIndex++];
 

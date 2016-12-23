@@ -9,15 +9,10 @@ IOdictionary propsDict
     )
 );
 
-const word cloudName(propsDict.lookup("cloudName"));
+const word cloudName(propsDict.lookup("cloud"));
 
 label sampleFrequency(readLabel(propsDict.lookup("sampleFrequency")));
 
-// outputMode: compositeFile, filePerTrack
-//word outputmode(propsDict.lookup("outputMode"))
-
 label maxPositions(readLabel(propsDict.lookup("maxPositions")));
 
-// outputFormat: raw, vtk
-//word outputFormat(propsDict.lookup("outputFormat"));
 word setFormat(propsDict.lookupOrDefault<word>("setFormat", "vtk"));

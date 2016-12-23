@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -36,29 +36,29 @@ Description
     \par Read options
 
     Define what is done on object construction and explicit reads:
-    \param MUST_READ
+      - \par MUST_READ
         Object must be read from Istream on construction. \n
         Error if Istream does not exist or can't be read.
         Does not check timestamp or re-read.
-    \param MUST_READ_IF_MODIFIED
+      - \par MUST_READ_IF_MODIFIED
         Object must be read from Istream on construction. \n
         Error if Istream does not exist or can't be read. If object is
         registered its timestamp will be checked every timestep and possibly
         re-read.
-    \param READ_IF_PRESENT
+      - \par READ_IF_PRESENT
         Read object from Istream if Istream exists, otherwise don't. \n
         Error only if Istream exists but can't be read.
         Does not check timestamp or re-read.
-    \param NO_READ
-          Don't read
+      - \par NO_READ
+        Don't read
 
     \par Write options
 
     Define what is done on object destruction and explicit writes:
-    \param AUTO_WRITE
+      - \par AUTO_WRITE
         Object is written automatically when requested to by the
         objectRegistry.
-    \param NO_WRITE
+      - \par NO_WRITE
         No automatic write on destruction but can be written explicitly
 
 SourceFiles
@@ -173,8 +173,12 @@ protected:
 
     // Protected Member Functions
 
+        //- Construct and return an IFstream for the object.
+        //  The results is nullptr if the stream construction failed
+        Istream* objectStream();
+
         //- Construct and return an IFstream for the object given the
-        //  exact file. The results is NULL if the stream construction failed
+        //  exact file. The results is nullptr if the stream construction failed
         Istream* objectStream(const fileName&);
 
         //- Set the object state to bad
@@ -396,7 +400,7 @@ public:
             fileName path
             (
                 const word& instance,
-                const fileName& local = ""
+                const fileName& local = fileName::null
             ) const;
 
             //- Return complete path + object name
@@ -405,11 +409,15 @@ public:
                 return path()/name();
             }
 
-            //- Helper for filePath that searches locally
-            fileName localFilePath() const;
+            //- Helper for filePath that searches locally.
+            //  When search is false, simply use the current instance,
+            //  otherwise search previous instances.
+            fileName localFilePath(const bool search=true) const;
 
             //- Helper for filePath that searches up if in parallel
-            fileName globalFilePath() const;
+            //  When search is false, simply use the current instance,
+            //  otherwise search previous instances.
+            fileName globalFilePath(const bool search=true) const;
 
 
         // Reading
@@ -417,10 +425,16 @@ public:
             //- Read header
             bool readHeader(Istream&);
 
-            //- Read header (uses typeFilePath to find file) and check header
-            //  info. Optionally checks headerClassName against type
+            //- Read header (uses typeFilePath to find file) and check its info.
+            //  Optionally checks headerClassName against the type-name.
+            //  When search is false, simply use the current instance,
+            //  otherwise search previous instances.
             template<class Type>
-            bool typeHeaderOk(const bool checkType = true);
+            bool typeHeaderOk
+            (
+                const bool checkType = true,
+                const bool search = true
+            );
 
             //- Helper: warn that type does not support re-reading
             template<class Type>
@@ -481,18 +495,23 @@ template<>
 Ostream& operator<<(Ostream& os, const InfoProxy<IOobject>& ip);
 
 
-//- Template function for obtaining global status
+//- Template function for obtaining global vs. local status
 template<class T>
 inline bool typeGlobal()
 {
     return false;
 }
 
-//- Template function for obtaining filePath
+//- Template function for obtaining local or global filePath
 template<class T>
-inline fileName typeFilePath(const IOobject& io)
+inline fileName typeFilePath(const IOobject& io, const bool search=true)
 {
-    return (typeGlobal<T>() ? io.globalFilePath() : io.localFilePath());
+    return
+    (
+        typeGlobal<T>()
+      ? io.globalFilePath(search)
+      : io.localFilePath(search)
+    );
 }
 
 

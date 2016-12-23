@@ -21,10 +21,10 @@
             runTime,
             IOobject::READ_IF_PRESENT,
             IOobject::NO_WRITE,
-            false
+            false  // no register
         );
 
-        if (io.typeHeaderOk<IOdictionary>(true))
+        if (io.typeHeaderOk<IOdictionary>(true, false))
         {
             io.readOpt() = IOobject::MUST_READ_IF_MODIFIED;
             IOdictionary timeObject(io);
@@ -38,6 +38,6 @@
         }
     }
 
-    timeIndices.insert(timeIndex, timeDirs[timeI].value());
-    Info<< "\nTime [" << timeIndex << "] = " << runTime.timeName() << nl;
+    Info<< nl << "Time [" << timeIndex << "] = " << runTime.timeName() << nl;
 
+// end-of-file

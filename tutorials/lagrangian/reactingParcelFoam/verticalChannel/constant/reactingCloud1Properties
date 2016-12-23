@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  v1606+                                |
+|  \\    /   O peration     | Version:  plus                                  |
 |   \\  /    A nd           | Web:      www.OpenFOAM.com                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -80,7 +80,7 @@ subModels
             SOI             0.01;
             massTotal       8;
             parcelBasisType mass;
-            patchName       inletCentral;
+            patch           inletCentral;
             duration        10000;
             parcelsPerSecond 1e5;
             U0              (40 0 0);

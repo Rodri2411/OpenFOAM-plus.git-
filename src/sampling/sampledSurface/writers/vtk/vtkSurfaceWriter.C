@@ -40,10 +40,12 @@ namespace Foam
 void Foam::vtkSurfaceWriter::writeGeometry
 (
     Ostream& os,
-    const pointField& points,
-    const faceList& faces
+    const meshedSurf& surf
 )
 {
+    const pointField& points = surf.points();
+    const faceList&    faces = surf.faces();
+
     // header
     os
         << "# vtk DataFile Version 2.0" << nl
@@ -53,9 +55,9 @@ void Foam::vtkSurfaceWriter::writeGeometry
 
     // Write vertex coords
     os  << "POINTS " << points.size() << " double" << nl;
-    forAll(points, pointI)
+    forAll(points, pointi)
     {
-        const point& pt = points[pointI];
+        const point& pt = points[pointi];
         os  << float(pt.x()) << ' '
             << float(pt.y()) << ' '
             << float(pt.z()) << nl;
@@ -65,17 +67,17 @@ void Foam::vtkSurfaceWriter::writeGeometry
 
     // Write faces
     label nNodes = 0;
-    forAll(faces, faceI)
+    forAll(faces, facei)
     {
-        nNodes += faces[faceI].size();
+        nNodes += faces[facei].size();
     }
 
     os  << "POLYGONS " << faces.size() << ' '
         << faces.size() + nNodes << nl;
 
-    forAll(faces, faceI)
+    forAll(faces, facei)
     {
-        const face& f = faces[faceI];
+        const face& f = faces[facei];
 
         os  << f.size();
         forAll(f, fp)
@@ -131,8 +133,9 @@ namespace Foam
         forAll(values, elemI)
         {
             const vector& v = values[elemI];
-            os  << float(v[0]) << ' ' << float(v[1]) << ' ' << float(v[2])
-                << nl;
+            os  << float(v[0]) << ' '
+                << float(v[1]) << ' '
+                << float(v[2]) << nl;
         }
     }
 
@@ -234,8 +237,7 @@ Foam::fileName Foam::vtkSurfaceWriter::write
 (
     const fileName& outputDir,
     const fileName& surfaceName,
-    const pointField& points,
-    const faceList& faces,
+    const meshedSurf& surf,
     const bool verbose
 ) const
 {
@@ -252,7 +254,7 @@ Foam::fileName Foam::vtkSurfaceWriter::write
         Info<< "Writing geometry to " << os.name() << endl;
     }
 
-    writeGeometry(os, points, faces);
+    writeGeometry(os, surf);
 
     return os.name();
 }

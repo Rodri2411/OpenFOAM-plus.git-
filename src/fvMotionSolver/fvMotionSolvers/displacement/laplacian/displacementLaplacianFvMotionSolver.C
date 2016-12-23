@@ -63,7 +63,7 @@ Foam::displacementLaplacianFvMotionSolver::displacementLaplacianFvMotionSolver
 )
 :
     displacementMotionSolver(mesh, dict, typeName),
-    fvMotionSolverCore(mesh),
+    fvMotionSolver(mesh),
     cellDisplacement_
     (
         IOobject
@@ -83,7 +83,7 @@ Foam::displacementLaplacianFvMotionSolver::displacementLaplacianFvMotionSolver
         ),
         cellMotionBoundaryTypes<vector>(pointDisplacement_.boundaryField())
     ),
-    pointLocation_(NULL),
+    pointLocation_(nullptr),
     interpolationPtr_
     (
         coeffDict().found("interpolation")
@@ -153,7 +153,7 @@ displacementLaplacianFvMotionSolver
 )
 :
     displacementMotionSolver(mesh, dict, pointDisplacement, points0, typeName),
-    fvMotionSolverCore(mesh),
+    fvMotionSolver(mesh),
     cellDisplacement_
     (
         IOobject
@@ -173,7 +173,7 @@ displacementLaplacianFvMotionSolver
         ),
         cellMotionBoundaryTypes<vector>(pointDisplacement_.boundaryField())
     ),
-    pointLocation_(NULL),
+    pointLocation_(nullptr),
     interpolationPtr_
     (
         coeffDict().found("interpolation")
@@ -276,9 +276,9 @@ Foam::displacementLaplacianFvMotionSolver::curPoints() const
                 << endl;
         }
 
-        pointLocation_().internalField() =
+        pointLocation_().primitiveFieldRef() =
             points0()
-          + pointDisplacement_.internalField();
+          + pointDisplacement_.primitiveField();
 
         pointLocation_().correctBoundaryConditions();
 
@@ -293,15 +293,15 @@ Foam::displacementLaplacianFvMotionSolver::curPoints() const
             }
         }
 
-        twoDCorrectPoints(pointLocation_().internalField());
+        twoDCorrectPoints(pointLocation_().primitiveFieldRef());
 
-        return tmp<pointField>(pointLocation_().internalField());
+        return tmp<pointField>(pointLocation_().primitiveField());
     }
     else
     {
         tmp<pointField> tcurPoints
         (
-            points0() + pointDisplacement_.internalField()
+            points0() + pointDisplacement_.primitiveField()
         );
         pointField& curPoints = tcurPoints.ref();
 
@@ -330,7 +330,7 @@ void Foam::displacementLaplacianFvMotionSolver::solve()
     movePoints(fvMesh_.points());
 
     diffusivity().correct();
-    pointDisplacement_.boundaryField().updateCoeffs();
+    pointDisplacement_.boundaryFieldRef().updateCoeffs();
 
     Foam::solve
     (

@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -24,12 +24,7 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "X3DsurfaceFormat.H"
-#include "clock.H"
-#include "IFstream.H"
-#include "IStringStream.H"
-#include "Ostream.H"
 #include "OFstream.H"
-#include "ListOps.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -48,14 +43,14 @@ void Foam::fileFormats::X3DsurfaceFormat<Face>::write
 )
 {
     const pointField& pointLst = surf.points();
-    const List<Face>&  faceLst = surf.faces();
+    const List<Face>&  faceLst = surf.surfFaces();
     const List<label>& faceMap = surf.faceMap();
 
     // for no zones, suppress the group name
     const List<surfZone>& zones =
     (
         surf.surfZones().empty()
-      ? surfaceFormatsCore::oneZone(faceLst, "")
+      ? surfaceFormatsCore::oneZone(faceLst, word::null)
       : surf.surfZones()
     );
 
@@ -91,7 +86,7 @@ void Foam::fileFormats::X3DsurfaceFormat<Face>::write
 
         if (useFaceMap)
         {
-            forAll(zone, localFaceI)
+            forAll(zone, localFacei)
             {
                 const Face& f = faceLst[faceMap[faceIndex++]];
 
@@ -104,7 +99,7 @@ void Foam::fileFormats::X3DsurfaceFormat<Face>::write
         }
         else
         {
-            forAll(zone, localFaceI)
+            forAll(zone, localFacei)
             {
                 const Face& f = faceLst[faceIndex++];
 

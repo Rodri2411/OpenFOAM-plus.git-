@@ -69,7 +69,7 @@ protected:
         List<word> fieldNames_;
 
         //- Field file names
-        List<word> fieldFileNames_;
+        List<string> fieldFileNames_;
 
         //- Number of time steps
         label nTimeSteps_;
@@ -86,30 +86,47 @@ protected:
         //- Pointer to the surface
         autoPtr<meshedSurface> surfPtr_;
 
-        List<Tuple2<string, label> > schema_;
+        List<Tuple2<string, label>> schema_;
 
 
     // Protected Member Functions
 
+        //- Helper function to skip forward n steps in stream
+        void skip(const label n, Istream& is) const;
+
+        //- Helper function to read an ascii line from file
+        void readLine(IFstream& is, string& buffer) const;
+
         //- Read and check a section header
         void debugSection(const word& expected, IFstream& is) const;
-
-        //- Read the case file
-        void readCase(IFstream& is);
-
-        //- Helper function to skip forward n steps in stream
-        void skip(const label n, IFstream& is) const;
 
         //- Read (and throw away) geometry file header
         void readGeometryHeader(ensightReadFile& is) const;
 
+        //- Read the case file
+        void readCase(IFstream& is);
+
         //- Helper function to return Type after skipping n tokens
         template<class Type>
-        void readSkip(IFstream& is, const label nSkip, Type& value) const;
+        void readFromLine
+        (
+            const label nSkip,
+            IStringStream& is,
+            Type& value
+        ) const;
+
+        //- Helper function to return Type after skipping n tokens
+        template<class Type>
+        void readFromLine
+        (
+            const label nSkip,
+            const string& buffer,
+            Type& value
+        ) const;
 
         //- Helper function to return a field
         template<class Type>
-        tmp<Field<Type> > readField
+        tmp<Field<Type>> readField
         (
             const label timeIndex,
             const label fieldIndex
@@ -143,7 +160,7 @@ public:
         virtual wordList fieldNames(const label timeIndex) const;
 
         //- Return a scalar field at a given time
-        virtual tmp<Field<scalar> > field
+        virtual tmp<Field<scalar>> field
         (
             const label timeIndex,
             const label fieldIndex,
@@ -151,7 +168,7 @@ public:
         ) const;
 
         //- Return a scalar field at a given time
-        virtual tmp<Field<vector> > field
+        virtual tmp<Field<vector>> field
         (
             const label timeIndex,
             const label fieldIndex,
@@ -159,7 +176,7 @@ public:
         ) const;
 
         //- Return a sphericalTensor field at a given time
-        virtual tmp<Field<sphericalTensor> > field
+        virtual tmp<Field<sphericalTensor>> field
         (
             const label timeIndex,
             const label fieldIndex,
@@ -167,7 +184,7 @@ public:
         ) const;
 
         //- Return a symmTensor field at a given time
-        virtual tmp<Field<symmTensor> > field
+        virtual tmp<Field<symmTensor>> field
         (
             const label timeIndex,
             const label fieldIndex,
@@ -175,7 +192,7 @@ public:
         ) const;
 
         //- Return a tensor field at a given time
-        virtual tmp<Field<tensor> > field
+        virtual tmp<Field<tensor>> field
         (
             const label timeIndex,
             const label fieldIndex,

@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -25,7 +25,7 @@ Class
     Foam::sampledSurface
 
 Group
-    grpFunctionObjects
+    grpUtilitiesFunctionObjects
 
 Description
     An abstract class for surfaces with sampling.
@@ -52,7 +52,7 @@ SourceFiles
 #ifndef sampledSurface_H
 #define sampledSurface_H
 
-#include "pointField.H"
+#include "meshedSurf.H"
 #include "word.H"
 #include "labelList.H"
 #include "faceList.H"
@@ -71,11 +71,20 @@ SourceFiles
 namespace Foam
 {
 
+// Forward declaration of friend functions and operators
+
+class sampledSurface;
+
+Ostream& operator<<(Ostream&, const sampledSurface&);
+
+
 /*---------------------------------------------------------------------------*\
                       Class sampledSurface Declaration
 \*---------------------------------------------------------------------------*/
 
 class sampledSurface
+:
+    public meshedSurf
 {
     // Private data
 
@@ -91,29 +100,8 @@ class sampledSurface
 
     // Demand-driven data
 
-        //- Face area vectors
-        mutable vectorField* SfPtr_;
-
-        //- Mag face area vectors
-        mutable scalarField* magSfPtr_;
-
-        //- Face centres
-        mutable vectorField* CfPtr_;
-
         //- Total surface area
         mutable scalar area_;
-
-
-    // Make geometric data
-
-        //- Make Sf
-        void makeSf() const;
-
-        //- Make magSf
-        void makeMagSf() const;
-
-        //- Make Cf
-        void makeCf() const;
 
 
     // Service methods
@@ -218,7 +206,7 @@ public:
         autoPtr<sampledSurface> clone() const
         {
             NotImplemented;
-            return autoPtr<sampledSurface>(NULL);
+            return autoPtr<sampledSurface>(nullptr);
         }
 
 
@@ -277,17 +265,18 @@ public:
         //- Faces of surface
         virtual const faceList& faces() const = 0;
 
-        //- Return face area vectors
-        virtual const vectorField& Sf() const;
+        //- Face area vectors
+        virtual const vectorField& Sf() const = 0;
 
-        //- Return face area magnitudes
-        virtual const scalarField& magSf() const;
+        //- Face area magnitudes
+        virtual const scalarField& magSf() const = 0;
 
-        //- Return face centres as vectorField
-        virtual const vectorField& Cf() const;
+        //- Face centres
+        virtual const vectorField& Cf() const = 0;
 
         //- The total surface area
         scalar area() const;
+
 
         //- Integration of a field across the surface
         template<class Type>

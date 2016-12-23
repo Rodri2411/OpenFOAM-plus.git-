@@ -153,7 +153,7 @@ public:
             virtual void cacheFields(const bool store);
 
             //- Flag to indicate when to write a property
-            virtual bool outputTime() const;
+            virtual bool writeTime() const;
 
 
         // Edit
@@ -178,6 +178,13 @@ public:
 
 
             // Model properties
+
+                //- Retrieve dictionary, return true if set
+                bool getModelDict
+                (
+                    const word& entryName,
+                    dictionary& dict
+                ) const;
 
                 //- Retrieve generic property from the sub-model
                 template<class Type>
