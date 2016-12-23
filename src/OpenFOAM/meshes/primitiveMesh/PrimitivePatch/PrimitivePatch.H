@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -168,6 +168,12 @@ private:
         //- Face centres
         mutable Field<PointType>* faceCentresPtr_;
 
+        //- Face area vectors
+        mutable Field<PointType>* faceAreasPtr_;
+
+        //- Mag face area
+        mutable Field<scalar>* magFaceAreasPtr_;
+
         //- Face unit normals
         mutable Field<PointType>* faceNormalsPtr_;
 
@@ -210,23 +216,26 @@ private:
         //- Calculate face centres
         void calcFaceCentres() const;
 
+        //- Calculate face area vectors
+        void calcFaceAreas() const;
+
+        //- Calculate face area magnitudes
+        void calcMagFaceAreas() const;
+
         //- Calculate unit face normals
         void calcFaceNormals() const;
 
         //- Calculate unit point normals
         void calcPointNormals() const;
 
-        //- Calculate edge owner
-        void calcEdgeOwner() const;
-
 
         //- Face-edge-face walk while remaining on a patch point.
         //  Used to determine if surface multiply connected through point.
         void visitPointRegion
         (
-            const label pointI,
+            const label pointi,
             const labelList& pFaces,
-            const label startFaceI,
+            const label startFacei,
             const label startEdgeI,
             boolList& pFacesHad
         ) const;
@@ -384,7 +393,13 @@ public:
             //- Return face centres for patch
             const Field<PointType>& faceCentres() const;
 
-            //- Return face normals for patch
+            //- Return face area vectors for patch
+            const Field<PointType>& faceAreas() const;
+
+            //- Return face area magnitudes for patch
+            const Field<scalar>& magFaceAreas() const;
+
+            //- Return face unit normals for patch
             const Field<PointType>& faceNormals() const;
 
             //- Return point normals for patch
@@ -434,7 +449,7 @@ public:
         bool checkTopology
         (
             const bool report = false,
-            labelHashSet* setPtr = NULL
+            labelHashSet* setPtr = nullptr
         ) const;
 
         //- Checks primitivePatch for faces sharing point but not edge.
@@ -446,7 +461,7 @@ public:
         bool checkPointManifold
         (
             const bool report = false,
-            labelHashSet* setPtr = NULL
+            labelHashSet* setPtr = nullptr
         ) const;
 
 

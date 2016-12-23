@@ -15,6 +15,8 @@ infinitelyFastChemistry/infinitelyFastChemistrys.C
 
 PaSR/PaSRs.C
 
+eddyDissipationDiffusionModel/eddyDissipationDiffusionModels.C
+
 laminar/laminars.C
 
 /*
@@ -26,6 +28,8 @@ FSD/FSDs.C
 */
 
 diffusionMulticomponent/diffusionMulticomponents.C
+
+zoneCombustion/zoneCombustions.C
 
 noCombustion/noCombustions.C
 

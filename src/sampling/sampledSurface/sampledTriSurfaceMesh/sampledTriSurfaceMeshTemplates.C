@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -38,7 +38,7 @@ Foam::sampledTriSurfaceMesh::sampleField
     tmp<Field<Type>> tvalues(new Field<Type>(sampleElements_.size()));
     Field<Type>& values = tvalues.ref();
 
-    if (sampleSource_ == cells || sampleSource_ == insideCells)
+    if (!onBoundary())
     {
         // Sample cells
 
@@ -52,30 +52,30 @@ Foam::sampledTriSurfaceMesh::sampleField
         // Sample boundary faces
 
         const polyBoundaryMesh& pbm = mesh().boundaryMesh();
-        label nBnd = mesh().nFaces()-mesh().nInternalFaces();
+        const label nBnd = mesh().nFaces()-mesh().nInternalFaces();
 
         // Create flat boundary field
 
         Field<Type> bVals(nBnd, Zero);
 
-        forAll(vField.boundaryField(), patchI)
+        forAll(vField.boundaryField(), patchi)
         {
-            label bFaceI = pbm[patchI].start() - mesh().nInternalFaces();
+            label bFacei = pbm[patchi].start() - mesh().nInternalFaces();
 
             SubList<Type>
             (
                 bVals,
-                vField.boundaryField()[patchI].size(),
-                bFaceI
-            ) = vField.boundaryField()[patchI];
+                vField.boundaryField()[patchi].size(),
+                bFacei
+            ) = vField.boundaryField()[patchi];
         }
 
         // Sample in flat boundary field
 
         forAll(sampleElements_, triI)
         {
-            label faceI = sampleElements_[triI];
-            values[triI] = bVals[faceI-mesh().nInternalFaces()];
+            label facei = sampleElements_[triI];
+            values[triI] = bVals[facei-mesh().nInternalFaces()];
         }
     }
 
@@ -94,16 +94,16 @@ Foam::sampledTriSurfaceMesh::interpolateField
     tmp<Field<Type>> tvalues(new Field<Type>(sampleElements_.size()));
     Field<Type>& values = tvalues.ref();
 
-    if (sampleSource_ == cells || sampleSource_ == insideCells)
+    if (!onBoundary())
     {
         // Sample cells.
 
-        forAll(sampleElements_, pointI)
+        forAll(sampleElements_, pointi)
         {
-            values[pointI] = interpolator.interpolate
+            values[pointi] = interpolator.interpolate
             (
-                samplePoints_[pointI],
-                sampleElements_[pointI]
+                samplePoints_[pointi],
+                sampleElements_[pointi]
             );
         }
     }
@@ -111,15 +111,15 @@ Foam::sampledTriSurfaceMesh::interpolateField
     {
         // Sample boundary faces.
 
-        forAll(samplePoints_, pointI)
+        forAll(samplePoints_, pointi)
         {
-            label faceI = sampleElements_[pointI];
+            label facei = sampleElements_[pointi];
 
-            values[pointI] = interpolator.interpolate
+            values[pointi] = interpolator.interpolate
             (
-                samplePoints_[pointI],
-                mesh().faceOwner()[faceI],
-                faceI
+                samplePoints_[pointi],
+                mesh().faceOwner()[facei],
+                facei
             );
         }
     }

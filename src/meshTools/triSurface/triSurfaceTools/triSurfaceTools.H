@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -50,11 +50,14 @@ namespace Foam
 {
 
 // Forward declaration of classes
-class triSurface;
 class edge;
 class labelledTri;
 class polyBoundaryMesh;
 class plane;
+class triSurface;
+class face;
+template<class Face> class MeshedSurface;
+
 
 /*---------------------------------------------------------------------------*\
                            Class triSurfaceTools Declaration
@@ -75,15 +78,15 @@ class triSurfaceTools
             static void calcRefineStatus
             (
                 const triSurface& surf,
-                const label faceI,
+                const label facei,
                 List<refineType>& refine
             );
             static void greenRefine
             (
                 const triSurface& surf,
-                const label faceI,
+                const label facei,
                 const label edgeI,
-                const label newPointI,
+                const label newPointi,
                 DynamicList<labelledTri>& newFaces
             );
             static triSurface doRefine
@@ -143,7 +146,7 @@ class triSurfaceTools
                 HashTable<label, label, Hash<label>>& edgeToFace
             );
 
-            //- Calculates (cos of) angle across edgeI of faceI,
+            //- Calculates (cos of) angle across edgeI of facei,
             //  taking into account updated addressing (resulting from edge
             //  collapse)
             static scalar edgeCosAngle
@@ -154,12 +157,12 @@ class triSurfaceTools
                 const labelHashSet& collapsedFaces,
                 const HashTable<label, label, Hash<label>>& edgeToEdge,
                 const HashTable<label, label, Hash<label>>& edgeToFace,
-                const label faceI,
+                const label facei,
                 const label edgeI
             );
 
             //- Calculate minimum (cos of) edge angle using addressing from
-            /// collapsing
+            //  collapsing
             //  edge to v1 at pt. Returns 1 if v1 is on edge without neighbours
             //  (and hence no edge angle can be defined)
             static scalar collapseMinCosAngle
@@ -205,7 +208,7 @@ class triSurfaceTools
                 const triSurface& s,
                 const label triI,
                 const label excludeEdgeI,
-                const label excludePointI,
+                const label excludePointi,
                 const point& triPoint,
                 const plane& cutPlane,
                 const point& toPoint
@@ -234,7 +237,7 @@ class triSurfaceTools
                 const labelList& eFaces,
                 const surfaceLocation& start,
                 const label excludeEdgeI,
-                const label excludePointI,
+                const label excludePointi,
                 const surfaceLocation& end,
                 const plane& cutPlane
             );
@@ -287,30 +290,30 @@ public:
         //    label& vB
         //);
 
-        //- Get face connected to edge not faceI
+        //- Get face connected to edge not facei
         static label otherFace
         (
             const triSurface& surf,
-            const label faceI,
+            const label facei,
             const label edgeI
         );
 
-        //- Get the two edges on faceI counterclockwise after edgeI
+        //- Get the two edges on facei counterclockwise after edgeI
         static void otherEdges
         (
             const triSurface& surf,
-            const label faceI,
+            const label facei,
             const label edgeI,
             label& e1,
             label& e2
         );
 
-        //- Get the two vertices (local numbering) on faceI counterclockwise
+        //- Get the two vertices (local numbering) on facei counterclockwise
         //  vertI
         static void otherVertices
         (
             const triSurface& surf,
-            const label faceI,
+            const label facei,
             const label vertI,
             label& vert1I,
             label& vert2I
@@ -320,7 +323,7 @@ public:
         static label oppositeEdge
         (
             const triSurface& surf,
-            const label faceI,
+            const label facei,
             const label vertI
         );
 
@@ -328,7 +331,7 @@ public:
         static label oppositeVertex
         (
             const triSurface& surf,
-            const label faceI,
+            const label facei,
             const label edgeI
         );
 
@@ -429,7 +432,7 @@ public:
         static vector surfaceNormal
         (
             const triSurface& surf,
-            const label nearestFaceI,
+            const label nearestFacei,
             const point& nearestPt
         );
 
@@ -458,7 +461,7 @@ public:
         (
             const triSurface& surf,
             const point& sample,
-            const label nearestFaceI
+            const label nearestFacei
         );
 
     // Triangulation of faces
@@ -514,6 +517,15 @@ public:
         //- Do unconstrained Delaunay of points. Returns triSurface with 3D
         //  points with z=0. All triangles in region 0.
         static triSurface delaunay2D(const List<vector2D>&);
+
+
+    // Surface checking functionality
+
+        //- Check single triangle for (topological) validity
+        static bool validTri(const triSurface&, const label facei);
+
+        //- Check single triangle for (topological) validity
+        static bool validTri(const MeshedSurface<face>&, const label facei);
 
 
     // Tracking

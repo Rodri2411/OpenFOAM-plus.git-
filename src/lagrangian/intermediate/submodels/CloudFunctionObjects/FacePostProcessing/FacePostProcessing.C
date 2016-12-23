@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2014 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -51,7 +51,7 @@ void Foam::FacePostProcessing<CloudType>::makeLogFile
         if (Pstream::master())
         {
             // Create directory if does not exist
-            mkDir(this->outputTimeDir());
+            mkDir(this->writeTimeDir());
 
             // Open new file at start up
             outputFilePtr_.set
@@ -59,7 +59,7 @@ void Foam::FacePostProcessing<CloudType>::makeLogFile
                 zoneI,
                 new OFstream
                 (
-                    this->outputTimeDir()/(type() + '_' + zoneName + ".dat")
+                    this->writeTimeDir()/(type() + '_' + zoneName + ".dat")
                 )
             );
 
@@ -73,6 +73,8 @@ void Foam::FacePostProcessing<CloudType>::makeLogFile
     }
 }
 
+
+// * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * //
 
 template<class CloudType>
 void Foam::FacePostProcessing<CloudType>::write()
@@ -95,7 +97,7 @@ void Foam::FacePostProcessing<CloudType>::write()
         massTotal_[zoneI] += mass_[zoneI];
     }
 
-    const label procI = Pstream::myProcNo();
+    const label proci = Pstream::myProcNo();
 
     Info<< type() << " output:" << nl;
 
@@ -106,7 +108,7 @@ void Foam::FacePostProcessing<CloudType>::write()
         const word& zoneName = fzm[faceZoneIDs_[zoneI]].name();
 
         scalarListList allProcMass(Pstream::nProcs());
-        allProcMass[procI] = massTotal_[zoneI];
+        allProcMass[proci] = massTotal_[zoneI];
         Pstream::gatherList(allProcMass);
         zoneMassTotal[zoneI] =
             ListListOps::combine<scalarList>
@@ -116,7 +118,7 @@ void Foam::FacePostProcessing<CloudType>::write()
         const scalar sumMassTotal = sum(zoneMassTotal[zoneI]);
 
         scalarListList allProcMassFlowRate(Pstream::nProcs());
-        allProcMassFlowRate[procI] = massFlowRate_[zoneI];
+        allProcMassFlowRate[proci] = massFlowRate_[zoneI];
         Pstream::gatherList(allProcMassFlowRate);
         zoneMassFlowRate[zoneI] =
             ListListOps::combine<scalarList>
@@ -160,7 +162,7 @@ void Foam::FacePostProcessing<CloudType>::write()
 
             pointField uniquePoints(mesh.points(), uniqueMeshPointLabels);
             List<pointField> allProcPoints(Pstream::nProcs());
-            allProcPoints[procI] = uniquePoints;
+            allProcPoints[proci] = uniquePoints;
             Pstream::gatherList(allProcPoints);
 
             faceList faces(fZone().localFaces());
@@ -169,7 +171,7 @@ void Foam::FacePostProcessing<CloudType>::write()
                 inplaceRenumber(pointToGlobal, faces[i]);
             }
             List<faceList> allProcFaces(Pstream::nProcs());
-            allProcFaces[procI] = faces;
+            allProcFaces[proci] = faces;
             Pstream::gatherList(allProcFaces);
 
             if (Pstream::master())
@@ -202,10 +204,9 @@ void Foam::FacePostProcessing<CloudType>::write()
 
                 writer->write
                 (
-                    this->outputTimeDir(),
+                    this->writeTimeDir(),
                     fZone.name(),
-                    allPoints,
-                    allFaces,
+                    meshedSurfRef(allPoints, allFaces),
                     "massTotal",
                     zoneMassTotal[zoneI],
                     false
@@ -213,10 +214,9 @@ void Foam::FacePostProcessing<CloudType>::write()
 
                 writer->write
                 (
-                    this->outputTimeDir(),
+                    this->writeTimeDir(),
                     fZone.name(),
-                    allPoints,
-                    allFaces,
+                    meshedSurfRef(allPoints, allFaces),
                     "massFlowRate",
                     zoneMassFlowRate[zoneI],
                     false
@@ -296,25 +296,25 @@ Foam::FacePostProcessing<CloudType>::FacePostProcessing
             scalar totArea = 0.0;
             forAll(fz, j)
             {
-                label faceI = fz[j];
-                if (faceI < owner.mesh().nInternalFaces())
+                label facei = fz[j];
+                if (facei < owner.mesh().nInternalFaces())
                 {
                     totArea += magSf[fz[j]];
                 }
                 else
                 {
-                    label bFaceI = faceI - owner.mesh().nInternalFaces();
-                    label patchI = pbm.patchID()[bFaceI];
-                    const polyPatch& pp = pbm[patchI];
+                    label bFacei = facei - owner.mesh().nInternalFaces();
+                    label patchi = pbm.patchID()[bFacei];
+                    const polyPatch& pp = pbm[patchi];
 
                     if
                     (
-                        !magSf.boundaryField()[patchI].coupled()
+                        !magSf.boundaryField()[patchi].coupled()
                      || refCast<const coupledPolyPatch>(pp).owner()
                     )
                     {
-                        label localFaceI = pp.whichFace(faceI);
-                        totArea += magSf.boundaryField()[patchI][localFaceI];
+                        label localFacei = pp.whichFace(facei);
+                        totArea += magSf.boundaryField()[patchi][localFacei];
                     }
                 }
             }
@@ -363,7 +363,7 @@ template<class CloudType>
 void Foam::FacePostProcessing<CloudType>::postFace
 (
     const parcelType& p,
-    const label faceI,
+    const label facei,
     bool&
 )
 {
@@ -382,7 +382,7 @@ void Foam::FacePostProcessing<CloudType>::postFace
             label faceId = -1;
             forAll(fz, j)
             {
-                if (fz[j] == faceI)
+                if (fz[j] == facei)
                 {
                     faceId = j;
                     break;

@@ -65,8 +65,6 @@ class thermoSingleLayer
 :
     public kinematicSingleLayer
 {
-private:
-
     // Private member functions
 
         //- Disallow default bitwise copy construct
@@ -297,7 +295,7 @@ public:
                 inline tmp<scalarField> hs
                 (
                     const scalarField& T,
-                    const label patchI
+                    const label patchi
                 ) const;
 
                 //- Return sensible enthalpy as a function of temperature
@@ -318,8 +316,8 @@ public:
             //- External hook to add sources to the film
             virtual void addSources
             (
-                const label patchI,            // patchI on primary region
-                const label faceI,             // faceI of patchI
+                const label patchi,            // patchi on primary region
+                const label facei,             // facei of patchi
                 const scalar massSource,       // [kg]
                 const vector& momentumSource,  // [kg.m/s] (tangential momentum)
                 const scalar pressureSource,   // [kg.m/s] (normal momentum)
@@ -369,10 +367,10 @@ public:
         // Derived fields (calculated on-the-fly)
 
             //- Return the convective heat energy from film to wall
-            inline tmp<scalarField> Qconvw(const label patchI) const;
+            inline tmp<scalarField> Qconvw(const label patchi) const;
 
             //- Return the convective heat energy from primary region to film
-            inline tmp<scalarField> Qconvp(const label patchI) const;
+            inline tmp<scalarField> Qconvp(const label patchi) const;
 
 
         // Evolution
@@ -389,16 +387,16 @@ public:
             // Mapped into primary region
 
                 //- Return total mass source - Eulerian phase only
-                virtual tmp<DimensionedField<scalar, volMesh>> Srho() const;
+                virtual tmp<volScalarField::Internal> Srho() const;
 
                 //- Return mass source for specie i - Eulerian phase only
-                virtual tmp<DimensionedField<scalar, volMesh>> Srho
+                virtual tmp<volScalarField::Internal> Srho
                 (
                     const label i
                 ) const;
 
                 //- Return enthalpy source - Eulerian phase only
-                virtual tmp<DimensionedField<scalar, volMesh>> Sh() const;
+                virtual tmp<volScalarField::Internal> Sh() const;
 
 
        // I-O

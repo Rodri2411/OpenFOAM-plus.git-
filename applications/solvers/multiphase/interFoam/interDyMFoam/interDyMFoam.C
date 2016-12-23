@@ -54,17 +54,16 @@ Description
 
 int main(int argc, char *argv[])
 {
+    #include "postProcess.H"
+
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createDynamicFvMesh.H"
     #include "initContinuityErrs.H"
-
-    pimpleControl pimple(mesh);
-
-    #include "createControls.H"
-    #include "createRDeltaT.H"
+    #include "createControl.H"
+    #include "createTimeControls.H"
+    #include "createDyMControls.H"
     #include "createFields.H"
-    #include "createMRF.H"
     #include "createFvOptions.H"
 
     volScalarField rAU
@@ -133,9 +132,12 @@ int main(int argc, char *argv[])
                     ghf = (g & mesh.Cf()) - ghRef;
                 }
 
-                if (mesh.changing() && correctPhi)
+                if ((mesh.changing() && correctPhi) || mesh.topoChanging())
                 {
                     // Calculate absolute flux from the mapped surface velocity
+                    // Note: temporary fix until mapped Uf is assessed
+                    Uf = fvc::interpolate(U);
+
                     phi = mesh.Sf() & Uf;
 
                     #include "correctPhi.H"

@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2013 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -136,12 +136,12 @@ int main(int argc, char *argv[])
         Info<< "Additional Points:" << extraPoints.size() << endl;
 
         vectorField pointsAll(points1);
-        label pointI = pointsAll.size();
+        label pointi = pointsAll.size();
         pointsAll.setSize(pointsAll.size() + extraPoints.size());
 
         forAll(extraPoints, i)
         {
-            pointsAll[pointI++] = extraPoints[i];
+            pointsAll[pointi++] = extraPoints[i];
         }
 
         combinedSurf = triSurface(surface1, surface1.patches(), pointsAll);
@@ -178,93 +178,111 @@ int main(int argc, char *argv[])
 
         label trianglei = 0;
 
-        // Copy triangles1 into trianglesAll
-        forAll(surface1, faceI)
+
+
+        // Determine map for both regions
+        label nNewPatches = 0;
+        labelList patch1Map(surface1.patches().size());
+        labelList patch2Map(surface2.patches().size());
+
+        if (mergeRegions)
         {
-            facesAll[trianglei++] = surface1[faceI];
+            HashTable<label> nameToPatch;
+
+            forAll(surface1.patches(), i)
+            {
+                const word& name = surface1.patches()[i].name();
+                HashTable<label>::iterator iter = nameToPatch.find(name);
+
+                label combinedi;
+                if (iter == nameToPatch.end())
+                {
+                    combinedi = nameToPatch.size();
+                    nameToPatch.insert(name, combinedi);
+                }
+                else
+                {
+                    combinedi = iter();
+                }
+                patch1Map[i] = combinedi;
+            }
+
+            // Determine map for surface2 regions
+
+            forAll(surface2.patches(), i)
+            {
+                const word& name = surface2.patches()[i].name();
+                HashTable<label>::iterator iter = nameToPatch.find(name);
+
+                label combinedi;
+                if (iter == nameToPatch.end())
+                {
+                    combinedi = nameToPatch.size();
+                    nameToPatch.insert(name, combinedi);
+                }
+                else
+                {
+                    combinedi = iter();
+                }
+                patch2Map[i] = combinedi;
+            }
+
+            nNewPatches = nameToPatch.size();
         }
-        label nRegions1 = surface1.patches().size();
-
-
-        if (!mergeRegions)
+        else
         {
-            Info<< "Surface " << inFileName1 << " has " << nRegions1
+            Info<< "Surface " << inFileName1
+                << " has " << surface1.patches().size()
                 << " regions"
                 << nl
                 << "All region numbers in " << inFileName2 << " will be offset"
                 << " by this amount" << nl << endl;
+
+            patch1Map = identity(surface1.patches().size());
+            patch2Map = identity(surface2.patches().size()) + patch1Map.size();
+
+            nNewPatches = surface1.patches().size()+surface2.patches().size();
+        }
+
+
+
+        // Copy triangles1 into trianglesAll
+        forAll(surface1, facei)
+        {
+            const labelledTri& tri = surface1[facei];
+            labelledTri& destTri = facesAll[trianglei++];
+
+            destTri.triFace::operator=(tri);
+            destTri.region() = patch1Map[tri.region()];
         }
 
         // Add (renumbered) surface2 triangles
-        forAll(surface2, faceI)
+        forAll(surface2, facei)
         {
-            const labelledTri& tri = surface2[faceI];
+            const labelledTri& tri = surface2[facei];
 
             labelledTri& destTri = facesAll[trianglei++];
             destTri[0] = tri[0] + points1.size();
             destTri[1] = tri[1] + points1.size();
             destTri[2] = tri[2] + points1.size();
-            if (mergeRegions)
-            {
-                destTri.region() = tri.region();
-            }
-            else
-            {
-                destTri.region() = tri.region() + nRegions1;
-            }
+            destTri.region() = patch2Map[tri.region()];
         }
 
-        label nRegions2 = surface2.patches().size();
 
-        geometricSurfacePatchList newPatches;
-
-        if (mergeRegions)
+        geometricSurfacePatchList newPatches(nNewPatches);
+        forAll(surface1.patches(), patchi)
         {
-            // Overwrite
-            newPatches.setSize(max(nRegions1, nRegions2));
-
-            forAll(surface1.patches(), patchI)
-            {
-                newPatches[patchI] = surface1.patches()[patchI];
-            }
-            forAll(surface2.patches(), patchI)
-            {
-                newPatches[patchI] = surface2.patches()[patchI];
-            }
+            newPatches[patch1Map[patchi]] = surface1.patches()[patchi];
         }
-        else
+        forAll(surface2.patches(), patchi)
         {
-            Info<< "Regions from " << inFileName2 << " have been renumbered:"
-                << nl
-                << "    old\tnew" << nl;
-
-            for (label regionI = 0; regionI < nRegions2; regionI++)
-            {
-                Info<< "    " << regionI << '\t' << regionI+nRegions1
-                    << nl;
-            }
-            Info<< nl;
-
-            newPatches.setSize(nRegions1 + nRegions2);
-
-            label newPatchI = 0;
-
-            forAll(surface1.patches(), patchI)
-            {
-                newPatches[newPatchI++] = surface1.patches()[patchI];
-            }
-
-            forAll(surface2.patches(), patchI)
-            {
-                newPatches[newPatchI++] = surface2.patches()[patchI];
-            }
+            newPatches[patch2Map[patchi]] = surface2.patches()[patchi];
         }
-
 
         Info<< "New patches:" << nl;
-        forAll(newPatches, patchI)
+        forAll(newPatches, patchi)
         {
-            Info<< "    " << patchI << '\t' << newPatches[patchI].name() << nl;
+            Info<< "    " << patchi << '\t' << newPatches[patchi].name() << nl;
         }
         Info<< endl;
 
@@ -284,8 +302,8 @@ int main(int argc, char *argv[])
 
     Info<< "Writing : " << outFileName << endl;
 
-    // No need to 'group' while writing since all in correct order anyway.
-    combinedSurf.write(outFileName);
+    // If merging regions also sort
+    combinedSurf.write(outFileName, mergeRegions);
 
     Info<< "End\n" << endl;
 

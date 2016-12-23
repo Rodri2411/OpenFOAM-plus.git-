@@ -55,18 +55,23 @@ Description
 
 int main(int argc, char *argv[])
 {
+    #include "postProcess.H"
+
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createDynamicFvMesh.H"
     #include "initContinuityErrs.H"
-
-    pimpleControl pimple(mesh);
-
+    #include "createControl.H"
     #include "createFields.H"
     #include "createUf.H"
     #include "createControls.H"
     #include "CourantNo.H"
     #include "setInitialDeltaT.H"
+
+    volScalarField& p = mixture.p();
+    volScalarField& T = mixture.T();
+    const volScalarField& psi1 = mixture.thermo1().psi();
+    const volScalarField& psi2 = mixture.thermo2().psi();
 
     turbulence->validate();
 
@@ -77,12 +82,12 @@ int main(int argc, char *argv[])
     {
         #include "readControls.H"
 
-        {
-            // Store divU from the previous mesh so that it can be mapped
-            // and used in correctPhi to ensure the corrected phi has the
-            // same divergence
-            volScalarField divU("divU0", fvc::div(fvc::absolute(phi, U)));
+        // Store divU from the previous mesh so that it can be mapped
+        // and used in correctPhi to ensure the corrected phi has the
+        // same divergence
+        volScalarField divU("divU0", fvc::div(fvc::absolute(phi, U)));
 
+        {
             #include "CourantNo.H"
             #include "setDeltaT.H"
 
@@ -105,8 +110,12 @@ int main(int argc, char *argv[])
                 ghf = (g & mesh.Cf()) - ghRef;
             }
 
-            if (mesh.changing() && correctPhi)
+            if ((correctPhi && mesh.changing()) || mesh.topoChanging())
             {
+                // Calculate absolute flux from the mapped surface velocity
+                // Note: temporary fix until mapped Uf is assessed
+                Uf = fvc::interpolate(U);
+
                 // Calculate absolute flux from the mapped surface velocity
                 phi = mesh.Sf() & Uf;
 
@@ -148,6 +157,10 @@ int main(int argc, char *argv[])
         }
 
         rho = alpha1*rho1 + alpha2*rho2;
+
+        // Correct p_rgh for consistency with p and the updated densities
+        p_rgh = p - rho*gh;
+        p_rgh.correctBoundaryConditions();
 
         runTime.write();
 

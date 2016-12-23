@@ -53,13 +53,12 @@ Description
         thrust(r) = T (C_0 + C_1 r^2 + C_2 r^4)
     \f]
 
-    \heading Source usage
-
+Usage
     Example usage:
     \verbatim
     actuationDiskSourceCoeffs
     {
-        fieldName       U;          // name of field to apply source
+        fields          (U);        // names of fields to apply source
         diskDir         (-1 0 0);   // disk direction
         Cp              0.1;        // power coefficient
         Ct              0.5;        // thrust coefficient
@@ -152,7 +151,7 @@ public:
         virtual void addSup
         (
             fvMatrix<vector>& eqn,
-            const label fieldI
+            const label fieldi
         );
 
         //- Source term to compressible momentum equation
@@ -160,7 +159,7 @@ public:
         (
             const volScalarField& rho,
             fvMatrix<vector>& eqn,
-            const label fieldI
+            const label fieldi
         );
 
 

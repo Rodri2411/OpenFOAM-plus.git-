@@ -49,9 +49,7 @@ void Foam::sampledSurfaces::writeSurface
         gatheredValues[Pstream::myProcNo()] = values;
         Pstream::gatherList(gatheredValues);
 
-
         fileName sampleFile;
-
         if (Pstream::master())
         {
             // Combine values into single field
@@ -65,22 +63,21 @@ void Foam::sampledSurfaces::writeSurface
             );
 
             // Renumber (point data) to correspond to merged points
-            if (mergeList_[surfI].pointsMap.size() == allValues.size())
+            if (mergedList_[surfI].pointsMap().size() == allValues.size())
             {
-                inplaceReorder(mergeList_[surfI].pointsMap, allValues);
-                allValues.setSize(mergeList_[surfI].points.size());
+                inplaceReorder(mergedList_[surfI].pointsMap(), allValues);
+                allValues.setSize(mergedList_[surfI].points().size());
             }
 
             // Write to time directory under outputPath_
             // skip surface without faces (eg, a failed cut-plane)
-            if (mergeList_[surfI].faces.size())
+            if (mergedList_[surfI].size())
             {
                 sampleFile = formatter_->write
                 (
                     outputDir,
                     s.name(),
-                    mergeList_[surfI].points,
-                    mergeList_[surfI].faces,
+                    mergedList_[surfI],
                     fieldName,
                     allValues,
                     s.interpolate()
@@ -106,8 +103,7 @@ void Foam::sampledSurfaces::writeSurface
             (
                 outputDir,
                 s.name(),
-                s.points(),
-                s.faces(),
+                s,
                 fieldName,
                 values,
                 s.interpolate()
@@ -183,26 +179,21 @@ void Foam::sampledSurfaces::sampleAndWrite
 template<class GeoField>
 void Foam::sampledSurfaces::sampleAndWrite(const IOobjectList& objects)
 {
-    wordList names;
-    const fvMesh& mesh = refCast<const fvMesh>(obr_);
-
+    wordList fieldNames;
     if (loadFromFiles_)
     {
-        IOobjectList fieldObjects(objects.lookupClass(GeoField::typeName));
-        names = fieldObjects.names();
+        fieldNames = objects.sortedNames(GeoField::typeName, fieldSelection_);
     }
     else
     {
-        names = mesh.thisDb().names<GeoField>();
+        fieldNames = mesh_.thisDb().sortedNames<GeoField>(fieldSelection_);
+
+        writeOriginalIds();
     }
 
-    labelList nameIDs(findStrings(fieldSelection_, names));
-
-    wordHashSet fieldNames(wordList(names, nameIDs));
-
-    forAllConstIter(wordHashSet, fieldNames, iter)
+    forAll(fieldNames, fieldi)
     {
-        const word& fieldName = iter.key();
+        const word& fieldName = fieldNames[fieldi];
 
         if ((Pstream::master()) && verbose_)
         {
@@ -216,11 +207,11 @@ void Foam::sampledSurfaces::sampleAndWrite(const IOobjectList& objects)
                 IOobject
                 (
                     fieldName,
-                    mesh.time().timeName(),
-                    mesh,
+                    time_.timeName(),
+                    mesh_,
                     IOobject::MUST_READ
                 ),
-                mesh
+                mesh_
             );
 
             sampleAndWrite(fld);
@@ -229,7 +220,7 @@ void Foam::sampledSurfaces::sampleAndWrite(const IOobjectList& objects)
         {
             sampleAndWrite
             (
-                mesh.thisDb().lookupObject<GeoField>(fieldName)
+                mesh_.thisDb().lookupObject<GeoField>(fieldName)
             );
         }
     }

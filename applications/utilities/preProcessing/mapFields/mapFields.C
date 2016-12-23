@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -51,13 +51,11 @@ int readNumProcs
     const Time& runTime
 )
 {
+    const word dictName = "decomposeParDict";
     fileName dictFile;
-    if (args.optionReadIfPresent(optionName, dictFile))
+    if (args.optionReadIfPresent(optionName, dictFile) && isDir(dictFile))
     {
-        if (isDir(dictFile))
-        {
-            dictFile = dictFile/"decomposeParDict";
-        }
+        dictFile = dictFile / dictName;
     }
 
     return readInt
@@ -68,10 +66,10 @@ int readNumProcs
             (
                 IOobject
                 (
-                    "decomposeParDict",
+                    dictName,
                     runTime.system(),
                     runTime,
-                    IOobject::MUST_READ_IF_MODIFIED,
+                    IOobject::MUST_READ,
                     IOobject::NO_WRITE,
                     false
                 ),
@@ -292,8 +290,8 @@ int main(int argc, char *argv[])
     fileName rootDirTarget(args.rootPath());
     fileName caseDirTarget(args.globalCaseName());
 
-    const fileName casePath = args[1];
-    const fileName rootDirSource = casePath.path();
+    fileName casePath = args[1];
+    const fileName rootDirSource = casePath.path().toAbsolute();
     const fileName caseDirSource = casePath.name();
 
     Info<< "Source: " << rootDirSource << " " << caseDirSource << endl;
@@ -376,7 +374,7 @@ int main(int argc, char *argv[])
 
     if (parallelSource && !parallelTarget)
     {
-        int nProcs = readNumProcs
+        const int nProcs = readNumProcs
         (
             args,
             "sourceDecomposeParDict",
@@ -397,15 +395,15 @@ int main(int argc, char *argv[])
 
         Info<< "Target mesh size: " << meshTarget.nCells() << endl;
 
-        for (int procI=0; procI<nProcs; procI++)
+        for (int proci=0; proci<nProcs; proci++)
         {
-            Info<< nl << "Source processor " << procI << endl;
+            Info<< nl << "Source processor " << proci << endl;
 
             Time runTimeSource
             (
                 Time::controlDictName,
                 rootDirSource,
-                caseDirSource/fileName(word("processor") + name(procI))
+                caseDirSource/fileName(word("processor") + name(proci))
             );
 
             #include "setTimeIndex.H"
@@ -448,7 +446,7 @@ int main(int argc, char *argv[])
     }
     else if (!parallelSource && parallelTarget)
     {
-        int nProcs = readNumProcs
+        const int nProcs = readNumProcs
         (
             args,
             "targetDecomposeParDict",
@@ -472,15 +470,15 @@ int main(int argc, char *argv[])
 
         Info<< "Source mesh size: " << meshSource.nCells() << endl;
 
-        for (int procI=0; procI<nProcs; procI++)
+        for (int proci=0; proci<nProcs; proci++)
         {
-            Info<< nl << "Target processor " << procI << endl;
+            Info<< nl << "Target processor " << proci << endl;
 
             Time runTimeTarget
             (
                 Time::controlDictName,
                 rootDirTarget,
-                caseDirTarget/fileName(word("processor") + name(procI))
+                caseDirTarget/fileName(word("processor") + name(proci))
             );
 
             fvMesh meshTarget
@@ -521,13 +519,13 @@ int main(int argc, char *argv[])
     }
     else if (parallelSource && parallelTarget)
     {
-        int nProcsSource = readNumProcs
+        const int nProcsSource = readNumProcs
         (
             args,
             "sourceDecomposeParDict",
             runTimeSource
         );
-        int nProcsTarget = readNumProcs
+        const int nProcsTarget = readNumProcs
         (
             args,
             "targetDecomposeParDict",

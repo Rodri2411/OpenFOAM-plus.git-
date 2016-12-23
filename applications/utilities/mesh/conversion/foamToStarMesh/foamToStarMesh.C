@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -31,15 +31,15 @@ Description
     Reads an OpenFOAM mesh and writes a pro-STAR (v4) bnd/cel/vrt format.
 
 Usage
-    - foamToStarMesh [OPTION] \n
-    Reads an OpenFOAM mesh and writes a pro-STAR (v4) bnd/cel/vrt format.
+    \b foamToStarMesh [OPTION]
 
-    \param -noBnd \n
-    Suppress writing the \c .bnd file
+    Options:
+      - \par -noBnd
+        Suppress writing the \c .bnd file
 
-    \param -scale \<factor\>\n
-    Specify an alternative geometry scaling factor.
-    The default is \b 1000 (scale \em [m] to \em [mm]).
+      - \par -scale \<factor\>
+        Specify an alternative geometry scaling factor.
+        The default is \b 1000 (scale \em [m] to \em [mm]).
 
 Note
     The cellTable information available in the files
@@ -47,8 +47,8 @@ Note
     will be used if available. Otherwise the cellZones are used when
     creating the cellTable information.
 
-See Also
-    Foam::cellTable, Foam::meshWriter and Foam::meshWriters::STARCD
+See also
+    Foam::cellTable, Foam::meshWriter and Foam::fileFormats::STARCDMeshWriter
 
 \*---------------------------------------------------------------------------*/
 
@@ -94,15 +94,9 @@ int main(int argc, char *argv[])
         exportName += '-' + args.globalCaseName();
     }
 
-    // default: rescale from [m] to [mm]
-    scalar scaleFactor = 1000;
-    if (args.optionReadIfPresent("scale", scaleFactor))
-    {
-        if (scaleFactor <= 0)
-        {
-            scaleFactor = 1;
-        }
-    }
+    // Default rescale from [m] to [mm]
+    const scalar scaleFactor = args.optionLookupOrDefault("scale", 1000.0);
+    const bool  writeBndFile = !args.optionFound("noBnd");
 
     #include "createPolyMesh.H"
 
@@ -116,12 +110,12 @@ int main(int argc, char *argv[])
 
         if (!timeI || state != polyMesh::UNCHANGED)
         {
-            meshWriters::STARCD writer(mesh, scaleFactor);
-
-            if (args.optionFound("noBnd"))
-            {
-                writer.noBoundary();
-            }
+            fileFormats::STARCDMeshWriter writer
+            (
+                mesh,
+                scaleFactor,
+                writeBndFile
+            );
 
             fileName meshName(exportName);
             if (state != polyMesh::UNCHANGED)

@@ -1,9 +1,7 @@
 #!/bin/sh
 cd ${0%/*} || exit 1    # Run from this directory
 
-# Parse arguments for library compilation without documentation by default
-genDoc=0
-targetType=libso
+# Parse arguments for library compilation
 . $WM_PROJECT_DIR/wmake/scripts/AllwmakeParseArguments
 
 wmakeCheckPwd "$WM_PROJECT_DIR" || {
@@ -27,20 +25,25 @@ if [ -d "$WM_THIRD_PARTY_DIR" ]
 then
     $WM_THIRD_PARTY_DIR/Allwmake
 else
-    echo "Allwmake: no ThirdParty directory found - skipping"
+    echo "No ThirdParty directory found - skipping"
 fi
 
-# Compile OpenFOAM libraries and applications
+echo "========================================"
+echo "Compile OpenFOAM libraries"
+echo
 src/Allwmake $targetType $*
 
-# Compile OpenFOAM libraries and applications
+echo "========================================"
+echo "Compile OpenFOAM applications"
+echo
 applications/Allwmake $targetType $*
 
-# Optionally build OpenFOAM Doxygen documentation
-if [ $genDoc -eq 1 ]
-then
-    doc/Allwmake
-fi
-
-
+# Some summary information
+echo
+date "+%Y-%m-%d %H:%M:%S %z" 2>/dev/null || echo "date is unknown"
+echo "========================================"
+echo "  ${WM_PROJECT_DIR##*/}"
+echo "  $WM_COMPILER $WM_COMPILER_TYPE compiler"
+echo "  ${WM_OPTIONS}, with ${WM_MPLIB} ${FOAM_MPI}"
+echo
 #------------------------------------------------------------------------------

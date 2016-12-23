@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  v1606+                                |
+|  \\    /   O peration     | Version:  plus                                  |
 |   \\  /    A nd           | Web:      www.OpenFOAM.com                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -17,9 +17,14 @@ FoamFile
 
 solvers
 {
+    ".*(rho|rhoFinal)"
+    {
+        solver          diagonal;
+    }
+
     "alpha.liquid.*"
     {
-        cAlpha          1;
+        cAlpha          0;
         nAlphaCorr      2;
         nAlphaSubCycles 2;
 
@@ -55,6 +60,7 @@ solvers
         nCellsInCoarsestLevel 10;
         agglomerator    faceAreaPair;
         mergeLevels     1;
+        maxIter         100;
     };
 
     p_rghFinal
@@ -100,7 +106,7 @@ solvers
 
      "(k.*|omega.*|Theta.*).*"
     {
-        solver          PBiCG;
+        solver          PBiCGStab;
         preconditioner  DILU;
         tolerance       1e-7;
         relTol          0;
@@ -111,7 +117,7 @@ PIMPLE
 {
     momentumPredictor   false;
     nOuterCorrectors    1;
-    nCorrectors         3;
+    nCorrectors         2;
     nNonOrthogonalCorrectors 0;
 }
 

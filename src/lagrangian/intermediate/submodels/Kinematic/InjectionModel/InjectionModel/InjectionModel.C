@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -73,7 +73,7 @@ bool Foam::InjectionModel<CloudType>::prepareForNextTimeStep
         }
         else
         {
-            // injection should have started, but not sufficient volume to
+            // Injection should have started, but not sufficient volume to
             // produce (at least) 1 parcel - hold value of timeStep0_
             validInjection = false;
         }
@@ -91,9 +91,9 @@ bool Foam::InjectionModel<CloudType>::prepareForNextTimeStep
 template<class CloudType>
 bool Foam::InjectionModel<CloudType>::findCellAtPosition
 (
-    label& cellI,
-    label& tetFaceI,
-    label& tetPtI,
+    label& celli,
+    label& tetFacei,
+    label& tetPti,
     vector& position,
     bool errorOnNotFound
 )
@@ -105,63 +105,71 @@ bool Foam::InjectionModel<CloudType>::findCellAtPosition
     this->owner().mesh().findCellFacePt
     (
         position,
-        cellI,
-        tetFaceI,
-        tetPtI
+        celli,
+        tetFacei,
+        tetPti
     );
 
-    label procI = -1;
+    label proci = -1;
 
-    if (cellI >= 0)
+    if (celli >= 0)
     {
-        procI = Pstream::myProcNo();
+        proci = Pstream::myProcNo();
     }
 
-    reduce(procI, maxOp<label>());
+    reduce(proci, maxOp<label>());
 
     // Ensure that only one processor attempts to insert this Parcel
 
-    if (procI != Pstream::myProcNo())
+    if (proci != Pstream::myProcNo())
     {
-        cellI = -1;
-        tetFaceI = -1;
-        tetPtI = -1;
+        celli = -1;
+        tetFacei = -1;
+        tetPti = -1;
     }
 
     // Last chance - find nearest cell and try that one - the point is
     // probably on an edge
-    if (procI == -1)
+    if (proci == -1)
     {
-        cellI = this->owner().mesh().findNearestCell(position);
+        celli = this->owner().mesh().findNearestCell(position);
 
-        if (cellI >= 0)
+        if (celli >= 0)
         {
-            position += SMALL*(cellCentres[cellI] - position);
+            position += SMALL*(cellCentres[celli] - position);
 
-            if (this->owner().mesh().pointInCell(position, cellI))
+            this->owner().mesh().findCellFacePt
+            (
+                position,
+                celli,
+                tetFacei,
+                tetPti
+            );
+
+            if (celli > 0)
             {
-                procI = Pstream::myProcNo();
+                proci = Pstream::myProcNo();
             }
         }
 
-        reduce(procI, maxOp<label>());
+        reduce(proci, maxOp<label>());
 
-        if (procI != Pstream::myProcNo())
+        if (proci != Pstream::myProcNo())
         {
-            cellI = -1;
-            tetFaceI = -1;
-            tetPtI = -1;
+            celli = -1;
+            tetFacei = -1;
+            tetPti = -1;
         }
     }
 
-    if (procI == -1)
+    if (proci == -1)
     {
         if (errorOnNotFound)
         {
             FatalErrorInFunction
                 << "Cannot find parcel injection cell. "
                 << "Parcel position = " << p0 << nl
-                << abort(FatalError);
+                << exit(FatalError);
         }
         else
         {
@@ -207,8 +215,8 @@ Foam::scalar Foam::InjectionModel<CloudType>::setNumberOfParticles
         {
             nP = 0.0;
             FatalErrorInFunction
-             << "Unknown parcelBasis type" << nl
-             << exit(FatalError);
+                << "Unknown parcelBasis type" << nl
+                << exit(FatalError);
         }
     }
 
@@ -254,8 +262,8 @@ Foam::InjectionModel<CloudType>::InjectionModel(CloudType& owner)
 :
     CloudSubModelBase<CloudType>(owner),
     SOI_(0.0),
-    volumeTotal_(0.0),
-    massTotal_(0.0),
+    volumeTotal_(this->template getModelProperty<scalar>("volumeTotal")),
+    massTotal_(0),
     massFlowRate_(owner.db().time(), "massFlowRate"),
     massInjected_(this->template getModelProperty<scalar>("massInjected")),
     nInjections_(this->template getModelProperty<label>("nInjections")),
@@ -283,8 +291,8 @@ Foam::InjectionModel<CloudType>::InjectionModel
 :
     CloudSubModelBase<CloudType>(modelName, owner, dict, typeName, modelType),
     SOI_(0.0),
-    volumeTotal_(0.0),
-    massTotal_(0.0),
+    volumeTotal_(this->template getModelProperty<scalar>("volumeTotal")),
+    massTotal_(0),
     massFlowRate_(owner.db().time(), "massFlowRate"),
     massInjected_(this->template getModelProperty<scalar>("massInjected")),
     nInjections_(this->template getModelProperty<scalar>("nInjections")),
@@ -310,16 +318,19 @@ Foam::InjectionModel<CloudType>::InjectionModel
         Info<< "    injector ID: " << injectorID_ << endl;
     }
 
-    if (owner.solution().transient())
+    if (owner.solution().active())
     {
-        this->coeffDict().lookup("massTotal") >> massTotal_;
-        this->coeffDict().lookup("SOI") >> SOI_;
-    }
-    else
-    {
-        massFlowRate_.reset(this->coeffDict());
-        massTotal_ = massFlowRate_.value(owner.db().time().value());
-        this->coeffDict().readIfPresent("SOI", SOI_);
+        if (owner.solution().transient())
+        {
+            this->coeffDict().lookup("massTotal") >> massTotal_;
+            this->coeffDict().lookup("SOI") >> SOI_;
+        }
+        else
+        {
+            massFlowRate_.reset(this->coeffDict());
+            massTotal_ = massFlowRate_.value(owner.db().time().value());
+            this->coeffDict().readIfPresent("SOI", SOI_);
+        }
     }
 
     SOI_ = owner.db().time().userTimeToTime(SOI_);
@@ -347,8 +358,8 @@ Foam::InjectionModel<CloudType>::InjectionModel
     else
     {
         FatalErrorInFunction
-         << "parcelBasisType must be either 'number', 'mass' or 'fixed'" << nl
-         << exit(FatalError);
+            << "parcelBasisType must be either 'number', 'mass' or 'fixed'"
+            << nl << exit(FatalError);
     }
 }
 
@@ -387,9 +398,7 @@ Foam::InjectionModel<CloudType>::~InjectionModel()
 
 template<class CloudType>
 void Foam::InjectionModel<CloudType>::updateMesh()
-{
-    // do nothing
-}
+{}
 
 
 template<class CloudType>
@@ -429,7 +438,6 @@ void Foam::InjectionModel<CloudType>::inject(TrackData& td)
 
     if (prepareForNextTimeStep(time, newParcels, newVolumeFraction))
     {
-
         const scalar trackTime = this->owner().solution().trackTime();
         const polyMesh& mesh = this->owner().mesh();
         typename TrackData::cloudType& cloud = td.cloud();
@@ -451,9 +459,9 @@ void Foam::InjectionModel<CloudType>::inject(TrackData& td)
 
                 // Determine the injection position and owner cell,
                 // tetFace and tetPt
-                label cellI = -1;
-                label tetFaceI = -1;
-                label tetPtI = -1;
+                label celli = -1;
+                label tetFacei = -1;
+                label tetPti = -1;
 
                 vector pos = Zero;
 
@@ -463,12 +471,12 @@ void Foam::InjectionModel<CloudType>::inject(TrackData& td)
                     newParcels,
                     timeInj,
                     pos,
-                    cellI,
-                    tetFaceI,
-                    tetPtI
+                    celli,
+                    tetFacei,
+                    tetPti
                 );
 
-                if (cellI > -1)
+                if (celli > -1)
                 {
                     // Lagrangian timestep
                     const scalar dt = time - timeInj;
@@ -478,7 +486,7 @@ void Foam::InjectionModel<CloudType>::inject(TrackData& td)
 
                     // Create a new parcel
                     parcelType* pPtr =
-                        new parcelType(mesh, pos, cellI, tetFaceI, tetPtI);
+                        new parcelType(mesh, pos, celli, tetFacei, tetPti);
 
                     // Check/set new parcel thermo properties
                     cloud.setParcelThermoProperties(*pPtr, dt);
@@ -579,9 +587,9 @@ void Foam::InjectionModel<CloudType>::injectSteadyState
 
         // Determine the injection position and owner cell,
         // tetFace and tetPt
-        label cellI = -1;
-        label tetFaceI = -1;
-        label tetPtI = -1;
+        label celli = -1;
+        label tetFacei = -1;
+        label tetPti = -1;
 
         vector pos = Zero;
 
@@ -591,19 +599,19 @@ void Foam::InjectionModel<CloudType>::injectSteadyState
             newParcels,
             0.0,
             pos,
-            cellI,
-            tetFaceI,
-            tetPtI
+            celli,
+            tetFacei,
+            tetPti
         );
 
-        if (cellI > -1)
+        if (celli > -1)
         {
             // Apply corrections to position for 2-D cases
             meshTools::constrainToMeshCentre(mesh, pos);
 
             // Create a new parcel
             parcelType* pPtr =
-                new parcelType(mesh, pos, cellI, tetFaceI, tetPtI);
+                new parcelType(mesh, pos, celli, tetFacei, tetPti);
 
             // Check/set new parcel thermo properties
             cloud.setParcelThermoProperties(*pPtr, 0.0);
@@ -648,8 +656,9 @@ void Foam::InjectionModel<CloudType>::info(Ostream& os)
         << "      - parcels added               = " << parcelsAddedTotal_ << nl
         << "      - mass introduced             = " << massInjected_ << nl;
 
-    if (this->outputTime())
+    if (this->writeTime())
     {
+        this->setModelProperty("volumeTotal", volumeTotal_);
         this->setModelProperty("massInjected", massInjected_);
         this->setModelProperty("nInjections", nInjections_);
         this->setModelProperty("parcelsAddedTotal", parcelsAddedTotal_);

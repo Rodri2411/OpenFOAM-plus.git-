@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  v1606+                                |
+|  \\    /   O peration     | Version:  plus                                  |
 |   \\  /    A nd           | Web:      www.OpenFOAM.com                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -23,11 +23,11 @@ airToporous
     constantHeatTransferCoeffs
     {
         interpolationMethod cellVolumeWeight;
-        nbrRegionName   porous;
+        nbrRegion       porous;
         master          false;
 
-        nbrModelName    porousToair;
-        fieldNames      (h);
+        nbrModel        porousToair;
+        fields          (h);
         semiImplicit    no;
     }
 }
@@ -40,7 +40,7 @@ porosityBlockage
     interRegionExplicitPorositySourceCoeffs
     {
         interpolationMethod cellVolumeWeight;
-        nbrRegionName   porous;
+        nbrRegion       porous;
 
         type            DarcyForchheimer;
 

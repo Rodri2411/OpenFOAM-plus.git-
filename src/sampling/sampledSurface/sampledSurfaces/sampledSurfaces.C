@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2014 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -30,12 +30,22 @@ License
 #include "IOmanip.H"
 #include "volPointInterpolation.H"
 #include "PatchTools.H"
+#include "mapPolyMesh.H"
+#include "sampledTriSurfaceMesh.H"
+#include "addToRunTimeSelectionTable.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 namespace Foam
 {
     defineTypeNameAndDebug(sampledSurfaces, 0);
+
+    addToRunTimeSelectionTable
+    (
+        functionObject,
+        sampledSurfaces,
+        dictionary
+    );
 }
 
 bool Foam::sampledSurfaces::verbose_ = false;
@@ -49,7 +59,7 @@ void Foam::sampledSurfaces::writeGeometry() const
     // Write to time directory under outputPath_
     // Skip surface without faces (eg, a failed cut-plane)
 
-    const fileName outputDir = outputPath_/obr_.time().timeName();
+    const fileName outputDir = outputPath_/time_.timeName();
 
     forAll(*this, surfI)
     {
@@ -57,26 +67,50 @@ void Foam::sampledSurfaces::writeGeometry() const
 
         if (Pstream::parRun())
         {
-            if (Pstream::master() && mergeList_[surfI].faces.size())
+            if (Pstream::master() && mergedList_[surfI].size())
             {
                 formatter_->write
                 (
                     outputDir,
                     s.name(),
-                    mergeList_[surfI].points,
-                    mergeList_[surfI].faces
+                    mergedList_[surfI]
                 );
             }
         }
         else if (s.faces().size())
         {
-            formatter_->write
-            (
-                outputDir,
-                s.name(),
-                s.points(),
-                s.faces()
-            );
+            formatter_->write(outputDir, s.name(), s);
+        }
+    }
+}
+
+
+void Foam::sampledSurfaces::writeOriginalIds()
+{
+    const word fieldName = "Ids";
+    const fileName outputDir = outputPath_/time_.timeName();
+
+    forAll(*this, surfI)
+    {
+        const sampledSurface& s = operator[](surfI);
+
+        if (isA<sampledTriSurfaceMesh>(s))
+        {
+            const sampledTriSurfaceMesh& surf =
+                dynamicCast<const sampledTriSurfaceMesh&>(s);
+
+            if (surf.keepIds())
+            {
+                const labelList& idLst = surf.originalIds();
+
+                Field<scalar> ids(idLst.size());
+                forAll(idLst, i)
+                {
+                    ids[i] = idLst[i];
+                }
+
+                writeSurface(ids, surfI, fieldName, outputDir);
+            }
         }
     }
 }
@@ -87,34 +121,60 @@ void Foam::sampledSurfaces::writeGeometry() const
 Foam::sampledSurfaces::sampledSurfaces
 (
     const word& name,
+    const Time& runTime,
+    const dictionary& dict
+)
+:
+    functionObjects::regionFunctionObject(name, runTime, dict),
+    PtrList<sampledSurface>(),
+    mesh_(refCast<const fvMesh>(obr_)),
+    loadFromFiles_(false),
+    outputPath_(fileName::null),
+    fieldSelection_(),
+    interpolationScheme_(word::null),
+    mergedList_(),
+    formatter_(nullptr)
+{
+    if (Pstream::parRun())
+    {
+        outputPath_ = mesh_.time().path()/".."/"postProcessing"/name;
+    }
+    else
+    {
+        outputPath_ = mesh_.time().path()/"postProcessing"/name;
+    }
+
+    read(dict);
+}
+
+
+Foam::sampledSurfaces::sampledSurfaces
+(
+    const word& name,
     const objectRegistry& obr,
     const dictionary& dict,
     const bool loadFromFiles
 )
 :
-    functionObjectState(obr, name),
+    functionObjects::regionFunctionObject(name, obr, dict),
     PtrList<sampledSurface>(),
-    obr_(obr),
+    mesh_(refCast<const fvMesh>(obr)),
     loadFromFiles_(loadFromFiles),
     outputPath_(fileName::null),
     fieldSelection_(),
     interpolationScheme_(word::null),
-    mergeList_(),
-    formatter_(NULL)
+    mergedList_(),
+    formatter_(nullptr)
 {
-    // Only active if a fvMesh is available
-    if (setActive<fvMesh>())
-    {
-        read(dict);
-    }
+    read(dict);
 
     if (Pstream::parRun())
     {
-        outputPath_ = obr_.time().path()/".."/"postProcessing"/name_;
+        outputPath_ = time_.path()/".."/"postProcessing"/name;
     }
     else
     {
-        outputPath_ = obr_.time().path()/"postProcessing"/name_;
+        outputPath_ = time_.path()/"postProcessing"/name;
     }
 
     read(dict);
@@ -135,25 +195,13 @@ void Foam::sampledSurfaces::verbose(const bool verbosity)
 }
 
 
-void Foam::sampledSurfaces::execute()
+bool Foam::sampledSurfaces::execute()
 {
-    // Do nothing - only valid on write
+    return true;
 }
 
 
-void Foam::sampledSurfaces::end()
-{
-    // Do nothing - only valid on write
-}
-
-
-void Foam::sampledSurfaces::timeSet()
-{
-    // Do nothing - only valid on write
-}
-
-
-void Foam::sampledSurfaces::write()
+bool Foam::sampledSurfaces::write()
 {
     if (size())
     {
@@ -183,10 +231,12 @@ void Foam::sampledSurfaces::write()
         sampleAndWrite<surfaceSymmTensorField>(objects);
         sampleAndWrite<surfaceTensorField>(objects);
     }
+
+    return true;
 }
 
 
-void Foam::sampledSurfaces::read(const dictionary& dict)
+bool Foam::sampledSurfaces::read(const dictionary& dict)
 {
     bool surfacesFound = dict.found("surfaces");
 
@@ -205,18 +255,16 @@ void Foam::sampledSurfaces::read(const dictionary& dict)
             dict.subOrEmptyDict("formatOptions").subOrEmptyDict(writeType)
         );
 
-        const fvMesh& mesh = refCast<const fvMesh>(obr_);
-
         PtrList<sampledSurface> newList
         (
             dict.lookup("surfaces"),
-            sampledSurface::iNew(mesh)
+            sampledSurface::iNew(mesh_)
         );
         transfer(newList);
 
         if (Pstream::parRun())
         {
-            mergeList_.setSize(size());
+            mergedList_.setSize(size());
         }
 
         // Ensure all surfaces and merge information are expired
@@ -244,20 +292,28 @@ void Foam::sampledSurfaces::read(const dictionary& dict)
         }
         Pout<< ")" << endl;
     }
+
+    return true;
 }
 
 
-void Foam::sampledSurfaces::updateMesh(const mapPolyMesh&)
+void Foam::sampledSurfaces::updateMesh(const mapPolyMesh& mpm)
 {
-    expire();
+    if (&mpm.mesh() == &mesh_)
+    {
+        expire();
+    }
 
     // pointMesh and interpolation will have been reset in mesh.update
 }
 
 
-void Foam::sampledSurfaces::movePoints(const polyMesh&)
+void Foam::sampledSurfaces::movePoints(const polyMesh& mesh)
 {
-    expire();
+    if (&mesh == &mesh_)
+    {
+        expire();
+    }
 }
 
 
@@ -298,7 +354,7 @@ bool Foam::sampledSurfaces::expire()
         // Clear merge information
         if (Pstream::parRun())
         {
-            mergeList_[surfI].clear();
+            mergedList_[surfI].clear();
         }
     }
 
@@ -330,10 +386,8 @@ bool Foam::sampledSurfaces::update()
         return updated;
     }
 
-    const fvMesh& mesh = refCast<const fvMesh>(obr_);
-
     // Dimension as fraction of mesh bounding box
-    scalar mergeDim = mergeTol_*mesh.bounds().mag();
+    scalar mergeDim = mergeTol_*mesh_.bounds().mag();
 
     if (Pstream::master() && debug)
     {
@@ -348,24 +402,8 @@ bool Foam::sampledSurfaces::update()
         if (s.update())
         {
             updated = true;
+            mergedList_[surfI].merge(s, mergeDim);
         }
-        else
-        {
-            continue;
-        }
-
-        PatchTools::gatherAndMerge
-        (
-            mergeDim,
-            primitivePatch
-            (
-                SubList<face>(s.faces(), s.faces().size()),
-                s.points()
-            ),
-            mergeList_[surfI].points,
-            mergeList_[surfI].faces,
-            mergeList_[surfI].pointsMap
-        );
     }
 
     return updated;

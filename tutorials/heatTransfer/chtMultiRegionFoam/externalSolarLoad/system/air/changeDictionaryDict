@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  v1606+                                |
+|  \\    /   O peration     | Version:  plus                                  |
 |   \\  /    A nd           | Web:      www.OpenFOAM.com                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -68,10 +68,10 @@ dictionaryReplacement
             {
                 type            compressible::turbulentTemperatureRadCoupledMixed;
                 Tnbr            T;
-                kappa           fluidThermo;
+                kappaMethod     fluidThermo;
                 QrNbr           none;
                 Qr              Qr;
-                kappaName       none;
+                kappa           none;
                 value           uniform 300;
             }
         }
@@ -128,12 +128,6 @@ dictionaryReplacement
             {
                 type            totalPressure;
                 p0              $internalField;
-                U               U;
-                phi             phi;
-                rho             rho;
-                psi             none;
-                gamma           0;
-                value           $internalField;
             }
 
             "air.*"

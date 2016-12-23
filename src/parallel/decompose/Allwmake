@@ -2,80 +2,164 @@
 cd ${0%/*} || exit 1    # Run from this directory
 
 # Parse arguments for library compilation
-targetType=libso
 . $WM_PROJECT_DIR/wmake/scripts/AllwmakeParseArguments
 
-# get SCOTCH_VERSION, SCOTCH_ARCH_PATH
-if settings=`$WM_PROJECT_DIR/bin/foamEtcFile config.sh/scotch`
-then
+# Test for metis.
+# - return 0 and export METIS_ARCH_PATH on success
+hasMetis()
+{
+    local warning="==> skip metis"
+
+    unset METIS_ARCH_PATH METIS_VERSION
+    settings=$($WM_PROJECT_DIR/bin/foamEtcFile config.sh/metis) || {
+        echo "$warning (no config.sh/metis settings)"
+        return 1
+    }
+
     . $settings
-    echo "using SCOTCH_ARCH_PATH=$SCOTCH_ARCH_PATH"
-else
-    echo
-    echo "Error: no config.sh/scotch settings"
-    echo
-fi
+    if [ -z "$METIS_ARCH_PATH" -o "${METIS_ARCH_PATH##*-}" = none ]
+    then
+        echo "$warning (not available)"
+        return 1
+    fi
+
+    # Header
+    local header=$METIS_ARCH_PATH/include/metis.h
+    if [ "${METIS_ARCH_PATH##*-}" = system ]
+    then
+        [ -f "$header" ] || header=/usr/include/metis.h
+    fi
+    [ -f "$header" ] || {
+        echo "$warning (no header)"
+        return 2  # file not found
+    }
+
+    # Library
+    [ -r $FOAM_EXT_LIBBIN/libmetis.so ] || \
+    [ -r $METIS_ARCH_PATH/lib$WM_COMPILER_LIB_ARCH/libmetis.so ] || \
+    [ "${METIS_ARCH_PATH##*-}" = system ] || {
+        echo "$warning (missing library)"
+        return 2
+    }
+
+    # Ensure consistent sizes between OpenFOAM and metis header
+    # Extract IDXTYPEWIDTH from metis.h: regex as per ThirdParty Allwmake
+    local label=$(sed -ne 's/^.*#define  *IDXTYPEWIDTH  *\([1-9][0-9]\).*/\1/p' $header)
+    : ${label:=unknown}
+
+    if [ "$WM_LABEL_SIZE" = "$label" ]
+    then
+        echo "Metis (label=$label) - $METIS_ARCH_PATH"
+        export METIS_ARCH_PATH
+    else
+        echo "$warning (label=$WM_LABEL_SIZE, metis.h has '$label')"
+        return 1
+    fi
+}
+
+
+# Test for scotch.
+# - return 0 and export SCOTCH_ARCH_PATH, SCOTCH_VERSION on success
+hasScotch()
+{
+    local warning="==> skip scotch"
+
+    unset SCOTCH_ARCH_PATH SCOTCH_VERSION
+    settings=$($WM_PROJECT_DIR/bin/foamEtcFile config.sh/scotch) || {
+        echo "$warning (no config.sh/scotch settings)"
+        return 1
+    }
+
+    . $settings
+    if [ -z "$SCOTCH_ARCH_PATH" -o "${SCOTCH_ARCH_PATH##*-}" = none ]
+    then
+        echo "$warning (not available)"
+        return 1
+    fi
+
+    # Header
+    local header=$SCOTCH_ARCH_PATH/include/scotch.h
+    if [ "${SCOTCH_ARCH_PATH##*-}" = system ]
+    then
+        [ -f "$header" ] || header=/usr/include/scotch.h
+    fi
+    [ -f "$header" ] || {
+        echo "$warning (no header)"
+        return 2  # file not found
+    }
+
+    # Library
+    [ -r $FOAM_EXT_LIBBIN/libscotch.so ] || \
+    [ -r $SCOTCH_ARCH_PATH/lib$WM_COMPILER_LIB_ARCH/libscotch.so ] || \
+    [ "${SCOTCH_ARCH_PATH##*-}" = system ] || {
+        echo "$warning (missing library)"
+        return 2
+    }
+
+    # Ensure consistent sizes between OpenFOAM and scotch header
+    # extract 'typedef int64_t SCOTCH_Num' or equivalent
+    local label=$(sed -ne \
+        's/^.*typedef *\([^ ]*\) *SCOTCH_Num.*/\1/ip' \
+        "$header")
+
+    : ${label:=unknown}
+
+    case "$WM_LABEL_SIZE:$label" in
+    (32:int32_t | 32:int | 64:int64_t | 64:long)
+        echo "Scotch (label=$label) - $SCOTCH_ARCH_PATH"
+        export SCOTCH_ARCH_PATH SCOTCH_VERSION
+        ;;
+
+    *)
+        echo "$warning (label='$WM_LABEL_SIZE', scotch.h has '$label')"
+        return 1
+        ;;
+    esac
+}
 
 
 #
-# define how to create an mpi-versioned library of $targetType
+# Define how to create an mpi-versioned library of $targetType
 # compile into qualified directory
-# use sentinel file to handle version changes
+# use sentinel file(s) to handle version changes
 #
 wmakeMpiLib()
 {
-    set +x
+    local decompName="$1"
+    shift
     for libName
     do
     (
         WM_OPTIONS="$WM_OPTIONS$WM_MPLIB"
         libDir="$WM_PROJECT_DIR/platforms/$WM_OPTIONS/src/parallel/decompose/$libName"
         whichmpi="$libDir/using:$FOAM_MPI"
-        whichscotch="$libDir/using:$SCOTCH_VERSION"
-        [ -e "$whichmpi" -a -e "$whichscotch" ] || wclean $libName
+        whichdecomp="$libDir/using:$decompName"
+        [ -e "$whichmpi" -a -e "$whichdecomp" ] || wclean $libName
         echo "wmake $targetType $libName"
         wmake $targetType $libName
         mkdir -p "$libDir"
-        touch "$whichmpi" "$whichscotch"
+        touch "$whichdecomp" "$whichmpi"
     )
     done
-    set -x
 }
 
-set -x
+wmakeLnInclude -u decompositionMethods
 
-wmakeLnInclude decompositionMethods
-
-if [ -n "$SCOTCH_ARCH_PATH" ]
+if hasScotch
 then
     wmake $targetType scotchDecomp
-
     if [ -d "$FOAM_LIBBIN/$FOAM_MPI" ]
     then
-        #- Bit of a hack: ptscotch 6 requires scotch linked as well as. Can be
-        #  removed once ptscotch declares dependency on scotch itself.
-        case "$SCOTCH_VERSION" in
-        scotch_6.*)
-            export LINK_FLAGS="-lscotch"
-            ;;
-        esac
-
-
-        wmakeMpiLib ptscotchDecomp
+        wmakeMpiLib "$SCOTCH_VERSION" ptscotchDecomp
     fi
-else
-    echo
-    echo "Skipping scotchDecomp (ptscotchDecomp)"
-    echo
 fi
 
-
-# Try and build metisDecomp (has own logic)
-(cd metisDecomp && ./Allwmake $targetType)
-
+if hasMetis
+then
+    wmake $targetType metisDecomp
+fi
 
 wmake $targetType decompositionMethods
-
 wmake $targetType decompose
 
 #------------------------------------------------------------------------------

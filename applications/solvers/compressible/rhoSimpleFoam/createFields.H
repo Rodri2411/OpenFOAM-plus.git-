@@ -1,10 +1,9 @@
 Info<< "Reading thermophysical properties\n" << endl;
-
-autoPtr<psiThermo> pThermo
+autoPtr<rhoThermo> pThermo
 (
-    psiThermo::New(mesh)
+    rhoThermo::New(mesh)
 );
-psiThermo& thermo = pThermo();
+rhoThermo& thermo = pThermo();
 thermo.validate(args.executable(), "h", "e");
 
 volScalarField rho
@@ -21,7 +20,6 @@ volScalarField rho
 );
 
 volScalarField& p = thermo.p();
-const volScalarField& psi = thermo.psi();
 
 Info<< "Reading field U\n" << endl;
 volVectorField U
@@ -81,3 +79,5 @@ autoPtr<compressible::turbulenceModel> turbulence
 );
 
 dimensionedScalar initialMass = fvc::domainIntegrate(rho);
+
+#include "createMRF.H"

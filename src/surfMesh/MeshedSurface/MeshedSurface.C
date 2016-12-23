@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -209,7 +209,7 @@ Foam::MeshedSurface<Face>::MeshedSurface
     const MeshedSurface<Face>& surf
 )
 :
-    ParentType(surf.faces(), surf.points()),
+    ParentType(surf.surfFaces(), surf.points()),
     zones_(surf.surfZones())
 {}
 
@@ -225,12 +225,12 @@ Foam::MeshedSurface<Face>::MeshedSurface
     labelList faceMap;
     this->storedZones() = surf.sortedZones(faceMap);
 
-    const List<Face>& origFaces = surf.faces();
+    const List<Face>& origFaces = surf;
     List<Face> newFaces(origFaces.size());
 
-    forAll(newFaces, faceI)
+    forAll(newFaces, facei)
     {
-        newFaces[faceMap[faceI]] = origFaces[faceI];
+        newFaces[faceMap[facei]] = origFaces[facei];
     }
 
     this->storedFaces().transfer(newFaces);
@@ -294,11 +294,11 @@ Foam::MeshedSurface<Face>::MeshedSurface
     // create zone list
     surfZoneList newZones(bPatches.size());
 
-    label startFaceI = 0;
+    label startFacei = 0;
     label nZone = 0;
-    forAll(bPatches, patchI)
+    forAll(bPatches, patchi)
     {
-        const polyPatch& p = bPatches[patchI];
+        const polyPatch& p = bPatches[patchi];
 
         if (p.size())
         {
@@ -306,12 +306,12 @@ Foam::MeshedSurface<Face>::MeshedSurface
             (
                 p.name(),
                 p.size(),
-                startFaceI,
+                startFacei,
                 nZone
             );
 
             nZone++;
-            startFaceI += p.size();
+            startFacei += p.size();
         }
     }
 
@@ -343,11 +343,27 @@ Foam::MeshedSurface<Face>::MeshedSurface
 
 
 template<class Face>
-Foam::MeshedSurface<Face>::MeshedSurface(const fileName& name)
+Foam::MeshedSurface<Face>::MeshedSurface
+(
+    const fileName& name
+)
 :
     ParentType(List<Face>(), pointField())
 {
     read(name);
+}
+
+
+template<class Face>
+Foam::MeshedSurface<Face>::MeshedSurface
+(
+    Istream& is
+)
+:
+    ParentType(List<Face>(), pointField()),
+    zones_()
+{
+    read(is);
 }
 
 
@@ -415,7 +431,9 @@ Foam::MeshedSurface<Face>::MeshedSurface
 
 template<class Face>
 Foam::MeshedSurface<Face>::~MeshedSurface()
-{}
+{
+    clear();
+}
 
 
 // * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * //
@@ -438,21 +456,21 @@ void Foam::MeshedSurface<Face>::remapFaces
         }
         else if (zones.size())
         {
-            label newFaceI = 0;
+            label newFacei = 0;
             label origEndI = 0;
             forAll(zones, zoneI)
             {
                 surfZone& zone = zones[zoneI];
 
                 // adjust zone start
-                zone.start() = newFaceI;
+                zone.start() = newFacei;
                 origEndI += zone.size();
 
-                for (label faceI = newFaceI; faceI < faceMap.size(); ++faceI)
+                for (label facei = newFacei; facei < faceMap.size(); ++facei)
                 {
-                    if (faceMap[faceI] < origEndI)
+                    if (faceMap[facei] < origEndI)
                     {
-                        ++newFaceI;
+                        ++newFacei;
                     }
                     else
                     {
@@ -461,7 +479,7 @@ void Foam::MeshedSurface<Face>::remapFaces
                 }
 
                 // adjust zone size
-                zone.size() = newFaceI - zone.start();
+                zone.size() = newFacei - zone.start();
             }
         }
     }
@@ -484,6 +502,9 @@ void Foam::MeshedSurface<Face>::clear()
 template<class Face>
 void Foam::MeshedSurface<Face>::movePoints(const pointField& newPoints)
 {
+    // Changes areas, normals etc.
+    ParentType::clearGeom();
+
     // Adapt for new point position
     ParentType::movePoints(newPoints);
 
@@ -495,9 +516,12 @@ void Foam::MeshedSurface<Face>::movePoints(const pointField& newPoints)
 template<class Face>
 void Foam::MeshedSurface<Face>::scalePoints(const scalar scaleFactor)
 {
-    // avoid bad scaling
+    // Avoid bad scaling
     if (scaleFactor > 0 && scaleFactor != 1.0)
     {
+        // Changes areas, normals etc.
+        ParentType::clearGeom();
+
         pointField newPoints(scaleFactor*this->points());
 
         // Adapt for new point position
@@ -505,6 +529,16 @@ void Foam::MeshedSurface<Face>::scalePoints(const scalar scaleFactor)
 
         storedPoints() = newPoints;
     }
+}
+
+
+template<class Face>
+void Foam::MeshedSurface<Face>::reset
+(
+    const Xfer<MeshedSurface<Face>>& surf
+)
+{
+    transfer(surf());
 }
 
 
@@ -570,7 +604,7 @@ void Foam::MeshedSurface<Face>::reset
 template<class Face>
 void Foam::MeshedSurface<Face>::cleanup(const bool verbose)
 {
-    // merge points (already done for STL, TRI)
+    // Merge points (already done for STL, TRI)
     stitchFaces(SMALL, verbose);
 
     checkFaces(verbose);
@@ -611,10 +645,10 @@ bool Foam::MeshedSurface<Face>::stitchFaces
     List<label> faceMap(faceLst.size());
 
     // Reset the point labels to the unique points array
-    label newFaceI = 0;
-    forAll(faceLst, faceI)
+    label newFacei = 0;
+    forAll(faceLst, facei)
     {
-        Face& f = faceLst[faceI];
+        Face& f = faceLst[facei];
         forAll(f, fp)
         {
             f[fp] = pointMap[f[fp]];
@@ -623,32 +657,32 @@ bool Foam::MeshedSurface<Face>::stitchFaces
         // for extra safety: collapse face as well
         if (f.collapse() >= 3)
         {
-            if (newFaceI != faceI)
+            if (newFacei != facei)
             {
-                faceLst[newFaceI] = f;
+                faceLst[newFacei] = f;
             }
-            faceMap[newFaceI] = faceI;
-            newFaceI++;
+            faceMap[newFacei] = facei;
+            newFacei++;
         }
         else if (verbose)
         {
             Pout<< "MeshedSurface::stitchFaces : "
-                << "Removing collapsed face " << faceI << endl
+                << "Removing collapsed face " << facei << endl
                 << "    vertices   :" << f << endl;
         }
     }
     pointMap.clear();
 
-    if (newFaceI != faceLst.size())
+    if (newFacei != faceLst.size())
     {
         if (verbose)
         {
             Pout<< "MeshedSurface::stitchFaces : "
-                << "Removed " << faceLst.size() - newFaceI
+                << "Removed " << faceLst.size() - newFacei
                 << " faces" << endl;
         }
-        faceLst.setSize(newFaceI);
-        faceMap.setSize(newFaceI);
+        faceLst.setSize(newFacei);
+        faceMap.setSize(newFacei);
         remapFaces(faceMap);
     }
     faceMap.clear();
@@ -671,41 +705,41 @@ bool Foam::MeshedSurface<Face>::checkFaces
 
     List<label> faceMap(faceLst.size());
 
-    label newFaceI = 0;
+    label newFacei = 0;
     // Detect badly labelled faces and mark degenerate faces
-    const label maxPointI = this->points().size() - 1;
-    forAll(faceLst, faceI)
+    const label maxPointi = this->points().size() - 1;
+    forAll(faceLst, facei)
     {
-        Face& f = faceLst[faceI];
+        Face& f = faceLst[facei];
 
         // avoid degenerate faces
         if (f.collapse() >= 3)
         {
             forAll(f, fp)
             {
-                if (f[fp] < 0 || f[fp] > maxPointI)
+                if (f[fp] < 0 || f[fp] > maxPointi)
                 {
                     FatalErrorInFunction
                         << "face " << f
                         << " uses point indices outside point range 0.."
-                    << maxPointI
+                    << maxPointi
                         << exit(FatalError);
                 }
             }
 
-            faceMap[faceI] = faceI;
-            newFaceI++;
+            faceMap[facei] = facei;
+            newFacei++;
         }
         else
         {
             // mark as bad face
-            faceMap[faceI] = -1;
+            faceMap[facei] = -1;
 
             changed = true;
             if (verbose)
             {
                 WarningInFunction
-                    << "face[" << faceI << "] = " << f
+                    << "face[" << facei << "] = " << f
                     << " does not have three unique vertices" << endl;
             }
         }
@@ -714,35 +748,35 @@ bool Foam::MeshedSurface<Face>::checkFaces
     // Detect doubled faces
     // do not touch the faces
     const labelListList& fFaces = this->faceFaces();
-    newFaceI = 0;
-    forAll(faceLst, faceI)
+    newFacei = 0;
+    forAll(faceLst, facei)
     {
         // skip already collapsed faces:
-        if (faceMap[faceI] < 0)
+        if (faceMap[facei] < 0)
         {
             continue;
         }
 
-        const Face& f = faceLst[faceI];
+        const Face& f = faceLst[facei];
 
         // duplicate face check
         bool okay = true;
-        const labelList& neighbours = fFaces[faceI];
+        const labelList& neighbours = fFaces[facei];
 
         // Check if faceNeighbours use same points as this face.
         // Note: discards normal information - sides of baffle are merged.
         forAll(neighbours, neighI)
         {
-            const label neiFaceI = neighbours[neighI];
+            const label neiFacei = neighbours[neighI];
 
-            if (neiFaceI <= faceI || faceMap[neiFaceI] < 0)
+            if (neiFacei <= facei || faceMap[neiFacei] < 0)
             {
                 // lower numbered faces already checked
                 // skip neighbours that are themselves collapsed
                 continue;
             }
 
-            const Face& nei = faceLst[neiFaceI];
+            const Face& nei = faceLst[neiFacei];
 
             if (f == nei)
             {
@@ -752,8 +786,8 @@ bool Foam::MeshedSurface<Face>::checkFaces
                 {
                     WarningInFunction
                         << "faces share the same vertices:" << nl
-                        << "    face[" << faceI << "] : " << f << nl
-                        << "    face[" << neiFaceI << "] : " << nei << endl;
+                        << "    face[" << facei << "] : " << f << nl
+                        << "    face[" << neiFacei << "] : " << nei << endl;
                     // printFace(Warning, "    ", f, points());
                     // printFace(Warning, "    ", nei, points());
                 }
@@ -764,45 +798,45 @@ bool Foam::MeshedSurface<Face>::checkFaces
 
         if (okay)
         {
-            faceMap[faceI] = faceI;
-            newFaceI++;
+            faceMap[facei] = facei;
+            newFacei++;
         }
         else
         {
-            faceMap[faceI] = -1;
+            faceMap[facei] = -1;
         }
     }
 
     // Phase 1: pack
     // Done to keep numbering constant in phase 1
 
-    if (changed || newFaceI < faceLst.size())
+    if (changed || newFacei < faceLst.size())
     {
         changed = true;
 
         if (verbose)
         {
             WarningInFunction
-                << "Removed " << faceLst.size() - newFaceI
+                << "Removed " << faceLst.size() - newFacei
                 << " illegal faces." << endl;
         }
 
         // compress the face list
-        newFaceI = 0;
-        forAll(faceLst, faceI)
+        newFacei = 0;
+        forAll(faceLst, facei)
         {
-            if (faceMap[faceI] >= 0)
+            if (faceMap[facei] >= 0)
             {
-                if (newFaceI != faceI)
+                if (newFacei != facei)
                 {
-                    faceLst[newFaceI] = faceLst[faceI];
+                    faceLst[newFacei] = faceLst[facei];
                 }
-                faceMap[newFaceI] = faceI;
-                newFaceI++;
+                faceMap[newFacei] = facei;
+                newFacei++;
             }
         }
 
-        faceLst.setSize(newFaceI);
+        faceLst.setSize(newFacei);
         remapFaces(faceMap);
     }
     faceMap.clear();
@@ -810,6 +844,61 @@ bool Foam::MeshedSurface<Face>::checkFaces
     // Topology can change because of renumbering
     ParentType::clearOut();
     return changed;
+}
+
+
+template<class Face>
+Foam::label Foam::MeshedSurface<Face>::nTriangles() const
+{
+    return nTriangles
+    (
+        const_cast<List<label>&>(List<label>::null())
+    );
+}
+
+
+template<class Face>
+Foam::label Foam::MeshedSurface<Face>::nTriangles
+(
+    List<label>& faceMap
+) const
+{
+    label nTri = 0;
+    const List<Face>& faceLst = surfFaces();
+
+    // Count triangles needed
+    forAll(faceLst, facei)
+    {
+        nTri += faceLst[facei].nTriangles();
+    }
+
+    // Nothing to do
+    if (nTri <= faceLst.size())
+    {
+        if (notNull(faceMap))
+        {
+            faceMap.clear();
+        }
+    }
+    else if (notNull(faceMap))
+    {
+        // face map requested
+        faceMap.setSize(nTri);
+
+        nTri = 0;
+        forAll(faceLst, facei)
+        {
+            label n = faceLst[facei].nTriangles();
+            while (n-- > 0)
+            {
+                faceMap[nTri++] = facei;
+            }
+        }
+
+        faceMap.setSize(nTri);
+    }
+
+    return nTri;
 }
 
 
@@ -834,9 +923,9 @@ Foam::label Foam::MeshedSurface<Face>::triangulate
     List<Face>& faceLst = this->storedFaces();
 
     // determine how many triangles will be needed
-    forAll(faceLst, faceI)
+    forAll(faceLst, facei)
     {
-        const label n = faceLst[faceI].nTriangles();
+        const label n = faceLst[facei].nTriangles();
         if (maxTri < n)
         {
             maxTri = n;
@@ -864,25 +953,22 @@ Foam::label Foam::MeshedSurface<Face>::triangulate
     }
     faceMap.setSize(nTri);
 
-    // remember the number of *additional* faces
-    nTri -= faceLst.size();
-
     if (this->points().empty())
     {
         // triangulate without points
         // simple face triangulation around f[0]
-        label newFaceI = 0;
-        forAll(faceLst, faceI)
+        nTri = 0;
+        forAll(faceLst, facei)
         {
-            const Face& f = faceLst[faceI];
+            const Face& f = faceLst[facei];
 
             for (label fp = 1; fp < f.size() - 1; ++fp)
             {
                 label fp1 = f.fcIndex(fp);
 
-                newFaces[newFaceI] = triFace(f[0], f[fp], f[fp1]);
-                faceMap[newFaceI] = faceI;
-                newFaceI++;
+                newFaces[nTri] = triFace(f[0], f[fp], f[fp1]);
+                faceMap[nTri] = facei;
+                nTri++;
             }
         }
     }
@@ -891,25 +977,28 @@ Foam::label Foam::MeshedSurface<Face>::triangulate
         // triangulate with points
         List<face> tmpTri(maxTri);
 
-        label newFaceI = 0;
-        forAll(faceLst, faceI)
+        nTri = 0;
+        forAll(faceLst, facei)
         {
             // 'face' not '<Face>'
-            const face& f = faceLst[faceI];
+            const face& f = faceLst[facei];
 
             label nTmp = 0;
             f.triangles(this->points(), nTmp, tmpTri);
             for (label triI = 0; triI < nTmp; triI++)
             {
-                newFaces[newFaceI] = Face
+                newFaces[nTri] = Face
                 (
                     static_cast<labelUList&>(tmpTri[triI])
                 );
-                faceMap[newFaceI] = faceI;
-                newFaceI++;
+                faceMap[nTri] = facei;
+                nTri++;
             }
         }
     }
+
+    // The number of *additional* faces
+    nTri -= faceLst.size();
 
     faceLst.transfer(newFaces);
     remapFaces(faceMap);
@@ -923,10 +1012,9 @@ Foam::label Foam::MeshedSurface<Face>::triangulate
 
     // Topology can change because of renumbering
     ParentType::clearOut();
+
     return nTri;
 }
-
-
 
 
 template<class Face>
@@ -947,10 +1035,10 @@ Foam::MeshedSurface<Face> Foam::MeshedSurface<Face>::subsetMesh
     // Create compact coordinate list and forward mapping array
     pointField newPoints(pointMap.size());
     labelList oldToNew(locPoints.size());
-    forAll(pointMap, pointI)
+    forAll(pointMap, pointi)
     {
-        newPoints[pointI] = locPoints[pointMap[pointI]];
-        oldToNew[pointMap[pointI]] = pointI;
+        newPoints[pointi] = locPoints[pointMap[pointi]];
+        oldToNew[pointMap[pointi]] = pointi;
     }
 
     // create/copy a new zones list, each zone with zero size
@@ -962,13 +1050,13 @@ Foam::MeshedSurface<Face> Foam::MeshedSurface<Face>::subsetMesh
 
     // Renumber face node labels
     List<Face> newFaces(faceMap.size());
-    forAll(faceMap, faceI)
+    forAll(faceMap, facei)
     {
-        const label origFaceI = faceMap[faceI];
-        newFaces[faceI] = Face(locFaces[origFaceI]);
+        const label origFacei = faceMap[facei];
+        newFaces[facei] = Face(locFaces[origFacei]);
 
         // Renumber labels for face
-        Face& f = newFaces[faceI];
+        Face& f = newFaces[facei];
         forAll(f, fp)
         {
             f[fp] = oldToNew[f[fp]];
@@ -977,7 +1065,7 @@ Foam::MeshedSurface<Face> Foam::MeshedSurface<Face>::subsetMesh
     oldToNew.clear();
 
     // recalculate the zones start/size
-    label newFaceI = 0;
+    label newFacei = 0;
     label origEndI = 0;
 
     // adjust zone sizes
@@ -986,14 +1074,14 @@ Foam::MeshedSurface<Face> Foam::MeshedSurface<Face>::subsetMesh
         surfZone& zone = newZones[zoneI];
 
         // adjust zone start
-        zone.start() = newFaceI;
+        zone.start() = newFacei;
         origEndI += zone.size();
 
-        for (label faceI = newFaceI; faceI < faceMap.size(); ++faceI)
+        for (label facei = newFacei; facei < faceMap.size(); ++facei)
         {
-            if (faceMap[faceI] < origEndI)
+            if (faceMap[facei] < origEndI)
             {
-                ++newFaceI;
+                ++newFacei;
             }
             else
             {
@@ -1002,7 +1090,7 @@ Foam::MeshedSurface<Face> Foam::MeshedSurface<Face>::subsetMesh
         }
 
         // adjust zone size
-        zone.size() = newFaceI - zone.start();
+        zone.size() = newFacei - zone.start();
     }
 
 
@@ -1034,12 +1122,13 @@ void Foam::MeshedSurface<Face>::transfer
     MeshedSurface<Face>& surf
 )
 {
-    reset
-    (
-        xferMove(surf.storedPoints()),
-        xferMove(surf.storedFaces()),
-        xferMove(surf.storedZones())
-    );
+    ParentType::clearOut();
+
+    this->storedPoints().transfer(surf.storedPoints());
+    this->storedFaces().transfer(surf.storedFaces());
+    this->storedZones().transfer(surf.storedZones());
+
+    surf.clear();
 }
 
 
@@ -1068,9 +1157,9 @@ void Foam::MeshedSurface<Face>::transfer
         List<Face>& oldFaces = surf.storedFaces();
         List<Face> newFaces(faceMap.size());
 
-        forAll(faceMap, faceI)
+        forAll(faceMap, facei)
         {
-            newFaces[faceMap[faceI]].transfer(oldFaces[faceI]);
+            newFaces[faceMap[facei]].transfer(oldFaces[facei]);
         }
 
         reset
@@ -1087,9 +1176,40 @@ void Foam::MeshedSurface<Face>::transfer
 
 
 template<class Face>
-Foam::Xfer<Foam::MeshedSurface<Face>> Foam::MeshedSurface<Face>::xfer()
+Foam::Xfer<Foam::MeshedSurface<Face>>
+Foam::MeshedSurface<Face>::xfer()
 {
     return xferMove(*this);
+}
+
+
+template<class Face>
+Foam::Xfer<Foam::List<Face>>
+Foam::MeshedSurface<Face>::xferFaces()
+{
+    // Topology changed because of transfer
+    ParentType::clearOut();
+
+    return this->storedFaces().xfer();
+}
+
+
+template<class Face>
+Foam::Xfer<Foam::List<Foam::point>>
+Foam::MeshedSurface<Face>::xferPoints()
+{
+    // Topology changed because of transfer
+    ParentType::clearOut();
+
+    return this->storedPoints().xfer();
+}
+
+
+template<class Face>
+Foam::Xfer<Foam::surfZoneList>
+Foam::MeshedSurface<Face>::xferZones()
+{
+    return this->storedZones().xfer();
 }
 
 
@@ -1145,7 +1265,7 @@ void Foam::MeshedSurface<Face>::operator=(const MeshedSurface& surf)
     clear();
 
     this->storedPoints() = surf.points();
-    this->storedFaces()  = surf.faces();
+    this->storedFaces()  = surf.surfFaces();
     this->storedZones()  = surf.surfZones();
 }
 
@@ -1156,7 +1276,7 @@ Foam::MeshedSurface<Face>::operator Foam::MeshedSurfaceProxy<Face>() const
     return MeshedSurfaceProxy<Face>
     (
         this->points(),
-        this->faces(),
+        this->surfFaces(),
         this->surfZones()
     );
 }

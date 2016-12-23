@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -191,9 +191,15 @@ void writeRays
             str << "l " << vertI-1 << ' ' << vertI << nl;
         }
     }
-    string cmd("objToVTK " + fName + " " + fName.lessExt() + ".vtk");
-    Pout<< "cmd:" << cmd << endl;
-    system(cmd);
+    str.flush();
+
+    DynamicList<string> cmd(3);
+    cmd.append("objToVTK");
+    cmd.append(fName);
+    cmd.append(fName.lessExt() + ".vtk");
+
+    Pout<< "cmd: objToVTK " << fName.c_str() << endl;
+    Foam::system(cmd);
 }
 
 
@@ -780,6 +786,8 @@ int main(int argc, char *argv[])
         );
 
         label compactI = 0;
+
+        volScalarField::Boundary& vfbf = viewFactorField.boundaryFieldRef();
         forAll(viewFactorsPatches, i)
         {
             label patchID = viewFactorsPatches[i];
@@ -799,7 +807,7 @@ int main(int argc, char *argv[])
                     forAll(fineFaces, fineId)
                     {
                         const label faceID = fineFaces[fineId];
-                        viewFactorField.boundaryField()[patchID][faceID] = Fij;
+                        vfbf[patchID][faceID] = Fij;
                     }
                     compactI++;
                 }

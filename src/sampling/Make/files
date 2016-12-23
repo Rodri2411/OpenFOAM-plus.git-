@@ -1,7 +1,6 @@
 probes/probes.C
 probes/patchProbes.C
 probes/probesGrouping.C
-probes/probesFunctionObject/probesFunctionObject.C
 
 sampledSet/circle/circleSet.C
 sampledSet/cloud/cloudSet.C
@@ -14,36 +13,44 @@ sampledSet/patchSeed/patchSeedSet.C
 sampledSet/sampledSet/sampledSet.C
 sampledSet/sampledSets/sampledSets.C
 sampledSet/sampledSets/sampledSetsGrouping.C
-sampledSet/sampledSetsFunctionObject/sampledSetsFunctionObject.C
 sampledSet/triSurfaceMeshPointSet/triSurfaceMeshPointSet.C
 sampledSet/uniform/uniformSet.C
 sampledSet/array/arraySet.C
 
-cuttingPlane/cuttingPlane.C
+surface/cuttingPlane/cuttingPlane.C
+surface/isoSurface/isoSurface.C
+surface/isoSurface/isoSurfaceCell.C
+surface/thresholdCellFaces/thresholdCellFaces.C
+surface/triSurfaceMesh/discreteSurface.C
+
+surfMeshSampler/surfMeshSampler/surfMeshSampler.C
+surfMeshSampler/surfMeshSamplers/surfMeshSamplers.C
+surfMeshSampler/plane/surfMeshPlaneSampler.C
+surfMeshSampler/triSurfaceMesh/surfMeshDiscreteSampler.C
 
 sampledSurface/sampledPatch/sampledPatch.C
 sampledSurface/sampledPatchInternalField/sampledPatchInternalField.C
 sampledSurface/sampledPlane/sampledPlane.C
-sampledSurface/isoSurface/isoSurface.C
 sampledSurface/isoSurface/sampledIsoSurface.C
-sampledSurface/isoSurface/isoSurfaceCell.C
 sampledSurface/isoSurface/sampledIsoSurfaceCell.C
 sampledSurface/distanceSurface/distanceSurface.C
 sampledSurface/sampledCuttingPlane/sampledCuttingPlane.C
 sampledSurface/sampledSurface/sampledSurface.C
 sampledSurface/sampledSurfaces/sampledSurfaces.C
 sampledSurface/sampledSurfaces/sampledSurfacesGrouping.C
-sampledSurface/sampledSurfacesFunctionObject/sampledSurfacesFunctionObject.C
 sampledSurface/sampledTriSurfaceMesh/sampledTriSurfaceMesh.C
-sampledSurface/thresholdCellFaces/thresholdCellFaces.C
 sampledSurface/thresholdCellFaces/sampledThresholdCellFaces.C
+
+/* Proof-of-concept: */
+/* sampledSurface/triSurfaceMesh/sampledDiscreteSurface.C */
+
 
 surfWriters = sampledSurface/writers
 
 $(surfWriters)/surfaceWriter.C
 $(surfWriters)/dx/dxSurfaceWriter.C
 $(surfWriters)/ensight/ensightSurfaceWriter.C
-$(surfWriters)/foamFile/foamFileSurfaceWriter.C
+$(surfWriters)/foam/foamSurfaceWriter.C
 $(surfWriters)/nastran/nastranSurfaceWriter.C
 $(surfWriters)/proxy/proxySurfaceWriter.C
 $(surfWriters)/raw/rawSurfaceWriter.C

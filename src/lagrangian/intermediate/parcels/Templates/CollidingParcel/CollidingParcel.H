@@ -44,6 +44,7 @@ SourceFiles
 #include "CollisionRecordList.H"
 #include "labelFieldIOField.H"
 #include "vectorFieldIOField.H"
+#include "demandDrivenEntry.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -162,12 +163,11 @@ public:
         );
 
         //- String representation of property types
-        static string propertyTypes()
-        {
-            // TODO: collision information types
-            NotImplemented;
-            return string::null;
-        }
+        AddToPropertyTypes
+        (
+            ParcelType,
+            "{vector vector vector} *"
+        );
 
 
     // Constructors
@@ -178,9 +178,9 @@ public:
         (
             const polyMesh& mesh,
             const vector& position,
-            const label cellI,
-            const label tetFaceI,
-            const label tetPtI
+            const label celli,
+            const label tetFacei,
+            const label tetPti
         );
 
         //- Construct from components
@@ -188,9 +188,9 @@ public:
         (
             const polyMesh& mesh,
             const vector& position,
-            const label cellI,
-            const label tetFaceI,
-            const label tetPtI,
+            const label celli,
+            const label tetFacei,
+            const label tetPti,
             const label typeId,
             const scalar nParticle0,
             const scalar d0,
@@ -307,6 +307,10 @@ public:
             //- Write
             template<class CloudType>
             static void writeFields(const CloudType& c);
+
+            //- Write particle fields as objects into the obr registry
+            template<class CloudType>
+            static void writeObjects(const CloudType& c, objectRegistry& obr);
 
 
     // Ostream Operator

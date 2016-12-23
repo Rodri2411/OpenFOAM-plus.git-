@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -50,6 +50,14 @@ namespace Foam
 
 class Time;
 class IFstream;
+class surfZone;
+
+// Forward declaration of friend functions and operators
+
+class triSurface;
+
+Ostream& operator<<(Ostream&, const triSurface&);
+
 
 /*---------------------------------------------------------------------------*\
                            Class triSurface Declaration
@@ -262,7 +270,7 @@ public:
             const bool reuse
         );
 
-        //- Construct from triangles, patches, points.
+        //- Construct by transferring (triangles, points) components.
         triSurface
         (
             const Xfer<List<labelledTri>>&,
@@ -270,7 +278,7 @@ public:
             const Xfer<List<point>>&
         );
 
-        //- Construct from triangles, points. Set patchnames to default.
+        //- Construct from triangles, points. Set patch names to default.
         triSurface(const List<labelledTri>&, const pointField&);
 
         //- Construct from triangles, points. Set region to 0 and default
@@ -291,7 +299,7 @@ public:
 
 
     //- Destructor
-    ~triSurface();
+    virtual ~triSurface();
 
         void clearOut();
 
@@ -327,6 +335,36 @@ public:
             const labelList& edgeOwner() const;
 
 
+            //- Face area vectors (normals)
+            inline const vectorField& Sf() const
+            {
+                return ParentType::faceAreas();
+            }
+
+            //- Face area magnitudes
+            inline const scalarField& magSf() const
+            {
+                return ParentType::magFaceAreas();
+            }
+
+            //- Face centres
+            inline const vectorField& Cf() const
+            {
+                return ParentType::faceCentres();
+            }
+
+
+        // Interoperability with other surface mesh classes
+
+            //- Sort faces according to zoneIds
+            //  Returns a surfZoneList and sets faceMap to index within faces()
+            //  (i.e. map from original,unsorted to sorted)
+            List<surfZone> sortedZones(labelList& faceMap) const;
+
+            //- Create a list of faces from the triFaces
+            void triFaceFaces(List<face>& plainFaceList) const;
+
+
         // Edit
 
             //- Move points
@@ -345,12 +383,12 @@ public:
             void cleanup(const bool verbose);
 
             //- Fill faceZone with currentZone for every face reachable
-            //  from faceI without crossing edge marked in borderEdge.
+            //  from facei without crossing edge marked in borderEdge.
             //  Note: faceZone has to be sized nFaces before calling this fun.
             void markZone
             (
                 const boolList& borderEdge,
-                const label faceI,
+                const label facei,
                 const label currentZone,
                 labelList& faceZone
             ) const;
@@ -385,6 +423,10 @@ public:
             ) const;
 
 
+            //- Transfer stored points to an Xfer container
+            Xfer<List<point>> xferPoints();
+
+
         // Write
 
             //- Write to Ostream in simple FOAM format
@@ -409,8 +451,9 @@ public:
         void operator=(const triSurface&);
 
 
-    // Ostream Operator
+    // IOstream Operators
 
+        friend Istream& operator>>(Istream&, triSurface&);
         friend Ostream& operator<<(Ostream&, const triSurface&);
 };
 

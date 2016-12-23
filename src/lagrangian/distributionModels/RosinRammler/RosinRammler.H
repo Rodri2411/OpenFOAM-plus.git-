@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2013 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::RosinRammler
+    Foam::distributionModels::RosinRammler
 
 Description
     Rosin-Rammler distributionModel
@@ -39,8 +39,8 @@ SourceFiles
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef RosinRammler_H
-#define RosinRammler_H
+#ifndef distributionModels_RosinRammler_H
+#define distributionModels_RosinRammler_H
 
 #include "distributionModel.H"
 
@@ -100,7 +100,7 @@ public:
 
     // Member Functions
 
-         //- Sample the distributionModel
+        //- Sample the distributionModel
         virtual scalar sample() const;
 
         //- Return the minimum value

@@ -63,13 +63,15 @@ void Foam::ReynoldsStress<BasicTurbulenceModel>::correctWallShearStress
 {
     const fvPatchList& patches = this->mesh_.boundary();
 
+    volSymmTensorField::Boundary& RBf = R.boundaryFieldRef();
+
     forAll(patches, patchi)
     {
         const fvPatch& curPatch = patches[patchi];
 
         if (isA<wallFvPatch>(curPatch))
         {
-            symmTensorField& Rw = R.boundaryField()[patchi];
+            symmTensorField& Rw = RBf[patchi];
 
             const scalarField& nutw = this->nut_.boundaryField()[patchi];
 
@@ -87,16 +89,13 @@ void Foam::ReynoldsStress<BasicTurbulenceModel>::correctWallShearStress
             forAll(curPatch, facei)
             {
                 // Calculate near-wall velocity gradient
-                tensor gradUw
+                const tensor gradUw
                     = (faceAreas[facei]/magFaceAreas[facei])*snGradU[facei];
 
-                // Calculate near-wall shear-stress tensor
-                tensor tauw = -nutw[facei]*2*dev(symm(gradUw));
-
-                // Reset the shear components of the stress tensor
-                Rw[facei].xy() = tauw.xy();
-                Rw[facei].xz() = tauw.xz();
-                Rw[facei].yz() = tauw.yz();
+                // Set the wall Reynolds-stress to the near-wall shear-stress
+                // Note: the spherical part of the normal stress is included in
+                // the pressure
+                Rw[facei] = -nutw[facei]*2*dev(symm(gradUw));
             }
         }
     }
@@ -228,9 +227,11 @@ Foam::ReynoldsStress<BasicTurbulenceModel>::devRhoReff() const
 
 
 template<class BasicTurbulenceModel>
+template<class RhoFieldType>
 Foam::tmp<Foam::fvVectorMatrix>
-Foam::ReynoldsStress<BasicTurbulenceModel>::divDevRhoReff
+Foam::ReynoldsStress<BasicTurbulenceModel>::DivDevRhoReff
 (
+    const RhoFieldType& rho,
     volVectorField& U
 ) const
 {
@@ -240,19 +241,19 @@ Foam::ReynoldsStress<BasicTurbulenceModel>::divDevRhoReff
         (
             fvc::laplacian
             (
-                (1.0 - couplingFactor_)*this->alpha_*this->rho_*this->nut(),
+                (1.0 - couplingFactor_)*this->alpha_*rho*this->nut(),
                 U,
                 "laplacian(nuEff,U)"
             )
           + fvc::div
             (
-                this->alpha_*this->rho_*R_
+                this->alpha_*rho*R_
               + couplingFactor_
-               *this->alpha_*this->rho_*this->nut()*fvc::grad(U),
+               *this->alpha_*rho*this->nut()*fvc::grad(U),
                 "div(devRhoReff)"
             )
-          - fvc::div(this->alpha_*this->rho_*this->nu()*dev2(T(fvc::grad(U))))
-          - fvm::laplacian(this->alpha_*this->rho_*this->nuEff(), U)
+          - fvc::div(this->alpha_*rho*this->nu()*dev2(T(fvc::grad(U))))
+          - fvm::laplacian(this->alpha_*rho*this->nuEff(), U)
         );
     }
     else
@@ -261,21 +262,26 @@ Foam::ReynoldsStress<BasicTurbulenceModel>::divDevRhoReff
         (
             fvc::laplacian
             (
-                this->alpha_*this->rho_*this->nut(),
+                this->alpha_*rho*this->nut(),
                 U,
                 "laplacian(nuEff,U)"
             )
-          + fvc::div(this->alpha_*this->rho_*R_)
-          - fvc::div(this->alpha_*this->rho_*this->nu()*dev2(T(fvc::grad(U))))
-          - fvm::laplacian(this->alpha_*this->rho_*this->nuEff(), U)
+          + fvc::div(this->alpha_*rho*R_)
+          - fvc::div(this->alpha_*rho*this->nu()*dev2(T(fvc::grad(U))))
+          - fvm::laplacian(this->alpha_*rho*this->nuEff(), U)
         );
     }
+}
 
-    return
-    (
-      - fvc::div((this->alpha_*this->rho_*this->nuEff())*dev2(T(fvc::grad(U))))
-      - fvm::laplacian(this->alpha_*this->rho_*this->nuEff(), U)
-    );
+
+template<class BasicTurbulenceModel>
+Foam::tmp<Foam::fvVectorMatrix>
+Foam::ReynoldsStress<BasicTurbulenceModel>::divDevRhoReff
+(
+    volVectorField& U
+) const
+{
+    return DivDevRhoReff(this->rho_, U);
 }
 
 
@@ -287,11 +293,7 @@ Foam::ReynoldsStress<BasicTurbulenceModel>::divDevRhoReff
     volVectorField& U
 ) const
 {
-    return
-    (
-      - fvc::div((this->alpha_*rho*this->nuEff())*dev2(T(fvc::grad(U))))
-      - fvm::laplacian(this->alpha_*rho*this->nuEff(), U)
-    );
+    return DivDevRhoReff(rho, U);
 }
 
 

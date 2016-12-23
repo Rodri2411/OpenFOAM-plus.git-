@@ -2,7 +2,7 @@
  =========                   |
  \\      /   F ield          | OpenFOAM: The Open Source CFD Toolbox
   \\    /    O peration      |
-   \\  /     A nd            | Copyright (C) 2012-2015 OpenFOAM Foundation
+   \\  /     A nd            | Copyright (C) 2012-2016 OpenFOAM Foundation
     \\/      M anipulation   |
 -------------------------------------------------------------------------------
 License
@@ -36,6 +36,7 @@ Description
 #include "searchableSurfaces.H"
 #include "conformationSurfaces.H"
 #include "triSurfaceMesh.H"
+#include "labelVector.H"
 
 #include "MarchingCubes.h"
 
@@ -52,7 +53,6 @@ int main(int argc, char *argv[])
     (
         "Re-sample surfaces used in foamyHexMesh operation"
     );
-    //argList::validArgs.append("inputFile");
     argList::validArgs.append("(nx ny nz)");
     argList::validArgs.append("outputName");
 
@@ -60,8 +60,8 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     runTime.functionObjects().off();
 
-    const Vector<label> n(IStringStream(args.args()[1])());
-    const fileName exportName = args.args()[2];
+    const labelVector n(args.argRead<labelVector>(1));
+    const fileName exportName = args[2];
 
     Info<< "Reading surfaces as specified in the foamyHexMeshDict and"
         << " writing re-sampled " << n << " to " << exportName
@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
 
     // Generate points
     pointField points(mc.size_x()*mc.size_y()*mc.size_z());
-    label pointI = 0;
+    label pointi = 0;
 
     point pt;
     for( int k = 0 ; k < mc.size_z() ; k++ )
@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
             for( int i = 0 ; i < mc.size_x() ; i++ )
             {
                 pt.x() = bb.min().x() + i*d.x();
-                points[pointI++] = pt;
+                points[pointi++] = pt;
             }
         }
     }
@@ -181,14 +181,14 @@ int main(int argc, char *argv[])
     );
 
     // Fill elements
-    pointI = 0;
+    pointi = 0;
     for( int k = 0 ; k < mc.size_z() ; k++ )
     {
         for( int j = 0 ; j < mc.size_y() ; j++ )
         {
             for( int i = 0 ; i < mc.size_x() ; i++ )
             {
-                mc.set_data(float(signedDist[pointI++]), i, j, k);
+                mc.set_data(float(signedDist[pointi++]), i, j, k);
             }
         }
     }
@@ -226,10 +226,10 @@ int main(int argc, char *argv[])
 
         Vertex* vertices = mc.vertices();
         pointField points(mc.nverts());
-        forAll(points, pointI)
+        forAll(points, pointi)
         {
-            Vertex& v = vertices[pointI];
-            points[pointI] = point
+            Vertex& v = vertices[pointi];
+            points[pointi] = point
             (
                 bb.min().x() + v.x*span.x()/mc.size_x(),
                 bb.min().y() + v.y*span.y()/mc.size_y(),

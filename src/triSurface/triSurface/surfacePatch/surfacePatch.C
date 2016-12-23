@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2012 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -24,6 +24,7 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "surfacePatch.H"
+#include "surfZone.H"
 #include "dictionary.H"
 #include "word.H"
 
@@ -31,23 +32,27 @@ License
 
 namespace Foam
 {
-defineTypeNameAndDebug(surfacePatch, 0);
+    defineTypeNameAndDebug(surfacePatch, 0);
 }
-
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-// Construct null
 Foam::surfacePatch::surfacePatch()
 :
-    geometricSurfacePatch("", "", -1),
+    geometricSurfacePatch(word::null, word::null, -1),
     size_(0),
     start_(0)
 {}
 
 
+Foam::surfacePatch::surfacePatch(const label index)
+:
+    geometricSurfacePatch(word::null, word::null, index),
+    size_(0),
+    start_(0)
+{}
 
-// Construct from components
+
 Foam::surfacePatch::surfacePatch
 (
     const word& geometricType,
@@ -63,7 +68,6 @@ Foam::surfacePatch::surfacePatch
 {}
 
 
-// Construct from Istream
 Foam::surfacePatch::surfacePatch(Istream& is, const label index)
 :
     geometricSurfacePatch(is, index),
@@ -74,7 +78,7 @@ Foam::surfacePatch::surfacePatch(Istream& is, const label index)
     start_ = readLabel(is);
 }
 
-// Construct from dictionary
+
 Foam::surfacePatch::surfacePatch
 (
     const word& name,
@@ -88,8 +92,7 @@ Foam::surfacePatch::surfacePatch
 {}
 
 
-// Construct as copy
-Foam::surfacePatch::surfacePatch(const Foam::surfacePatch& sp)
+Foam::surfacePatch::surfacePatch(const surfacePatch& sp)
 :
     geometricSurfacePatch(sp),
     size_(sp.size()),
@@ -119,6 +122,19 @@ void Foam::surfacePatch::writeDict(Ostream& os) const
 
 
 // * * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * //
+
+Foam::surfacePatch::operator Foam::surfZone() const
+{
+    return surfZone
+    (
+        this->name(),
+        this->size(),
+        this->start(),
+        this->index(),
+        this->geometricType()
+    );
+}
+
 
 bool Foam::surfacePatch::operator!=(const surfacePatch& p) const
 {

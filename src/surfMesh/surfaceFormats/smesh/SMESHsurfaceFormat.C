@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -25,9 +25,7 @@ License
 
 #include "SMESHsurfaceFormat.H"
 #include "clock.H"
-#include "IFstream.H"
 #include "OFstream.H"
-#include "Ostream.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -46,7 +44,7 @@ void Foam::fileFormats::SMESHsurfaceFormat<Face>::write
 )
 {
     const pointField& pointLst = surf.points();
-    const List<Face>&  faceLst = surf.faces();
+    const List<Face>&  faceLst = surf.surfFaces();
     const List<label>& faceMap = surf.faceMap();
 
     const List<surfZone>& zones =
@@ -57,7 +55,6 @@ void Foam::fileFormats::SMESHsurfaceFormat<Face>::write
     );
 
     const bool useFaceMap = (surf.useFaceMap() && zones.size() > 1);
-
 
     OFstream os(filename);
     if (!os.good())
@@ -94,7 +91,7 @@ void Foam::fileFormats::SMESHsurfaceFormat<Face>::write
 
         if (useFaceMap)
         {
-            forAll(zone, localFaceI)
+            forAll(zone, localFacei)
             {
                 const Face& f = faceLst[faceMap[faceIndex++]];
 
@@ -108,7 +105,7 @@ void Foam::fileFormats::SMESHsurfaceFormat<Face>::write
         }
         else
         {
-            forAll(zones[zoneI], localFaceI)
+            forAll(zones[zoneI], localFacei)
             {
                 const Face& f = faceLst[faceIndex++];
 

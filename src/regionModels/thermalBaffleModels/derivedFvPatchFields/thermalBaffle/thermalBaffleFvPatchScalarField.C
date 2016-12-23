@@ -26,7 +26,6 @@ License
 #include "thermalBaffleFvPatchScalarField.H"
 #include "addToRunTimeSelectionTable.H"
 #include "emptyPolyPatch.H"
-#include "polyPatch.H"
 #include "mappedWallPolyPatch.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -38,8 +37,7 @@ namespace compressible
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-thermalBaffleFvPatchScalarField::
-thermalBaffleFvPatchScalarField
+thermalBaffleFvPatchScalarField::thermalBaffleFvPatchScalarField
 (
     const fvPatch& p,
     const DimensionedField<scalar, volMesh>& iF
@@ -53,8 +51,7 @@ thermalBaffleFvPatchScalarField
 {}
 
 
-thermalBaffleFvPatchScalarField::
-thermalBaffleFvPatchScalarField
+thermalBaffleFvPatchScalarField::thermalBaffleFvPatchScalarField
 (
     const thermalBaffleFvPatchScalarField& ptf,
     const fvPatch& p,
@@ -76,8 +73,7 @@ thermalBaffleFvPatchScalarField
 {}
 
 
-thermalBaffleFvPatchScalarField::
-thermalBaffleFvPatchScalarField
+thermalBaffleFvPatchScalarField::thermalBaffleFvPatchScalarField
 (
     const fvPatch& p,
     const DimensionedField<scalar, volMesh>& iF,
@@ -97,8 +93,7 @@ thermalBaffleFvPatchScalarField
 
     if (thisMesh.name() == polyMesh::defaultRegion)
     {
-        const word regionName =
-            dict_.lookupOrDefault<word>("regionName", "none");
+        const word regionName = dict_.lookupOrDefault<word>("region", "none");
 
         const word baffleName("3DBaffle" + regionName);
 
@@ -121,8 +116,7 @@ thermalBaffleFvPatchScalarField
 }
 
 
-thermalBaffleFvPatchScalarField::
-thermalBaffleFvPatchScalarField
+thermalBaffleFvPatchScalarField::thermalBaffleFvPatchScalarField
 (
     const thermalBaffleFvPatchScalarField& ptf,
     const DimensionedField<scalar, volMesh>& iF
@@ -160,10 +154,9 @@ void thermalBaffleFvPatchScalarField::rmap
 
 void thermalBaffleFvPatchScalarField::createPatchMesh()
 {
-
     const fvMesh& thisMesh = patch().boundaryMesh().mesh();
 
-    word regionName = dict_.lookup("regionName");
+    word regionName = dict_.lookup("region");
 
     List<polyPatch*> regionPatches(3);
     List<word> patchNames(regionPatches.size());
@@ -208,18 +201,18 @@ void thermalBaffleFvPatchScalarField::createPatchMesh()
     dicts[topPatchID].add("sampleMode", mpp.sampleModeNames_[mpp.mode()]);
 
 
-    forAll(regionPatches, patchI)
+    forAll(regionPatches, patchi)
     {
-        dictionary&  patchDict = dicts[patchI];
+        dictionary&  patchDict = dicts[patchi];
         patchDict.set("nFaces", 0);
         patchDict.set("startFace", 0);
 
-        regionPatches[patchI] = polyPatch::New
+        regionPatches[patchi] = polyPatch::New
         (
-            patchTypes[patchI],
-            patchNames[patchI],
-            dicts[patchI],
-            patchI,
+            patchTypes[patchi],
+            patchNames[patchi],
+            dicts[patchi],
+            patchi,
             thisMesh.boundaryMesh()
         ).ptr();
     }
@@ -270,9 +263,8 @@ void thermalBaffleFvPatchScalarField::write(Ostream& os) const
 
     const fvMesh& thisMesh = patch().boundaryMesh().mesh();
 
-    if (thisMesh.name() == polyMesh::defaultRegion && owner_)
+    if (owner_ && (thisMesh.name() == polyMesh::defaultRegion))
     {
-
         os.writeKeyword("extrudeModel");
         os << word(dict_.lookup("extrudeModel"))
            << token::END_STATEMENT << nl;
@@ -293,9 +285,8 @@ void thermalBaffleFvPatchScalarField::write(Ostream& os) const
         os.writeKeyword(extrudeModel);
         os << dict_.subDict(extrudeModel) << nl;
 
-        word regionName = dict_.lookup("regionName");
-        os.writeKeyword("regionName") << regionName
-            << token::END_STATEMENT << nl;
+        word regionName = dict_.lookup("region");
+        os.writeKeyword("region") << regionName << token::END_STATEMENT << nl;
 
         bool active = readBool(dict_.lookup("active"));
         os.writeKeyword("active") <<  active

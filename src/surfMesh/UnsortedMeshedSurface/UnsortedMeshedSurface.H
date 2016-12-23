@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -34,7 +34,7 @@ Description
     many be adjusted in an arbitrary manner without worrying about needed
     to adjust the zone information (eg, surface refinement).
 
-See Also
+See also
     The Foam::MeshedSurface - which is organized as a surface mesh, but
     with independent zone information.
 
@@ -62,11 +62,17 @@ namespace Foam
 // Forward declaration of friend functions and operators
 
 class Time;
-class IFstream;
+class Istream;
+class Ostream;
 
 template<class Face> class MeshedSurface;
 template<class Face> class MeshedSurfaceProxy;
 template<class Face> class UnsortedMeshedSurface;
+
+template<class Face>
+Istream& operator>>(Istream&, UnsortedMeshedSurface<Face>&);
+template<class Face>
+Ostream& operator<<(Ostream&, const UnsortedMeshedSurface<Face>&);
 
 /*---------------------------------------------------------------------------*\
                    Class UnsortedMeshedSurface Declaration
@@ -77,7 +83,7 @@ class UnsortedMeshedSurface
 :
     public MeshedSurface<Face>
 {
-    // friends - despite different face representationsx
+    // friends - despite different face representations
     template<class Face2> friend class MeshedSurface;
     template<class Face2> friend class UnsortedMeshedSurface;
     friend class surfMesh;
@@ -104,18 +110,23 @@ private:
     // Private Member Functions
 
         //- Disable resize with value
-        void resize(const label, const Face&);
+        void resize(const label, const Face&) = delete;
 
         //- Disable setSize with value
-        void setSize(const label, const Face&);
+        void setSize(const label, const Face&) = delete;
 
+        //- Read/construct from Istream
+        Istream& read(Istream&);
+
+        //- Write to Ostream
+        Ostream& write(Ostream&) const;
 
 protected:
 
     // Protected Member functions
 
         //- Return non-const access to the zone Ids
-        List<label>& storedZoneIds()
+        labelList& storedZoneIds()
         {
             return zoneIds_;
         }
@@ -199,8 +210,15 @@ public:
         //- Construct from file name (uses extension to determine type)
         UnsortedMeshedSurface(const fileName&, const word&);
 
+        //- Construct from Istream
+        UnsortedMeshedSurface(Istream&);
+
         //- Construct from objectRegistry and a named surface
-        UnsortedMeshedSurface(const Time&, const word& surfName="");
+        UnsortedMeshedSurface
+        (
+            const Time&,
+            const word& surfName = word::null
+        );
 
 
     // Declare run-time constructor selection table
@@ -250,7 +268,11 @@ public:
         );
 
         //- Write to file
-        static void write(const fileName&, const UnsortedMeshedSurface<Face>&);
+        static void write
+        (
+            const fileName&,
+            const UnsortedMeshedSurface<Face>&
+        );
 
 
     // Member Functions
@@ -267,7 +289,7 @@ public:
             void setSize(const label);
 
             //- Return const access to the zone ids
-            const List<label>& zoneIds() const
+            virtual const labelList& zoneIds() const
             {
                 return zoneIds_;
             }
@@ -344,6 +366,9 @@ public:
             //- Transfer contents to the Xfer container
             Xfer<UnsortedMeshedSurface<Face>> xfer();
 
+            //- Transfer stored zoneIds to an Xfer container
+            Xfer<labelList> xferZoneIds();
+
 
         // Read
 
@@ -363,7 +388,11 @@ public:
             }
 
             //- Write to database
-            void write(const Time&, const word& surfName="") const;
+            void write
+            (
+                const Time&,
+                const word& surfName = word::null
+            ) const;
 
 
         // Member operators
@@ -372,6 +401,26 @@ public:
 
             //- Conversion operator to MeshedSurfaceProxy
             operator MeshedSurfaceProxy<Face>() const;
+
+
+    // IOstream Operators
+
+        //- Read UnsortedMeshedSurface from Istream.
+        //  Avoid using to read/write file content (fragile).
+        friend Istream& operator>> <Face>
+        (
+            Istream&,
+            UnsortedMeshedSurface<Face>&
+        );
+
+
+        //- Write UnsortedMeshedSurface to Ostream.
+        //  Avoid using to read/write file content (fragile).
+        friend Ostream& operator<< <Face>
+        (
+            Ostream&,
+            const UnsortedMeshedSurface<Face>&
+        );
 };
 
 

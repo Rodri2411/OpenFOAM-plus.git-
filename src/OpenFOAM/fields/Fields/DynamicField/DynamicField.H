@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -37,7 +37,7 @@ SourceFiles
 #define DynamicField_H
 
 #include "Field.H"
-#include "StaticAssert.H"
+#include <type_traits>
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -73,8 +73,11 @@ class DynamicField
 :
     public Field<T>
 {
-    //- Avoid invalid sizing parameters
-    StaticAssert((SizeInc || SizeMult) && SizeDiv);
+    static_assert
+    (
+        (SizeInc || SizeMult) && SizeDiv,
+        "Avoid invalid sizing parameters"
+    );
 
     // Private data
 
@@ -110,6 +113,9 @@ public:
 
         //- Construct by transferring the parameter contents
         explicit inline DynamicField(const Xfer<List<T>>&);
+
+        //- Construct by transferring the parameter contents
+        explicit inline DynamicField(const Xfer<Field<T>>&);
 
         //- Construct by 1 to 1 mapping from the given field
         inline DynamicField
@@ -227,13 +233,13 @@ public:
             //- Assignment of all addressed entries to the given value
             inline void operator=(const T&);
 
-            //- Assignment from DynamicField
+            //- Assignment to DynamicField
             inline void operator=
             (
                 const DynamicField<T, SizeInc, SizeMult, SizeDiv>&
             );
 
-            //- Assignment from UList
+            //- Assignment to UList
             inline void operator=(const UList<T>&);
 };
 

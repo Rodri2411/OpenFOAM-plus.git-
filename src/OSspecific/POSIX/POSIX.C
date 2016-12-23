@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -38,6 +38,8 @@ Description
 #include "timer.H"
 #include "IFstream.H"
 #include "DynamicList.H"
+#include "CStringList.H"
+#include "SubList.H"
 
 #include <fstream>
 #include <cstdlib>
@@ -49,6 +51,7 @@ Description
 #include <pwd.h>
 #include <errno.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -95,7 +98,7 @@ pid_t Foam::pgid()
 
 bool Foam::env(const word& envName)
 {
-    return ::getenv(envName.c_str()) != NULL;
+    return ::getenv(envName.c_str()) != nullptr;
 }
 
 
@@ -171,7 +174,7 @@ Foam::string Foam::userName()
 {
     struct passwd* pw = ::getpwuid(::getuid());
 
-    if (pw != NULL)
+    if (pw != nullptr)
     {
         return pw->pw_name;
     }
@@ -192,7 +195,7 @@ Foam::fileName Foam::home()
 {
     char* env = ::getenv("HOME");
 
-    if (env != NULL)
+    if (env != nullptr)
     {
         return fileName(env);
     }
@@ -200,7 +203,7 @@ Foam::fileName Foam::home()
     {
         struct passwd* pw = ::getpwuid(getuid());
 
-        if (pw != NULL)
+        if (pw != nullptr)
         {
             return pw->pw_dir;
         }
@@ -224,7 +227,7 @@ Foam::fileName Foam::home(const string& userName)
     {
         char* env = ::getenv("HOME");
 
-        if (env != NULL)
+        if (env != nullptr)
         {
             return fileName(env);
         }
@@ -232,7 +235,7 @@ Foam::fileName Foam::home(const string& userName)
         pw = ::getpwuid(::getuid());
     }
 
-    if (pw != NULL)
+    if (pw != nullptr)
     {
         return pw->pw_dir;
     }
@@ -289,155 +292,6 @@ Foam::fileName Foam::cwd()
 bool Foam::chDir(const fileName& dir)
 {
     return ::chdir(dir.c_str()) == 0;
-}
-
-
-Foam::fileNameList Foam::findEtcFiles
-(
-    const fileName& name,
-    bool mandatory,
-    bool findFirst
-)
-{
-    fileNameList results;
-
-    // Search for user files in
-    // * ~/.OpenFOAM/VERSION
-    // * ~/.OpenFOAM
-    //
-    fileName searchDir = home()/".OpenFOAM";
-    if (isDir(searchDir))
-    {
-        fileName fullName = searchDir/FOAMversion/name;
-        if (isFile(fullName))
-        {
-            results.append(fullName);
-            if (findFirst)
-            {
-                return results;
-            }
-        }
-
-        fullName = searchDir/name;
-        if (isFile(fullName))
-        {
-            results.append(fullName);
-            if (findFirst)
-            {
-                return results;
-            }
-        }
-    }
-
-    // Search for group (site) files in
-    // * $WM_PROJECT_SITE/VERSION
-    // * $WM_PROJECT_SITE
-    //
-    searchDir = getEnv("WM_PROJECT_SITE");
-    if (searchDir.size())
-    {
-        if (isDir(searchDir))
-        {
-            fileName fullName = searchDir/FOAMversion/name;
-            if (isFile(fullName))
-            {
-                results.append(fullName);
-                if (findFirst)
-                {
-                    return results;
-                }
-            }
-
-            fullName = searchDir/name;
-            if (isFile(fullName))
-            {
-                results.append(fullName);
-                if (findFirst)
-                {
-                    return results;
-                }
-            }
-        }
-    }
-    else
-    {
-        // OR search for group (site) files in
-        // * $WM_PROJECT_INST_DIR/site/VERSION
-        // * $WM_PROJECT_INST_DIR/site
-        //
-        searchDir = getEnv("WM_PROJECT_INST_DIR");
-        if (isDir(searchDir))
-        {
-            fileName fullName = searchDir/"site"/FOAMversion/name;
-            if (isFile(fullName))
-            {
-                results.append(fullName);
-                if (findFirst)
-                {
-                    return results;
-                }
-            }
-
-            fullName = searchDir/"site"/name;
-            if (isFile(fullName))
-            {
-                results.append(fullName);
-                if (findFirst)
-                {
-                    return results;
-                }
-            }
-        }
-    }
-
-    // Search for other (shipped) files in
-    // * $WM_PROJECT_DIR/etc
-    //
-    searchDir = getEnv("WM_PROJECT_DIR");
-    if (isDir(searchDir))
-    {
-        fileName fullName = searchDir/"etc"/name;
-        if (isFile(fullName))
-        {
-            results.append(fullName);
-            if (findFirst)
-            {
-                return results;
-            }
-        }
-    }
-
-    // Not found
-    if (results.empty())
-    {
-        // Abort if the file is mandatory, otherwise return null
-        if (mandatory)
-        {
-            std::cerr
-                << "--> FOAM FATAL ERROR in Foam::findEtcFiles() :"
-                   " could not find mandatory file\n    '"
-                << name.c_str() << "'\n\n" << std::endl;
-            ::exit(1);
-        }
-    }
-
-    // Return list of matching paths or empty list if none found
-    return results;
-}
-
-
-Foam::fileName Foam::findEtcFile(const fileName& name, bool mandatory)
-{
-    fileNameList results(findEtcFiles(name, mandatory, true));
-
-    if (results.size())
-    {
-        return results[0];
-    }
-    else
-    {
-        return fileName();
-    }
 }
 
 
@@ -593,9 +447,9 @@ bool Foam::chMod(const fileName& name, const mode_t m)
 }
 
 
-mode_t Foam::mode(const fileName& name)
+mode_t Foam::mode(const fileName& name, const bool followLink)
 {
-    fileStat fileStatus(name);
+    fileStat fileStatus(name, followLink);
     if (fileStatus.isValid())
     {
         return fileStatus.status().st_mode;
@@ -607,13 +461,17 @@ mode_t Foam::mode(const fileName& name)
 }
 
 
-Foam::fileName::Type Foam::type(const fileName& name)
+Foam::fileName::Type Foam::type(const fileName& name, const bool followLink)
 {
-    mode_t m = mode(name);
+    mode_t m = mode(name, followLink);
 
     if (S_ISREG(m))
     {
         return fileName::FILE;
+    }
+    else if (S_ISLNK(m))
+    {
+        return fileName::LINK;
     }
     else if (S_ISDIR(m))
     {
@@ -626,27 +484,39 @@ Foam::fileName::Type Foam::type(const fileName& name)
 }
 
 
-bool Foam::exists(const fileName& name, const bool checkGzip)
+bool Foam::exists
+(
+    const fileName& name,
+    const bool checkGzip,
+    const bool followLink
+)
 {
-    return mode(name) || isFile(name, checkGzip);
+    return mode(name, followLink) || isFile(name, checkGzip, followLink);
 }
 
 
-bool Foam::isDir(const fileName& name)
+bool Foam::isDir(const fileName& name, const bool followLink)
 {
-    return S_ISDIR(mode(name));
+    return S_ISDIR(mode(name, followLink));
 }
 
 
-bool Foam::isFile(const fileName& name, const bool checkGzip)
+bool Foam::isFile
+(
+    const fileName& name,
+    const bool checkGzip,
+    const bool followLink
+)
 {
-    return S_ISREG(mode(name)) || (checkGzip && S_ISREG(mode(name + ".gz")));
+    return
+        S_ISREG(mode(name, followLink))
+     || (checkGzip && S_ISREG(mode(name + ".gz", followLink)));
 }
 
 
-off_t Foam::fileSize(const fileName& name)
+off_t Foam::fileSize(const fileName& name, const bool followLink)
 {
-    fileStat fileStatus(name);
+    fileStat fileStatus(name, followLink);
     if (fileStatus.isValid())
     {
         return fileStatus.status().st_size;
@@ -658,12 +528,28 @@ off_t Foam::fileSize(const fileName& name)
 }
 
 
-time_t Foam::lastModified(const fileName& name)
+time_t Foam::lastModified(const fileName& name, const bool followLink)
+{
+    fileStat fileStatus(name, followLink);
+    if (fileStatus.isValid())
+    {
+        return fileStatus.status().st_mtime;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+
+double Foam::highResLastModified(const fileName& name)
 {
     fileStat fileStatus(name);
     if (fileStatus.isValid())
     {
-        return fileStatus.status().st_mtime;
+        return
+            fileStatus.status().st_mtime
+          + 1e-9*fileStatus.status().st_atim.tv_nsec;
     }
     else
     {
@@ -676,7 +562,8 @@ Foam::fileNameList Foam::readDir
 (
     const fileName& directory,
     const fileName::Type type,
-    const bool filtergz
+    const bool filtergz,
+    const bool followLink
 )
 {
     // Initial filename list size
@@ -700,7 +587,7 @@ Foam::fileNameList Foam::readDir
     label nEntries = 0;
 
     // Attempt to open directory and set the structure pointer
-    if ((source = ::opendir(directory.c_str())) == NULL)
+    if ((source = ::opendir(directory.c_str())) == nullptr)
     {
         dirEntries.setSize(0);
 
@@ -713,14 +600,14 @@ Foam::fileNameList Foam::readDir
     else
     {
         // Read and parse all the entries in the directory
-        while ((list = ::readdir(source)) != NULL)
+        while ((list = ::readdir(source)) != nullptr)
         {
             fileName fName(list->d_name);
 
-            // ignore files begining with ., i.e. '.', '..' and '.*'
+            // ignore files beginning with ., i.e. '.', '..' and '.*'
             if (fName.size() && fName[0] != '.')
             {
-                word fExt = fName.ext();
+                const word fExt = fName.ext();
 
                 if
                 (
@@ -736,7 +623,7 @@ Foam::fileNameList Foam::readDir
                     )
                 )
                 {
-                    if ((directory/fName).type() == type)
+                    if ((directory/fName).type(followLink) == type)
                     {
                         if (nEntries >= dirEntries.size())
                         {
@@ -766,7 +653,7 @@ Foam::fileNameList Foam::readDir
 }
 
 
-bool Foam::cp(const fileName& src, const fileName& dest)
+bool Foam::cp(const fileName& src, const fileName& dest, const bool followLink)
 {
     // Make sure source exists.
     if (!exists(src))
@@ -777,7 +664,8 @@ bool Foam::cp(const fileName& src, const fileName& dest)
     fileName destFile(dest);
 
     // Check type of source file.
-    if (src.type() == fileName::FILE)
+    const fileName::Type srcType = src.type(followLink);
+    if (srcType == fileName::FILE)
     {
         // If dest is a directory, create the destination file name.
         if (destFile.type() == fileName::DIRECTORY)
@@ -817,7 +705,23 @@ bool Foam::cp(const fileName& src, const fileName& dest)
             return false;
         }
     }
-    else if (src.type() == fileName::DIRECTORY)
+    else if (srcType == fileName::LINK)
+    {
+        // If dest is a directory, create the destination file name.
+        if (destFile.type() == fileName::DIRECTORY)
+        {
+            destFile = destFile/src.name();
+        }
+
+        // Make sure the destination directory exists.
+        if (!isDir(destFile.path()) && !mkDir(destFile.path()))
+        {
+            return false;
+        }
+
+        ln(src, destFile);
+    }
+    else if (srcType == fileName::DIRECTORY)
     {
         // If dest is a directory, create the destination file name.
         if (destFile.type() == fileName::DIRECTORY)
@@ -832,7 +736,7 @@ bool Foam::cp(const fileName& src, const fileName& dest)
         }
 
         // Copy files
-        fileNameList contents = readDir(src, fileName::FILE, false);
+        fileNameList contents = readDir(src, fileName::FILE, false, followLink);
         forAll(contents, i)
         {
             if (POSIX::debug)
@@ -843,11 +747,17 @@ bool Foam::cp(const fileName& src, const fileName& dest)
             }
 
             // File to file.
-            cp(src/contents[i], destFile/contents[i]);
+            cp(src/contents[i], destFile/contents[i], followLink);
         }
 
         // Copy sub directories.
-        fileNameList subdirs = readDir(src, fileName::DIRECTORY);
+        fileNameList subdirs = readDir
+        (
+            src,
+            fileName::DIRECTORY,
+            false,
+            followLink
+        );
         forAll(subdirs, i)
         {
             if (POSIX::debug)
@@ -858,8 +768,12 @@ bool Foam::cp(const fileName& src, const fileName& dest)
             }
 
             // Dir to Dir.
-            cp(src/subdirs[i], destFile);
+            cp(src/subdirs[i], destFile, followLink);
         }
+    }
+    else
+    {
+        return false;
     }
 
     return true;
@@ -903,7 +817,7 @@ bool Foam::ln(const fileName& src, const fileName& dst)
 }
 
 
-bool Foam::mv(const fileName& src, const fileName& dst)
+bool Foam::mv(const fileName& src, const fileName& dst, const bool followLink)
 {
     if (POSIX::debug)
     {
@@ -914,7 +828,7 @@ bool Foam::mv(const fileName& src, const fileName& dst)
     if
     (
         dst.type() == fileName::DIRECTORY
-     && src.type() != fileName::DIRECTORY
+     && src.type(followLink) != fileName::DIRECTORY
     )
     {
         const fileName dstName(dst/src.name());
@@ -998,7 +912,7 @@ bool Foam::rmDir(const fileName& directory)
     struct dirent *list;
 
     // Attempt to open directory and set the structure pointer
-    if ((source = ::opendir(directory.c_str())) == NULL)
+    if ((source = ::opendir(directory.c_str())) == nullptr)
     {
         WarningInFunction
             << "cannot open directory " << directory << endl;
@@ -1008,7 +922,7 @@ bool Foam::rmDir(const fileName& directory)
     else
     {
         // Read and parse all the entries in the directory
-        while ((list = ::readdir(source)) != NULL)
+        while ((list = ::readdir(source)) != nullptr)
         {
             fileName fName(list->d_name);
 
@@ -1016,7 +930,7 @@ bool Foam::rmDir(const fileName& directory)
             {
                 fileName path = directory/fName;
 
-                if (path.type() == fileName::DIRECTORY)
+                if (path.type(false) == fileName::DIRECTORY)
                 {
                     if (!rmDir(path))
                     {
@@ -1094,7 +1008,7 @@ bool Foam::ping
     struct sockaddr_in destAddr;      // will hold the destination addr
     u_int addr;
 
-    if ((hostPtr = ::gethostbyname(destName.c_str())) == NULL)
+    if ((hostPtr = ::gethostbyname(destName.c_str())) == nullptr)
     {
         FatalErrorInFunction
             << "gethostbyname error " << h_errno << " for host " << destName
@@ -1166,9 +1080,153 @@ bool Foam::ping(const string& hostname, const label timeOut)
 }
 
 
+namespace Foam
+{
+//! \cond fileScope
+static int waitpid(const pid_t pid)
+{
+    // child status, return code from the exec etc.
+    int status = 0;
+
+    // in parent - blocking wait
+    // modest treatment of signals (in child)
+    // treat 'stopped' like exit (suspend/continue)
+    while (true)
+    {
+        pid_t wpid = ::waitpid(pid, &status, WUNTRACED);
+
+        if (wpid == -1)
+        {
+            FatalErrorInFunction
+                << "some error occurred in child"
+                << exit(FatalError);
+            break;
+        }
+
+        if (WIFEXITED(status))
+        {
+            // child exited, get its return status
+            return WEXITSTATUS(status);
+        }
+
+        if (WIFSIGNALED(status))
+        {
+            // child terminated by some signal
+            return WTERMSIG(status);
+        }
+
+        if (WIFSTOPPED(status))
+        {
+            // child stopped by some signal
+            return WSTOPSIG(status);
+        }
+
+        FatalErrorInFunction
+            << "programming error, status from waitpid() not handled: "
+            << status
+            << exit(FatalError);
+    }
+
+    return -1;  // should not happen
+}
+//! \endcond
+}
+
+
 int Foam::system(const std::string& command)
 {
-    return ::system(command.c_str());
+    if (command.empty())
+    {
+        // Treat an empty command as a successful no-op.
+        // From 'man sh' POSIX (man sh):
+        //   "If the command_string operand is an empty string,
+        //    sh shall exit with a zero exit status."
+        return 0;
+    }
+
+    pid_t child_pid = ::vfork();   // NB: vfork, not fork!
+    if (child_pid == -1)
+    {
+        FatalErrorInFunction
+            << "vfork() failed for system command " << command
+            << exit(FatalError);
+    }
+
+    if (child_pid == 0)
+    {
+        // in child
+
+        // execl uses the current environ
+        (void) ::execl
+        (
+            "/bin/sh",          // Path of the shell
+            "sh",               // Command-name (name for the shell)
+            "-c",               // Read commands from the command_string operand.
+            command.c_str(),    // Command string
+            reinterpret_cast<char *>(0)
+        );
+
+        // obviously failed, since exec should not return at all
+        FatalErrorInFunction
+            << "exec failed: " << command
+            << exit(FatalError);
+    }
+
+
+    // in parent - blocking wait
+    return waitpid(child_pid);
+}
+
+
+int Foam::system(const Foam::UList<Foam::string>& command)
+{
+    const int argc = command.size();
+
+    if (!argc)
+    {
+        // Treat an empty command as a successful no-op.
+        // For consistency with POSIX (man sh) behaviour for (sh -c command),
+        // which is what is mostly being replicated here.
+        return 0;
+    }
+
+    // NB: use vfork, not fork!
+    // vfork behaves more like a thread and avoids copy-on-write problems
+    // triggered by fork.
+    // The normal system() command has a fork buried in it that causes
+    // issues with infiniband and openmpi etc.
+    pid_t child_pid = ::vfork();
+    if (child_pid == -1)
+    {
+        FatalErrorInFunction
+            << "vfork() failed for system command " << command[0]
+            << exit(FatalError);
+    }
+
+    if (child_pid == 0)
+    {
+        // in child:
+        // Need command and arguments separately.
+        // args is a NULL-terminated list of c-strings
+
+        CStringList args(SubList<string>(command, 0));
+        if (argc > 1)
+        {
+            args.reset(SubList<string>(command, argc-1, 1));
+        }
+
+        // execvp uses the current environ
+        (void) ::execvp(command[0].c_str(), args.strings());
+
+        // obviously failed, since exec should not return at all
+        FatalErrorInFunction
+            << "exec(" << command[0] << ", ...) failed"
+            << exit(FatalError);
+    }
+
+
+    // in parent - blocking wait
+    return waitpid(child_pid);
 }
 
 

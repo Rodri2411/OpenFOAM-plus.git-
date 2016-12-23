@@ -36,14 +36,17 @@ SourceFiles
 #define NamedEnum_H
 
 #include "HashTable.H"
-#include "StaticAssert.H"
 #include "stringList.H"
 #include "wordList.H"
+#include <type_traits>
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
+
+// Forward declaration
+template<class Enum, int> class NamedEnum;
 
 /*---------------------------------------------------------------------------*\
                           Class NamedEnum Declaration
@@ -55,15 +58,15 @@ class NamedEnum
     public HashTable<int>
 {
     //- nEnum must be positive (non-zero)
-    StaticAssert(nEnum > 0);
+    static_assert(nEnum > 0, "nEnum must be positive (non-zero)");
 
     // Private Member Functions
 
         //- Disallow default bitwise copy construct
-        NamedEnum(const NamedEnum&);
+        NamedEnum(const NamedEnum&) = delete;
 
         //- Disallow default bitwise assignment
-        void operator=(const NamedEnum&);
+        void operator=(const NamedEnum&) = delete;
 
 
 public:
@@ -94,6 +97,9 @@ public:
 
         //- The set of names as a list of words
         static wordList words();
+
+        //- List of enumerations
+        static List<Enum> enums();
 
 
     // Member Operators

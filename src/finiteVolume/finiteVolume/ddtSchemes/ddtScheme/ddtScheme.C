@@ -133,6 +133,22 @@ tmp<fvMatrix<Type>> ddtScheme<Type>::fvmDdt
 
 
 template<class Type>
+tmp<GeometricField<Type, fvsPatchField, surfaceMesh>> ddtScheme<Type>::fvcDdt
+(
+    const GeometricField<Type, fvsPatchField, surfaceMesh>& sf
+)
+{
+    NotImplemented;
+
+    return tmp<GeometricField<Type, fvsPatchField, surfaceMesh>>
+    (
+        GeometricField<Type, fvsPatchField, surfaceMesh>::null()
+    );
+}
+
+
+
+template<class Type>
 tmp<surfaceScalarField> ddtScheme<Type>::fvcDdtPhiCoeff
 (
     const GeometricField<Type, fvPatchField, volMesh>& U,
@@ -150,6 +166,9 @@ tmp<surfaceScalarField> ddtScheme<Type>::fvcDdtPhiCoeff
 
     surfaceScalarField& ddtCouplingCoeff = tddtCouplingCoeff.ref();
 
+    surfaceScalarField::Boundary& ccbf =
+        ddtCouplingCoeff.boundaryFieldRef();
+
     forAll(U.boundaryField(), patchi)
     {
         if
@@ -158,7 +177,7 @@ tmp<surfaceScalarField> ddtScheme<Type>::fvcDdtPhiCoeff
          || isA<cyclicAMIFvPatch>(mesh().boundary()[patchi])
         )
         {
-            ddtCouplingCoeff.boundaryField()[patchi] = 0.0;
+            ccbf[patchi] = 0.0;
         }
     }
 
@@ -166,9 +185,9 @@ tmp<surfaceScalarField> ddtScheme<Type>::fvcDdtPhiCoeff
     {
         InfoInFunction
             << "ddtCouplingCoeff mean max min = "
-            << gAverage(ddtCouplingCoeff.internalField())
-            << " " << gMax(ddtCouplingCoeff.internalField())
-            << " " << gMin(ddtCouplingCoeff.internalField())
+            << gAverage(ddtCouplingCoeff.primitiveField())
+            << " " << gMax(ddtCouplingCoeff.primitiveField())
+            << " " << gMin(ddtCouplingCoeff.primitiveField())
             << endl;
     }
 

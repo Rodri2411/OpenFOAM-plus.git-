@@ -184,7 +184,7 @@ public:
         AddToPropertyTypes
         (
             ParcelType,
-            " vector"
+            "{vector}"
         );
 
 
@@ -196,9 +196,9 @@ public:
         (
             const polyMesh& mesh,
             const vector& position,
-            const label cellI,
-            const label tetFaceI,
-            const label tetPtI
+            const label celli,
+            const label tetFacei,
+            const label tetPti
         );
 
         //- Construct from components
@@ -206,9 +206,9 @@ public:
         (
             const polyMesh& mesh,
             const vector& position,
-            const label cellI,
-            const label tetFaceI,
-            const label tetPtI,
+            const label celli,
+            const label tetFacei,
+            const label tetPti,
             const label typeId,
             const scalar nParticle0,
             const scalar d0,
@@ -296,6 +296,10 @@ public:
             //- Write
             template<class CloudType>
             static void writeFields(const CloudType& c);
+
+            //- Write particle fields as objects into the obr registry
+            template<class CloudType>
+            static void writeObjects(const CloudType& c, objectRegistry& obr);
 
 
         // Ostream operator

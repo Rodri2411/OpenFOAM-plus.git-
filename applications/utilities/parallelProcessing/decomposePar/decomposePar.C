@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -32,46 +32,47 @@ Description
     execution of OpenFOAM.
 
 Usage
+    \b decomposePar [OPTION]
 
-    - decomposePar [OPTION]
+    Options:
+      - \par -cellDist
+        Write the cell distribution as a labelList, for use with 'manual'
+        decomposition method or as a volScalarField for post-processing.
 
-    \param -cellDist \n
-    Write the cell distribution as a labelList, for use with 'manual'
-    decomposition method or as a volScalarField for post-processing.
+      - \par -region \<regionName\>
+        Decompose named region. Does not check for existence of processor*.
 
-    \param -region regionName \n
-    Decompose named region. Does not check for existence of processor*.
+      - \par -allRegions
+        Decompose all regions in regionProperties. Does not check for
+        existence of processor*.
 
-    \param -allRegions \n
-    Decompose all regions in regionProperties. Does not check for
-    existence of processor*.
+      - \par -copyUniform
+        Copy any \a uniform directories too.
 
-    \param -copyUniform \n
-    Copy any \a uniform directories too.
+      - \par -constant
 
-    \param -constant \n
-    \param -time xxx:yyy \n
-    Override controlDict settings and decompose selected times. Does not
-    re-decompose the mesh i.e. does not handle moving mesh or changing
-    mesh cases.
+      - \par -time xxx:yyy
+        Override controlDict settings and decompose selected times. Does not
+        re-decompose the mesh i.e. does not handle moving mesh or changing
+        mesh cases.
 
-    \param -fields \n
-    Use existing geometry decomposition and convert fields only.
+      - \par -fields
+        Use existing geometry decomposition and convert fields only.
 
-    \param -noSets \n
-    Skip decomposing cellSets, faceSets, pointSets.
+      - \par -noSets
+        Skip decomposing cellSets, faceSets, pointSets.
 
-    \param -force \n
-    Remove any existing \a processor subdirectories before decomposing the
-    geometry.
+      - \par -force
+        Remove any existing \a processor subdirectories before decomposing the
+        geometry.
 
-    \param -ifRequired \n
-    Only decompose the geometry if the number of domains has changed from a
-    previous decomposition. No \a processor subdirectories will be removed
-    unless the \a -force option is also specified. This option can be used
-    to avoid redundant geometry decomposition (eg, in scripts), but should
-    be used with caution when the underlying (serial) geometry or the
-    decomposition method etc. have been changed between decompositions.
+      - \par -ifRequired
+        Only decompose the geometry if the number of domains has changed from a
+        previous decomposition. No \a processor subdirectories will be removed
+        unless the \a -force option is also specified. This option can be used
+        to avoid redundant geometry decomposition (eg, in scripts), but should
+        be used with caution when the underlying (serial) geometry or the
+        decomposition method etc. have been changed between decompositions.
 
 \*---------------------------------------------------------------------------*/
 
@@ -103,21 +104,24 @@ Usage
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+namespace Foam
+{
+
 const labelIOList& procAddressing
 (
     const PtrList<fvMesh>& procMeshList,
-    const label procI,
+    const label proci,
     const word& name,
     PtrList<labelIOList>& procAddressingList
 )
 {
-    const fvMesh& procMesh = procMeshList[procI];
+    const fvMesh& procMesh = procMeshList[proci];
 
-    if (!procAddressingList.set(procI))
+    if (!procAddressingList.set(proci))
     {
         procAddressingList.set
         (
-            procI,
+            proci,
             new labelIOList
             (
                 IOobject
@@ -133,10 +137,65 @@ const labelIOList& procAddressing
             )
         );
     }
-    return procAddressingList[procI];
+    return procAddressingList[proci];
 }
 
 
+void decomposeUniform
+(
+    const bool copyUniform,
+    const domainDecomposition& mesh,
+    const Time& processorDb,
+    const word& regionDir = word::null
+)
+{
+    const Time& runTime = mesh.time();
+
+    // Any uniform data to copy/link?
+    const fileName uniformDir(regionDir/"uniform");
+
+    if (isDir(runTime.timePath()/uniformDir))
+    {
+        Info<< "Detected additional non-decomposed files in "
+            << runTime.timePath()/uniformDir
+            << endl;
+
+        const fileName timePath = processorDb.timePath();
+
+        if (copyUniform || mesh.distributed())
+        {
+            cp
+            (
+                runTime.timePath()/uniformDir,
+                timePath/uniformDir
+            );
+        }
+        else
+        {
+            // link with relative paths
+            string parentPath = string("..")/"..";
+
+            if (regionDir != word::null)
+            {
+                parentPath = parentPath/"..";
+            }
+
+            fileName currentDir(cwd());
+            chDir(timePath);
+            ln
+            (
+                parentPath/runTime.timeName()/uniformDir,
+                uniformDir
+            );
+            chDir(currentDir);
+        }
+    }
+}
+
+}
+
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 int main(int argc, char *argv[])
 {
@@ -211,14 +270,7 @@ int main(int argc, char *argv[])
 
     // Allow override of decomposeParDict location
     fileName decompDictFile;
-    if (args.optionReadIfPresent("decomposeParDict", decompDictFile))
-    {
-        if (isDir(decompDictFile))
-        {
-            decompDictFile = decompDictFile/"decomposeParDict";
-        }
-    }
-
+    args.optionReadIfPresent("decomposeParDict", decompDictFile);
 
     wordList regionNames;
     wordList regionDirs;
@@ -256,10 +308,10 @@ int main(int argc, char *argv[])
 
 
 
-    forAll(regionNames, regionI)
+    forAll(regionNames, regioni)
     {
-        const word& regionName = regionNames[regionI];
-        const word& regionDir = regionDirs[regionI];
+        const word& regionName = regionNames[regioni];
+        const word& regionDir = regionDirs[regioni];
 
         Info<< "\n\nDecomposing mesh " << regionName << nl << endl;
 
@@ -295,13 +347,12 @@ int main(int argc, char *argv[])
                         runTime.time().system(),
                         regionDir,          // use region if non-standard
                         runTime,
-                        IOobject::MUST_READ_IF_MODIFIED,
+                        IOobject::MUST_READ,
                         IOobject::NO_WRITE,
                         false
                     ),
                     decompDictFile
                 )
-
             ).lookup("numberOfSubdomains")
         );
 
@@ -340,11 +391,11 @@ int main(int argc, char *argv[])
 
                 // remove existing processor dirs
                 // reverse order to avoid gaps if someone interrupts the process
-                for (label procI = nProcs-1; procI >= 0; --procI)
+                for (label proci = nProcs-1; proci >= 0; --proci)
                 {
                     fileName procDir
                     (
-                        runTime.path()/(word("processor") + name(procI))
+                        runTime.path()/(word("processor") + name(proci))
                     );
 
                     rmDir(procDir);
@@ -425,7 +476,8 @@ int main(int argc, char *argv[])
                         IOobject::AUTO_WRITE
                     ),
                     mesh,
-                    dimensionedScalar("cellDist", dimless, 0)
+                    dimensionedScalar("cellDist", dimless, -1),
+                    zeroGradientFvPatchScalarField::typeName
                 );
 
                 forAll(procIds, celli)
@@ -433,6 +485,7 @@ int main(int argc, char *argv[])
                    cellDist[celli] = procIds[celli];
                 }
 
+                cellDist.correctBoundaryConditions();
                 cellDist.write();
 
                 Info<< nl << "Wrote decomposition as volScalarField to "
@@ -646,7 +699,7 @@ int main(int argc, char *argv[])
                         new List<SLList<indexedParticle*>*>
                         (
                             mesh.nCells(),
-                            static_cast<SLList<indexedParticle*>*>(NULL)
+                            static_cast<SLList<indexedParticle*>*>(nullptr)
                         )
                     );
 
@@ -803,55 +856,40 @@ int main(int argc, char *argv[])
             lagrangianTensorFields.setSize(cloudI);
             lagrangianTensorFieldFields.setSize(cloudI);
 
-
-            // Any uniform data to copy/link?
-            fileName uniformDir("uniform");
-
-            if (isDir(runTime.timePath()/uniformDir))
-            {
-                Info<< "Detected additional non-decomposed files in "
-                    << runTime.timePath()/uniformDir
-                    << endl;
-            }
-            else
-            {
-                uniformDir.clear();
-            }
-
             Info<< endl;
 
             // split the fields over processors
-            for (label procI = 0; procI < mesh.nProcs(); procI++)
+            for (label proci = 0; proci < mesh.nProcs(); proci++)
             {
-                Info<< "Processor " << procI << ": field transfer" << endl;
+                Info<< "Processor " << proci << ": field transfer" << endl;
 
 
                 // open the database
-                if (!processorDbList.set(procI))
+                if (!processorDbList.set(proci))
                 {
                     processorDbList.set
                     (
-                        procI,
+                        proci,
                         new Time
                         (
                             Time::controlDictName,
                             args.rootPath(),
                             args.caseName()
-                           /fileName(word("processor") + name(procI))
+                           /fileName(word("processor") + name(proci))
                         )
                     );
                 }
-                Time& processorDb = processorDbList[procI];
+                Time& processorDb = processorDbList[proci];
 
 
                 processorDb.setTime(runTime);
 
                 // read the mesh
-                if (!procMeshList.set(procI))
+                if (!procMeshList.set(proci))
                 {
                     procMeshList.set
                     (
-                        procI,
+                        proci,
                         new fvMesh
                         (
                             IOobject
@@ -863,12 +901,12 @@ int main(int argc, char *argv[])
                         )
                     );
                 }
-                const fvMesh& procMesh = procMeshList[procI];
+                const fvMesh& procMesh = procMeshList[proci];
 
                 const labelIOList& faceProcAddressing = procAddressing
                 (
                     procMeshList,
-                    procI,
+                    proci,
                     "faceProcAddressing",
                     faceProcAddressingList
                 );
@@ -876,7 +914,7 @@ int main(int argc, char *argv[])
                 const labelIOList& cellProcAddressing = procAddressing
                 (
                     procMeshList,
-                    procI,
+                    proci,
                     "cellProcAddressing",
                     cellProcAddressingList
                 );
@@ -884,7 +922,7 @@ int main(int argc, char *argv[])
                 const labelIOList& boundaryProcAddressing = procAddressing
                 (
                     procMeshList,
-                    procI,
+                    proci,
                     "boundaryProcAddressing",
                     boundaryProcAddressingList
                 );
@@ -892,11 +930,11 @@ int main(int argc, char *argv[])
 
                 // FV fields
                 {
-                    if (!fieldDecomposerList.set(procI))
+                    if (!fieldDecomposerList.set(proci))
                     {
                         fieldDecomposerList.set
                         (
-                            procI,
+                            proci,
                             new fvFieldDecomposer
                             (
                                 mesh,
@@ -908,7 +946,7 @@ int main(int argc, char *argv[])
                         );
                     }
                     const fvFieldDecomposer& fieldDecomposer =
-                        fieldDecomposerList[procI];
+                        fieldDecomposerList[proci];
 
                     fieldDecomposer.decomposeFields(volScalarFields);
                     fieldDecomposer.decomposeFields(volVectorFields);
@@ -928,17 +966,17 @@ int main(int argc, char *argv[])
                     if (times.size() == 1)
                     {
                         // Clear cached decomposer
-                        fieldDecomposerList.set(procI, NULL);
+                        fieldDecomposerList.set(proci, nullptr);
                     }
                 }
 
                 // Dimensioned fields
                 {
-                    if (!dimFieldDecomposerList.set(procI))
+                    if (!dimFieldDecomposerList.set(proci))
                     {
                         dimFieldDecomposerList.set
                         (
-                            procI,
+                            proci,
                             new dimFieldDecomposer
                             (
                                 mesh,
@@ -949,7 +987,7 @@ int main(int argc, char *argv[])
                         );
                     }
                     const dimFieldDecomposer& dimDecomposer =
-                        dimFieldDecomposerList[procI];
+                        dimFieldDecomposerList[proci];
 
                     dimDecomposer.decomposeFields(dimScalarFields);
                     dimDecomposer.decomposeFields(dimVectorFields);
@@ -959,7 +997,7 @@ int main(int argc, char *argv[])
 
                     if (times.size() == 1)
                     {
-                        dimFieldDecomposerList.set(procI, NULL);
+                        dimFieldDecomposerList.set(proci, nullptr);
                     }
                 }
 
@@ -977,18 +1015,18 @@ int main(int argc, char *argv[])
                     const labelIOList& pointProcAddressing = procAddressing
                     (
                         procMeshList,
-                        procI,
+                        proci,
                         "pointProcAddressing",
                         pointProcAddressingList
                     );
 
                     const pointMesh& procPMesh = pointMesh::New(procMesh);
 
-                    if (!pointFieldDecomposerList.set(procI))
+                    if (!pointFieldDecomposerList.set(proci))
                     {
                         pointFieldDecomposerList.set
                         (
-                            procI,
+                            proci,
                             new pointFieldDecomposer
                             (
                                 pMesh,
@@ -999,7 +1037,7 @@ int main(int argc, char *argv[])
                         );
                     }
                     const pointFieldDecomposer& pointDecomposer =
-                        pointFieldDecomposerList[procI];
+                        pointFieldDecomposerList[proci];
 
                     pointDecomposer.decomposeFields(pointScalarFields);
                     pointDecomposer.decomposeFields(pointVectorFields);
@@ -1010,8 +1048,8 @@ int main(int argc, char *argv[])
 
                     if (times.size() == 1)
                     {
-                        pointProcAddressingList.set(procI, NULL);
-                        pointFieldDecomposerList.set(procI, NULL);
+                        pointProcAddressingList.set(proci, nullptr);
+                        pointFieldDecomposerList.set(proci, nullptr);
                     }
                 }
 
@@ -1098,52 +1136,27 @@ int main(int argc, char *argv[])
                     }
                 }
 
+                // Decompose the "uniform" directory in the time region
+                // directory
+                decomposeUniform(copyUniform, mesh, processorDb, regionDir);
 
-                // Any non-decomposed data to copy?
-                if (uniformDir.size())
+                // For the first region of a multi-region case additionally
+                // decompose the "uniform" directory in the time directory
+                if (regionNames.size() > 1 && regioni == 0)
                 {
-                    const fileName timePath = processorDb.timePath();
-
-                    // If no fields have been decomposed the destination
-                    // directory will not have been created so make sure.
-                    mkDir(timePath);
-
-                    if (copyUniform || mesh.distributed())
-                    {
-                        cp
-                        (
-                            runTime.timePath()/uniformDir,
-                            timePath/uniformDir
-                        );
-                    }
-                    else
-                    {
-                        // link with relative paths
-                        const string parentPath = string("..")/"..";
-
-                        fileName currentDir(cwd());
-                        chDir(timePath);
-                        ln
-                        (
-                            parentPath/runTime.timeName()/uniformDir,
-                            uniformDir
-                        );
-                        chDir(currentDir);
-                    }
+                    decomposeUniform(copyUniform, mesh, processorDb);
                 }
-
-
 
                 // We have cached all the constant mesh data for the current
                 // processor. This is only important if running with multiple
                 // times, otherwise it is just extra storage.
                 if (times.size() == 1)
                 {
-                    boundaryProcAddressingList.set(procI, NULL);
-                    cellProcAddressingList.set(procI, NULL);
-                    faceProcAddressingList.set(procI, NULL);
-                    procMeshList.set(procI, NULL);
-                    processorDbList.set(procI, NULL);
+                    boundaryProcAddressingList.set(proci, nullptr);
+                    cellProcAddressingList.set(proci, nullptr);
+                    faceProcAddressingList.set(proci, nullptr);
+                    procMeshList.set(proci, nullptr);
+                    processorDbList.set(proci, nullptr);
                 }
             }
         }

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2013-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2013-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -43,10 +43,8 @@ License
 #include "fvmDdt.H"
 #include "fvmLaplacian.H"
 #include "fixedValueFvsPatchFields.H"
-
 #include "blendingMethod.H"
 #include "HashPtrTable.H"
-
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -392,7 +390,7 @@ void Foam::twoPhaseSystem::solve()
 
     for (int acorr=0; acorr<nAlphaCorr; acorr++)
     {
-        volScalarField::DimensionedInternalField Sp
+        volScalarField::Internal Sp
         (
             IOobject
             (
@@ -404,7 +402,7 @@ void Foam::twoPhaseSystem::solve()
             dimensionedScalar("Sp", dgdt_.dimensions(), 0.0)
         );
 
-        volScalarField::DimensionedInternalField Su
+        volScalarField::Internal Su
         (
             IOobject
             (
@@ -446,26 +444,7 @@ void Foam::twoPhaseSystem::solve()
             )
         );
 
-        // Ensure that the flux at inflow BCs is preserved
-        forAll(alphaPhic1.boundaryField(), patchi)
-        {
-            fvsPatchScalarField& alphaPhic1p =
-                alphaPhic1.boundaryField()[patchi];
-
-            if (!alphaPhic1p.coupled())
-            {
-                const scalarField& phi1p = phi1.boundaryField()[patchi];
-                const scalarField& alpha1p = alpha1.boundaryField()[patchi];
-
-                forAll(alphaPhic1p, facei)
-                {
-                    if (phi1p[facei] < 0)
-                    {
-                        alphaPhic1p[facei] = alpha1p[facei]*phi1p[facei];
-                    }
-                }
-            }
-        }
+        phase1_.correctInflowFlux(alphaPhic1);
 
         if (nAlphaSubCycles > 1)
         {
@@ -523,7 +502,7 @@ void Foam::twoPhaseSystem::solve()
             fvScalarMatrix alpha1Eqn
             (
                 fvm::ddt(alpha1) - fvc::ddt(alpha1)
-              - fvm::laplacian(alpha1alpha2f*pPrimeByA_(), alpha1, "bounded")
+              - fvm::laplacian(alpha1alpha2f()*pPrimeByA_(), alpha1, "bounded")
             );
 
             alpha1Eqn.relax();
@@ -537,6 +516,7 @@ void Foam::twoPhaseSystem::solve()
 
         phase2_.alphaPhi() = phi_ - phase1_.alphaPhi();
         alpha2 = scalar(1) - alpha1;
+        phase2_.correctInflowFlux(phase2_.alphaPhi());
         phase2_.alphaRhoPhi() =
             fvc::interpolate(phase2_.rho())*phase2_.alphaPhi();
 

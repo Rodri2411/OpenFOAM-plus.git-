@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -211,8 +211,8 @@ vectorField calcVertexNormals(const triSurface& surf)
 
         forAll(pFaces, fI)
         {
-            const label faceI = pFaces[fI];
-            const triFace& f = surf[faceI];
+            const label facei = pFaces[fI];
+            const triFace& f = surf[facei];
 
             vector fN = f.normal(points);
 
@@ -378,7 +378,7 @@ triSurfacePointScalarField calcCurvature
             );
 
             // Calculate weight
-            // @todo Voronoi area weighting
+            // TODO: Voronoi area weighting
             scalar weight = calcVertexNormalWeight
             (
                 f,
@@ -755,9 +755,9 @@ surfaceFeatures::edgeStatus checkFlatRegionEdge
     DynamicList<Foam::vector> normals(2);
     DynamicList<labelList> bins(2);
 
-    forAll(eFaces, eFaceI)
+    forAll(eFaces, eFacei)
     {
-        const Foam::vector& n = surf.faceNormals()[eFaces[eFaceI]];
+        const Foam::vector& n = surf.faceNormals()[eFaces[eFacei]];
 
         // Find the normal in normals
         label index = -1;
@@ -772,7 +772,7 @@ surfaceFeatures::edgeStatus checkFlatRegionEdge
 
         if (index != -1)
         {
-            bins[index].append(eFaceI);
+            bins[index].append(eFacei);
         }
         else if (normals.size() >= 2)
         {
@@ -786,7 +786,7 @@ surfaceFeatures::edgeStatus checkFlatRegionEdge
         else
         {
             normals.append(n);
-            bins.append(labelList(1, eFaceI));
+            bins.append(labelList(1, eFacei));
         }
     }
 
@@ -1643,8 +1643,11 @@ int main(int argc, char *argv[])
                 (
                     runTime.constantPath()/"triSurface",// outputDir
                     sFeatFileName,                      // surfaceName
-                    surf.points(),
-                    faces,
+                    meshedSurfRef
+                    (
+                        surf.points(),
+                        faces
+                    ),
                     "internalCloseness",                // fieldName
                     internalCloseness,
                     false,                              // isNodeValues
@@ -1655,8 +1658,11 @@ int main(int argc, char *argv[])
                 (
                     runTime.constantPath()/"triSurface",// outputDir
                     sFeatFileName,                      // surfaceName
-                    surf.points(),
-                    faces,
+                    meshedSurfRef
+                    (
+                        surf.points(),
+                        faces
+                    ),
                     "externalCloseness",                // fieldName
                     externalCloseness,
                     false,                              // isNodeValues
@@ -1691,8 +1697,11 @@ int main(int argc, char *argv[])
                 (
                     runTime.constantPath()/"triSurface",// outputDir
                     sFeatFileName,                      // surfaceName
-                    surf.points(),
-                    faces,
+                    meshedSurfRef
+                    (
+                        surf.points(),
+                        faces
+                    ),
                     "curvature",                        // fieldName
                     k,
                     true,                               // isNodeValues
@@ -1769,8 +1778,11 @@ int main(int argc, char *argv[])
                 (
                     runTime.constantPath()/"triSurface",// outputDir
                     sFeatFileName,                      // surfaceName
-                    surf.points(),
-                    faces,
+                    meshedSurfRef
+                    (
+                        surf.points(),
+                        faces
+                    ),
                     "featureProximity",                 // fieldName
                     featureProximity,
                     false,                              // isNodeValues

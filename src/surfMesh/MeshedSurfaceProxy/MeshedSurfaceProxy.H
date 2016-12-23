@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -30,7 +30,7 @@ Description
 
 SourceFiles
     MeshedSurfaceProxy.C
-    MeshedSurfaceProxyCore.C
+    MeshedSurfaceProxys.C
 
 \*---------------------------------------------------------------------------*/
 
@@ -38,8 +38,7 @@ SourceFiles
 #define MeshedSurfaceProxy_H
 
 #include "pointField.H"
-#include "face.H"
-#include "triFace.H"
+#include "labelledTri.H"
 
 #include "surfZoneList.H"
 #include "surfaceFormatsCore.H"
@@ -128,12 +127,22 @@ public:
         );
 
         //- Write to file
-        static void write(const fileName&, const MeshedSurfaceProxy<Face>&);
+        static void write
+        (
+            const fileName&,
+            const MeshedSurfaceProxy<Face>&
+        );
 
 
     // Member Functions
 
         // Access
+
+            //- The surface size is the number of faces
+            inline label size() const
+            {
+                return faces_.size();
+            }
 
             //- Return const access to the points
             inline const pointField& points() const
@@ -142,7 +151,7 @@ public:
             }
 
             //- Return const access to the faces
-            inline const List<Face>& faces() const
+            inline const List<Face>& surfFaces() const
             {
                 return faces_;
             }
@@ -167,6 +176,10 @@ public:
                 return faceMap_.size() == faces_.size();
             }
 
+            //- Count number of triangles.
+            inline label nTriangles() const;
+
+
         // Write
 
             //- Generic write routine. Chooses writer based on extension.
@@ -176,7 +189,11 @@ public:
             }
 
             //- Write to database
-            virtual void write(const Time&, const word& surfName = "") const;
+            virtual void write
+            (
+                const Time&,
+                const word& surfName = word::null
+            ) const;
 };
 
 

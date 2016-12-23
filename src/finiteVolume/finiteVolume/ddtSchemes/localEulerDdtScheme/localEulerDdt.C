@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2015-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -29,7 +29,8 @@ License
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 Foam::word Foam::fv::localEulerDdt::rDeltaTName("rDeltaT");
-Foam::word Foam::fv::localEulerDdt::rSubDeltaTName("rSubDeltaTName");
+Foam::word Foam::fv::localEulerDdt::rDeltaTfName("rDeltaTf");
+Foam::word Foam::fv::localEulerDdt::rSubDeltaTName("rSubDeltaT");
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -49,6 +50,18 @@ const Foam::volScalarField& Foam::fv::localEulerDdt::localRDeltaT
     return mesh.objectRegistry::lookupObject<volScalarField>
     (
         mesh.time().subCycling() ? rSubDeltaTName : rDeltaTName
+    );
+}
+
+
+const Foam::surfaceScalarField& Foam::fv::localEulerDdt::localRDeltaTf
+(
+    const fvMesh& mesh
+)
+{
+    return mesh.objectRegistry::lookupObject<surfaceScalarField>
+    (
+        rDeltaTfName
     );
 }
 

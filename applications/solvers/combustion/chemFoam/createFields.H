@@ -12,7 +12,7 @@
         (
             "initialConditions",
             runTime.constant(),
-            runTime,
+            mesh,
             IOobject::MUST_READ_IF_MODIFIED,
             IOobject::NO_WRITE
         )
@@ -27,13 +27,9 @@
     autoPtr<psiChemistryModel> pChemistry(psiChemistryModel::New(mesh));
 
     psiChemistryModel& chemistry = pChemistry();
-    scalar dtChem = refCast<const psiChemistryModel>(chemistry).deltaTChem()[0];
 
     psiReactionThermo& thermo = chemistry.thermo();
     thermo.validate(args.executable(), "h");
-
-    basicMultiComponentMixture& composition = thermo.composition();
-    PtrList<volScalarField>& Y = composition.Y();
 
     volScalarField rho
     (
@@ -41,14 +37,12 @@
         (
             "rho",
             runTime.timeName(),
-            runTime,
+            mesh,
             IOobject::NO_READ,
             IOobject::AUTO_WRITE
         ),
         thermo.rho()
     );
-
-    volScalarField& p = thermo.p();
 
     volScalarField Rspecific
     (
@@ -56,7 +50,7 @@
         (
             "Rspecific",
             runTime.timeName(),
-            runTime,
+            mesh,
             IOobject::NO_READ,
             IOobject::AUTO_WRITE
         ),
@@ -75,7 +69,7 @@
         (
             "U",
             runTime.timeName(),
-            runTime,
+            mesh,
             IOobject::NO_READ,
             IOobject::NO_WRITE
         ),

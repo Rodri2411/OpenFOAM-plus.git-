@@ -1,4 +1,4 @@
- /*---------------------------------------------------------------------------*\
+/*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
@@ -76,9 +76,9 @@ Foam::temperatureCoupledBase::temperatureCoupledBase
 )
 :
     patch_(patch),
-    method_(KMethodTypeNames_.read(dict.lookup("kappa"))),
-    kappaName_(dict.lookup("kappaName")),
-    alphaAniName_(dict.lookupOrDefault<word>("alphaAniName","Anialpha"))
+    method_(KMethodTypeNames_.read(dict.lookup("kappaMethod"))),
+    kappaName_(dict.lookupOrDefault<word>("kappa", "none")),
+    alphaAniName_(dict.lookupOrDefault<word>("alphaAni","Anialpha"))
 {}
 
 
@@ -103,7 +103,7 @@ Foam::tmp<Foam::scalarField> Foam::temperatureCoupledBase::kappa
 ) const
 {
     const fvMesh& mesh = patch_.boundaryMesh().mesh();
-    const label patchI = patch_.index();
+    const label patchi = patch_.index();
 
     switch (method_)
     {
@@ -121,21 +121,21 @@ Foam::tmp<Foam::scalarField> Foam::temperatureCoupledBase::kappa
                 const turbulenceModel& turbModel =
                     mesh.lookupObject<turbulenceModel>(turbName);
 
-                return turbModel.kappaEff(patchI);
+                return turbModel.kappaEff(patchi);
             }
             else if (mesh.foundObject<fluidThermo>(basicThermo::dictName))
             {
                 const fluidThermo& thermo =
                     mesh.lookupObject<fluidThermo>(basicThermo::dictName);
 
-                return thermo.kappa(patchI);
+                return thermo.kappa(patchi);
             }
             else if (mesh.foundObject<basicThermo>(basicThermo::dictName))
             {
                 const basicThermo& thermo =
                     mesh.lookupObject<basicThermo>(basicThermo::dictName);
 
-                return thermo.kappa(patchI);
+                return thermo.kappa(patchi);
             }
             else
             {
@@ -153,7 +153,7 @@ Foam::tmp<Foam::scalarField> Foam::temperatureCoupledBase::kappa
             const solidThermo& thermo =
                 mesh.lookupObject<solidThermo>(basicThermo::dictName);
 
-            return thermo.kappa(patchI);
+            return thermo.kappa(patchi);
             break;
         }
 
@@ -168,9 +168,9 @@ Foam::tmp<Foam::scalarField> Foam::temperatureCoupledBase::kappa
                     alphaAniName_
                 );
 
-            const scalarField& pp = thermo.p().boundaryField()[patchI];
+            const scalarField& pp = thermo.p().boundaryField()[patchi];
 
-            const symmTensorField kappa(alphaAni*thermo.Cp(pp, Tp, patchI));
+            const symmTensorField kappa(alphaAni*thermo.Cp(pp, Tp, patchi));
 
             const vectorField n(patch_.nf());
 
@@ -204,10 +204,10 @@ Foam::tmp<Foam::scalarField> Foam::temperatureCoupledBase::kappa
                     << "Did not find field " << kappaName_
                     << " on mesh " << mesh.name() << " patch " << patch_.name()
                     << nl
-                    << "Please set 'kappa' to one of "
+                    << "Please set 'kappaMethod' to one of "
                     << KMethodTypeNames_.toc()
-                    << " and 'kappaName' to the name of the volScalar"
-                    << " or volSymmTensor field (if kappa=lookup)"
+                    << " and 'kappa' to the name of the volScalar"
+                    << " or volSymmTensor field (if kappaMethod=lookup)"
                     << exit(FatalError);
             }
 
@@ -218,9 +218,10 @@ Foam::tmp<Foam::scalarField> Foam::temperatureCoupledBase::kappa
         {
             FatalErrorInFunction
                 << "Unimplemented method " << KMethodTypeNames_[method_] << nl
-                << "Please set 'kappa' to one of " << KMethodTypeNames_.toc()
-                << " and 'kappaName' to the name of the volScalar"
-                << " or volSymmTensor field (if kappa=lookup)"
+                << "Please set 'kappaMethod' to one of "
+                << KMethodTypeNames_.toc()
+                << " and 'kappa' to the name of the volScalar"
+                << " or volSymmTensor field (if kappaMethod=lookup)"
                 << exit(FatalError);
         }
     }
@@ -231,9 +232,10 @@ Foam::tmp<Foam::scalarField> Foam::temperatureCoupledBase::kappa
 
 void Foam::temperatureCoupledBase::write(Ostream& os) const
 {
-    os.writeKeyword("kappa") << KMethodTypeNames_[method_]
+    os.writeKeyword("kappaMethod") << KMethodTypeNames_[method_]
         << token::END_STATEMENT << nl;
-    os.writeKeyword("kappaName") << kappaName_ << token::END_STATEMENT << nl;
+    os.writeKeyword("kappa") << kappaName_ << token::END_STATEMENT << nl;
+    os.writeKeyword("alphaAni") << alphaAniName_ << token::END_STATEMENT << nl;
 }
 
 

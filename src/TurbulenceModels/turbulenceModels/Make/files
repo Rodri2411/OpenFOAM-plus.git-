@@ -10,6 +10,7 @@ $(LESdelta)/vanDriestDelta/vanDriestDelta.C
 $(LESdelta)/smoothDelta/smoothDelta.C
 $(LESdelta)/maxDeltaxyz/maxDeltaxyz.C
 $(LESdelta)/IDDESDelta/IDDESDelta.C
+$(LESdelta)/maxDeltaxyzCubeRootLESDelta/maxDeltaxyzCubeRootLESDelta.C
 
 
 LESfilters = LES/LESfilters
@@ -47,7 +48,6 @@ $(nutWallFunctions)/nutURoughWallFunction/nutURoughWallFunctionFvPatchScalarFiel
 
 epsilonWallFunctions = $(wallFunctions)/epsilonWallFunctions
 $(epsilonWallFunctions)/epsilonWallFunction/epsilonWallFunctionFvPatchScalarField.C
-$(epsilonWallFunctions)/epsilonLowReWallFunction/epsilonLowReWallFunctionFvPatchScalarField.C
 
 omegaWallFunctions = $(wallFunctions)/omegaWallFunctions
 $(omegaWallFunctions)/omegaWallFunction/omegaWallFunctionFvPatchScalarField.C

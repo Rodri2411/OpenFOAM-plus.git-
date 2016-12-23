@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -36,7 +36,7 @@ namespace Foam
 Foam::scalar Foam::pointMVCWeight::tol(SMALL);
 
 
-// * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * * //
+// * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * //
 
 void Foam::pointMVCWeight::calcWeights
 (
@@ -99,10 +99,10 @@ void Foam::pointMVCWeight::calcWeights
 
     forAll(cFaces, iter)
     {
-        label faceI = cFaces[iter];
-        const face& f = mesh.faces()[faceI];
+        label facei = cFaces[iter];
+        const face& f = mesh.faces()[facei];
 
-        //Pout<< "face:" << faceI << " at:"
+        //Pout<< "face:" << facei << " at:"
         //    << pointField(mesh.points(), f)
         //    << endl;
 

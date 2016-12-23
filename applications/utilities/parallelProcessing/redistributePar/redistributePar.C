@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -64,6 +64,7 @@ Usage
 #include "fvMeshTools.H"
 #include "fvMeshDistribute.H"
 #include "decompositionMethod.H"
+#include "decompositionModel.H"
 #include "timeSelector.H"
 #include "PstreamReduceOps.H"
 #include "volFields.H"
@@ -75,11 +76,14 @@ Usage
 #include "processorFvPatchField.H"
 #include "zeroGradientFvPatchFields.H"
 #include "decompositionModel.H"
+#include "topoSet.H"
 
 #include "parFvFieldReconstructor.H"
 #include "parLagrangianRedistributor.H"
 #include "unmappedPassiveParticleCloud.H"
 #include "hexRef8Data.H"
+#include "meshRefinement.H"
+#include "pointFields.H"
 
 using namespace Foam;
 
@@ -716,8 +720,7 @@ void correctCoupledBoundaryConditions(fvMesh& mesh)
     {
         GeoField& fld = *iter();
 
-        typename GeoField::GeometricBoundaryField& bfld =
-            fld.boundaryField();
+        typename GeoField::Boundary& bfld = fld.boundaryFieldRef();
         if
         (
             Pstream::defaultCommsType == Pstream::blocking
@@ -728,7 +731,7 @@ void correctCoupledBoundaryConditions(fvMesh& mesh)
 
             forAll(bfld, patchi)
             {
-                typename GeoField::PatchFieldType& pfld = bfld[patchi];
+                typename GeoField::Patch& pfld = bfld[patchi];
 
                 //if (pfld.coupled())
                 //if (isA<CoupledPatchType>(pfld))
@@ -750,7 +753,7 @@ void correctCoupledBoundaryConditions(fvMesh& mesh)
 
             forAll(bfld, patchi)
             {
-                typename GeoField::PatchFieldType& pfld = bfld[patchi];
+                typename GeoField::Patch& pfld = bfld[patchi];
 
                 //if (pfld.coupled())
                 //if (isA<CoupledPatchType>(pfld))
@@ -768,7 +771,7 @@ void correctCoupledBoundaryConditions(fvMesh& mesh)
             forAll(patchSchedule, patchEvali)
             {
                 label patchi = patchSchedule[patchEvali].patch;
-                typename GeoField::PatchFieldType& pfld = bfld[patchi];
+                typename GeoField::Patch& pfld = bfld[patchi];
 
                 //if (pfld.coupled())
                 //if (isA<CoupledPatchType>(pfld))
@@ -837,6 +840,8 @@ autoPtr<mapDistributePolyMesh> redistributeAndWrite
     PtrList<DimensionedField<sphericalTensor, volMesh>> dimSphereTensorFields;
     PtrList<DimensionedField<symmTensor, volMesh>> dimSymmTensorFields;
     PtrList<DimensionedField<tensor, volMesh>> dimTensorFields;
+
+    DynamicList<word> pointFieldNames;
 
 
     if (doReadFields)
@@ -1051,6 +1056,40 @@ autoPtr<mapDistributePolyMesh> redistributeAndWrite
         );
 
 
+        // pointFields currently not supported. Read their names so we
+        // can delete them.
+        {
+            // Get my objects of type
+            pointFieldNames.append
+            (
+                objects.lookupClass(pointScalarField::typeName).sortedNames()
+            );
+            pointFieldNames.append
+            (
+                objects.lookupClass(pointVectorField::typeName).sortedNames()
+            );
+            pointFieldNames.append
+            (
+                objects.lookupClass
+                (
+                    pointSphericalTensorField::typeName
+                ).sortedNames()
+            );
+            pointFieldNames.append
+            (
+                objects.lookupClass
+                (
+                    pointSymmTensorField::typeName
+                ).sortedNames()
+            );
+            pointFieldNames.append
+            (
+                objects.lookupClass(pointTensorField::typeName).sortedNames()
+            );
+
+            // Make sure all processors have the same set
+            Pstream::scatter(pointFieldNames);
+        }
 
         if (Pstream::master() && decompose)
         {
@@ -1137,6 +1176,20 @@ autoPtr<mapDistributePolyMesh> redistributeAndWrite
             runTime.TimePaths::caseName() = baseRunTime.caseName();
 
             mesh.write();
+            topoSet::removeFiles(mesh);
+            forAll(pointFieldNames, i)
+            {
+                IOobject io
+                (
+                    pointFieldNames[i],
+                    runTime.timeName(),
+                    mesh
+                );
+
+                fileName fieldFile(io.objectPath());
+                if (topoSet::debug) DebugVar(fieldFile);
+                rm(fieldFile);
+            }
 
             // Now we've written all. Reset caseName on master
             Info<< "Restoring caseName to " << proc0CaseName << endl;
@@ -1146,6 +1199,20 @@ autoPtr<mapDistributePolyMesh> redistributeAndWrite
     else
     {
         mesh.write();
+        topoSet::removeFiles(mesh);
+        forAll(pointFieldNames, i)
+        {
+            IOobject io
+            (
+                pointFieldNames[i],
+                runTime.timeName(),
+                mesh
+            );
+
+            fileName fieldFile(io.objectPath());
+            if (topoSet::debug) DebugVar(fieldFile);
+            rm(fieldFile);
+        }
     }
     Info<< "Written redistributed mesh to " << mesh.facesInstance() << nl
         << endl;
@@ -1181,13 +1248,17 @@ autoPtr<mapDistributePolyMesh> redistributeAndWrite
         {
             runTime.TimePaths::caseName() = proc0CaseName;
         }
+
         // Make sure all processors have valid data (since only some will
         // read)
         refData.sync(io);
 
-
         // Distribute
         refData.distribute(map);
+
+
+        // Now we've read refinement data we can remove it
+        meshRefinement::removeFiles(mesh);
 
         if (nDestProcs == 1)
         {
@@ -1209,6 +1280,55 @@ autoPtr<mapDistributePolyMesh> redistributeAndWrite
             refData.write();
         }
     }
+
+    //// Sets. Disabled for now.
+    //{
+    //    // Read sets
+    //    if (Pstream::master() && decompose)
+    //    {
+    //        runTime.TimePaths::caseName() = baseRunTime.caseName();
+    //    }
+    //    IOobjectList objects(mesh, mesh.facesInstance(), "polyMesh/sets");
+    //
+    //    PtrList<cellSet> cellSets;
+    //    ReadFields(objects, cellSets);
+    //
+    //    if (Pstream::master() && decompose)
+    //    {
+    //        runTime.TimePaths::caseName() = proc0CaseName;
+    //    }
+    //
+    //    forAll(cellSets, i)
+    //    {
+    //        cellSets[i].distribute(map);
+    //    }
+    //
+    //    if (nDestProcs == 1)
+    //    {
+    //        if (Pstream::master())
+    //        {
+    //            Info<< "Setting caseName to " << baseRunTime.caseName()
+    //                << " to write reconstructed refinement data." << endl;
+    //            runTime.TimePaths::caseName() = baseRunTime.caseName();
+    //
+    //            forAll(cellSets, i)
+    //            {
+    //                cellSets[i].distribute(map);
+    //            }
+    //
+    //            // Now we've written all. Reset caseName on master
+    //            Info<< "Restoring caseName to " << proc0CaseName << endl;
+    //            runTime.TimePaths::caseName() = proc0CaseName;
+    //        }
+    //    }
+    //    else
+    //    {
+    //        forAll(cellSets, i)
+    //        {
+    //            cellSets[i].distribute(map);
+    //        }
+    //    }
+    //}
 
 
     return autoPtr<mapDistributePolyMesh>
@@ -2153,7 +2273,6 @@ int main(int argc, char *argv[])
     bool newTimes = args.optionFound("newTimes");
 
 
-
     if (env("FOAM_SIGFPE"))
     {
         WarningInFunction
@@ -2246,8 +2365,6 @@ int main(int argc, char *argv[])
     Pstream::scatter(decompose);
 
 
-
-
     // If running distributed we have problem of new processors not finding
     // a system/controlDict. However if we switch on the master-only reading
     // the problem becomes that the time directories are differing sizes and
@@ -2331,7 +2448,6 @@ int main(int argc, char *argv[])
     // Determine any region
     word regionName = polyMesh::defaultRegion;
     fileName meshSubDir;
-
     if (args.optionReadIfPresent("region", regionName))
     {
         meshSubDir = regionName/polyMesh::meshSubDir;
@@ -2416,14 +2532,40 @@ int main(int argc, char *argv[])
             bool haveAddressing = false;
             if (haveMesh[Pstream::myProcNo()])
             {
-                haveAddressing = IOobject
+                // Read faces (just to know their size)
+                faceCompactIOList faces
                 (
-                    "faceProcAddressing",
-                    facesInstance,
-                    meshSubDir,
-                    runTime,
-                    IOobject::READ_IF_PRESENT
-                ).typeHeaderOk<labelIOList>(true);
+                    IOobject
+                    (
+                        "faces",
+                        facesInstance,
+                        meshSubDir,
+                        runTime,
+                        IOobject::MUST_READ
+                    )
+                );
+
+                // Check faceProcAddressing
+                labelIOList faceProcAddressing
+                (
+                    IOobject
+                    (
+                        "faceProcAddressing",
+                        facesInstance,
+                        meshSubDir,
+                        runTime,
+                        IOobject::READ_IF_PRESENT
+                    ),
+                    labelList(0)
+                );
+                if
+                (
+                    faceProcAddressing.headerOk()
+                 && faceProcAddressing.size() == faces.size()
+                )
+                {
+                    haveAddressing = true;
+                }
             }
             else
             {
@@ -2775,13 +2917,7 @@ int main(int argc, char *argv[])
 
         // Allow override of decomposeParDict location
         fileName decompDictFile;
-        if (args.optionReadIfPresent("decomposeParDict", decompDictFile))
-        {
-            if (isDir(decompDictFile))
-            {
-                decompDictFile = decompDictFile / "decomposeParDict";
-            }
-        }
+        args.optionReadIfPresent("decomposeParDict", decompDictFile);
 
 
         // Determine decomposition

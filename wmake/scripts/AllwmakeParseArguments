@@ -28,67 +28,27 @@
 #     Allwmake argument parser
 #
 # Usage
-#     # Declare the targetType and set to default for library building
-#     targetType=libso      # lib, libo or libso
-#
-#     # Declare genDoc and set to default if documentation building is supported
-#     genDoc=0              # 0 or 1
-#
 #     # Parse the arguments by sourcing this script
 #     . $WM_PROJECT_DIR/wmake/scripts/AllwmakeParseArguments
 #
 #------------------------------------------------------------------------------
-Script=${0##*/}
-
 usage() {
     exec 1>&2
     while [ "$#" -ge 1 ]; do echo "$1"; shift; done
 
     # Print normal usage options
     cat<<USAGE
+Executing ${0##*/} is equivalent to
 
-Usage: $Script [OPTIONS]
+   wmake -all [OPTIONS]
 
-options:
-  -h or -help       Print list of Allwmake options
-  -k or -non-stop   Compile without stopping when errors occur
-  -j                Compile using all local cores/hyperthreads
-  -jN or -j N       Compile using N cores/hyperthreads
-  -no-scheduler     Compile without wmakeScheduler
-  -update           Update lnInclude directories and dep files
+With these additional options:
+   -l | -log | -log=name
+
 USAGE
 
-    # Print options for building code documentation
-    test -n "$genDoc" && cat<<USAGE_DOC
-  doc               Compile code documentation (requires Doxygen)
-USAGE_DOC
-
-    # Print options for building libraries
-    test -n "$targetType" && cat<<USAGE_LIB
-  lib               Compile statically linked archive lib (.a)
-  libo              Compile statically linked lib (.o)
-  libso             Compile dynamically linked lib (.so)
-  dep               Compile dependency files
-USAGE_LIB
-
-    exit 1
-}
-
-
-#------------------------------------------------------------------------------
-# Set WM_NCOMPPROCS to number of cores on local machine
-#------------------------------------------------------------------------------
-
-setWM_NCOMPPROCS()
-{
-    if [ -r /proc/cpuinfo ]
-    then
-        WM_NCOMPPROCS=$(egrep "^processor" /proc/cpuinfo | wc -l)
-    else
-        WM_NCOMPPROCS=1
-    fi
-
-    export WM_NCOMPPROCS
+    wmake -help
+    exit 0
 }
 
 
@@ -96,62 +56,80 @@ setWM_NCOMPPROCS()
 # Parse the arguments and options
 #------------------------------------------------------------------------------
 
-while [ "$#" -gt 0 ]
+unset fromWmake optLog optQueue
+
+for arg in "$@"
 do
-    case "$1" in
-        # Print help
-        -h | -help)
-            usage
-            ;;
-        # Parallel compilation on all cores of local machine
-        -j)
-            setWM_NCOMPPROCS
-            test $# -ge 2 && expr $2 + 1 > /dev/null 2>&1 \
-                && shift && export WM_NCOMPPROCS=$1
-            echo "Compiling enabled on $WM_NCOMPPROCS cores"
-            ;;
-        # Parallel compilation on specified number of cores
-        -j*)
-            export WM_NCOMPPROCS=${1#-j}
-            echo "Compiling enabled on $WM_NCOMPPROCS cores"
-            ;;
-        # Non-stop compilation, ignoring errors
-        -k | -non-stop)
-            export WM_CONTINUE_ON_ERROR=1
-            ;;
-        # Disable scheduled parallel compilation
-        -no-scheduler)
-            unset WM_SCHEDULER
-            ;;
-        # Update lnInclude directories and dep files following a pull
-        -update)
-            wrmdep -update
-            wmakeLnIncludeAll
-            ;;
-        # Generate documentation
-        doc)
-            test -n "$genDoc" || usage "invalid option '$1'"
-            genDoc=1
-            ;;
-        # Specify target type
-        lib | libo | libso | dep)
-            test -n "$targetType" || usage "invalid option '$1'"
-            targetType=$1
-            ;;
-        --)
-            shift
-            break
-            ;;
-        -* | *)
-            usage "invalid option '$1'"
-            ;;
-    esac
+    # Remove arg
     shift
+
+    case "$arg" in
+    -h | -help)
+        usage
+        ;;
+    -fromWmake)
+        # If called from wmake (to avoid recursion)
+        fromWmake=true
+        ;;
+    -k | -non-stop)
+        # Non-stop compilation, ignoring errors
+        export WM_CONTINUE_ON_ERROR=true
+        continue    # Permanently remove arg
+        ;;
+    -l | -log)
+        optLog="log.${WM_OPTIONS:-Allwmake}"
+        continue    # Permanently remove arg
+        ;;
+    -log=*)
+        optLog="${arg##*=}"
+        if [ -d "$optLog" ]
+        then
+            optLog="${optLog%/}/log.${WM_OPTIONS:-Allwmake}"
+        elif [ -z "$optLog" ]
+        then
+            optLog="log.${WM_OPTIONS:-Allwmake}"
+        fi
+        continue    # Permanently remove arg
+        ;;
+    -q | -queue)
+        optQueue="-q"
+        continue    # Permanently remove arg
+        ;;
+    lib | libo | libso | dep | objects)
+        # Target type
+        targetType=$arg
+        ;;
+    esac
+
+    # Re-insert arg
+    set -- "$@" "$arg"
 done
 
 
 #------------------------------------------------------------------------------
-# If WM_CONTINUE_ON_ERROR not set activate the shell option "stop on error"
+# Execute wmake -all if not called from wmake
+#------------------------------------------------------------------------------
+
+if [ -z "$fromWmake" ]
+then
+    if [ -z "$optLog" ]
+    then
+        exec wmake -all $optQueue $*
+        exit $? # Unneeded, but just in case something went wrong
+    else
+        echo "Logging wmake -all output to '$optLog'" 1>&2
+        echo 1>&2
+        exec wmake -all $optQueue $* 2>&1 | /usr/bin/tee $optLog
+        # Need to cleanup after the tee
+        rc=$? # Error code from tee (not wmake), but not entirely important
+        echo "Done logging to '$optLog'" 1>&2
+        exit $rc
+    fi
+fi
+
+
+#------------------------------------------------------------------------------
+# Activate the shell option "stop on error" unless WM_CONTINUE_ON_ERROR is set
 #------------------------------------------------------------------------------
 
 if [ -z "${WM_CONTINUE_ON_ERROR}" ]
@@ -164,7 +142,8 @@ fi
 # Cleanup local variables and functions
 #------------------------------------------------------------------------------
 
-unset Script usage setWM_NCOMPPROCS
+unset fromWmake optLog optQueue
+unset -f usage
 
 
 #------------------------------------------------------------------------------

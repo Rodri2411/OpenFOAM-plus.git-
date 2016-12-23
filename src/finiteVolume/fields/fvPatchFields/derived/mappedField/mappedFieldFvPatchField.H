@@ -30,23 +30,22 @@ Group
 Description
     This boundary condition provides a self-contained version of the \c mapped
     condition.  It does not use information on the patch; instead it holds
-    thr data locally.
+    the data locally.
 
-    \heading Patch usage
-
+Usage
     \table
         Property     | Description             | Required    | Default value
-        fieldName    | name of field to be mapped | no       | this field name
+        field        | name of field to be mapped | no       | this field name
         setAverage   | flag to activate setting of average value | yes |
         average      | average value to apply if \c setAverage = yes | yes |
     \endtable
 
     Example of the boundary condition specification:
     \verbatim
-    myPatch
+    <patchName>
     {
         type            mappedField;
-        fieldName       T;              // optional field name
+        field           T;              // optional field name
         setAverage      no;             // apply an average value
         average         0;              // average to apply if setAverage
         value           uniform 0;      // place holder
@@ -60,7 +59,7 @@ Note
     employ this condition if it is not possible to change the underlying
     geometric (poly) patch type to \c mapped.
 
-SeeAlso
+See also
     Foam::mappedPatchBase
     Foam::mappedPolyPatch
     Foam::mappedFvPatch
@@ -193,6 +192,22 @@ public:
 
 
     // Member functions
+
+        // Mapping functions
+
+            //- Map (and resize as needed) from self given a mapping object
+            virtual void autoMap
+            (
+                const fvPatchFieldMapper&
+            );
+
+            //- Reverse map the given fvPatchField onto this fvPatchField
+            virtual void rmap
+            (
+                const fvPatchField<Type>&,
+                const labelList&
+            );
+
 
         // Evaluation functions
 

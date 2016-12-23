@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -24,7 +24,7 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "TRIsurfaceFormat.H"
-#include "ListOps.H"
+#include "OFstream.H"
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
@@ -51,7 +51,7 @@ inline void Foam::fileFormats::TRIsurfaceFormat<Face>::writeShell
             << p1.x() << ' ' << p1.y() << ' ' << p1.z() << ' '
             << p2.x() << ' ' << p2.y() << ' ' << p2.z() << ' '
             // zone as colour
-            << "0x" << hex << zoneI << dec << endl;
+            << "0x" << hex << zoneI << dec << nl;
     }
 }
 
@@ -94,10 +94,10 @@ bool Foam::fileFormats::TRIsurfaceFormat<Face>::read
     if (reader.sorted())
     {
         // already sorted - generate directly
-        forAll(faceLst, faceI)
+        forAll(faceLst, facei)
         {
-            const label startPt = 3*faceI;
-            faceLst[faceI] = triFace(startPt, startPt+1, startPt+2);
+            const label startPt = 3*facei;
+            faceLst[facei] = triFace(startPt, startPt+1, startPt+2);
         }
     }
     else
@@ -108,10 +108,10 @@ bool Foam::fileFormats::TRIsurfaceFormat<Face>::read
         sortedOrder(zoneIds, faceMap);
 
         // generate sorted faces
-        forAll(faceMap, faceI)
+        forAll(faceMap, facei)
         {
-            const label startPt = 3*faceMap[faceI];
-            faceLst[faceI] = triFace(startPt, startPt+1, startPt+2);
+            const label startPt = 3*faceMap[facei];
+            faceLst[facei] = triFace(startPt, startPt+1, startPt+2);
         }
     }
     zoneIds.clear();
@@ -120,6 +120,7 @@ bool Foam::fileFormats::TRIsurfaceFormat<Face>::read
     this->storedFaces().transfer(faceLst);
 
     this->addZones(sizes);
+    this->addZonesToFaces(); // for labelledTri
     this->stitchFaces(SMALL);
     return true;
 }
@@ -133,7 +134,7 @@ void Foam::fileFormats::TRIsurfaceFormat<Face>::write
 )
 {
     const pointField& pointLst = surf.points();
-    const List<Face>&  faceLst = surf.faces();
+    const List<Face>&  faceLst = surf.surfFaces();
     const List<label>& faceMap = surf.faceMap();
 
     const List<surfZone>& zones =
@@ -160,7 +161,7 @@ void Foam::fileFormats::TRIsurfaceFormat<Face>::write
 
         if (useFaceMap)
         {
-            forAll(zone, localFaceI)
+            forAll(zone, localFacei)
             {
                 const Face& f = faceLst[faceMap[faceIndex++]];
                 writeShell(os, pointLst, f, zoneI);
@@ -168,7 +169,7 @@ void Foam::fileFormats::TRIsurfaceFormat<Face>::write
         }
         else
         {
-            forAll(zone, localFaceI)
+            forAll(zone, localFacei)
             {
                 const Face& f = faceLst[faceIndex++];
                 writeShell(os, pointLst, f, zoneI);
@@ -186,7 +187,7 @@ void Foam::fileFormats::TRIsurfaceFormat<Face>::write
 )
 {
     const pointField& pointLst = surf.points();
-    const List<Face>& faceLst  = surf.faces();
+    const List<Face>& faceLst  = surf.surfFaces();
 
     OFstream os(filename);
     if (!os.good())
@@ -202,9 +203,9 @@ void Foam::fileFormats::TRIsurfaceFormat<Face>::write
     {
         const List<label>& zoneIds  = surf.zoneIds();
 
-        forAll(faceLst, faceI)
+        forAll(faceLst, facei)
         {
-            writeShell(os, pointLst, faceLst[faceI], zoneIds[faceI]);
+            writeShell(os, pointLst, faceLst[facei], zoneIds[facei]);
         }
     }
     else
@@ -215,7 +216,7 @@ void Foam::fileFormats::TRIsurfaceFormat<Face>::write
         label faceIndex = 0;
         forAll(zoneLst, zoneI)
         {
-            forAll(zoneLst[zoneI], localFaceI)
+            forAll(zoneLst[zoneI], localFacei)
             {
                 const Face& f = faceLst[faceMap[faceIndex++]];
                 writeShell(os, pointLst, f, zoneI);

@@ -2,32 +2,56 @@
 cd ${0%/*} || exit 1    # Run from this directory
 
 # Parse arguments for library compilation
-targetType=libso
 . $WM_PROJECT_DIR/wmake/scripts/AllwmakeParseArguments
 
 # Source the wmake functions
 . $WM_DIR/scripts/wmakeFunctions
 
-# C++ compiler for CMake
+# Ensure CMake gets the correct C/C++ compilers
+[ -n "$WM_CC" ]  && export CC="$WM_CC"
 [ -n "$WM_CXX" ] && export CXX="$WM_CXX"
 
-set -x
-if [ -d "$ParaView_DIR" -a -r "$ParaView_DIR" ]
+
+# CMake into objectsDir,
+# with an additional attempt if (possibly incorrect) CMakeCache.txt existed
+doCmake()
+{
+    local sourceDir="$1"
+
+    findObjectDir $sourceDir # Where are generated files stored?
+    test -f "$objectsDir/CMakeCache.txt"
+    retry=$? # CMakeCache.txt exists, but sources may have moved
+
+    mkdir -p $objectsDir && \
+    (
+        cd $objectsDir || exit 1
+
+        cmake $sourceDir || {
+            if [ $retry -eq 0 ]
+            then
+                echo "Removing CMakeCache.txt and attempt again"
+                rm -f CMakeCache.txt
+                cmake $sourceDir
+            else
+                exit 1
+            fi
+        } && make
+    )
+}
+
+
+if [ -d "$ParaView_DIR" ]
 then
     wmake $targetType vtkPVFoam
-    sourceDir=$PWD/PVFoamReader
 
-    # Where are any generated files stored?
-    findObjectDir $sourceDir
-    (
-        mkdir -p $objectsDir \
-        && cd $objectsDir \
-        && cmake $sourceDir \
-        && make
-    ) || {
-        echo
-        echo "WARNING: incomplete build of ParaView OpenFOAM plugin"
-    }
+    if [ "$targetType" != objects ]
+    then
+        doCmake $PWD/PVFoamReader || {
+            echo
+            echo "    WARNING: incomplete build of ParaView OpenFOAM plugin"
+            echo
+        }
+    fi
 fi
 
 #------------------------------------------------------------------------------

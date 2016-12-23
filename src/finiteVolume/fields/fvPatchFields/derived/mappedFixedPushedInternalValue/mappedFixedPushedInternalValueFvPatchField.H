@@ -31,21 +31,20 @@ Description
     This boundary condition maps the boundary values of a neighbour patch
     field to the boundary and internal cell values of *this.
 
-    \heading Patch usage
-
+Usage
     \table
         Property     | Description             | Required    | Default value
-        fieldName    | name of field to be mapped | no       | this field name
+        field        | name of field to be mapped | no       | this field name
         setAverage   | flag to activate setting of average value | yes |
         average      | average value to apply if \c setAverage = yes | yes |
     \endtable
 
     Example of the boundary condition specification:
     \verbatim
-    myPatch
+    <patchName>
     {
         type            mappedFixedPushedInternalValue;
-        fieldName       T;
+        field           T;
         setAverage      no;
         average         0;
         value           uniform 0;
@@ -56,7 +55,7 @@ Note
     This boundary condition can only be applied to patches that are of
     the \c mappedPolyPatch type.
 
-SeeAlso
+See also
     Foam::mappedPatchBase
     Foam::mappedPolyPatch
     Foam::mappedFvPatch

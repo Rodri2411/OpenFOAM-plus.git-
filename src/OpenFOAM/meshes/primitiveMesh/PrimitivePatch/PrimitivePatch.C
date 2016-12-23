@@ -43,23 +43,25 @@ PrimitivePatch
 :
     FaceList<Face>(faces),
     points_(points),
-    edgesPtr_(NULL),
+    edgesPtr_(nullptr),
     nInternalEdges_(-1),
-    boundaryPointsPtr_(NULL),
-    faceFacesPtr_(NULL),
-    edgeFacesPtr_(NULL),
-    faceEdgesPtr_(NULL),
-    pointEdgesPtr_(NULL),
-    pointFacesPtr_(NULL),
-    localFacesPtr_(NULL),
-    meshPointsPtr_(NULL),
-    meshPointMapPtr_(NULL),
-    edgeLoopsPtr_(NULL),
-    localPointsPtr_(NULL),
-    localPointOrderPtr_(NULL),
-    faceCentresPtr_(NULL),
-    faceNormalsPtr_(NULL),
-    pointNormalsPtr_(NULL)
+    boundaryPointsPtr_(nullptr),
+    faceFacesPtr_(nullptr),
+    edgeFacesPtr_(nullptr),
+    faceEdgesPtr_(nullptr),
+    pointEdgesPtr_(nullptr),
+    pointFacesPtr_(nullptr),
+    localFacesPtr_(nullptr),
+    meshPointsPtr_(nullptr),
+    meshPointMapPtr_(nullptr),
+    edgeLoopsPtr_(nullptr),
+    localPointsPtr_(nullptr),
+    localPointOrderPtr_(nullptr),
+    faceCentresPtr_(nullptr),
+    faceAreasPtr_(nullptr),
+    magFaceAreasPtr_(nullptr),
+    faceNormalsPtr_(nullptr),
+    pointNormalsPtr_(nullptr)
 {}
 
 
@@ -79,23 +81,25 @@ PrimitivePatch
 :
     FaceList<Face>(faces),
     points_(points),
-    edgesPtr_(NULL),
+    edgesPtr_(nullptr),
     nInternalEdges_(-1),
-    boundaryPointsPtr_(NULL),
-    faceFacesPtr_(NULL),
-    edgeFacesPtr_(NULL),
-    faceEdgesPtr_(NULL),
-    pointEdgesPtr_(NULL),
-    pointFacesPtr_(NULL),
-    localFacesPtr_(NULL),
-    meshPointsPtr_(NULL),
-    meshPointMapPtr_(NULL),
-    edgeLoopsPtr_(NULL),
-    localPointsPtr_(NULL),
-    localPointOrderPtr_(NULL),
-    faceCentresPtr_(NULL),
-    faceNormalsPtr_(NULL),
-    pointNormalsPtr_(NULL)
+    boundaryPointsPtr_(nullptr),
+    faceFacesPtr_(nullptr),
+    edgeFacesPtr_(nullptr),
+    faceEdgesPtr_(nullptr),
+    pointEdgesPtr_(nullptr),
+    pointFacesPtr_(nullptr),
+    localFacesPtr_(nullptr),
+    meshPointsPtr_(nullptr),
+    meshPointMapPtr_(nullptr),
+    edgeLoopsPtr_(nullptr),
+    localPointsPtr_(nullptr),
+    localPointOrderPtr_(nullptr),
+    faceCentresPtr_(nullptr),
+    faceAreasPtr_(nullptr),
+    magFaceAreasPtr_(nullptr),
+    faceNormalsPtr_(nullptr),
+    pointNormalsPtr_(nullptr)
 {}
 
 
@@ -116,23 +120,25 @@ PrimitivePatch
 :
     FaceList<Face>(faces, reuse),
     points_(points, reuse),
-    edgesPtr_(NULL),
+    edgesPtr_(nullptr),
     nInternalEdges_(-1),
-    boundaryPointsPtr_(NULL),
-    faceFacesPtr_(NULL),
-    edgeFacesPtr_(NULL),
-    faceEdgesPtr_(NULL),
-    pointEdgesPtr_(NULL),
-    pointFacesPtr_(NULL),
-    localFacesPtr_(NULL),
-    meshPointsPtr_(NULL),
-    meshPointMapPtr_(NULL),
-    edgeLoopsPtr_(NULL),
-    localPointsPtr_(NULL),
-    localPointOrderPtr_(NULL),
-    faceCentresPtr_(NULL),
-    faceNormalsPtr_(NULL),
-    pointNormalsPtr_(NULL)
+    boundaryPointsPtr_(nullptr),
+    faceFacesPtr_(nullptr),
+    edgeFacesPtr_(nullptr),
+    faceEdgesPtr_(nullptr),
+    pointEdgesPtr_(nullptr),
+    pointFacesPtr_(nullptr),
+    localFacesPtr_(nullptr),
+    meshPointsPtr_(nullptr),
+    meshPointMapPtr_(nullptr),
+    edgeLoopsPtr_(nullptr),
+    localPointsPtr_(nullptr),
+    localPointOrderPtr_(nullptr),
+    faceCentresPtr_(nullptr),
+    faceAreasPtr_(nullptr),
+    magFaceAreasPtr_(nullptr),
+    faceNormalsPtr_(nullptr),
+    pointNormalsPtr_(nullptr)
 {}
 
 
@@ -152,23 +158,25 @@ PrimitivePatch
     PrimitivePatchName(),
     FaceList<Face>(pp),
     points_(pp.points_),
-    edgesPtr_(NULL),
+    edgesPtr_(nullptr),
     nInternalEdges_(-1),
-    boundaryPointsPtr_(NULL),
-    faceFacesPtr_(NULL),
-    edgeFacesPtr_(NULL),
-    faceEdgesPtr_(NULL),
-    pointEdgesPtr_(NULL),
-    pointFacesPtr_(NULL),
-    localFacesPtr_(NULL),
-    meshPointsPtr_(NULL),
-    meshPointMapPtr_(NULL),
-    edgeLoopsPtr_(NULL),
-    localPointsPtr_(NULL),
-    localPointOrderPtr_(NULL),
-    faceCentresPtr_(NULL),
-    faceNormalsPtr_(NULL),
-    pointNormalsPtr_(NULL)
+    boundaryPointsPtr_(nullptr),
+    faceFacesPtr_(nullptr),
+    edgeFacesPtr_(nullptr),
+    faceEdgesPtr_(nullptr),
+    pointEdgesPtr_(nullptr),
+    pointFacesPtr_(nullptr),
+    localFacesPtr_(nullptr),
+    meshPointsPtr_(nullptr),
+    meshPointMapPtr_(nullptr),
+    edgeLoopsPtr_(nullptr),
+    localPointsPtr_(nullptr),
+    localPointOrderPtr_(nullptr),
+    faceCentresPtr_(nullptr),
+    faceAreasPtr_(nullptr),
+    magFaceAreasPtr_(nullptr),
+    faceNormalsPtr_(nullptr),
+    pointNormalsPtr_(nullptr)
 {}
 
 
@@ -521,6 +529,46 @@ faceCentres() const
     }
 
     return *faceCentresPtr_;
+}
+
+
+template
+<
+    class Face,
+    template<class> class FaceList,
+    class PointField,
+    class PointType
+>
+const Foam::Field<PointType>&
+Foam::PrimitivePatch<Face, FaceList, PointField, PointType>::
+faceAreas() const
+{
+    if (!faceAreasPtr_)
+    {
+        calcFaceAreas();
+    }
+
+    return *faceAreasPtr_;
+}
+
+
+template
+<
+    class Face,
+    template<class> class FaceList,
+    class PointField,
+    class PointType
+>
+const Foam::Field<Foam::scalar>&
+Foam::PrimitivePatch<Face, FaceList, PointField, PointType>::
+magFaceAreas() const
+{
+    if (!magFaceAreasPtr_)
+    {
+        calcMagFaceAreas();
+    }
+
+    return *magFaceAreasPtr_;
 }
 
 

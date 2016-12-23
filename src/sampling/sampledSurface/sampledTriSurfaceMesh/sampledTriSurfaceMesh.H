@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -62,6 +62,7 @@ Description
 
 SourceFiles
     sampledTriSurfaceMesh.C
+    sampledTriSurfaceMeshTemplates.C
 
 \*---------------------------------------------------------------------------*/
 
@@ -71,6 +72,7 @@ SourceFiles
 #include "sampledSurface.H"
 #include "triSurfaceMesh.H"
 #include "MeshedSurface.H"
+#include "MeshedSurfacesFwd.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -87,7 +89,7 @@ class meshSearch;
 class sampledTriSurfaceMesh
 :
     public sampledSurface,
-    public MeshedSurface<face>
+    public meshedSurface
 {
 public:
         //- Types of communications
@@ -95,13 +97,13 @@ public:
         {
             cells,
             insideCells,
-            boundaryFaces,
+            boundaryFaces
         };
 
 private:
 
     //- Private typedefs for convenience
-        typedef MeshedSurface<face> MeshStorage;
+        typedef meshedSurface MeshStorage;
 
 
     // Private data
@@ -117,8 +119,18 @@ private:
         //- Track if the surface needs an update
         mutable bool needsUpdate_;
 
+        //- Retain element ids/order of original surface
+        bool keepIds_;
+
+        //- List of element ids/order of the original surface,
+        //  when keepIds is active.
+        labelList originalIds_;
+
         //- Search tree for all non-coupled boundary faces
         mutable autoPtr<indexedOctree<treeDataFace>> boundaryTreePtr_;
+
+        //- For compatibility with the meshSurf interface
+        labelList zoneIds_;
 
         //- From local surface triangle to mesh cell/face.
         labelList sampleElements_;
@@ -187,6 +199,10 @@ public:
 
     // Member Functions
 
+        //- Set new zoneIds list based on the surfZoneList information
+        static void setZoneMap(const surfZoneList&, labelList& zoneIds);
+
+
         //- Does the surface need an update?
         virtual bool needsUpdate() const;
 
@@ -213,7 +229,50 @@ public:
         //- Faces of surface
         virtual const faceList& faces() const
         {
-            return MeshStorage::faces();
+            return MeshStorage::surfFaces();
+        }
+
+        //- Const access to per-face zone/region information
+        virtual const labelList& zoneIds() const
+        {
+            return zoneIds_;
+        }
+
+        //- Face area vectors
+        virtual const vectorField& Sf() const
+        {
+            return MeshStorage::Sf();
+        }
+
+        //- Face area magnitudes
+        virtual const scalarField& magSf() const
+        {
+            return MeshStorage::magSf();
+        }
+
+        //- Face centres
+        virtual const vectorField& Cf() const
+        {
+            return MeshStorage::Cf();
+        }
+
+        //- If element ids/order of the original surface are kept
+        bool keepIds() const
+        {
+            return keepIds_;
+        }
+
+        //- List of element ids/order of the original surface,
+        //  when keepIds is active.
+        const labelList& originalIds() const
+        {
+            return originalIds_;
+        }
+
+        //- Sampling boundary values instead of cell values
+        bool onBoundary() const
+        {
+            return sampleSource_ == boundaryFaces;
         }
 
 
@@ -279,7 +338,7 @@ public:
             const interpolation<tensor>&
         ) const;
 
-        //- Write
+        //- Write information
         virtual void print(Ostream&) const;
 };
 

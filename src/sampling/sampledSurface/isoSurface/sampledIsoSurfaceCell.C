@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -59,9 +59,6 @@ bool Foam::sampledIsoSurfaceCell::updateGeometry() const
 
     prevTimeIndex_ = fvm.time().timeIndex();
 
-    // Clear any stored topo
-    facesPtr_.clear();
-
     // Clear derived data
     sampledSurface::clearGeom();
 
@@ -70,7 +67,7 @@ bool Foam::sampledIsoSurfaceCell::updateGeometry() const
 
     // 1. see if field in database
     // 2. see if field can be read
-    const volScalarField* cellFldPtr = NULL;
+    const volScalarField* cellFldPtr = nullptr;
     if (fvm.foundObject<volScalarField>(isoField_))
     {
         if (debug)
@@ -124,29 +121,29 @@ bool Foam::sampledIsoSurfaceCell::updateGeometry() const
         scalarField cellAvg(fvm.nCells(), scalar(0.0));
         labelField nPointCells(fvm.nCells(), 0);
         {
-            for (label pointI = 0; pointI < fvm.nPoints(); pointI++)
+            for (label pointi = 0; pointi < fvm.nPoints(); pointi++)
             {
-                const labelList& pCells = fvm.pointCells(pointI);
+                const labelList& pCells = fvm.pointCells(pointi);
 
                 forAll(pCells, i)
                 {
-                    label cellI = pCells[i];
+                    label celli = pCells[i];
 
-                    cellAvg[cellI] += pointFld().internalField()[pointI];
-                    nPointCells[cellI]++;
+                    cellAvg[celli] += pointFld().primitiveField()[pointi];
+                    nPointCells[celli]++;
                 }
             }
         }
-        forAll(cellAvg, cellI)
+        forAll(cellAvg, celli)
         {
-            cellAvg[cellI] /= nPointCells[cellI];
+            cellAvg[celli] /= nPointCells[celli];
         }
 
-        const isoSurfaceCell iso
+        isoSurfaceCell iso
         (
             fvm,
             cellAvg,
-            pointFld().internalField(),
+            pointFld().primitiveField(),
             isoVal_,
             regularise_,
             bounds_
@@ -155,17 +152,17 @@ bool Foam::sampledIsoSurfaceCell::updateGeometry() const
         const_cast<sampledIsoSurfaceCell&>
         (
             *this
-        ).triSurface::operator=(iso);
+        ).transfer(static_cast<meshedSurface&>(iso));
         meshCells_ = iso.meshCells();
     }
     else
     {
         //- Direct from cell field and point field. Gives bad continuity.
-        const isoSurfaceCell iso
+        isoSurfaceCell iso
         (
             fvm,
-            cellFld.internalField(),
-            pointFld().internalField(),
+            cellFld.primitiveField(),
+            pointFld().primitiveField(),
             isoVal_,
             regularise_,
             bounds_
@@ -174,7 +171,7 @@ bool Foam::sampledIsoSurfaceCell::updateGeometry() const
         const_cast<sampledIsoSurfaceCell&>
         (
             *this
-        ).triSurface::operator=(iso);
+        ).transfer(static_cast<meshedSurface&>(iso));
         meshCells_ = iso.meshCells();
     }
 
@@ -189,7 +186,7 @@ bool Foam::sampledIsoSurfaceCell::updateGeometry() const
             << "    isoValue       : " << isoVal_ << nl
             << "    bounds         : " << bounds_ << nl
             << "    points         : " << points().size() << nl
-            << "    tris           : " << triSurface::size() << nl
+            << "    faces          : " << MeshStorage::size() << nl
             << "    cut cells      : " << meshCells_.size() << endl;
     }
 
@@ -207,13 +204,13 @@ Foam::sampledIsoSurfaceCell::sampledIsoSurfaceCell
 )
 :
     sampledSurface(name, mesh, dict),
+    MeshStorage(),
     isoField_(dict.lookup("isoField")),
     isoVal_(readScalar(dict.lookup("isoValue"))),
     bounds_(dict.lookupOrDefault("bounds", boundBox::greatBox)),
     regularise_(dict.lookupOrDefault("regularise", true)),
     average_(dict.lookupOrDefault("average", true)),
     zoneKey_(keyType::null),
-    facesPtr_(NULL),
     prevTimeIndex_(-1),
     meshCells_(0)
 {}
@@ -237,8 +234,6 @@ bool Foam::sampledIsoSurfaceCell::needsUpdate() const
 
 bool Foam::sampledIsoSurfaceCell::expire()
 {
-    facesPtr_.clear();
-
     // Clear derived data
     sampledSurface::clearGeom();
 

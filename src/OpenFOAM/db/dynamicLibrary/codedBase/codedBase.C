@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -28,8 +28,10 @@ License
 #include "dynamicCode.H"
 #include "dynamicCodeContext.H"
 #include "dlLibraryTable.H"
+#include "Pstream.H"
 #include "PstreamReduceOps.H"
 #include "OSspecific.H"
+#include "Ostream.H"
 #include "regIOobject.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
@@ -41,6 +43,45 @@ namespace Foam
 
 
 // * * * * * * * * * * * * * Static Member Functions * * * * * * * * * * * * //
+
+namespace Foam
+{
+//! \cond fileScope
+static inline void writeEntryIfPresent
+(
+    Ostream& os,
+    const dictionary& dict,
+    const word& key
+)
+{
+    // non-recursive like dictionary::found, but no pattern-match either
+    const entry* ptr = dict.lookupEntryPtr(key, false, false);
+
+    if (ptr)
+    {
+        os.writeKeyword(key)
+            << token::HASH << token::BEGIN_BLOCK;
+
+        os.writeQuoted(string(ptr->stream()), false)
+            << token::HASH << token::END_BLOCK
+            << token::END_STATEMENT << nl;
+    }
+}
+//! \endcond
+}
+
+
+void Foam::codedBase::writeCodeDict(Ostream& os, const dictionary& dict)
+{
+    writeEntryIfPresent(os, dict, "codeInclude");
+    writeEntryIfPresent(os, dict, "localCode");
+    writeEntryIfPresent(os, dict, "code");
+    writeEntryIfPresent(os, dict, "codeOptions");
+    writeEntryIfPresent(os, dict, "codeLibs");
+}
+
+
+// * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
 void* Foam::codedBase::loadLibrary
 (
@@ -165,8 +206,6 @@ void Foam::codedBase::unloadLibrary
 }
 
 
-// * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
-
 void Foam::codedBase::createLibrary
 (
     dynamicCode& dynCode,
@@ -278,9 +317,11 @@ void Foam::codedBase::createLibrary
 }
 
 
+// * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * //
+
 void Foam::codedBase::updateLibrary
 (
-    const word& redirectType
+    const word& name
 ) const
 {
     const dictionary& dict = this->codeDict();
@@ -293,12 +334,12 @@ void Foam::codedBase::updateLibrary
 
     dynamicCodeContext context(dict);
 
-    // codeName: redirectType + _<sha1>
-    // codeDir : redirectType
+    // codeName: name + _<sha1>
+    // codeDir : name
     dynamicCode dynCode
     (
-        redirectType + context.sha1().str(true),
-        redirectType
+        name + context.sha1().str(true),
+        name
     );
     const fileName libPath = dynCode.libPath();
 
@@ -348,9 +389,6 @@ Foam::codedBase::codedBase()
 
 Foam::codedBase::~codedBase()
 {}
-
-
-// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 
 // ************************************************************************* //

@@ -7,10 +7,17 @@ sinclude $(RULES)/mplib$(WM_MPLIB)
 
 EXE_INC = \
     $(PFLAGS) $(PINC) \
-    -I$(SCOTCH_ROOT)/include \
     -I$(SCOTCH_ARCH_PATH)/include \
     -I/usr/include/scotch \
     -I../decompositionMethods/lnInclude
 
+/*
+ * The $(SCOTCH_ARCH_PATH)/lib$WM_COMPILER_LIB_ARCH path is provided
+ * to support central, non-thirdparty installations
+ */
 LIB_LIBS = \
-    -L$(SCOTCH_ROOT)/lib -L$(FOAM_EXT_LIBBIN) -lscotch -lscotcherrexit -lrt
+    -L$(SCOTCH_ARCH_PATH)/lib$(WM_COMPILER_LIB_ARCH) \
+    -L$(FOAM_EXT_LIBBIN) \
+    -lscotch \
+    -lscotcherrexit \
+    -lrt

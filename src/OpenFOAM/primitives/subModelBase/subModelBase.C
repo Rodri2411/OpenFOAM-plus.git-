@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -161,9 +161,37 @@ void Foam::subModelBase::cacheFields(const bool)
 {}
 
 
-bool Foam::subModelBase::outputTime() const
+bool Foam::subModelBase::writeTime() const
 {
     return active();
+}
+
+
+bool Foam::subModelBase::getModelDict
+(
+    const word& entryName,
+    dictionary& dict
+) const
+{
+    if (properties_.found(baseName_))
+    {
+        const dictionary& baseDict = properties_.subDict(baseName_);
+
+        if (inLine() && baseDict.found(modelName_))
+        {
+            const dictionary& modelDict = baseDict.subDict(modelName_);
+            dict = modelDict.subOrEmptyDict(entryName);
+            return true;
+        }
+        else if (baseDict.found(modelType_))
+        {
+            const dictionary& modelDict = baseDict.subDict(modelType_);
+            dict = modelDict.subOrEmptyDict(entryName);
+            return true;
+        }
+    }
+
+    return false;
 }
 
 

@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -38,6 +38,7 @@ Description
 #include "pimpleControl.H"
 #include "vtkSurfaceWriter.H"
 #include "cyclicAMIPolyPatch.H"
+#include "PatchTools.H"
 
 using namespace Foam;
 
@@ -46,6 +47,7 @@ using namespace Foam;
 // Dump patch + weights to vtk file
 void writeWeights
 (
+    const polyMesh& mesh,
     const scalarField& wghtSum,
     const primitivePatch& patch,
     const fileName& directory,
@@ -55,16 +57,54 @@ void writeWeights
 {
     vtkSurfaceWriter writer;
 
-    writer.write
+    // Collect geometry
+    labelList pointToGlobal;
+    labelList uniqueMeshPointLabels;
+    autoPtr<globalIndex> globalPoints;
+    autoPtr<globalIndex> globalFaces;
+    faceList mergedFaces;
+    pointField mergedPoints;
+    Foam::PatchTools::gatherAndMerge
     (
-        directory,
-        prefix + "_proc" + Foam::name(Pstream::myProcNo()) + "_" + timeName,
-        patch.localPoints(),
+        mesh,
         patch.localFaces(),
-        "weightsSum",
-        wghtSum,
-        false
+        patch.meshPoints(),
+        patch.meshPointMap(),
+
+        pointToGlobal,
+        uniqueMeshPointLabels,
+        globalPoints,
+        globalFaces,
+
+        mergedFaces,
+        mergedPoints
     );
+    // Collect field
+    scalarField mergedWeights;
+    globalFaces().gather
+    (
+        UPstream::worldComm,
+        labelList(UPstream::procID(UPstream::worldComm)),
+        wghtSum,
+        mergedWeights
+    );
+
+    if (Pstream::master())
+    {
+        writer.write
+        (
+            directory,
+            prefix + "_" + timeName,
+            meshedSurfRef
+            (
+                mergedPoints,
+                mergedFaces
+            ),
+            "weightsSum",
+            mergedWeights,
+            false
+        );
+    }
 }
 
 
@@ -74,12 +114,12 @@ void writeWeights(const polyMesh& mesh)
 
     const word tmName(mesh.time().timeName());
 
-    forAll(pbm, patchI)
+    forAll(pbm, patchi)
     {
-        if (isA<cyclicAMIPolyPatch>(pbm[patchI]))
+        if (isA<cyclicAMIPolyPatch>(pbm[patchi]))
         {
             const cyclicAMIPolyPatch& cpp =
-                refCast<const cyclicAMIPolyPatch>(pbm[patchI]);
+                refCast<const cyclicAMIPolyPatch>(pbm[patchi]);
 
             if (cpp.owner())
             {
@@ -92,6 +132,7 @@ void writeWeights(const polyMesh& mesh)
 
                 writeWeights
                 (
+                    mesh,
                     ami.tgtWeightsSum(),
                     cpp.neighbPatch(),
                     "postProcessing",
@@ -100,6 +141,7 @@ void writeWeights(const polyMesh& mesh)
                 );
                 writeWeights
                 (
+                    mesh,
                     ami.srcWeightsSum(),
                     cpp,
                     "postProcessing",

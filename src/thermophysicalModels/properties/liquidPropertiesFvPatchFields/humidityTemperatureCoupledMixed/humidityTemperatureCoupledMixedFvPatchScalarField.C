@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2015 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2015-2016 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -152,8 +152,8 @@ humidityTemperatureCoupledMixedFvPatchScalarField
     QrNbrName_("none"),
     QrName_("none"),
     specieName_("none"),
-    liquid_(NULL),
-    liquidDict_(NULL),
+    liquid_(nullptr),
+    liquidDict_(nullptr),
     mass_(patch().size(), 0.0),
     Tvap_(0.0),
     myKDelta_(patch().size(), 0.0),
@@ -192,7 +192,7 @@ humidityTemperatureCoupledMixedFvPatchScalarField
     QrNbrName_(psf.QrNbrName_),
     QrName_(psf.QrName_),
     specieName_(psf.specieName_),
-    liquid_(psf.liquid_),
+    liquid_(psf.liquid_, false),
     liquidDict_(psf.liquidDict_),
     mass_(psf.mass_, mapper),
     Tvap_(psf.Tvap_),
@@ -226,8 +226,8 @@ humidityTemperatureCoupledMixedFvPatchScalarField
     TnbrName_(dict.lookupOrDefault<word>("Tnbr", "T")),
     QrNbrName_(dict.lookupOrDefault<word>("QrNbr", "none")),
     QrName_(dict.lookupOrDefault<word>("Qr", "none")),
-    specieName_(dict.lookupOrDefault<word>("specieName", "none")),
-    liquid_(NULL),
+    specieName_(dict.lookupOrDefault<word>("specie", "none")),
+    liquid_(nullptr),
     liquidDict_(),
     mass_(patch().size(), 0.0),
     Tvap_(0.0),
@@ -247,8 +247,8 @@ humidityTemperatureCoupledMixedFvPatchScalarField
             << "\n    patch type '" << p.type()
             << "' not type '" << mappedPatchBase::typeName << "'"
             << "\n    for patch " << p.name()
-            << " of field " << dimensionedInternalField().name()
-            << " in file " << dimensionedInternalField().objectPath()
+            << " of field " << internalField().name()
+            << " in file " << internalField().objectPath()
             << exit(FatalIOError);
     }
 
@@ -351,7 +351,7 @@ humidityTemperatureCoupledMixedFvPatchScalarField
     QrNbrName_(psf.QrNbrName_),
     QrName_(psf.QrName_),
     specieName_(psf.specieName_),
-    liquid_(psf.liquid_),
+    liquid_(psf.liquid_, false),
     liquidDict_(psf.liquidDict_),
     mass_(psf.mass_),
     Tvap_(psf.Tvap_),
@@ -449,7 +449,14 @@ void Foam::humidityTemperatureCoupledMixedFvPatchScalarField::updateCoeffs()
     scalarField nbrIntFld(nbrField.patchInternalField());
     mpp.distribute(nbrIntFld);
 
+
     scalarField& Tp = *this;
+
+    const volScalarField& T =
+        static_cast<const volScalarField&>(internalField());
+
+    const scalarField TpOld(T.oldTime().boundaryField()[patch().index()]);
+
     scalarField Tin(patchInternalField());
 
     const scalarField K(this->kappa(*this));
@@ -463,6 +470,7 @@ void Foam::humidityTemperatureCoupledMixedFvPatchScalarField::updateCoeffs()
     mpp.distribute(nrbDeltaCoeffs);
 
     scalarField KDeltaNbr(nbrK*nrbDeltaCoeffs);
+    mpp.distribute(KDeltaNbr);
 
     myKDelta_ = K*patch().deltaCoeffs();
 
@@ -635,7 +643,7 @@ void Foam::humidityTemperatureCoupledMixedFvPatchScalarField::updateCoeffs()
                 (
                     fieldName,
                     refCast<const fvMesh>(mesh)
-                ).boundaryField()[patch().index()];
+                ).boundaryFieldRef()[patch().index()];
 
 
             pDelta = mass_/liquidRho/magSf;
@@ -655,15 +663,11 @@ void Foam::humidityTemperatureCoupledMixedFvPatchScalarField::updateCoeffs()
         }
     }
 
-    scalarField myKDeltaNbr(patch().size(), 0.0);
     scalarField mpCpTpNbr(patch().size(), 0.0);
     scalarField dmHfgNbr(patch().size(), 0.0);
 
     if (!fluid_)
     {
-        myKDeltaNbr = nbrField.myKDelta();
-        mpp.distribute(myKDeltaNbr);
-
         mpCpTpNbr = nbrField.mpCpTp();
         mpp.distribute(mpCpTpNbr);
 
@@ -690,42 +694,39 @@ void Foam::humidityTemperatureCoupledMixedFvPatchScalarField::updateCoeffs()
     const scalarField mpCpdt(mpCpTpNbr + mpCpTp_);
 
     // Qr > 0 (heat up the wall)
-    scalarField alpha(KDeltaNbr + mpCpdt - (Qr + QrNbr + dmHfg)/Tp);
+    scalarField alpha(KDeltaNbr + mpCpdt - (Qr + QrNbr)/Tp);
 
     valueFraction() = alpha/(alpha + myKDelta_);
 
-    refValue() = (KDeltaNbr*nbrIntFld + mpCpdt*Tp)/alpha;
+    refValue() = (KDeltaNbr*nbrIntFld + mpCpdt*TpOld + dmHfg)/alpha;
 
     mixedFvPatchScalarField::updateCoeffs();
 
 
-    if (debug)
+    if (debug && fluid_)
     {
-        if (fluid_)
-        {
-            scalar Qdm = gSum(dm);
-            scalar QMass = gSum(mass_);
-            scalar Qt = gSum(myKDelta_*(Tp - Tin)*magSf);
-            scalar QtSolid = gSum(KDeltaNbr*(Tp - nbrIntFld)*magSf);
+        scalar Qdm = gSum(dm);
+        scalar QMass = gSum(mass_);
+        scalar Qt = gSum(myKDelta_*(Tp - Tin)*magSf);
+        scalar QtSolid = gSum(KDeltaNbr*(Tp - nbrIntFld)*magSf);
 
-            Info<< mesh.name() << ':'
-                << patch().name() << ':'
-                << dimensionedInternalField().name() << " <- "
-                << nbrMesh.name() << ':'
-                << nbrPatch.name() << ':'
-                << dimensionedInternalField().name() << " :" << nl
-                << "    Total mass flux   [Kg/s] : " << Qdm << nl
-                << "    Total mass on the wall [Kg] : " << QMass << nl
-                << "    Total heat (>0 leaving the wall to the fluid) [W] : "
-                << Qt << nl
-                << "     Total heat (>0 leaving the wall to the solid) [W] : "
-                << QtSolid << nl
-                << "     wall temperature "
-                << " min:" << gMin(*this)
-                << " max:" << gMax(*this)
-                << " avg:" << gAverage(*this)
-                << endl;
-        }
+        Info<< mesh.name() << ':'
+            << patch().name() << ':'
+            << internalField().name() << " <- "
+            << nbrMesh.name() << ':'
+            << nbrPatch.name() << ':'
+            << internalField().name() << " :" << nl
+            << "    Total mass flux   [Kg/s] : " << Qdm << nl
+            << "    Total mass on the wall [Kg] : " << QMass << nl
+            << "    Total heat (>0 leaving the wall to the fluid) [W] : "
+            << Qt << nl
+            << "     Total heat (>0 leaving the wall to the solid) [W] : "
+            << QtSolid << nl
+            << "     wall temperature "
+            << " min:" << gMin(*this)
+            << " max:" << gMax(*this)
+            << " avg:" << gAverage(*this)
+            << endl;
     }
 }
 
@@ -749,7 +750,7 @@ void Foam::humidityTemperatureCoupledMixedFvPatchScalarField::write
         os.writeKeyword("mode")<< massModeTypeNames_[mode_]
             << token::END_STATEMENT <<nl;
 
-        writeEntryIfDifferent<word>(os, "specieName", "none", specieName_);
+        writeEntryIfDifferent<word>(os, "specie", "none", specieName_);
 
         os.writeKeyword("carrierMolWeight")<< Mcomp_
             << token::END_STATEMENT <<nl;

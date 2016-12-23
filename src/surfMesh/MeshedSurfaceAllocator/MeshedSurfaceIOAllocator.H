@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -65,10 +65,10 @@ class MeshedSurfaceIOAllocator
     // Private Member Functions
 
         //- Disallow default bitwise copy construct
-        MeshedSurfaceIOAllocator(const MeshedSurfaceIOAllocator&);
+        MeshedSurfaceIOAllocator(const MeshedSurfaceIOAllocator&) = delete;
 
         //- Disallow default bitwise assignment
-        void operator=(const MeshedSurfaceIOAllocator&);
+        void operator=(const MeshedSurfaceIOAllocator&) = delete;
 
 
 public:
@@ -106,7 +106,20 @@ public:
         );
 
 
+    //- Destructor
+    virtual ~MeshedSurfaceIOAllocator();
+
+
     // Member Functions
+
+        // Database
+
+            //- Set the instance for mesh files
+            void setInstance(const fileName&);
+
+            //- Adjust the write option for all components
+            void setWriteOption(IOobject::writeOption);
+
 
         // Access
 
@@ -152,7 +165,7 @@ public:
             //- Clear primitive data (points, faces and zones)
             void clear();
 
-            //- Reset primitive data (points, faces and zones)
+            //- Reset primitive data (faces and zones)
             //  Note, optimized to avoid overwriting data (with Xfer::null)
             void resetFaces
             (
@@ -177,6 +190,18 @@ public:
                 const Xfer<faceList>& faces,
                 const Xfer<surfZoneList>& zones
             );
+
+
+        // Writing
+
+            //- Write using given format, version and compression
+            virtual bool writeObject
+            (
+                IOstream::streamFormat,
+                IOstream::versionNumber,
+                IOstream::compressionType
+            ) const;
+
 };
 
 

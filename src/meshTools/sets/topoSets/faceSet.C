@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -27,6 +27,7 @@ License
 #include "mapPolyMesh.H"
 #include "polyMesh.H"
 #include "syncTools.H"
+#include "mapDistributePolyMesh.H"
 
 #include "addToRunTimeSelectionTable.H"
 
@@ -122,16 +123,16 @@ void faceSet::sync(const polyMesh& mesh)
 
     label nAdded = 0;
 
-    forAll(set, faceI)
+    forAll(set, facei)
     {
-        if (set[faceI])
+        if (set[facei])
         {
-            if (insert(faceI))
+            if (insert(facei))
             {
                 nAdded++;
             }
         }
-        else if (found(faceI))
+        else if (found(facei))
         {
             FatalErrorInFunction
                 << "Problem : syncing removed faces from set."
@@ -158,6 +159,37 @@ label faceSet::maxSize(const polyMesh& mesh) const
 void faceSet::updateMesh(const mapPolyMesh& morphMap)
 {
     updateLabels(morphMap.reverseFaceMap());
+}
+
+
+void faceSet::distribute(const mapDistributePolyMesh& map)
+{
+    boolList inSet(map.nOldFaces());
+    forAllConstIter(faceSet, *this, iter)
+    {
+        inSet[iter.key()] = true;
+    }
+    map.distributeFaceData(inSet);
+
+    // Count
+    label n = 0;
+    forAll(inSet, facei)
+    {
+        if (inSet[facei])
+        {
+            n++;
+        }
+    }
+
+    clear();
+    resize(n);
+    forAll(inSet, facei)
+    {
+        if (inSet[facei])
+        {
+            insert(facei);
+        }
+    }
 }
 
 

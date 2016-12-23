@@ -206,9 +206,9 @@ public:
             //    return true;
             //}
             //const pointField points(bb.points());
-            //forAll(points, pointI)
+            //forAll(points, pointi)
             //{
-            //    scalar pointVal = signedDistance(points[pointI]) - _iso_val;
+            //    scalar pointVal = signedDistance(points[pointi]) - _iso_val;
             //    if (ccVal*pointVal < 0)
             //    {
             //        return true;
@@ -374,7 +374,7 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     runTime.functionObjects().off();
 
-    const fileName exportName = args.args()[1];
+    const fileName exportName = args[1];
 
     Info<< "Reading surfaces as specified in the foamyHexMeshDict and"
         << " writing a re-sampled surface to " << exportName
@@ -518,10 +518,10 @@ int main(int argc, char *argv[])
 
         Point* vertices = mc.vertices();
         pointField points(mc.nverts());
-        forAll(points, pointI)
+        forAll(points, pointi)
         {
-            const Point& v = vertices[pointI];
-            points[pointI] = converter.toGlobal(v);
+            const Point& v = vertices[pointi];
+            points[pointi] = converter.toGlobal(v);
         }
 
 

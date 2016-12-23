@@ -66,18 +66,23 @@ void Foam::vtkPVblockMesh::updateInfoBlocks
     if (debug)
     {
         Info<< "<beg> Foam::vtkPVblockMesh::updateInfoBlocks"
-            << " [meshPtr=" << (meshPtr_ ? "set" : "NULL") << "]" << endl;
+            << " [meshPtr=" << (meshPtr_ ? "set" : "nullptr") << "]" << endl;
     }
 
     arrayRangeBlocks_.reset( arraySelection->GetNumberOfArrays() );
 
     const blockMesh& blkMesh = *meshPtr_;
+
     const int nBlocks = blkMesh.size();
     for (int blockI = 0; blockI < nBlocks; ++blockI)
     {
-        const blockDescriptor& blockDef = blkMesh[blockI].blockDef();
+        const blockDescriptor& blockDef = blkMesh[blockI];
 
-        word partName = Foam::name(blockI);
+        // Display either blockI as a number or with its name
+        // (looked up from blockMeshDict)
+        OStringStream os;
+        blockDescriptor::write(os, blockI, blkMesh.meshDict());
+        word partName(os.str());
 
         // append the (optional) zone name
         if (!blockDef.zoneName().empty())
@@ -109,21 +114,22 @@ void Foam::vtkPVblockMesh::updateInfoEdges
     if (debug)
     {
         Info<< "<beg> Foam::vtkPVblockMesh::updateInfoEdges"
-            << " [meshPtr=" << (meshPtr_ ? "set" : "NULL") << "]" << endl;
+            << " [meshPtr=" << (meshPtr_ ? "set" : "nullptr") << "]" << endl;
     }
 
     arrayRangeEdges_.reset( arraySelection->GetNumberOfArrays() );
 
     const blockMesh& blkMesh = *meshPtr_;
-    const curvedEdgeList& edges = blkMesh.edges();
+    const blockEdgeList& edges = blkMesh.edges();
 
     const int nEdges = edges.size();
     forAll(edges, edgeI)
     {
         OStringStream ostr;
-
-        ostr<< edges[edgeI].start() << ":" << edges[edgeI].end() << " - "
-            << edges[edgeI].type();
+        blockVertex::write(ostr, edges[edgeI].start(), blkMesh.meshDict());
+        ostr<< ":";
+        blockVertex::write(ostr, edges[edgeI].end(), blkMesh.meshDict());
+        ostr << " - " << edges[edgeI].type();
 
         // Add "beg:end - type" to GUI list
         arraySelection->AddArray(ostr.str().c_str());
@@ -150,8 +156,8 @@ Foam::vtkPVblockMesh::vtkPVblockMesh
 )
 :
     reader_(reader),
-    dbPtr_(NULL),
-    meshPtr_(NULL),
+    dbPtr_(nullptr),
+    meshPtr_(nullptr),
     meshRegion_(polyMesh::defaultRegion),
     meshDir_(polyMesh::meshSubDir),
     arrayRangeBlocks_("block"),
@@ -252,9 +258,9 @@ Foam::vtkPVblockMesh::~vtkPVblockMesh()
 
     // Hmm. pointNumberTextActors are not getting removed
     //
-    forAll(pointNumberTextActorsPtrs_, pointI)
+    forAll(pointNumberTextActorsPtrs_, pointi)
     {
-        pointNumberTextActorsPtrs_[pointI]->Delete();
+        pointNumberTextActorsPtrs_[pointi]->Delete();
     }
     pointNumberTextActorsPtrs_.clear();
 
@@ -269,7 +275,7 @@ void Foam::vtkPVblockMesh::updateInfo()
     if (debug)
     {
         Info<< "<beg> Foam::vtkPVblockMesh::updateInfo"
-            << " [meshPtr=" << (meshPtr_ ? "set" : "NULL") << "] " << endl;
+            << " [meshPtr=" << (meshPtr_ ? "set" : "nullptr") << "] " << endl;
     }
 
     resetCounters();
@@ -352,7 +358,9 @@ void Foam::vtkPVblockMesh::updateFoamMesh()
             dictPath = dbPtr_().constant()/polyMesh::meshSubDir/dictName;
         }
 
-        IOdictionary meshDict
+        // Store dictionary since is used as database inside blockMesh class
+        // for names of vertices and blocks
+        IOdictionary* meshDictPtr = new IOdictionary
         (
             IOobject
             (
@@ -360,11 +368,12 @@ void Foam::vtkPVblockMesh::updateFoamMesh()
                 dbPtr_(),
                 IOobject::MUST_READ_IF_MODIFIED,
                 IOobject::NO_WRITE,
-                false
+                true
             )
         );
+        meshDictPtr->store();
 
-        meshPtr_ = new blockMesh(meshDict, meshRegion_);
+        meshPtr_ = new blockMesh(*meshDictPtr, meshRegion_);
     }
 
 
@@ -420,24 +429,31 @@ void Foam::vtkPVblockMesh::renderPointNumbers
 {
     // always remove old actors first
 
-    forAll(pointNumberTextActorsPtrs_, pointI)
+    forAll(pointNumberTextActorsPtrs_, pointi)
     {
-        renderer->RemoveViewProp(pointNumberTextActorsPtrs_[pointI]);
-        pointNumberTextActorsPtrs_[pointI]->Delete();
+        renderer->RemoveViewProp(pointNumberTextActorsPtrs_[pointi]);
+        pointNumberTextActorsPtrs_[pointi]->Delete();
     }
     pointNumberTextActorsPtrs_.clear();
 
     if (show && meshPtr_)
     {
-        const pointField& cornerPts = meshPtr_->blockPointField();
-        const scalar scaleFactor = meshPtr_->scaleFactor();
+        const blockMesh& blkMesh = *meshPtr_;
+        const pointField& cornerPts = blkMesh.vertices();
+        const scalar scaleFactor = blkMesh.scaleFactor();
 
         pointNumberTextActorsPtrs_.setSize(cornerPts.size());
-        forAll(cornerPts, pointI)
+        forAll(cornerPts, pointi)
         {
             vtkTextActor* txt = vtkTextActor::New();
 
-            txt->SetInput(Foam::name(pointI).c_str());
+            // Display either pointi as a number or with its name
+            // (looked up from blockMeshDict)
+            {
+                OStringStream os;
+                blockVertex::write(os, pointi, blkMesh.meshDict());
+                txt->SetInput(os.str().c_str());
+            }
 
             // Set text properties
             vtkTextProperty* tprop = txt->GetTextProperty();
@@ -454,9 +470,9 @@ void Foam::vtkPVblockMesh::renderPointNumbers
 
             txt->GetPositionCoordinate()->SetValue
             (
-                cornerPts[pointI].x()*scaleFactor,
-                cornerPts[pointI].y()*scaleFactor,
-                cornerPts[pointI].z()*scaleFactor
+                cornerPts[pointi].x()*scaleFactor,
+                cornerPts[pointi].y()*scaleFactor,
+                cornerPts[pointi].z()*scaleFactor
             );
 
             // Add text to each renderer
@@ -464,7 +480,7 @@ void Foam::vtkPVblockMesh::renderPointNumbers
 
             // Maintain a list of text labels added so that they can be
             // removed later
-            pointNumberTextActorsPtrs_[pointI] = txt;
+            pointNumberTextActorsPtrs_[pointi] = txt;
         }
     }
 }

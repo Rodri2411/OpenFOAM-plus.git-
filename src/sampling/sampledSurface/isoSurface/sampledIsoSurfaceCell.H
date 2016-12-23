@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -38,7 +38,8 @@ SourceFiles
 #define sampledIsoSurfaceCell_H
 
 #include "sampledSurface.H"
-#include "triSurface.H"
+#include "MeshedSurface.H"
+#include "MeshedSurfacesFwd.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -52,8 +53,11 @@ namespace Foam
 class sampledIsoSurfaceCell
 :
     public sampledSurface,
-    public triSurface
+    public meshedSurface
 {
+    // Private typedefs for convenience
+    typedef meshedSurface MeshStorage;
+
     // Private data
 
         //- Field to get isoSurface of
@@ -73,9 +77,6 @@ class sampledIsoSurfaceCell
 
         //- If restricted to zones, name of this zone or a regular expression
         keyType zoneKey_;
-
-        //- Triangles converted to faceList
-        mutable autoPtr<faceList> facesPtr_;
 
 
         // Recreated for every isoSurface
@@ -145,24 +146,37 @@ public:
         //- Points of surface
         virtual const pointField& points() const
         {
-            return triSurface::points();
+            return MeshStorage::points();
         }
 
         //- Faces of surface
         virtual const faceList& faces() const
         {
-            if (facesPtr_.empty())
-            {
-                const triSurface& s = *this;
+            return MeshStorage::surfFaces();
+        }
 
-                facesPtr_.reset(new faceList(s.size()));
+        //- Const access to per-face zone/region information
+        virtual const labelList& zoneIds() const
+        {
+            return Foam::emptyLabelList;
+        }
 
-                forAll(s, i)
-                {
-                    facesPtr_()[i] = s[i].triFaceFace();
-                }
-            }
-            return facesPtr_;
+        //- Face area magnitudes
+        virtual const vectorField& Sf() const
+        {
+            return MeshStorage::Sf();
+        }
+
+        //- Face area magnitudes
+        virtual const scalarField& magSf() const
+        {
+            return MeshStorage::magSf();
+        }
+
+        //- Face centres
+        virtual const vectorField& Cf() const
+        {
+            return MeshStorage::Cf();
         }
 
 

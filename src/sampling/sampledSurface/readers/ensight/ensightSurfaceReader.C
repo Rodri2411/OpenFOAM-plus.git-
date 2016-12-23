@@ -34,7 +34,7 @@ namespace Foam
 }
 
 
-void Foam::ensightSurfaceReader::skip(const label n, IFstream& is) const
+void Foam::ensightSurfaceReader::skip(const label n, Istream& is) const
 {
     label i = 0;
     token t;
@@ -55,6 +55,40 @@ void Foam::ensightSurfaceReader::skip(const label n, IFstream& is) const
             << "Requested to skip " << n << "tokens, but stream exited after "
             << i << " tokens. Last token read: " << t
             << endl;
+    }
+}
+
+
+void Foam::ensightSurfaceReader::readLine(IFstream& is, string& buffer) const
+{
+    buffer = "";
+    while (is.good() && buffer == "")
+    {
+        is.getLine(buffer);
+    }
+}
+
+
+void Foam::ensightSurfaceReader::debugSection
+(
+    const word& expected,
+    IFstream& is
+) const
+{
+    string actual = "";
+    readLine(is, actual);
+
+    if (expected != actual)
+    {
+        FatalIOErrorInFunction(is)
+            << "Expected section header '" << expected
+            << "' but read the word '" << actual << "'"
+            << exit(FatalIOError);
+    }
+
+    if (debug)
+    {
+        Info<< "Read section header: " << expected << endl;
     }
 }
 
@@ -101,29 +135,6 @@ void Foam::ensightSurfaceReader::readGeometryHeader(ensightReadFile& is) const
 }
 
 
-void Foam::ensightSurfaceReader::debugSection
-(
-    const word& expected,
-    IFstream& is
-) const
-{
-    word actual(is);
-
-    if (expected != actual)
-    {
-        FatalIOErrorInFunction(is)
-            << "Expected section header '" << expected
-            << "' but read the word '" << actual << "'"
-            << exit(FatalIOError);
-    }
-
-    if (debug)
-    {
-        Info<< "Read section header: " << expected << endl;
-    }
-}
-
-
 void Foam::ensightSurfaceReader::readCase(IFstream& is)
 {
     if (debug)
@@ -141,31 +152,54 @@ void Foam::ensightSurfaceReader::readCase(IFstream& is)
     string buffer;
 
     // Read the file
+
     debugSection("FORMAT", is);
-    skip(3, is); // type: ensight gold
+    readLine(is, buffer);  // type: ensight gold
 
     debugSection("GEOMETRY", is);
-    readSkip(is, 2, meshFileName_);
+    readLine(is, buffer);
+    readFromLine(2, buffer, meshFileName_); // model: 1 xxx.0000.mesh
 
     debugSection("VARIABLE", is);
 
+    // Read the field description
     DynamicList<word> fieldNames(10);
-    DynamicList<word> fieldFileNames(10);
+    DynamicList<string> fieldFileNames(10);
     word fieldName;
-    word fieldFileName;
+    string fieldFileName;
     while (is.good())
     {
-        word primitiveType(is); // scalar, vector
+        readLine(is, buffer);
 
-        if (primitiveType == "TIME")
+        if (buffer == "TIME")
         {
             break;
         }
 
-        readSkip(is, 3, fieldName); // p, U etc
+        IStringStream iss(buffer);
+
+        // Read the field name, e.g. p U etc
+        readFromLine(4, iss, fieldName);
         fieldNames.append(fieldName);
 
-        is >> fieldFileName; // surfaceName.****.fieldName
+        // Field file name may contain /'s e.g.
+        //   surfaceName.****.fieldName
+        // This is not parser friendly - simply take remainder of buffer
+        label iPos = iss.stdStream().tellg();
+        fieldFileName = buffer(iPos, buffer.size() - iPos);
+        size_t p0  = fieldFileName.find_first_not_of(' ');
+        if (p0 == string::npos)
+        {
+            WarningInFunction
+                << "Error reading field file name. "
+                << "Current buffer: " << buffer
+                << endl;
+        }
+        else
+        {
+            size_t p1  = fieldFileName.find_last_not_of(' ');
+            fieldFileName = fieldFileName.substr(p0, p1 - p0 + 1);
+        }
         fieldFileNames.append(fieldFileName);
     }
     fieldNames_.transfer(fieldNames);
@@ -178,10 +212,14 @@ void Foam::ensightSurfaceReader::readCase(IFstream& is)
     }
 
     // Start reading time information
-    skip(3, is); // time set: 1
-    readSkip(is, 3, nTimeSteps_);
-    readSkip(is, 3, timeStartIndex_);
-    readSkip(is, 2, timeIncrement_);
+    readLine(is, buffer);                       // time set: <int>
+
+    readLine(is, buffer);
+    readFromLine(3, buffer, nTimeSteps_);       // number of steps: <int>
+    readLine(is, buffer);
+    readFromLine(3, buffer, timeStartIndex_);   // filename start number: <int>
+    readLine(is, buffer);
+    readFromLine(2, buffer, timeIncrement_);    // filename increment: <int>
 
     if (debug)
     {
@@ -191,7 +229,7 @@ void Foam::ensightSurfaceReader::readCase(IFstream& is)
     }
 
     // Read the time values
-    skip(2, is);
+    readLine(is, buffer); // time values:
     timeValues_.setSize(nTimeSteps_);
     for (label i = 0; i < nTimeSteps_; i++)
     {
@@ -219,7 +257,7 @@ Foam::ensightSurfaceReader::ensightSurfaceReader(const fileName& fName)
     timeStartIndex_(0),
     timeIncrement_(1),
     timeValues_(),
-    surfPtr_(NULL)
+    surfPtr_(nullptr)
 {
     IFstream is(fName);
     readCase(is);
@@ -295,7 +333,7 @@ const Foam::meshedSurface& Foam::ensightSurfaceReader::geometry()
                 Info<< "binary" << endl;
             }
         }
-            
+
 
         ensightReadFile is(baseDir_/meshFileName_, streamFormat_);
 
@@ -305,7 +343,7 @@ const Foam::meshedSurface& Foam::ensightSurfaceReader::geometry()
         }
 
         readGeometryHeader(is);
-        
+
         label nPoints;
         is.read(nPoints);
 
@@ -331,7 +369,7 @@ const Foam::meshedSurface& Foam::ensightSurfaceReader::geometry()
 
         // Read faces - may be a mix of tris, quads and polys
         DynamicList<face> faces(ceil(nPoints/3));
-        DynamicList<Tuple2<string, label> > schema(faces.size());
+        DynamicList<Tuple2<string, label>> schema(faces.size());
         string faceType = "";
         label nFace = 0;
         while (is.good()) // (is.peek() != EOF)
@@ -456,7 +494,7 @@ Foam::wordList Foam::ensightSurfaceReader::fieldNames
 }
 
 
-Foam::tmp<Foam::Field<Foam::scalar> > Foam::ensightSurfaceReader::field
+Foam::tmp<Foam::Field<Foam::scalar>> Foam::ensightSurfaceReader::field
 (
     const label timeIndex,
     const label fieldIndex,
@@ -467,7 +505,7 @@ Foam::tmp<Foam::Field<Foam::scalar> > Foam::ensightSurfaceReader::field
 }
 
 
-Foam::tmp<Foam::Field<Foam::vector> > Foam::ensightSurfaceReader::field
+Foam::tmp<Foam::Field<Foam::vector>> Foam::ensightSurfaceReader::field
 (
     const label timeIndex,
     const label fieldIndex,
@@ -478,7 +516,7 @@ Foam::tmp<Foam::Field<Foam::vector> > Foam::ensightSurfaceReader::field
 }
 
 
-Foam::tmp<Foam::Field<Foam::sphericalTensor> >
+Foam::tmp<Foam::Field<Foam::sphericalTensor>>
 Foam::ensightSurfaceReader::field
 (
     const label timeIndex,
@@ -490,7 +528,7 @@ Foam::ensightSurfaceReader::field
 }
 
 
-Foam::tmp<Foam::Field<Foam::symmTensor> > Foam::ensightSurfaceReader::field
+Foam::tmp<Foam::Field<Foam::symmTensor>> Foam::ensightSurfaceReader::field
 (
     const label timeIndex,
     const label fieldIndex,
@@ -501,7 +539,7 @@ Foam::tmp<Foam::Field<Foam::symmTensor> > Foam::ensightSurfaceReader::field
 }
 
 
-Foam::tmp<Foam::Field<Foam::tensor> > Foam::ensightSurfaceReader::field
+Foam::tmp<Foam::Field<Foam::tensor>> Foam::ensightSurfaceReader::field
 (
     const label timeIndex,
     const label fieldIndex,

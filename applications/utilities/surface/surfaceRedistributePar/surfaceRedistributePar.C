@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -46,6 +46,7 @@ Note
 #include "distributedTriSurfaceMesh.H"
 #include "mapDistribute.H"
 #include "localIOdictionary.H"
+#include "decompositionModel.H"
 
 using namespace Foam;
 
@@ -76,11 +77,11 @@ void writeProcStats
     Pstream::gatherList(nFaces);
     Pstream::scatterList(nFaces);
 
-    forAll(surfBb, procI)
+    forAll(surfBb, proci)
     {
-        Info<< "processor" << procI << nl;
+        Info<< "processor" << proci << nl;
 
-        const List<treeBoundBox>& bbs = meshBb[procI];
+        const List<treeBoundBox>& bbs = meshBb[proci];
         if (bbs.size())
         {
             Info<< "\tMesh bounds          : " << bbs[0] << nl;
@@ -89,9 +90,9 @@ void writeProcStats
                 Info<< "\t                       " << bbs[i]<< nl;
             }
         }
-        Info<< "\tSurface bounding box : " << surfBb[procI] << nl
-            << "\tTriangles            : " << nFaces[procI] << nl
-            << "\tVertices             : " << nPoints[procI]
+        Info<< "\tSurface bounding box : " << surfBb[proci] << nl
+            << "\tTriangles            : " << nFaces[proci] << nl
+            << "\tVertices             : " << nPoints[proci]
             << endl;
     }
     Info<< endl;
@@ -103,7 +104,8 @@ int main(int argc, char *argv[])
 {
     argList::addNote
     (
-        "redistribute a triSurface"
+        "Redistribute a triSurface. "
+        "The specified surface must be located in the constant/triSurface directory"
     );
 
     argList::validArgs.append("triSurfaceMesh");
@@ -127,7 +129,7 @@ int main(int argc, char *argv[])
         << "Using distribution method "
         << distTypeName << nl << endl;
 
-    const bool keepNonMapped = args.options().found("keepNonMapped");
+    const bool keepNonMapped = args.optionFound("keepNonMapped");
 
     if (keepNonMapped)
     {
@@ -150,6 +152,40 @@ int main(int argc, char *argv[])
 
 
     Random rndGen(653213);
+
+    // For independent decomposition, ensure that distributedTriSurfaceMesh
+    // can find the alternative decomposeParDict specified via the
+    // -decomposeParDict option.
+    if (distType == distributedTriSurfaceMesh::INDEPENDENT)
+    {
+        fileName decompDictFile;
+        args.optionReadIfPresent("decomposeParDict", decompDictFile);
+
+        // A demand-driven decompositionMethod can have issues finding
+        // an alternative decomposeParDict location.
+
+        IOdictionary* dictPtr = new IOdictionary
+        (
+            decompositionModel::selectIO
+            (
+                IOobject
+                (
+                    "decomposeParDict",
+                    runTime.system(),
+                    runTime,
+                    IOobject::MUST_READ,
+                    IOobject::NO_WRITE
+                ),
+                decompDictFile
+            )
+        );
+
+        // Store it on the object registry, but to be found it must also
+        // have the expected "decomposeParDict" name.
+
+        dictPtr->rename("decomposeParDict");
+        runTime.store(dictPtr);
+    }
 
     // Determine mesh bounding boxes:
     List<List<treeBoundBox>> meshBb(Pstream::nProcs());

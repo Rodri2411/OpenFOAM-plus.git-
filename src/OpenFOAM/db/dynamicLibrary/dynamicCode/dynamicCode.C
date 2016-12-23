@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -29,6 +29,7 @@ License
 #include "IFstream.H"
 #include "OFstream.H"
 #include "OSspecific.H"
+#include "etcFiles.H"
 #include "dictionary.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
@@ -92,7 +93,7 @@ void Foam::dynamicCode::checkSecurity
 Foam::word Foam::dynamicCode::libraryBaseName(const fileName& libPath)
 {
     word libName(libPath.name(true));
-    libName.erase(0, 3);    // remove leading 'lib' from name
+    libName.erase(0, 3);    // Remove leading 'lib' from name
     return libName;
 }
 
@@ -127,8 +128,8 @@ void Foam::dynamicCode::copyAndFilter
     {
         is.getLine(line);
 
-        // expand according to mapping
-        // expanding according to env variables might cause too many
+        // Expand according to mapping.
+        // Expanding according to env variables might cause too many
         // surprises
         stringOps::inplaceExpand(line, mapping);
         os.writeQuoted(line, false) << nl;
@@ -144,7 +145,7 @@ bool Foam::dynamicCode::resolveTemplates
     DynamicList<fileName>& badFiles
 )
 {
-    // try to get template from FOAM_CODESTREAM_TEMPLATES
+    // Try to get template from FOAM_CODESTREAM_TEMPLATES
     const fileName templateDir(Foam::getEnv(codeTemplateEnvName));
 
     bool allOkay = true;
@@ -162,7 +163,7 @@ bool Foam::dynamicCode::resolveTemplates
             }
         }
 
-        // not found - fallback to ~OpenFOAM expansion
+        // Not found - fallback to ~OpenFOAM expansion
         if (file.empty())
         {
             file = findEtcFile(codeTemplateDirName/templateName);
@@ -329,7 +330,7 @@ void Foam::dynamicCode::clear()
     filterVars_.set("typeName", codeName_);
     filterVars_.set("SHA1sum", SHA1Digest().str());
 
-    // provide default Make/options
+    // Provide default Make/options
     makeOptions_ =
         "EXE_INC = -g\n"
         "\n\nLIB_LIBS = ";
@@ -408,7 +409,7 @@ bool Foam::dynamicCode::copyOrCreateFiles(const bool verbose) const
     DynamicList<fileName> resolvedFiles(nFiles);
     DynamicList<fileName> badFiles(nFiles);
 
-    // resolve template, or add to bad-files
+    // Resolve template, or add to bad-files
     resolveTemplates(compileFiles_, resolvedFiles, badFiles);
     resolveTemplates(copyFiles_, resolvedFiles, badFiles);
 
@@ -493,10 +494,17 @@ bool Foam::dynamicCode::copyOrCreateFiles(const bool verbose) const
 
 bool Foam::dynamicCode::wmakeLibso() const
 {
-    const Foam::string wmakeCmd("wmake -s libso " + this->codePath());
-    Info<< "Invoking " << wmakeCmd << endl;
+    DynamicList<string> cmd(4);
+    cmd.append("wmake");
+    cmd.append("-s");
+    cmd.append("libso");
+    cmd.append(this->codePath());
 
-    if (Foam::system(wmakeCmd))
+    // NOTE: could also resolve wmake command explicitly
+    //   cmd[0] = stringOps::expand("$WM_PROJECT_DIR/wmake/wmake");
+
+    Info<< "Invoking wmake libso " << this->codePath().c_str() << endl;
+    if (Foam::system(cmd))
     {
         return false;
     }

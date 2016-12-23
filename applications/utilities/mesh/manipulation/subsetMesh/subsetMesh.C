@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -41,11 +41,15 @@ Description
 
 #include "fvMeshSubset.H"
 #include "argList.H"
-#include "cellSet.H"
 #include "IOobjectList.H"
 #include "volFields.H"
 #include "topoDistanceData.H"
 #include "FaceCellWave.H"
+#include "cellSet.H"
+#include "faceSet.H"
+#include "pointSet.H"
+#include "ReadFields.H"
+#include "processorMeshes.H"
 
 using namespace Foam;
 
@@ -258,6 +262,59 @@ void subsetDimensionedFields
         );
 
         subFields.set(i, subsetter.interpolate(fld));
+    }
+}
+
+
+template<class TopoSet>
+void subsetTopoSets
+(
+    const fvMesh& mesh,
+    const IOobjectList& objectsList,
+    const labelList& map,
+    const fvMesh& subMesh,
+    PtrList<TopoSet>& subSets
+)
+{
+    // Read original sets
+    PtrList<TopoSet> sets;
+    ReadFields<TopoSet>(objectsList, sets);
+
+    subSets.setSize(sets.size());
+    forAll(sets, i)
+    {
+        TopoSet& set = sets[i];
+
+        Info<< "Subsetting " << set.type() << " " << set.name() << endl;
+
+        // Map the data
+        PackedBoolList isSet(set.maxSize(mesh));
+        forAllConstIter(labelHashSet, set, iter)
+        {
+            isSet[iter.key()] = true;
+        }
+        label nSet = 0;
+        forAll(map, i)
+        {
+            if (isSet[map[i]])
+            {
+                nSet++;
+            }
+        }
+
+        subSets.set
+        (
+            i,
+            new TopoSet(subMesh, set.name(), nSet, IOobject::AUTO_WRITE)
+        );
+        TopoSet& subSet = subSets[i];
+        forAll(map, i)
+        {
+            if (isSet[map[i]])
+            {
+                subSet.insert(i);
+            }
+        }
     }
 }
 
@@ -523,17 +580,17 @@ int main(int argc, char *argv[])
     // Read dimensioned fields and subset
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    typedef volScalarField::DimensionedInternalField dimScalType;
+    typedef volScalarField::Internal dimScalType;
     wordList scalarDimNames(objects.names(dimScalType::typeName));
     PtrList<dimScalType> scalarDimFlds(scalarDimNames.size());
     subsetDimensionedFields(subsetter, scalarDimNames, scalarDimFlds);
 
-    typedef volVectorField::DimensionedInternalField dimVecType;
+    typedef volVectorField::Internal dimVecType;
     wordList vectorDimNames(objects.names(dimVecType::typeName));
     PtrList<dimVecType> vectorDimFlds(vectorDimNames.size());
     subsetDimensionedFields(subsetter, vectorDimNames, vectorDimFlds);
 
-    typedef volSphericalTensorField::DimensionedInternalField dimSphereType;
+    typedef volSphericalTensorField::Internal dimSphereType;
     wordList sphericalTensorDimNames(objects.names(dimSphereType::typeName));
     PtrList<dimSphereType> sphericalTensorDimFlds
     (
@@ -546,15 +603,52 @@ int main(int argc, char *argv[])
         sphericalTensorDimFlds
     );
 
-    typedef volSymmTensorField::DimensionedInternalField dimSymmTensorType;
+    typedef volSymmTensorField::Internal dimSymmTensorType;
     wordList symmTensorDimNames(objects.names(dimSymmTensorType::typeName));
     PtrList<dimSymmTensorType> symmTensorDimFlds(symmTensorDimNames.size());
     subsetDimensionedFields(subsetter, symmTensorDimNames, symmTensorDimFlds);
 
-    typedef volTensorField::DimensionedInternalField dimTensorType;
+    typedef volTensorField::Internal dimTensorType;
     wordList tensorDimNames(objects.names(dimTensorType::typeName));
     PtrList<dimTensorType> tensorDimFlds(tensorDimNames.size());
     subsetDimensionedFields(subsetter, tensorDimNames, tensorDimFlds);
+
+
+    // topoSets and subset
+    // ~~~~~~~~~~~~~~~~~~~
+
+    PtrList<cellSet> cellSets;
+    PtrList<faceSet> faceSets;
+    PtrList<pointSet> pointSets;
+    {
+        IOobjectList objects(mesh, mesh.facesInstance(), "polyMesh/sets");
+        objects.remove(currentSet);
+        subsetTopoSets
+        (
+            mesh,
+            objects,
+            subsetter.cellMap(),
+            subsetter.subMesh(),
+            cellSets
+        );
+        subsetTopoSets
+        (
+            mesh,
+            objects,
+            subsetter.faceMap(),
+            subsetter.subMesh(),
+            faceSets
+        );
+        subsetTopoSets
+        (
+            mesh,
+            objects,
+            subsetter.pointMap(),
+            subsetter.subMesh(),
+            pointSets
+        );
+    }
+
 
 
     // Write mesh and fields to new time
@@ -564,15 +658,22 @@ int main(int argc, char *argv[])
     {
         runTime.setTime(instant(fieldsInstance), 0);
         subsetter.subMesh().setInstance(meshInstance);
+        topoSet::setInstance(meshInstance, cellSets);
+        topoSet::setInstance(meshInstance, faceSets);
+        topoSet::setInstance(meshInstance, pointSets);
     }
     else
     {
         runTime++;
+        subsetter.subMesh().setInstance(runTime.timeName());
     }
+
+
 
     Info<< "Writing subsetted mesh and fields to time " << runTime.timeName()
         << endl;
     subsetter.subMesh().write();
+    processorMeshes::removeFiles(subsetter.subMesh());
 
 
     // Subsetting adds 'subset' prefix. Rename field to be like original.

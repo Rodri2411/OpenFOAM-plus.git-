@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -30,11 +30,33 @@ Group
 Description
     Checks geometric and topological quality of a surface.
 
+Usage
+    \b surfaceCheck [OPTION] surfaceFile
+
+    Options:
+      - \par -checkSelfIntersection
+        Check for self-intersection.
+
+      - \par -splitNonManifold
+        Split surface along non-manifold edges.
+
+      - \par -verbose
+        Extra verbosity.
+
+      - \par -blockMesh
+        Write vertices/blocks for tight-fitting 1 cell blockMeshDict.
+
+      - \par -outputThreshold \<num files\>
+        Upper limit on the number of files written.
+        Prevent surfaces with many disconnected parts from writing many files.
+        The default is 10. A value of 0 suppresses file writing.
+
 \*---------------------------------------------------------------------------*/
 
 #include "triangle.H"
 #include "triSurface.H"
 #include "triSurfaceSearch.H"
+#include "triSurfaceTools.H"
 #include "argList.H"
 #include "OFstream.H"
 #include "OBJstream.H"
@@ -43,79 +65,6 @@ Description
 #include "vtkSurfaceWriter.H"
 
 using namespace Foam;
-
-// Does face use valid vertices?
-bool validTri
-(
-    const bool verbose,
-    const triSurface& surf,
-    const label faceI
-)
-{
-    // Simple check on indices ok.
-
-    const labelledTri& f = surf[faceI];
-
-    forAll(f, fp)
-    {
-        if (f[fp] < 0 || f[fp] >= surf.points().size())
-        {
-            WarningInFunction
-                << "triangle " << faceI << " vertices " << f
-                << " uses point indices outside point range 0.."
-                << surf.points().size()-1 << endl;
-            return false;
-        }
-    }
-
-    if ((f[0] == f[1]) || (f[0] == f[2]) || (f[1] == f[2]))
-    {
-        WarningInFunction
-            << "triangle " << faceI
-            << " uses non-unique vertices " << f
-            << " coords:" << f.points(surf.points())
-            << endl;
-        return false;
-    }
-
-    // duplicate triangle check
-
-    const labelList& fFaces = surf.faceFaces()[faceI];
-
-    // Check if faceNeighbours use same points as this face.
-    // Note: discards normal information - sides of baffle are merged.
-    forAll(fFaces, i)
-    {
-        label nbrFaceI = fFaces[i];
-
-        if (nbrFaceI <= faceI)
-        {
-            // lower numbered faces already checked
-            continue;
-        }
-
-        const labelledTri& nbrF = surf[nbrFaceI];
-
-        if
-        (
-            ((f[0] == nbrF[0]) || (f[0] == nbrF[1]) || (f[0] == nbrF[2]))
-         && ((f[1] == nbrF[0]) || (f[1] == nbrF[1]) || (f[1] == nbrF[2]))
-         && ((f[2] == nbrF[0]) || (f[2] == nbrF[1]) || (f[2] == nbrF[2]))
-        )
-        {
-            WarningInFunction
-                << "triangle " << faceI << " vertices " << f
-                << " has the same vertices as triangle " << nbrFaceI
-                << " vertices " << nbrF
-                << " coords:" << f.points(surf.points())
-                << endl;
-
-            return false;
-        }
-    }
-    return true;
-}
-
 
 labelList countBins
 (
@@ -208,8 +157,11 @@ void writeZoning
     (
         surfFilePath,
         surfFileNameBase,
-        surf.points(),
-        faces,
+        meshedSurfRef
+        (
+            surf.points(),
+            faces
+        ),
         fieldName,
         scalarFaceZone,
         false               // face based data
@@ -230,11 +182,11 @@ void writeParts
     {
         boolList includeMap(surf.size(), false);
 
-        forAll(faceZone, faceI)
+        forAll(faceZone, facei)
         {
-            if (faceZone[faceI] == zone)
+            if (faceZone[facei] == zone)
             {
-                includeMap[faceI] = true;
+                includeMap[facei] = true;
             }
         }
 
@@ -261,6 +213,63 @@ void writeParts
             << " to " << subName << endl;
 
         subSurf.write(subName);
+    }
+}
+
+
+void syncEdges(const triSurface& p, labelHashSet& markedEdges)
+{
+    // See comment below about having duplicate edges
+
+    const edgeList& edges = p.edges();
+    HashSet<edge, Hash<edge>> edgeSet(2*markedEdges.size());
+
+    forAllConstIter(labelHashSet, markedEdges, iter)
+    {
+        edgeSet.insert(edges[iter.key()]);
+    }
+
+    forAll(edges, edgei)
+    {
+        if (edgeSet.found(edges[edgei]))
+        {
+            markedEdges.insert(edgei);
+        }
+    }
+}
+
+
+void syncEdges(const triSurface& p, boolList& isMarkedEdge)
+{
+    // See comment below about having duplicate edges
+
+    const edgeList& edges = p.edges();
+
+    label n = 0;
+    forAll(isMarkedEdge, edgei)
+    {
+        if (isMarkedEdge[edgei])
+        {
+            n++;
+        }
+    }
+
+    HashSet<edge, Hash<edge>> edgeSet(2*n);
+
+    forAll(isMarkedEdge, edgei)
+    {
+        if (isMarkedEdge[edgei])
+        {
+            edgeSet.insert(edges[edgei]);
+        }
+    }
+
+    forAll(edges, edgei)
+    {
+        if (edgeSet.found(edges[edgei]))
+        {
+            isMarkedEdge[edgei] = true;
+        }
     }
 }
 
@@ -292,16 +301,23 @@ int main(int argc, char *argv[])
         "blockMesh",
         "write vertices/blocks for blockMeshDict"
     );
+    argList::addOption
+    (
+        "outputThreshold",
+        "number",
+        "upper limit on the number of files written."
+        " Default is 10, using 0 suppresses file writing."
+    );
 
     argList args(argc, argv);
 
     const fileName surfFileName = args[1];
     const bool checkSelfIntersect = args.optionFound("checkSelfIntersection");
-    const bool verbose = args.optionFound("verbose");
     const bool splitNonManifold = args.optionFound("splitNonManifold");
+    const label outputThreshold =
+        args.optionLookupOrDefault("outputThreshold", 10);
 
     Info<< "Reading surface from " << surfFileName << " ..." << nl << endl;
-
 
     // Read
     // ~~~~
@@ -335,9 +351,9 @@ int main(int argc, char *argv[])
         Info<< "// blockMeshDict info" << nl << nl;
 
         Info<< "vertices\n(" << nl;
-        forAll(cornerPts, ptI)
+        forAll(cornerPts, pti)
         {
-            Info<< "    " << cornerPts[ptI] << nl;
+            Info<< "    " << cornerPts[pti] << nl;
         }
 
         // number of divisions needs adjustment later
@@ -360,14 +376,14 @@ int main(int argc, char *argv[])
     {
         labelList regionSize(surf.patches().size(), 0);
 
-        forAll(surf, faceI)
+        forAll(surf, facei)
         {
-            label region = surf[faceI].region();
+            label region = surf[facei].region();
 
             if (region < 0 || region >= regionSize.size())
             {
                 WarningInFunction
-                    << "Triangle " << faceI << " vertices " << surf[faceI]
+                    << "Triangle " << facei << " vertices " << surf[facei]
                     << " has region " << region << " which is outside the range"
                     << " of regions 0.." << surf.patches().size()-1
                     << endl;
@@ -380,10 +396,10 @@ int main(int argc, char *argv[])
 
         Info<< "Region\tSize" << nl
             << "------\t----" << nl;
-        forAll(surf.patches(), patchI)
+        forAll(surf.patches(), patchi)
         {
-            Info<< surf.patches()[patchI].name() << '\t'
-                << regionSize[patchI] << nl;
+            Info<< surf.patches()[patchi].name() << '\t'
+                << regionSize[patchi] << nl;
         }
         Info<< nl << endl;
     }
@@ -395,11 +411,11 @@ int main(int argc, char *argv[])
     {
         DynamicList<label> illegalFaces(surf.size()/100 + 1);
 
-        forAll(surf, faceI)
+        forAll(surf, facei)
         {
-            if (!validTri(verbose, surf, faceI))
+            if (!triSurfaceTools::validTri(surf, facei))
             {
-                illegalFaces.append(faceI);
+                illegalFaces.append(facei);
             }
         }
 
@@ -408,10 +424,14 @@ int main(int argc, char *argv[])
             Info<< "Surface has " << illegalFaces.size()
                 << " illegal triangles." << endl;
 
-            OFstream str("illegalFaces");
-            Info<< "Dumping conflicting face labels to " << str.name() << endl
-                << "Paste this into the input for surfaceSubset" << endl;
-            str << illegalFaces;
+            if (outputThreshold > 0)
+            {
+                OFstream str("illegalFaces");
+                Info<< "Dumping conflicting face labels to " << str.name()
+                    << endl
+                    << "Paste this into the input for surfaceSubset" << endl;
+                str << illegalFaces;
+            }
         }
         else
         {
@@ -427,19 +447,19 @@ int main(int argc, char *argv[])
 
     {
         scalarField triQ(surf.size(), 0);
-        forAll(surf, faceI)
+        forAll(surf, facei)
         {
-            const labelledTri& f = surf[faceI];
+            const labelledTri& f = surf[facei];
 
             if (f[0] == f[1] || f[0] == f[2] || f[1] == f[2])
             {
                 //WarningInFunction
-                //    << "Illegal triangle " << faceI << " vertices " << f
+                //    << "Illegal triangle " << facei << " vertices " << f
                 //    << " coords " << f.points(surf.points()) << endl;
             }
             else
             {
-                triQ[faceI] = triPointRef
+                triQ[facei] = triPointRef
                 (
                     surf.points()[f[0]],
                     surf.points()[f[1]],
@@ -459,10 +479,10 @@ int main(int argc, char *argv[])
 
         scalar dist = (1.0 - 0.0)/20.0;
         scalar min = 0;
-        forAll(binCount, binI)
+        forAll(binCount, bini)
         {
             Info<< "    " << min << " .. " << min+dist << "  : "
-                << 1.0/surf.size() * binCount[binI]
+                << 1.0/surf.size() * binCount[bini]
                 << endl;
             min += dist;
         }
@@ -486,14 +506,15 @@ int main(int argc, char *argv[])
         }
 
         // Dump for subsetting
+        if (outputThreshold > 0)
         {
             DynamicList<label> problemFaces(surf.size()/100+1);
 
-            forAll(triQ, faceI)
+            forAll(triQ, facei)
             {
-                if (triQ[faceI] < 1e-11)
+                if (triQ[facei] < 1e-11)
                 {
-                    problemFaces.append(faceI);
+                    problemFaces.append(facei);
                 }
             }
 
@@ -520,23 +541,23 @@ int main(int argc, char *argv[])
 
         scalarField edgeMag(edges.size());
 
-        forAll(edges, edgeI)
+        forAll(edges, edgei)
         {
-            edgeMag[edgeI] = edges[edgeI].mag(localPoints);
+            edgeMag[edgei] = edges[edgei].mag(localPoints);
         }
 
-        label minEdgeI = findMin(edgeMag);
-        label maxEdgeI = findMax(edgeMag);
+        label minEdgei = findMin(edgeMag);
+        label maxEdgei = findMax(edgeMag);
 
-        const edge& minE = edges[minEdgeI];
-        const edge& maxE = edges[maxEdgeI];
+        const edge& minE = edges[minEdgei];
+        const edge& maxE = edges[maxEdgei];
 
 
         Info<< "Edges:" << nl
-            << "    min " << edgeMag[minEdgeI] << " for edge " << minEdgeI
+            << "    min " << edgeMag[minEdgei] << " for edge " << minEdgei
             << " points " << localPoints[minE[0]] << localPoints[minE[1]]
             << nl
-            << "    max " << edgeMag[maxEdgeI] << " for edge " << maxEdgeI
+            << "    max " << edgeMag[maxEdgei] << " for edge " << maxEdgei
             << " points " << localPoints[maxE[0]] << localPoints[maxE[1]]
             << nl
             << endl;
@@ -564,25 +585,25 @@ int main(int argc, char *argv[])
 
         for (label i = 1; i < sortedMag.size(); i++)
         {
-            label ptI = sortedMag.indices()[i];
+            label pti = sortedMag.indices()[i];
 
-            label prevPtI = sortedMag.indices()[i-1];
+            label prevPti = sortedMag.indices()[i-1];
 
-            if (mag(localPoints[ptI] - localPoints[prevPtI]) < smallDim)
+            if (mag(localPoints[pti] - localPoints[prevPti]) < smallDim)
             {
                 // Check if neighbours.
-                const labelList& pEdges = surf.pointEdges()[ptI];
+                const labelList& pEdges = surf.pointEdges()[pti];
 
-                label edgeI = -1;
+                label edgei = -1;
 
                 forAll(pEdges, i)
                 {
                     const edge& e = edges[pEdges[i]];
 
-                    if (e[0] == prevPtI || e[1] == prevPtI)
+                    if (e[0] == prevPti || e[1] == prevPti)
                     {
                         // point1 and point0 are connected through edge.
-                        edgeI = pEdges[i];
+                        edgei = pEdges[i];
 
                         break;
                     }
@@ -590,24 +611,24 @@ int main(int argc, char *argv[])
 
                 nClose++;
 
-                if (edgeI == -1)
+                if (edgei == -1)
                 {
                     Info<< "    close unconnected points "
-                        << ptI << ' ' << localPoints[ptI]
-                        << " and " << prevPtI << ' '
-                        << localPoints[prevPtI]
+                        << pti << ' ' << localPoints[pti]
+                        << " and " << prevPti << ' '
+                        << localPoints[prevPti]
                         << " distance:"
-                        << mag(localPoints[ptI] - localPoints[prevPtI])
+                        << mag(localPoints[pti] - localPoints[prevPti])
                         << endl;
                 }
                 else
                 {
                     Info<< "    small edge between points "
-                        << ptI << ' ' << localPoints[ptI]
-                        << " and " << prevPtI << ' '
-                        << localPoints[prevPtI]
+                        << pti << ' ' << localPoints[pti]
+                        << " and " << prevPti << ' '
+                        << localPoints[prevPti]
                         << " distance:"
-                        << mag(localPoints[ptI] - localPoints[prevPtI])
+                        << mag(localPoints[pti] - localPoints[prevPti])
                         << endl;
                 }
             }
@@ -627,9 +648,9 @@ int main(int argc, char *argv[])
     const labelListList& edgeFaces = surf.edgeFaces();
 
     label nSingleEdges = 0;
-    forAll(edgeFaces, edgeI)
+    forAll(edgeFaces, edgei)
     {
-        const labelList& myFaces = edgeFaces[edgeI];
+        const labelList& myFaces = edgeFaces[edgei];
 
         if (myFaces.size() == 1)
         {
@@ -640,15 +661,15 @@ int main(int argc, char *argv[])
     }
 
     label nMultEdges = 0;
-    forAll(edgeFaces, edgeI)
+    forAll(edgeFaces, edgei)
     {
-        const labelList& myFaces = edgeFaces[edgeI];
+        const labelList& myFaces = edgeFaces[edgei];
 
         if (myFaces.size() > 2)
         {
-            forAll(myFaces, myFaceI)
+            forAll(myFaces, myFacei)
             {
-                problemFaces.append(myFaces[myFaceI]);
+                problemFaces.append(myFaces[myFacei]);
             }
 
             nMultEdges++;
@@ -666,12 +687,15 @@ int main(int argc, char *argv[])
 
         Info<< "Conflicting face labels:" << problemFaces.size() << endl;
 
-        OFstream str("problemFaces");
+        if (outputThreshold > 0)
+        {
+            OFstream str("problemFaces");
 
-        Info<< "Dumping conflicting face labels to " << str.name() << endl
-            << "Paste this into the input for surfaceSubset" << endl;
+            Info<< "Dumping conflicting face labels to " << str.name() << endl
+                << "Paste this into the input for surfaceSubset" << endl;
 
-        str << problemFaces;
+            str << problemFaces;
+        }
     }
     else
     {
@@ -688,13 +712,14 @@ int main(int argc, char *argv[])
         boolList borderEdge(surf.nEdges(), false);
         if (splitNonManifold)
         {
-            forAll(edgeFaces, edgeI)
+            forAll(edgeFaces, edgei)
             {
-                if (edgeFaces[edgeI].size() > 2)
+                if (edgeFaces[edgei].size() > 2)
                 {
-                    borderEdge[edgeI] = true;
+                    borderEdge[edgei] = true;
                 }
             }
+            syncEdges(surf, borderEdge);
         }
 
         labelList faceZone;
@@ -702,15 +727,21 @@ int main(int argc, char *argv[])
 
         Info<< "Number of unconnected parts : " << numZones << endl;
 
-        if (numZones > 1)
+        if (numZones > 1 && outputThreshold > 0)
         {
             Info<< "Splitting surface into parts ..." << endl << endl;
 
             writeZoning(surf, faceZone, "zone", surfFilePath, surfFileNameBase);
+
+            if (numZones > outputThreshold)
+            {
+                Info<< "Limiting number of files to " << outputThreshold
+                    << endl;
+            }
             writeParts
             (
                 surf,
-                numZones,
+                min(outputThreshold, numZones),
                 faceZone,
                 surfFilePath,
                 surfFileNameBase
@@ -726,6 +757,17 @@ int main(int argc, char *argv[])
     labelHashSet borderEdge(surf.size()/1000);
     PatchTools::checkOrientation(surf, false, &borderEdge);
 
+    // Bit strange: if a triangle has two same vertices (illegal!) it will
+    // still have three distinct edges (two of which have the same vertices).
+    // In this case the faceEdges addressing is not symmetric, i.e. a
+    // neighbouring, valid, triangle will have correct addressing so 3 distinct
+    // edges so it will miss one of those two identical edges.
+    // - we don't want to fix this in PrimitivePatch since it is too specific
+    // - instead just make sure we mark all identical edges consistently
+    //   when we use them for marking.
+
+    syncEdges(surf, borderEdge);
+
     //
     // Colour all faces into zones using borderEdge
     //
@@ -739,15 +781,32 @@ int main(int argc, char *argv[])
     if (numNormalZones > 1)
     {
         Info<< "More than one normal orientation." << endl;
-        writeZoning(surf, normalZone, "normal", surfFilePath, surfFileNameBase);
-        writeParts
-        (
-            surf,
-            numNormalZones,
-            normalZone,
-            surfFilePath,
-            surfFileNameBase + "_normal"
-        );
+
+        if (outputThreshold > 0)
+        {
+            writeZoning
+            (
+                surf,
+                normalZone,
+                "normal",
+                surfFilePath,
+                surfFileNameBase
+            );
+
+            if (numNormalZones > outputThreshold)
+            {
+                Info<< "Limiting number of files to " << outputThreshold
+                    << endl;
+            }
+            writeParts
+            (
+                surf,
+                min(outputThreshold, numNormalZones),
+                normalZone,
+                surfFilePath,
+                surfFileNameBase + "_normal"
+            );
+        }
     }
     Info<< endl;
 
@@ -764,34 +823,88 @@ int main(int argc, char *argv[])
 
         const indexedOctree<treeDataTriSurface>& tree = querySurf.tree();
 
-        OBJstream intStream("selfInterPoints.obj");
+        autoPtr<OBJstream> intStreamPtr;
+        if (outputThreshold > 0)
+        {
+            intStreamPtr.reset(new OBJstream("selfInterPoints.obj"));
+        }
 
         label nInt = 0;
 
-        forAll(surf.edges(), edgeI)
+        forAll(surf.edges(), edgei)
         {
-            const edge& e = surf.edges()[edgeI];
+            const edge& e = surf.edges()[edgei];
+            const point& start = surf.points()[surf.meshPoints()[e[0]]];
+            const point& end = surf.points()[surf.meshPoints()[e[1]]];
 
-            pointIndexHit hitInfo
-            (
-                tree.findLine
-                (
-                    surf.points()[surf.meshPoints()[e[0]]],
-                    surf.points()[surf.meshPoints()[e[1]]],
-                    treeDataTriSurface::findSelfIntersectOp
-                    (
-                        tree,
-                        edgeI
-                    )
-                )
-            );
+            // Exclude hits of connected triangles
+            treeDataTriSurface::findSelfIntersectOp exclOp(tree, edgei);
+
+            pointIndexHit hitInfo(tree.findLineAny(start, end, exclOp));
 
             if (hitInfo.hit())
             {
-                intStream.write(hitInfo.hitPoint());
                 nInt++;
+
+                if (intStreamPtr.valid())
+                {
+                    intStreamPtr().write(hitInfo.hitPoint());
+                }
+
+                // Try and find from other side.
+                pointIndexHit hitInfo2(tree.findLineAny(end, start, exclOp));
+
+                if (hitInfo2.hit() && hitInfo.index() != hitInfo2.index())
+                {
+                    nInt++;
+
+                    if (intStreamPtr.valid())
+                    {
+                        intStreamPtr().write(hitInfo2.hitPoint());
+                    }
+                }
             }
         }
+
+        //// Check very near triangles
+        //{
+        //    const pointField& localPoints = surf.localPoints();
+        //
+        //    const boundBox bb(localPoints);
+        //    scalar smallDim = 1e-6 * bb.mag();
+        //    scalar smallDimSqr = Foam::sqr(smallDim);
+        //
+        //    const pointField& faceCentres = surf.faceCentres();
+        //    forAll(faceCentres, faceI)
+        //    {
+        //        const point& fc = faceCentres[faceI];
+        //        pointIndexHit hitInfo
+        //        (
+        //            tree.findNearest
+        //            (
+        //                fc,
+        //                smallDimSqr,
+        //                findSelfNearOp(tree, faceI)
+        //            )
+        //        );
+        //
+        //        if (hitInfo.hit() && intStreamPtr.valid())
+        //        {
+        //            intStreamPtr().write(hitInfo.hitPoint());
+        //
+        //            label nearFaceI = hitInfo.index();
+        //            triPointRef nearTri(surf[nearFaceI].tri(surf.points()));
+        //            triStreamPtr().write
+        //            (
+        //                surf[faceI].tri(surf.points()),
+        //                false
+        //            );
+        //            triStreamPtr().write(nearTri, false);
+        //            nInt++;
+        //        }
+        //    }
+        //}
+
 
         if (nInt == 0)
         {
@@ -801,36 +914,13 @@ int main(int argc, char *argv[])
         {
             Info<< "Surface is self-intersecting at " << nInt
                 << " locations." << endl;
-            Info<< "Writing intersection points to " << intStream.name()
-                << endl;
-        }
 
-        //surfaceIntersection inter(querySurf);
-        //
-        //if (inter.cutEdges().empty() && inter.cutPoints().empty())
-        //{
-        //    Info<< "Surface is not self-intersecting" << endl;
-        //}
-        //else
-        //{
-        //    Info<< "Surface is self-intersecting" << endl;
-        //    Info<< "Writing edges of intersection to selfInter.obj" << endl;
-        //
-        //    OFstream intStream("selfInter.obj");
-        //    forAll(inter.cutPoints(), cutPointI)
-        //    {
-        //        const point& pt = inter.cutPoints()[cutPointI];
-        //
-        //        intStream << "v " << pt.x() << ' ' << pt.y() << ' ' << pt.z()
-        //            << endl;
-        //    }
-        //    forAll(inter.cutEdges(), cutEdgeI)
-        //    {
-        //        const edge& e = inter.cutEdges()[cutEdgeI];
-        //
-        //        intStream << "l " << e.start()+1 << ' ' << e.end()+1 << endl;
-        //    }
-        //}
+            if (intStreamPtr.valid())
+            {
+                Info<< "Writing intersection points to "
+                    << intStreamPtr().name() << endl;
+            }
+        }
         Info<< endl;
     }
 

@@ -1,6 +1,4 @@
-itoa.C
-ensightMesh.C
-ensightParticlePositions.C
+ensightOutputCloud.C
 foamToEnsight.C
 
 EXE = $(FOAM_APPBIN)/foamToEnsight

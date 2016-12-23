@@ -116,23 +116,23 @@ void Foam::refinementFeatures::read
 
             labelList oldToNew(eMesh.points().size(), -1);
             DynamicField<point> newPoints(eMesh.points().size());
-            forAll(pointEdges, pointI)
+            forAll(pointEdges, pointi)
             {
-                if (pointEdges[pointI].size() > 2)
+                if (pointEdges[pointi].size() > 2)
                 {
-                    oldToNew[pointI] = newPoints.size();
-                    newPoints.append(eMesh.points()[pointI]);
+                    oldToNew[pointi] = newPoints.size();
+                    newPoints.append(eMesh.points()[pointi]);
                 }
-                //else if (pointEdges[pointI].size() == 2)
+                //else if (pointEdges[pointi].size() == 2)
                 //MEJ: do something based on a feature angle?
             }
             label nFeatures = newPoints.size();
-            forAll(oldToNew, pointI)
+            forAll(oldToNew, pointi)
             {
-                if (oldToNew[pointI] == -1)
+                if (oldToNew[pointi] == -1)
                 {
-                    oldToNew[pointI] = newPoints.size();
-                    newPoints.append(eMesh.points()[pointI]);
+                    oldToNew[pointi] = newPoints.size();
+                    newPoints.append(eMesh.points()[pointi]);
                 }
             }
 
@@ -299,6 +299,81 @@ void Foam::refinementFeatures::buildTrees(const label featI)
 }
 
 
+// Find maximum level of a shell.
+void Foam::refinementFeatures::findHigherLevel
+(
+    const pointField& pt,
+    const label featI,
+    labelList& maxLevel
+) const
+{
+    const labelList& levels = levels_[featI];
+
+    const scalarField& distances = distances_[featI];
+
+    // Collect all those points that have a current maxLevel less than
+    // (any of) the shell. Also collect the furthest distance allowable
+    // to any shell with a higher level.
+
+    pointField candidates(pt.size());
+    labelList candidateMap(pt.size());
+    scalarField candidateDistSqr(pt.size());
+    label candidateI = 0;
+
+    forAll(maxLevel, pointi)
+    {
+        forAllReverse(levels, levelI)
+        {
+            if (levels[levelI] > maxLevel[pointi])
+            {
+                candidates[candidateI] = pt[pointi];
+                candidateMap[candidateI] = pointi;
+                candidateDistSqr[candidateI] = sqr(distances[levelI]);
+                candidateI++;
+                break;
+            }
+        }
+    }
+    candidates.setSize(candidateI);
+    candidateMap.setSize(candidateI);
+    candidateDistSqr.setSize(candidateI);
+
+    // Do the expensive nearest test only for the candidate points.
+    const indexedOctree<treeDataEdge>& tree = edgeTrees_[featI];
+
+    List<pointIndexHit> nearInfo(candidates.size());
+    forAll(candidates, candidateI)
+    {
+        nearInfo[candidateI] = tree.findNearest
+        (
+            candidates[candidateI],
+            candidateDistSqr[candidateI]
+        );
+    }
+
+    // Update maxLevel
+    forAll(nearInfo, candidateI)
+    {
+        if (nearInfo[candidateI].hit())
+        {
+            // Check which level it actually is in.
+            label minDistI = findLower
+            (
+                distances,
+                mag(nearInfo[candidateI].hitPoint()-candidates[candidateI])
+            );
+
+            label pointi = candidateMap[candidateI];
+
+            // pt is inbetween shell[minDistI] and shell[minDistI+1]
+            maxLevel[pointi] = levels[minDistI+1];
+        }
+    }
+}
+
+
+// * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * //
+
 const Foam::PtrList<Foam::indexedOctree<Foam::treeDataEdge>>&
 Foam::refinementFeatures::regionEdgeTrees() const
 {
@@ -352,79 +427,6 @@ Foam::refinementFeatures::regionEdgeTrees() const
 }
 
 
-// Find maximum level of a shell.
-void Foam::refinementFeatures::findHigherLevel
-(
-    const pointField& pt,
-    const label featI,
-    labelList& maxLevel
-) const
-{
-    const labelList& levels = levels_[featI];
-
-    const scalarField& distances = distances_[featI];
-
-    // Collect all those points that have a current maxLevel less than
-    // (any of) the shell. Also collect the furthest distance allowable
-    // to any shell with a higher level.
-
-    pointField candidates(pt.size());
-    labelList candidateMap(pt.size());
-    scalarField candidateDistSqr(pt.size());
-    label candidateI = 0;
-
-    forAll(maxLevel, pointI)
-    {
-        forAllReverse(levels, levelI)
-        {
-            if (levels[levelI] > maxLevel[pointI])
-            {
-                candidates[candidateI] = pt[pointI];
-                candidateMap[candidateI] = pointI;
-                candidateDistSqr[candidateI] = sqr(distances[levelI]);
-                candidateI++;
-                break;
-            }
-        }
-    }
-    candidates.setSize(candidateI);
-    candidateMap.setSize(candidateI);
-    candidateDistSqr.setSize(candidateI);
-
-    // Do the expensive nearest test only for the candidate points.
-    const indexedOctree<treeDataEdge>& tree = edgeTrees_[featI];
-
-    List<pointIndexHit> nearInfo(candidates.size());
-    forAll(candidates, candidateI)
-    {
-        nearInfo[candidateI] = tree.findNearest
-        (
-            candidates[candidateI],
-            candidateDistSqr[candidateI]
-        );
-    }
-
-    // Update maxLevel
-    forAll(nearInfo, candidateI)
-    {
-        if (nearInfo[candidateI].hit())
-        {
-            // Check which level it actually is in.
-            label minDistI = findLower
-            (
-                distances,
-                mag(nearInfo[candidateI].hitPoint()-candidates[candidateI])
-            );
-
-            label pointI = candidateMap[candidateI];
-
-            // pt is inbetween shell[minDistI] and shell[minDistI+1]
-            maxLevel[pointI] = levels[minDistI+1];
-        }
-    }
-}
-
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 Foam::refinementFeatures::refinementFeatures
@@ -475,12 +477,12 @@ Foam::refinementFeatures::refinementFeatures
 //        const labelListList& pointEdges = eMesh.pointEdges();
 //
 //        DynamicList<label> featurePoints;
-//        forAll(pointEdges, pointI)
+//        forAll(pointEdges, pointi)
 //        {
-//            const labelList& pEdges = pointEdges[pointI];
+//            const labelList& pEdges = pointEdges[pointi];
 //            if (pEdges.size() > 2)
 //            {
-//                featurePoints.append(pointI);
+//                featurePoints.append(pointi);
 //            }
 //            else if (pEdges.size() == 2)
 //            {
@@ -488,9 +490,9 @@ Foam::refinementFeatures::refinementFeatures
 //                const edge& e0 = edges[pEdges[0]];
 //                const edge& e1 = edges[pEdges[1]];
 //
-//                const point& p = points[pointI];
-//                const point& p0 = points[e0.otherVertex(pointI)];
-//                const point& p1 = points[e1.otherVertex(pointI)];
+//                const point& p = points[pointi];
+//                const point& p0 = points[e0.otherVertex(pointi)];
+//                const point& p1 = points[e1.otherVertex(pointi)];
 //
 //                vector v0 = p-p0;
 //                scalar v0Mag = mag(v0);
@@ -505,7 +507,7 @@ Foam::refinementFeatures::refinementFeatures
 //                 && ((v0/v0Mag & v1/v1Mag) < minCos)
 //                )
 //                {
-//                    featurePoints.append(pointI);
+//                    featurePoints.append(pointi);
 //                }
 //            }
 //        }
@@ -672,10 +674,10 @@ void Foam::refinementFeatures::findNearestRegionEdge
 //                    label nearFeatI = nearFeature[sampleI];
 //                    const indexedOctree<treeDataPoint>& nearTree =
 //                        pointTrees_[nearFeatI];
-//                    label featPointI =
+//                    label featPointi =
 //                        nearTree.shapes().pointLabels()[nearIndex[sampleI]];
 //                    const point& featPt =
-//                        operator[](nearFeatI).points()[featPointI];
+//                        operator[](nearFeatI).points()[featPointi];
 //                    distSqr = magSqr(featPt-sample);
 //                }
 //                else

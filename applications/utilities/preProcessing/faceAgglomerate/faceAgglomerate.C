@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2013 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -69,7 +69,6 @@ int main(int argc, char *argv[])
 
     bool writeAgglom = readBool(agglomDict.lookup("writeFacesAgglomeration"));
 
-
     const polyBoundaryMesh& boundary = mesh.boundaryMesh();
 
     labelListIOList finalAgglom
@@ -90,68 +89,73 @@ int main(int argc, char *argv[])
 
     forAllConstIter(dictionary, agglomDict, iter)
     {
-        labelList patchIds = boundary.findIndices(iter().keyword());
-        forAll(patchIds, i)
+        labelList patchids = boundary.findIndices(iter().keyword());
+        forAll(patchids, i)
         {
-            label patchI =  patchIds[i];
-            const polyPatch& pp = boundary[patchI];
+            label patchi =  patchids[i];
+            const polyPatch& pp = boundary[patchi];
+
             if (!pp.coupled())
             {
                 Info << "\nAgglomerating patch : " << pp.name() << endl;
+
                 pairPatchAgglomeration agglomObject
                 (
-                    pp,
+                    pp.localFaces(),
+                    pp.localPoints(),
                     agglomDict.subDict(pp.name())
                 );
+
                 agglomObject.agglomerate();
-                finalAgglom[patchI] =
+
+                finalAgglom[patchi] =
                     agglomObject.restrictTopBottomAddressing();
 
-                if (finalAgglom[patchI].size())
+                if (finalAgglom[patchi].size())
                 {
-                    nCoarseFaces += max(finalAgglom[patchI] + 1);
+                    nCoarseFaces += max(finalAgglom[patchi] + 1);
                 }
             }
         }
     }
 
 
-    // - All patches which are not agglomarated are identity for finalAgglom
-    forAll(boundary, patchId)
+    // All patches which are not agglomerated are identity for finalAgglom
+    forAll(boundary, patchi)
     {
-        if (finalAgglom[patchId].size() == 0)
+        if (finalAgglom[patchi].size() == 0)
         {
-            finalAgglom[patchId] = identity(boundary[patchId].size());
+            finalAgglom[patchi] = identity(boundary[patchi].size());
         }
     }
 
     // Sync agglomeration across coupled patches
     labelList nbrAgglom(mesh.nFaces() - mesh.nInternalFaces(), -1);
 
-    forAll(boundary, patchId)
+    forAll(boundary, patchi)
     {
-        const polyPatch& pp = boundary[patchId];
+        const polyPatch& pp = boundary[patchi];
         if (pp.coupled())
         {
-            finalAgglom[patchId] = identity(pp.size());
+            finalAgglom[patchi] = identity(pp.size());
             forAll(pp, i)
             {
-                nbrAgglom[pp.start() - mesh.nInternalFaces() + i] =
-                    finalAgglom[patchId][i];
+                const label agglomi = pp.start() - mesh.nInternalFaces() + i;
+                nbrAgglom[agglomi] = finalAgglom[patchi][i];
             }
         }
     }
 
     syncTools::swapBoundaryFaceList(mesh, nbrAgglom);
-    forAll(boundary, patchId)
+    forAll(boundary, patchi)
     {
-        const polyPatch& pp = boundary[patchId];
+        const polyPatch& pp = boundary[patchi];
         if (pp.coupled() && !refCast<const coupledPolyPatch>(pp).owner())
         {
             forAll(pp, i)
             {
-                finalAgglom[patchId][i] =
-                    nbrAgglom[pp.start() - mesh.nInternalFaces() + i];
+                const label agglomi = pp.start() - mesh.nInternalFaces() + i;
+                finalAgglom[patchi][i] = nbrAgglom[agglomi];
             }
         }
     }
@@ -175,14 +179,17 @@ int main(int argc, char *argv[])
             dimensionedScalar("facesAgglomeration", dimless, 0)
         );
 
+        volScalarField::Boundary& facesAgglomerationBf =
+            facesAgglomeration.boundaryFieldRef();
+
         label coarsePatchIndex = 0;
-        forAll(boundary, patchId)
+        forAll(boundary, patchi)
         {
-            const polyPatch& pp = boundary[patchId];
+            const polyPatch& pp = boundary[patchi];
             if (pp.size() > 0)
             {
                 fvPatchScalarField& bFacesAgglomeration =
-                    facesAgglomeration.boundaryField()[patchId];
+                    facesAgglomerationBf[patchi];
 
                 forAll(bFacesAgglomeration, j)
                 {
@@ -190,11 +197,11 @@ int main(int argc, char *argv[])
                         index.toGlobal
                         (
                             Pstream::myProcNo(),
-                            finalAgglom[patchId][j] + coarsePatchIndex
+                            finalAgglom[patchi][j] + coarsePatchIndex
                         );
                 }
 
-                coarsePatchIndex += max(finalAgglom[patchId]) + 1;
+                coarsePatchIndex += max(finalAgglom[patchi]) + 1;
             }
         }
 

@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -53,6 +53,7 @@ Description
 #include "cellCuts.H"
 #include "cellSet.H"
 #include "meshCutter.H"
+#include "processorMeshes.H"
 
 using namespace Foam;
 
@@ -117,15 +118,15 @@ int main(int argc, char *argv[])
         const polyPatch& pp = mesh.boundaryMesh()[iter.key()];
         const labelList& meshPoints = pp.meshPoints();
 
-        forAll(meshPoints, pointI)
+        forAll(meshPoints, pointi)
         {
-            label meshPointI = meshPoints[pointI];
+            label meshPointi = meshPoints[pointi];
 
-            const labelList& pCells = mesh.pointCells()[meshPointI];
+            const labelList& pCells = mesh.pointCells()[meshPointi];
 
-            forAll(pCells, pCellI)
+            forAll(pCells, pCelli)
             {
-                cutCells.insert(pCells[pCellI]);
+                cutCells.insert(pCells[pCelli]);
             }
         }
     }
@@ -159,9 +160,9 @@ int main(int argc, char *argv[])
         const polyPatch& pp = mesh.boundaryMesh()[iter.key()];
         const labelList& meshPoints = pp.meshPoints();
 
-        forAll(meshPoints, pointI)
+        forAll(meshPoints, pointi)
         {
-            vertOnPatch[meshPoints[pointI]] = true;
+            vertOnPatch[meshPoints[pointi]] = true;
         }
     }
 
@@ -170,24 +171,24 @@ int main(int argc, char *argv[])
         const polyPatch& pp = mesh.boundaryMesh()[iter.key()];
         const labelList& meshPoints = pp.meshPoints();
 
-        forAll(meshPoints, pointI)
+        forAll(meshPoints, pointi)
         {
-            label meshPointI = meshPoints[pointI];
+            label meshPointi = meshPoints[pointi];
 
-            const labelList& pEdges = mesh.pointEdges()[meshPointI];
+            const labelList& pEdges = mesh.pointEdges()[meshPointi];
 
             forAll(pEdges, pEdgeI)
             {
                 const label edgeI = pEdges[pEdgeI];
                 const edge& e = mesh.edges()[edgeI];
 
-                label otherPointI = e.otherVertex(meshPointI);
+                label otherPointi = e.otherVertex(meshPointi);
 
-                if (!vertOnPatch[otherPointI])
+                if (!vertOnPatch[otherPointi])
                 {
                     allCutEdges.append(edgeI);
 
-                    if (e.start() == meshPointI)
+                    if (e.start() == meshPointi)
                     {
                         allCutEdgeWeights.append(weight);
                     }
@@ -257,6 +258,8 @@ int main(int argc, char *argv[])
     Info<< "Writing refined mesh to time " << runTime.timeName() << endl;
 
     mesh.write();
+    topoSet::removeFiles(mesh);
+    processorMeshes::removeFiles(mesh);
 
     Info<< "End\n" << endl;
 

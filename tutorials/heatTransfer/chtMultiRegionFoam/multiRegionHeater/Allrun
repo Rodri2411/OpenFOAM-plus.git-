@@ -1,7 +1,6 @@
 #!/bin/sh
 cd ${0%/*} || exit 1    # Run from this directory
 
-
 # Source tutorial run functions
 . $WM_PROJECT_DIR/bin/tools/RunFunctions
 
@@ -18,7 +17,7 @@ done
 
 for i in bottomWater topAir heater leftSolid rightSolid
 do
-   runApplication -s $i  changeDictionary -region $i
+   runApplication -s $i changeDictionary -region $i
 done
 
 
