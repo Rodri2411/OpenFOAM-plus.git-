@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2012-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2012-2017 OpenFOAM Foundation
      \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
@@ -139,7 +139,11 @@ Foam::tmp<Foam::volScalarField> Foam::functionObjects::scalarTransport::D
 
         return tmp<volScalarField>
         (
-             new volScalarField(Dname, model.nuEff())
+             new volScalarField
+             (
+                 Dname,
+                 alphaD_*model.nu() + alphaDt_*model.nut()
+             )
         );
     }
     else if (foundObject<cmpModel>(turbulenceModel::propertiesName))
@@ -151,7 +155,11 @@ Foam::tmp<Foam::volScalarField> Foam::functionObjects::scalarTransport::D
 
         return tmp<volScalarField>
         (
-             new volScalarField(Dname, model.muEff())
+             new volScalarField
+             (
+                 Dname,
+                 alphaD_*model.mu() + alphaDt_*model.mut()
+             )
         );
     }
     else
@@ -201,7 +209,7 @@ Foam::functionObjects::scalarTransport::scalarTransport
     resetOnStartUp_(false),
     schemesField_("unknown-schemesField"),
     fvOptions_(mesh_),
-    bounded01_(dict.lookupOrDefault<bool>("bounded01", true))
+    bounded01_(dict.lookupOrDefault<Switch>("bounded01", true))
 {
     read(dict);
 
@@ -235,12 +243,9 @@ bool Foam::functionObjects::scalarTransport::read(const dictionary& dict)
     dict.readIfPresent("bounded01", bounded01_);
 
     schemesField_ = dict.lookupOrDefault("schemesField", fieldName_);
-
-    constantD_ = false;
-    if (dict.readIfPresent("D", D_))
-    {
-        constantD_ = true;
-    }
+    constantD_ = dict.readIfPresent("D", D_);
+    alphaD_ = dict.lookupOrDefault("alphaD", 1.0);
+    alphaDt_ = dict.lookupOrDefault("alphaDt", 1.0);
 
     dict.readIfPresent("nCorr", nCorr_);
     dict.readIfPresent("resetOnStartUp", resetOnStartUp_);
@@ -256,11 +261,11 @@ bool Foam::functionObjects::scalarTransport::read(const dictionary& dict)
 
 bool Foam::functionObjects::scalarTransport::execute()
 {
-    Log << type() << " write:" << endl;
-
     volScalarField& s = transportedField();
 
-    const surfaceScalarField& phi = 
+    Log << type() << " execute: " << s.name() << endl;
+
+    const surfaceScalarField& phi =
         mesh_.lookupObject<surfaceScalarField>(phiName_);
 
     // Calculate the diffusivity
@@ -282,13 +287,13 @@ bool Foam::functionObjects::scalarTransport::execute()
         const volScalarField& alpha =
             mesh_.lookupObject<volScalarField>(phaseName_);
 
-        const surfaceScalarField& limitedPhiAlpa =
+        const surfaceScalarField& limitedPhiAlpha =
             mesh_.lookupObject<surfaceScalarField>(phasePhiCompressedName_);
 
         D *= pos(alpha - 0.99);
 
-        // Reset D dimensions consistent with limitedPhiAlpa
-        D.dimensions().reset(limitedPhiAlpa.dimensions()/dimLength);
+        // Reset D dimensions consistent with limitedPhiAlpha
+        D.dimensions().reset(limitedPhiAlpha.dimensions()/dimLength);
 
         // Solve
         tmp<surfaceScalarField> tTPhiUD;
@@ -297,7 +302,7 @@ bool Foam::functionObjects::scalarTransport::execute()
             fvScalarMatrix sEqn
             (
                 fvm::ddt(s)
-              + fvm::div(limitedPhiAlpa, s, divScheme)
+              + fvm::div(limitedPhiAlpha, s, divScheme)
               - fvm::laplacian(D, s, laplacianScheme)
               ==
                 alpha*fvOptions_(s)
@@ -363,7 +368,7 @@ bool Foam::functionObjects::scalarTransport::execute()
         FatalErrorInFunction
             << "Incompatible dimensions for phi: " << phi.dimensions() << nl
             << "Dimensions should be " << dimMass/dimTime << " or "
-            << dimVolume/dimTime << endl;
+            << dimVolume/dimTime << exit(FatalError);
     }
 
     Log << endl;

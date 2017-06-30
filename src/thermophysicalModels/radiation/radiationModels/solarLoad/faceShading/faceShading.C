@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2015 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -64,12 +64,9 @@ void Foam::faceShading::writeRays
     }
     str.flush();
 
-    DynamicList<string> cmd(3);
-    cmd.append("objToVTK");
-    cmd.append(fName);
-    cmd.append(fName.lessExt() + ".vtk");
-
     Pout<< "cmd: objToVTK " << fName.c_str() << endl;
+
+    stringList cmd{"objToVTK", fName, fName.lessExt().ext("vtk")};
     Foam::system(cmd);
 }
 
@@ -264,14 +261,12 @@ void Foam::faceShading::calculate()
                 {
                     includeAllFacesPerPatch[patchI].insert
                     (
-                        faceI //pp.start()
+                        faceI
                     );
                 }
             }
         }
     }
-
-    labelList triSurfaceToAgglom(5*nFaces);
 
     triSurface localSurface = triangulate
     (
@@ -294,9 +289,10 @@ void Foam::faceShading::calculate()
         dict
     );
 
-    surfacesMesh.searchableSurface::write();
-
-    triSurfaceToAgglom.resize(surfacesMesh.size());
+    if (debug)
+    {
+        surfacesMesh.searchableSurface::write();
+    }
 
     scalar maxBounding = 5.0*mag(mesh_.bounds().max() - mesh_.bounds().min());
 
@@ -324,7 +320,7 @@ void Foam::faceShading::calculate()
 
                 const vector d(direction_*maxBounding);
 
-                start.append(fc - SMALL*d);
+                start.append(fc - 0.001*d);
 
                 startIndex.append(myFaceId);
 
@@ -355,7 +351,7 @@ void Foam::faceShading::calculate()
             (
                 mesh_.time().path()/"allVisibleFaces.obj",
                 end,
-                Cfs
+                start
             );
         }
 

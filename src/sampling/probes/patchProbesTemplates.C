@@ -45,7 +45,7 @@ void Foam::patchProbes::sampleAndWrite
 
         probeStream
             << setw(w)
-            << vField.time().timeToUserTime(vField.time().value());
+            << vField.time().timeOutputValue();
 
         forAll(values, probei)
         {
@@ -71,7 +71,7 @@ void Foam::patchProbes::sampleAndWrite
 
         probeStream
             << setw(w)
-            << sField.time().timeToUserTime(sField.time().value());
+            << sField.time().timeOutputValue();
 
         forAll(values, probei)
         {
@@ -115,7 +115,7 @@ void Foam::patchProbes::sampleAndWrite
 
             if
             (
-                iter != objectRegistry::end()
+                iter.found()
              && iter()->type()
              == GeometricField<Type, fvPatchField, volMesh>::typeName
             )
@@ -167,7 +167,7 @@ void Foam::patchProbes::sampleAndWriteSurfaceFields
 
             if
             (
-                iter != objectRegistry::end()
+                iter.found()
              && iter()->type()
              == GeometricField<Type, fvsPatchField, surfaceMesh>::typeName
             )

@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -40,9 +40,13 @@ See also
 #include "IStringStream.H"
 #include "scalar.H"
 #include "vector.H"
-#include "ListOps.H"
 
-#include<list>
+#include "labelRange.H"
+#include "scalarList.H"
+#include "ListOps.H"
+#include "SubList.H"
+
+#include <list>
 
 using namespace Foam;
 
@@ -60,6 +64,18 @@ int main(int argc, char *argv[])
     argList::addBoolOption("flag");
 
     #include "setRootCase.H"
+
+    if (false)
+    {
+        labelList intlist(IStringStream("(0 1 2)")());
+        Info<<"construct from Istream: " << intlist << endl;
+
+        IStringStream("(3 4 5)")() >> static_cast<labelUList&>(intlist);
+        Info<<"is >>: " << intlist << endl;
+
+        IStringStream("(6 7 8)")() >> intlist;
+        Info<<"is >>: " << intlist << endl;
+    }
 
     List<vector> list1(IStringStream("1 ((0 1 2))")());
     Info<< "list1: " << list1 << endl;
@@ -123,10 +139,131 @@ int main(int argc, char *argv[])
     Info<< "Elements " << map << " out of " << list3
         << " => " << subList3 << endl;
 
+    // test flattened output
+    {
+        Info<< nl;
+
+        labelList longLabelList = identity(15);
+
+        // This does not work:
+        // scalarList slist = identity(15);
+        //
+        // More writing, but does work:
+        scalarList slist
+        (
+            labelRange::null.begin(),
+            labelRange::identity(15).end()
+        );
+
+        Info<<"scalar identity:" << flatOutput(slist) << endl;
+
+        Info<< "labels (contiguous=" << contiguous<label>() << ")" << nl;
+
+        Info<< "normal: " << longLabelList << nl;
+        Info<< "flatOutput: " << flatOutput(longLabelList) << nl;
+        // Info<< "flatOutput(14): " << flatOutput(longLabelList, 14) << nl;
+
+        stringList longStringList(12);
+        forAll(longStringList, i)
+        {
+            longStringList[i].resize(3, 'a' + i);
+        }
+
+        Info<< "string (contiguous=" << contiguous<string>() << ")" << nl;
+
+        Info<< "normal: " << longStringList << nl;
+        Info<< "flatOutput: " << flatOutput(longStringList) << nl;
+        // contiguous longStringList[i].resize(3, 'a' + i);
+    }
+
+    // test SubList and labelRange
+    {
+        Info<< nl;
+        labelList longLabelList = identity(25);
+        reverse(longLabelList);
+
+        FixedList<label, 6> fixedLabelList{0,1,2,3,4,5};
+        const labelList constLabelList = identity(25);
+
+        Info<< "full-list: " << flatOutput(longLabelList) << nl;
+
+        labelRange range1(-15, 25);
+        Info<<"sub range:" << range1 << "=";
+        Info<< SubList<label>(longLabelList, range1) << nl;
+
+        labelRange range2(7, 8);
+        Info<<"sub range:" << range2 << "=";
+        Info<< SubList<label>(longLabelList, range2) << nl;
+
+        // labelRange range2(7, 8);
+        Info<<"use range " << range2 << " to set value";
+        SubList<label>(longLabelList, range2) = -15;
+        Info<< "=> " << flatOutput(longLabelList) << nl;
+
+        // This syntax looks even nicer:
+
+        // GOOD: does not compile
+        // > constLabelList[labelRange(23,5)] = 5;
+
+        // Check correct overlaps
+        longLabelList[labelRange(-10, 12)] = 200;
+        longLabelList[{18,3}] = 100;
+        longLabelList[{23,3}] = 400;
+        // and complete misses
+        longLabelList[{500,50}] = 100;
+
+        // labelRange automatically suppresses -ve size -> nop
+        longLabelList[{5,-5}] = 42;
+        longLabelList[{21,100}] = 42;
+
+        //Good: does not compile
+        //> longLabelList[labelRange(20,50)] = constLabelList;
+
+        //Good: does not compile
+        // longLabelList[labelRange(20,50)] = fixedLabelList;
+
+        Info<< "updated: " << constLabelList[labelRange(23,5)] << nl;
+        Info<< "updated: " << flatOutput(longLabelList) << nl;
+
+        //Nope: sort(longLabelList[labelRange(18,5)]);
+        {
+            // Instead
+            UList<label> sub = longLabelList[labelRange(0, 8)];
+            sort(sub);
+        }
+        Info<< "sub-sorted: " << flatOutput(longLabelList) << nl;
+
+        // construct from a label-range
+        labelRange range(25,15);
+
+        labelList ident(range.begin(), range.end());
+        Info<<"range-list (label)=" << ident << nl;
+
+        List<scalar> sident(range.begin(), range.end());
+        Info<<"range-list (scalar)=" << sident << nl;
+
+        // Sub-ranges also work
+        List<scalar> sident2(range(3), range(10));
+        Info<<"range-list (scalar)=" << sident2 << nl;
+
+        // VERY BAD IDEA: List<scalar> sident3(range(10), range(3));
+
+        // This doesn't work, and don't know what it should do anyhow
+        // List<vector> vident(range.begin(), range.end());
+        // Info<<"range-list (vector)=" << vident << nl;
+
+        // Even weird things like this
+        List<scalar> sident4
+        (
+            labelRange().begin(),
+            labelRange::identity(8).end()
+        );
+        Info<<"range-list (scalar)=" << sident4 << nl;
+    }
+
     wordReList reLst;
     wordList wLst;
     stringList sLst;
-
 
     scalar xxx(-1);
 
@@ -156,9 +293,9 @@ int main(int argc, char *argv[])
     }
 
     Info<< nl
-        << "-reList: " << reLst << nl
-        << "-wordList: " << wLst << nl
-        << "-stringList: " << sLst << endl;
+        << "-reList:     " << flatOutput(reLst) << nl
+        << "-wordList:   " << flatOutput(wLst)  << nl
+        << "-stringList: " << flatOutput(sLst)  << endl;
 
     return 0;
 }

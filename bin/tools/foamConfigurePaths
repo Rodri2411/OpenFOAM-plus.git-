@@ -4,7 +4,7 @@
 # \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
 #  \\    /   O peration     |
 #   \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-#    \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+#    \\/     M anipulation  | Copyright (C) 2016-2017 OpenCFD Ltd.
 #------------------------------------------------------------------------------
 # License
 #     This file is part of OpenFOAM.
@@ -55,6 +55,7 @@ usage: ${0##*/}
   -metis-path dir         specify 'METIS_ARCH_PATH'
   -paraview ver           specify 'ParaView_VERSION' (eg, 5.0.1)
   -paraview-path dir      specify 'ParaView_DIR' (eg, /opt/paraviewopenfoam3120)
+  -mpi name               specify type for 'WM_MPLIB' (eg, FJMPI, INTELMPI, etc)
   -openmpi ver            specify ThirdParty openmpi version for 'FOAM_MPI'
   -openmpi-system         activate system openmpi
   -openmpi-third          activate ThirdParty openmpi (using default version)
@@ -138,11 +139,12 @@ _inlineSed()
     }
 
     grep -q "$regexp" "$file" && sed -i -e "$cmd" "$file" || { \
-        echo "Failed: $msg in $file"
+        echo "Failed: ${msg:-replacement} in $file"
         return 1
     }
 
-    echo "    $msg  ($file)"
+    [ -n "$msg" ] && echo "    $msg  ($file)"
+
     return 0
 }
 
@@ -165,7 +167,7 @@ replace()
         shift 2
 
         _inlineSed \
-            $file \
+            $file  \
             "$key=.*" \
             "$key=$val" \
             "Replaced $key setting by '$val'"
@@ -193,8 +195,13 @@ do
         _inlineSed \
             etc/bashrc \
             '\(.*BASH_SOURCE.*\)' \
-            '##\1' \
-            "Removed default FOAM_INST_DIR setting"
+            '## \1' \
+            "Remove default FOAM_INST_DIR setting" \
+        && _inlineSed \
+            etc/bashrc \
+            '\(.* && FOAM_INST_DIR\)' \
+            '## \1'
+
         _inlineSed \
             etc/bashrc \
             '^ *FOAM_INST_DIR=.*' \
@@ -334,6 +341,15 @@ do
         # Replace cmake_version=...
         [ "$#" -ge 2 ] || die "'$1' option requires an argument"
         replace etc/config.sh/paraview  cmake_version "$2"
+        adjusted=true
+        shift
+        ;;
+
+    -mpi)
+        # Explicitly set WM_MPLIB=...
+        [ "$#" -ge 2 ] || die "'$1' option requires an argument"
+        replace etc/bashrc  WM_MPLIB "$2"
+        optMpi=system
         adjusted=true
         shift
         ;;

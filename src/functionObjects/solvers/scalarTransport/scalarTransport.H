@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2012-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2012-2017 OpenFOAM Foundation
      \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
@@ -30,18 +30,24 @@ Group
 Description
     Evolves a passive scalar transport equation.
 
-    - To specify the field name set the 'field' entry
+    - To specify the field name set the \c field entry
     - To employ the same numerical schemes as another field set
-      the 'schemesField' entry,
+      the \c schemesField entry,
     - The diffusivity can be set manually using the 'D' entry, retrieved
       from the turbulence model or specified nut
+    - Alternatively if a turbulence model is available a turbulent diffusivity
+      may be constructed from the laminar and turbulent viscosities using the
+      optional diffusivity coefficients \c alphaD and \c alphaDt (which default
+      to 1):
+      \verbatim
+          D = alphaD*nu + alphaDt*nut
+      \endverbatim
     - To specify a transport quantity within a phase enter phase.
     - bounded01 bounds the transported scalar within 0 and 1.
 
 Usage
     Example of function object specification to solve a scalar transport
     equation:
-    \verbatim
     functions
     {
         scalar1
@@ -111,17 +117,18 @@ Usage
     \table
         Property     | Description             | Required    | Default value
         type         | Type name: scalarTransport | yes      |
-        phi          | Name of flux field      | yes          |
+        field        | Name of the scalar field | no         | s
+        phi          | Name of flux field      | no          | phi
         rho          | Name of density field   | no          | rho
-        phase        | Name of the phase name  | no          | none
+        phase        | Name of the phase       | no          | none
         nut          | Name of the turbulence viscosity | no | none
         D            | Diffusion coefficient   | no          | auto generated
         nCorr        | Number of correctors    | no          | 0
         resetOnStartUp | Reset scalar to zero on start-up | no | no
-        schemesField | Name of field to specify schemes | no | fieldName
+        schemesField | Name of field to specify schemes | no | field name
         fvOptions    | List of scalar sources  | no          |
-        bounded01    | Bounds scalar between 0-1 for multiphase | no |true
-        phasePhiCompressed |Compressed flux for VOF | no | alphaPhiUn
+        bounded01    | Bounds scalar between 0-1 for multiphase | no | true
+        phasePhiCompressed | Compressed flux for VOF | no | alphaPhiUn
     \endtable
 
 See also
@@ -156,10 +163,10 @@ class scalarTransport
 {
     // Private data
 
-        //- Name of field to process
+        //- Name of the transport field.
         word fieldName_;
 
-        //- Name of flux field
+        //- Name of flux field (optional)
         word phiName_;
 
         //- Name of density field (optional)
@@ -168,10 +175,10 @@ class scalarTransport
         //- Name of turbulent viscosity field (optional)
         word nutName_;
 
-        //- Name of phase field
+        //- Name of phase field (optional)
         word phaseName_;
 
-        //- Name of phase field compressed flux
+        //- Name of phase field compressed flux (optional)
         word phasePhiCompressedName_;
 
         //- Diffusion coefficient (optional)
@@ -179,6 +186,12 @@ class scalarTransport
 
         //- Flag to indicate whether a constant, uniform D_ is specified
         bool constantD_;
+
+        //- Laminar diffusion coefficient (optional)
+        scalar alphaD_;
+
+        //- Turbulent diffusion coefficient (optional)
+        scalar alphaDt_;
 
         //- Number of corrector iterations (optional)
         label nCorr_;

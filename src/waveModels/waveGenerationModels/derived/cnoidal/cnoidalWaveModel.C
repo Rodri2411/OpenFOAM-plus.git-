@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2016 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2016-2017 OpenCFD Ltd.
      \\/     M anipulation  | Copyright (C) 2015 IH-Cantabria
 -------------------------------------------------------------------------------
 License
@@ -189,7 +189,7 @@ Foam::vector Foam::waveModels::cnoidal::dEtaDx
 }
 
 
-Foam::vector Foam::waveModels::cnoidal::U
+Foam::vector Foam::waveModels::cnoidal::Uf
 (
     const scalar H,
     const scalar h,
@@ -231,6 +231,8 @@ Foam::vector Foam::waveModels::cnoidal::U
 }
 
 
+// * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * * //
+
 void Foam::waveModels::cnoidal::setLevel
 (
     const scalar t,
@@ -246,7 +248,7 @@ void Foam::waveModels::cnoidal::setLevel
     {
         const scalar eta =
             this->eta
-	        (
+            (
                 waveHeight_,
                 m_,
                 waveKx,
@@ -259,55 +261,6 @@ void Foam::waveModels::cnoidal::setLevel
 
         level[paddlei] = waterDepthRef_ + tCoeff*eta;
     }
-}
-
-
-// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
-
-Foam::waveModels::cnoidal::cnoidal
-(
-    const dictionary& dict,
-    const fvMesh& mesh,
-    const polyPatch& patch,
-    const bool readFields
-)
-:
-    regularWaveModel(dict, mesh, patch, false),
-    m_(0)
-{
-    if (readFields)
-    {
-        read(dict);
-    }
-}
-
-
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-Foam::waveModels::cnoidal::~cnoidal()
-{}
-
-
-// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
-
-bool Foam::waveModels::cnoidal::read(const dictionary& overrideDict)
-{
-    if (regularWaveModel::read(overrideDict))
-    {
-        // Initialise m parameter and wavelength
-        initialise
-        (
-            waveHeight_,
-            waterDepthRef_,
-            wavePeriod_,
-            m_,
-            waveLength_
-        );
-
-        return true;
-    }
-
-    return false;
 }
 
 
@@ -336,8 +289,8 @@ void Foam::waveModels::cnoidal::setVelocity
         {
             const label paddlei = faceToPaddle_[facei];
 
-            const vector Uf = U
-	        (
+            const vector Uf = this->Uf
+            (
                 waveHeight_,
                 waterDepthRef_,
                 m_,
@@ -353,6 +306,55 @@ void Foam::waveModels::cnoidal::setVelocity
             U_[facei] = fraction*Uf*tCoeff;
         }
     }
+}
+
+
+// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
+
+Foam::waveModels::cnoidal::cnoidal
+(
+    const dictionary& dict,
+    const fvMesh& mesh,
+    const polyPatch& patch,
+    const bool readFields
+)
+:
+    regularWaveModel(dict, mesh, patch, false),
+    m_(0)
+{
+    if (readFields)
+    {
+        readDict(dict);
+    }
+}
+
+
+// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
+
+Foam::waveModels::cnoidal::~cnoidal()
+{}
+
+
+// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+
+bool Foam::waveModels::cnoidal::readDict(const dictionary& overrideDict)
+{
+    if (regularWaveModel::readDict(overrideDict))
+    {
+        // Initialise m parameter and wavelength
+        initialise
+        (
+            waveHeight_,
+            waterDepthRef_,
+            wavePeriod_,
+            m_,
+            waveLength_
+        );
+
+        return true;
+    }
+
+    return false;
 }
 
 

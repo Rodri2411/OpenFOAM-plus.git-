@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2016 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2016-2017 OpenCFD Ltd.
      \\/     M anipulation  | Copyright (C) 2015 IH-Cantabria
 -------------------------------------------------------------------------------
 License
@@ -61,7 +61,11 @@ void Foam::waveModels::shallowWaterAbsorption::setVelocity
     const scalarField& level
 )
 {
-    U_ = vector::zero;
+    // Apply zero-gradient condition to z-component of velocity only
+    const volVectorField& U = mesh_.lookupObject<volVectorField>(UName_);
+    U_ = U.boundaryField()[patch_.index()].patchInternalField();
+    U_.replace(0, 0);
+    U_.replace(1, 0);
 }
 
 
@@ -92,7 +96,7 @@ Foam::waveModels::shallowWaterAbsorption::shallowWaterAbsorption
 {
     if (readFields)
     {
-        read(dict);
+        readDict(dict);
     }
 }
 
@@ -105,12 +109,12 @@ Foam::waveModels::shallowWaterAbsorption::~shallowWaterAbsorption()
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-bool Foam::waveModels::shallowWaterAbsorption::read
+bool Foam::waveModels::shallowWaterAbsorption::readDict
 (
     const dictionary& overrideDict
 )
 {
-    return waveAbsorptionModel::read(overrideDict);
+    return waveAbsorptionModel::readDict(overrideDict);
 }
 
 

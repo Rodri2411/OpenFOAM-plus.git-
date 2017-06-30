@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -49,8 +49,8 @@ class Ostream;
 
 // Forward declaration of friend functions and operators
 class labelRanges;
-Istream& operator>>(Istream&, labelRanges&);
-Ostream& operator<<(Ostream&, const labelRanges&);
+Istream& operator>>(Istream& is, labelRanges& ranges);
+Ostream& operator<<(Ostream& is, const labelRanges& ranges);
 
 /*---------------------------------------------------------------------------*\
                          Class labelRanges Declaration
@@ -62,19 +62,19 @@ class labelRanges
 {
     // Private typedefs for convenience
 
-        typedef DynamicList<labelRange> ParentType;
+        typedef DynamicList<labelRange> StorageContainer;
 
 
     // Private Member Functions
 
         //- Insert range before specified insertion index, by copying up
-        void insertBefore(const label, const labelRange&);
+        void insertBefore(const label insert, const labelRange& range);
 
         //- Purge empty ranges, by copying down
         void purgeEmpty();
 
         //- Print the range for debugging purposes
-        Ostream& printRange(Ostream&, const labelRange&) const;
+        Ostream& printRange(Ostream& os, const labelRange& range) const;
 
 
 public:
@@ -85,10 +85,10 @@ public:
         inline labelRanges();
 
         //- Construct given size
-        inline explicit labelRanges(const label);
+        inline explicit labelRanges(const label nElem);
 
         //- Construct from Istream.
-        labelRanges(Istream&);
+        labelRanges(Istream& is);
 
 
     // Member Functions
@@ -99,79 +99,72 @@ public:
         //- Return true if the list is empty
         using DynamicList<labelRange>::empty;
 
-        //- Return true if the value is within any of the ranges
-        inline bool contains(const label) const;
+        //- Return true if the value is found any of the sub-ranges
+        inline bool found(const label value) const;
 
         //- Add the range to the list
-        bool add(const labelRange&);
+        bool add(const labelRange& range);
 
         //- Remove the range from the list
-        bool remove(const labelRange&);
+        bool remove(const labelRange& range);
+
 
     // STL iterator
 
         //- An STL const_iterator
         class const_iterator
         {
-            // Private data
+            friend class labelRanges;
 
-                //- Reference to the list for which this is an iterator
-                const labelRanges& list_;
+          // Private data
 
-                //- Current list index
-                label index_;
+            //- Reference to the list for which this is an iterator
+            const labelRanges* list_;
 
-                //- Index of current element at listIndex
-                label subIndex_;
+            //- Current list-index
+            label index_;
+
+            //- Index of current element at list-index
+            label subIndex_;
+
+          // Constructors
+
+            //- Construct from ranges at given index.
+            //  A negative index signals the 'end' position
+            inline const_iterator(const labelRanges* lst, const label i);
 
         public:
 
-            // Constructors
+          // Member operators
 
-                //- Construct null - equivalent to an 'end' position
-                inline const_iterator();
+            inline bool operator==(const const_iterator& iter) const;
+            inline bool operator!=(const const_iterator& iter) const;
 
-                //- Construct from list, moving to its 'begin' position
-                inline explicit const_iterator(const labelRanges&);
+            //- Return the current label
+            inline label operator*();
 
-
-            // Member operators
-
-                inline bool operator==(const const_iterator&) const;
-
-                inline bool operator!=(const const_iterator&) const;
-
-                inline label operator*();
-                inline label operator()();
-
-                inline const_iterator& operator++();
-                inline const_iterator operator++(int);
+            inline const_iterator& operator++();
+            inline const_iterator operator++(int);
         };
 
 
-        //- const_iterator set to the beginning of the list
+        //- A const_iterator set to the beginning of the list
         inline const_iterator cbegin() const;
 
-        //- const_iterator set to beyond the end of the list
-        inline const const_iterator& cend() const;
+        //- A const_iterator set to beyond the end of the list
+        inline const const_iterator cend() const;
 
-        //- const_iterator set to the beginning of the list
+        //- A const_iterator set to the beginning of the list
         inline const_iterator begin() const;
 
-        //- const_iterator set to beyond the end of the list
-        inline const const_iterator& end() const;
+        //- A const_iterator set to beyond the end of the list
+        inline const const_iterator end() const;
 
 
     // IOstream Operators
 
-        friend Istream& operator>>(Istream&, labelRanges&);
-        friend Ostream& operator<<(Ostream&, const labelRanges&);
-
-
-private:
-
-        //- const_iterator returned by end(), cend()
-        static const const_iterator endIter_;
+        friend Istream& operator>>(Istream& is, labelRanges& ranges);
+        friend Ostream& operator<<(Ostream& os, const labelRanges& ranges);
 
 };
 
