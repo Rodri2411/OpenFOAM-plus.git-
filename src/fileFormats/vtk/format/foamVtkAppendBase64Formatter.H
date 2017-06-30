@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2016 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2016-2017 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    foamVtkAppendBase64Formatter
+    Foam::vtk::appendBase64Formatter
 
 Description
     Appended base-64 encoded binary output.
@@ -36,34 +36,36 @@ SourceFiles
 #ifndef foamVtkAppendBase64Formatter_H
 #define foamVtkAppendBase64Formatter_H
 
-#include "foamVtkBase64Formatter.H"
+#include "foamVtkBase64Layer.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
+namespace vtk
+{
 
 /*---------------------------------------------------------------------------*\
-                Class foamVtkAppendBase64Formatter Declaration
+                    Class appendBase64Formatter Declaration
 \*---------------------------------------------------------------------------*/
 
-class foamVtkAppendBase64Formatter
+class appendBase64Formatter
 :
-    public foamVtkBase64Formatter
+    public foamVtkBase64Layer
 {
     // Private Data Members
 
         static const char* name_;
-        static const char* encoding_;
+        static const outputOptions opts_;
 
 
     // Private Member Functions
 
-    //- Disallow default bitwise copy construct
-    foamVtkAppendBase64Formatter(const foamVtkAppendBase64Formatter&) = delete;
+        //- Disallow default bitwise copy construct
+        appendBase64Formatter(const appendBase64Formatter&) = delete;
 
-    //- Disallow default bitwise assignment
-    void operator=(const foamVtkAppendBase64Formatter&) = delete;
+        //- Disallow default bitwise assignment
+        void operator=(const appendBase64Formatter&) = delete;
 
 
 public:
@@ -71,25 +73,26 @@ public:
     // Constructors
 
         //- Construct and attach to an output stream
-        foamVtkAppendBase64Formatter(std::ostream&);
+        appendBase64Formatter(std::ostream& os);
 
 
     //- Destructor
-    virtual ~foamVtkAppendBase64Formatter();
+    virtual ~appendBase64Formatter();
 
 
     // Member Functions
 
+        //- The output is APPEND_BASE64.
+        virtual const outputOptions& opts() const;
+
         //- Output name for XML type ("append")
         virtual const char* name() const;
-
-        //- Name for the XML append encoding ("base64").
-        virtual const char* encoding() const;
 
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace vtk
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

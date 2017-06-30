@@ -50,6 +50,7 @@ const Foam::NamedEnum<Foam::timeControl::timeControls, 9>
     Foam::timeControl::timeControlNames_;
 
 
+
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 Foam::timeControl::timeControl
@@ -77,6 +78,23 @@ Foam::timeControl::~timeControl()
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+
+bool Foam::timeControl::entriesPresent
+(
+    const dictionary& dict,
+    const word& prefix
+)
+{
+    const word controlName(prefix + "Control");
+
+    if (dict.found(controlName))
+    {
+        return true;
+    }
+
+    return false;
+}
+
 
 void Foam::timeControl::read(const dictionary& dict)
 {
@@ -126,7 +144,8 @@ void Foam::timeControl::read(const dictionary& dict)
         case ocCpuTime:
         case ocAdjustableRunTime:
         {
-            interval_ = readScalar(dict.lookup(intervalName));
+            const scalar userTime = readScalar(dict.lookup(intervalName));
+            interval_ = time_.userTimeToTime(userTime);
             break;
         }
 
@@ -229,7 +248,7 @@ bool Foam::timeControl::execute()
         default:
         {
             FatalErrorInFunction
-                << "Undefined output control: "
+                << "Undefined time control: "
                 << timeControlNames_[timeControl_] << nl
                 << abort(FatalError);
             break;

@@ -3,7 +3,7 @@
 # \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
 #  \\    /   O peration     |
 #   \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-#    \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+#    \\/     M anipulation  | Copyright (C) 2016-2017 OpenCFD Ltd.
 #------------------------------------------------------------------------------
 # License
 #     This file is part of OpenFOAM.
@@ -53,21 +53,29 @@
 #     When _foamAddLib is unset (eg, called from makeParaView or from foamPV):
 #         - the ParaView_VERSION variable is retained.
 #------------------------------------------------------------------------------
+# USER EDITABLE PART: Changes made here may be lost with the next upgrade
 
-ParaView_VERSION=5.0.1
+ParaView_VERSION=5.4.0
 ParaView_MAJOR=detect                   # Automatically determine major version
-
 cmake_version=cmake-system
 
+# END OF (NORMAL) USER EDITABLE PART
 #------------------------------------------------------------------------------
 
-# Clean the PATH
+# Clean PATH and LD_LIBRARY_PATH
 cleaned=$($WM_PROJECT_DIR/bin/foamCleanPath "$PATH" \
+    "$ParaView_DIR \
+    $WM_THIRD_PARTY_DIR/platforms/$WM_ARCH$WM_COMPILER/cmake- \
+    $WM_THIRD_PARTY_DIR/platforms/$WM_ARCH$WM_COMPILER/ParaView-" \
+) && PATH="$cleaned"
+
+if [ -n "$LD_LIBRARY_PATH" ]
+then
+    cleaned=$($WM_PROJECT_DIR/bin/foamCleanPath "$LD_LIBRARY_PATH" \
         "$ParaView_DIR \
-         $WM_THIRD_PARTY_DIR/platforms/$WM_ARCH$WM_COMPILER/cmake- \
-         $WM_THIRD_PARTY_DIR/platforms/$WM_ARCH$WM_COMPILER/paraview-" \
-        ) \
-        && PATH="$cleaned"
+        $WM_THIRD_PARTY_DIR/platforms/$WM_ARCH$WM_COMPILER/ParaView-" \
+    ) && LD_LIBRARY_PATH="$cleaned"
+fi
 
 # ThirdParty cmake
 cmake=$WM_THIRD_PARTY_DIR/platforms/$WM_ARCH$WM_COMPILER/$cmake_version
@@ -161,11 +169,11 @@ then
 
 fi
 
-unset -f _foamParaviewEval
+unset -f _foamParaviewEval 2> /dev/null
 unset cleaned cmake cmake_version pvName pvMajor pvLibDir pvPython
 unset ParaView_MAJOR
 
-if type _foamAddLib > /dev/null 2>&1    # normal sourcing
+if command -v _foamAddLib > /dev/null 2>&1  # normal sourcing
 then
     unset ParaView_VERSION
 fi

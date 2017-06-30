@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2016-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -29,7 +29,7 @@ License
 #include "SLList.H"
 #include "contiguous.H"
 
-// * * * * * * * * * * * * * * * Ostream Operator *  * * * * * * * * * * * * //
+// * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * //
 
 template<class T>
 void Foam::UList<T>::writeEntry(Ostream& os) const
@@ -56,6 +56,8 @@ void Foam::UList<T>::writeEntry(Ostream& os) const
 }
 
 
+// * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
+
 template<class T>
 void Foam::UList<T>::writeEntry(const word& keyword, Ostream& os) const
 {
@@ -66,8 +68,14 @@ void Foam::UList<T>::writeEntry(const word& keyword, Ostream& os) const
 
 
 template<class T>
-Foam::Ostream& Foam::operator<<(Foam::Ostream& os, const Foam::UList<T>& L)
+Foam::Ostream& Foam::UList<T>::writeList
+(
+    Ostream& os,
+    const label shortListLen
+) const
 {
+    const UList<T>& L = *this;
+
     // Write list contents depending on data format
     if (os.format() == IOstream::ASCII || !contiguous<T>())
     {
@@ -96,7 +104,11 @@ Foam::Ostream& Foam::operator<<(Foam::Ostream& os, const Foam::UList<T>& L)
             // Write end delimiter
             os << token::END_BLOCK;
         }
-        else if (L.size() <= 1 || (L.size() < 11 && contiguous<T>()))
+        else if
+        (
+            L.size() <= 1 || !shortListLen
+         || (L.size() <= shortListLen && contiguous<T>())
+        )
         {
             // Write size and start delimiter
             os << L.size() << token::BEGIN_LIST;
@@ -114,16 +126,16 @@ Foam::Ostream& Foam::operator<<(Foam::Ostream& os, const Foam::UList<T>& L)
         else
         {
             // Write size and start delimiter
-            os << nl << L.size() << nl << token::BEGIN_LIST;
+            os << nl << L.size() << nl << token::BEGIN_LIST << nl;
 
             // Write contents
             forAll(L, i)
             {
-                os << nl << L[i];
+                os << L[i] << nl;
             }
 
             // Write end delimiter
-            os << nl << token::END_LIST << nl;
+            os << token::END_LIST << nl;
         }
     }
     else
@@ -138,17 +150,24 @@ Foam::Ostream& Foam::operator<<(Foam::Ostream& os, const Foam::UList<T>& L)
         }
     }
 
-    // Check state of IOstream
-    os.check("Ostream& operator<<(Ostream&, const UList&)");
-
+    os.check(FUNCTION_NAME);
     return os;
+}
+
+
+// * * * * * * * * * * * * * * * Ostream Operator *  * * * * * * * * * * * * //
+
+template<class T>
+Foam::Ostream& Foam::operator<<(Foam::Ostream& os, const Foam::UList<T>& L)
+{
+    return L.writeList(os, 10);
 }
 
 
 template<class T>
 Foam::Istream& Foam::operator>>(Istream& is, UList<T>& L)
 {
-    is.fatalCheck("operator>>(Istream&, UList<T>&)");
+    is.fatalCheck(FUNCTION_NAME);
 
     token firstToken(is);
 
@@ -165,7 +184,7 @@ Foam::Istream& Foam::operator>>(Istream& is, UList<T>& L)
             )
         );
         // Check list length
-        label s = elems.size();
+        const label s = elems.size();
 
         if (s != L.size())
         {
@@ -174,14 +193,14 @@ Foam::Istream& Foam::operator>>(Istream& is, UList<T>& L)
                 << " expected " << L.size()
                 << exit(FatalIOError);
         }
-        for (label i=0; i<s; i++)
+        for (label i=0; i<s; ++i)
         {
             L[i] = elems[i];
         }
     }
     else if (firstToken.isLabel())
     {
-        label s = firstToken.labelToken();
+        const label s = firstToken.labelToken();
 
         // Set list length to that read
         if (s != L.size())
@@ -197,13 +216,13 @@ Foam::Istream& Foam::operator>>(Istream& is, UList<T>& L)
         if (is.format() == IOstream::ASCII || !contiguous<T>())
         {
             // Read beginning of contents
-            char delimiter = is.readBeginList("List");
+            const char delimiter = is.readBeginList("List");
 
             if (s)
             {
                 if (delimiter == token::BEGIN_LIST)
                 {
-                    for (label i=0; i<s; i++)
+                    for (label i=0; i<s; ++i)
                     {
                         is >> L[i];
 
@@ -226,7 +245,7 @@ Foam::Istream& Foam::operator>>(Istream& is, UList<T>& L)
                         "reading the single entry"
                     );
 
-                    for (label i=0; i<s; i++)
+                    for (label i=0; i<s; ++i)
                     {
                         L[i] = element;
                     }
@@ -281,7 +300,7 @@ Foam::Istream& Foam::operator>>(Istream& is, UList<T>& L)
         (
             typename SLList<T>::const_iterator iter = sll.begin();
             iter != sll.end();
-            ++iter
+            ++iter, ++i
         )
         {
             L[i] = iter();

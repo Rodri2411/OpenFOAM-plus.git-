@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2015-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -33,7 +33,7 @@ template<class T>
 inline Foam::UList<T>::UList()
 :
     size_(0),
-    v_(0)
+    v_(nullptr)
 {}
 
 
@@ -71,7 +71,7 @@ inline Foam::label Foam::UList<T>::rcIndex(const label i) const
 template<class T>
 inline void Foam::UList<T>::checkStart(const label start) const
 {
-    if (start<0 || (start && start>=size_))
+    if (start < 0 || (start && start >= size_))
     {
         FatalErrorInFunction
             << "start " << start << " out of range 0 ... " << max(size_-1, 0)
@@ -83,7 +83,7 @@ inline void Foam::UList<T>::checkStart(const label start) const
 template<class T>
 inline void Foam::UList<T>::checkSize(const label size) const
 {
-    if (size<0 || size>size_)
+    if (size < 0 || size > size_)
     {
         FatalErrorInFunction
             << "size " << size << " out of range 0 ... " << size_
@@ -162,7 +162,6 @@ inline void Foam::UList<T>::shallowCopy(const UList<T>& a)
 
 // * * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * //
 
-
 template<class T>
 inline T& Foam::UList<T>::operator[](const label i)
 {
@@ -171,7 +170,6 @@ inline T& Foam::UList<T>::operator[](const label i)
     #endif
     return v_[i];
 }
-
 
 namespace Foam
 {
@@ -190,7 +188,6 @@ namespace Foam
         }
     }
 }
-
 
 template<class T>
 inline const T& Foam::UList<T>::operator[](const label i) const
@@ -321,7 +318,7 @@ inline bool Foam::UList<T>::empty() const
 template<class T>
 inline void Foam::reverse(UList<T>& ul, const label n)
 {
-    for (int i=0; i<n/2; i++)
+    for (int i=0; i<n/2; ++i)
     {
         Swap(ul[i], ul[n-1-i]);
     }

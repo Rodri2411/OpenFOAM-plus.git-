@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -76,11 +76,14 @@ void Foam::probes::sampleAndWrite
         unsigned int w = IOstream::defaultPrecision() + 7;
         OFstream& os = *probeFilePtrs_[vField.name()];
 
-        os  << setw(w) << vField.time().timeToUserTime(vField.time().value());
+        os  << setw(w) << vField.time().timeOutputValue();
 
         forAll(values, probei)
         {
-            os  << ' ' << setw(w) << values[probei];
+            if (includeOutOfBounds_ || processor_[probei] != -1)
+            {
+                os  << ' ' << setw(w) << values[probei];
+            }
         }
         os  << endl;
     }
@@ -100,11 +103,14 @@ void Foam::probes::sampleAndWrite
         unsigned int w = IOstream::defaultPrecision() + 7;
         OFstream& os = *probeFilePtrs_[sField.name()];
 
-        os  << setw(w) << sField.time().timeToUserTime(sField.time().value());
+        os  << setw(w) << sField.time().timeOutputValue();
 
         forAll(values, probei)
         {
-            os  << ' ' << setw(w) << values[probei];
+            if (includeOutOfBounds_ || processor_[probei] != -1)
+            {
+                os  << ' ' << setw(w) << values[probei];
+            }
         }
         os  << endl;
     }
@@ -141,7 +147,7 @@ void Foam::probes::sampleAndWrite(const fieldGroup<Type>& fields)
 
             if
             (
-                iter != objectRegistry::end()
+                iter.found()
              && iter()->type()
              == GeometricField<Type, fvPatchField, volMesh>::typeName
             )
@@ -190,7 +196,7 @@ void Foam::probes::sampleAndWriteSurfaceFields(const fieldGroup<Type>& fields)
 
             if
             (
-                iter != objectRegistry::end()
+                iter.found()
              && iter()->type()
              == GeometricField<Type, fvsPatchField, surfaceMesh>::typeName
             )

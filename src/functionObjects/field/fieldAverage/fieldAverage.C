@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2015-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -67,6 +67,27 @@ void Foam::functionObjects::fieldAverage::resetFields()
 
 void Foam::functionObjects::fieldAverage::initialize()
 {
+    if (!totalIter_.size())
+    {
+        totalIter_.setSize(faItems_.size(), 1);
+    }
+
+    if (!totalTime_.size())
+    {
+        totalTime_.setSize(faItems_.size(), obr_.time().deltaTValue());
+    }
+    else
+    {
+        // Check if totalTime_ has been set otherwise initialize
+        forAll(totalTime_, fieldi)
+        {
+            if (totalTime_[fieldi] < 0)
+            {
+                totalTime_[fieldi] = obr_.time().deltaTValue();
+            }
+        }
+    }
+
     resetFields();
 
     Log << type() << " " << name() << ":" << nl;
@@ -98,7 +119,7 @@ void Foam::functionObjects::fieldAverage::initialize()
         }
     }
 
-    // ensure first averaging works unconditionally
+    // Ensure first averaging works unconditionally
     prevTimeIndex_ = -1;
 
     Log << endl;
@@ -108,14 +129,12 @@ void Foam::functionObjects::fieldAverage::initialize()
 
 void Foam::functionObjects::fieldAverage::restart()
 {
-    Log << "    Restarting averaging at time " << obr().time().timeName()
+    Log << "    Restarting averaging at time "
+        << obr().time().timeOutputValue()
         << nl << endl;
 
     totalIter_.clear();
-    totalIter_.setSize(faItems_.size(), 1);
-
     totalTime_.clear();
-    totalTime_.setSize(faItems_.size(), obr().time().deltaTValue());
 
     initialize();
 }
@@ -216,12 +235,15 @@ void Foam::functionObjects::fieldAverage::readAveragingProperties()
     totalIter_.clear();
     totalIter_.setSize(faItems_.size(), 1);
 
+    // Initialize totalTime with negative values
+    // to indicate that it has not been set
     totalTime_.clear();
-    totalTime_.setSize(faItems_.size(), obr().time().deltaTValue());
+    totalTime_.setSize(faItems_.size(), -1);
 
     if (restartOnRestart_ || restartOnOutput_)
     {
-        Info<< "    Starting averaging at time " << obr().time().timeName()
+        Info<< "    Starting averaging at time "
+            << obr().time().timeOutputValue()
             << nl;
     }
     else
@@ -240,15 +262,18 @@ void Foam::functionObjects::fieldAverage::readAveragingProperties()
                 totalIter_[fieldi] = readLabel(fieldDict.lookup("totalIter"));
                 totalTime_[fieldi] = readScalar(fieldDict.lookup("totalTime"));
 
+                scalar userTotalTime =
+                    obr().time().timeToUserTime(totalTime_[fieldi]);
+
                 Info<< "        " << fieldName
                     << " iters = " << totalIter_[fieldi]
-                    << " time = " << totalTime_[fieldi] << nl;
+                    << " time = " << userTotalTime << nl;
             }
             else
             {
                 Info<< "        " << fieldName
                     << ": starting averaging at time "
-                    << obr().time().timeName() << endl;
+                    << obr().time().timeOutputValue() << endl;
             }
         }
     }
@@ -312,7 +337,8 @@ bool Foam::functionObjects::fieldAverage::read(const dictionary& dict)
 
     if (periodicRestart_)
     {
-        dict.lookup("restartPeriod") >> restartPeriod_;
+        scalar userRestartPeriod = readScalar(dict.lookup("restartPeriod"));
+        restartPeriod_ = obr().time().userTimeToTime(userRestartPeriod);
 
         if (restartPeriod_ > 0)
         {
@@ -323,22 +349,25 @@ bool Foam::functionObjects::fieldAverage::read(const dictionary& dict)
                 ++periodIndex_;
             }
 
-            Info<< "    Restart period " << restartPeriod_
-                << " - next restart at " << (restartPeriod_*periodIndex_)
+            Info<< "    Restart period " << userRestartPeriod
+                << " - next restart at " << (userRestartPeriod*periodIndex_)
                 << nl << endl;
         }
         else
         {
             periodicRestart_ = false;
 
-            Info<< "    Restart period " << restartPeriod_
+            Info<< "    Restart period " << userRestartPeriod
                 << " - ignored"
                 << nl << endl;
         }
     }
 
-    if (dict.readIfPresent("restartTime", restartTime_))
+    scalar userRestartTime = 0;
+    if (dict.readIfPresent("restartTime", userRestartTime))
     {
+        restartTime_ = obr().time().userTimeToTime(userRestartTime);
+
         if (currentTime > restartTime_)
         {
             // The restart time is already in the past - ignore
@@ -346,7 +375,7 @@ bool Foam::functionObjects::fieldAverage::read(const dictionary& dict)
         }
         else
         {
-            Info<< "    Restart scheduled at time " << restartTime_
+            Info<< "    Restart scheduled at time " << userRestartTime
                 << nl << endl;
         }
     }

@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2015 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2016-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -311,6 +311,7 @@ void Foam::turbulentDFSEMInletFvPatchVectorField::initialisePatch()
 
     // Determine if all eddies spawned from a single processor
     singleProc_ = patch.size() == returnReduce(patch.size(), sumOp<label>());
+    reduce(singleProc_, orOp<bool>());
 }
 
 
@@ -591,7 +592,7 @@ Foam::vector Foam::turbulentDFSEMInletFvPatchVectorField::uDashEddy
 
 void Foam::turbulentDFSEMInletFvPatchVectorField::calcOverlappingProcEddies
 (
-    List<List<eddy> >& overlappingEddies
+    List<List<eddy>>& overlappingEddies
 ) const
 {
     int oldTag = UPstream::msgType();
@@ -603,7 +604,7 @@ void Foam::turbulentDFSEMInletFvPatchVectorField::calcOverlappingProcEddies
     Pstream::scatterList(patchBBs);
 
     // Per processor indices into all segments to send
-    List<DynamicList<label> > dynSendMap(Pstream::nProcs());
+    List<DynamicList<label>> dynSendMap(Pstream::nProcs());
 
     forAll(eddies_, i)
     {
@@ -672,7 +673,7 @@ void Foam::turbulentDFSEMInletFvPatchVectorField::calcOverlappingProcEddies
 
     mapDistribute map(segmentI, sendMap.xfer(), constructMap.xfer());
 
-    PstreamBuffers pBufs(Pstream::nonBlocking);
+    PstreamBuffers pBufs(Pstream::commsTypes::nonBlocking);
 
     for (label domain = 0; domain < Pstream::nProcs(); domain++)
     {
@@ -745,7 +746,7 @@ turbulentDFSEMInletFvPatchVectorField
     nCellPerEddy_(5),
     patchNormal_(vector::zero),
     v0_(0),
-    rndGen_(0, -1),
+    rndGen_(Pstream::myProcNo()),
     sigmax_(size(), 0),
     maxSigmaX_(0),
     nEddy_(0),
@@ -1049,7 +1050,7 @@ void Foam::turbulentDFSEMInletFvPatchVectorField::updateCoeffs()
             }
 
             // Add contributions from overlapping eddies
-            List<List<eddy> > overlappingEddies(Pstream::nProcs());
+            List<List<eddy>> overlappingEddies(Pstream::nProcs());
             calcOverlappingProcEddies(overlappingEddies);
 
             forAll(overlappingEddies, procI)

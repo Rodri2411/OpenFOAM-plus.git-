@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2016 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2016-2017 OpenCFD Ltd.
      \\/     M anipulation  | Copyright (C) 2015 IH-Cantabria
 -------------------------------------------------------------------------------
 License
@@ -105,6 +105,9 @@ protected:
 
         //- Maximum z (point) height per patch face / [m]
         scalarField zMax_;
+
+        //- Minimum z reference level / [m]
+        scalar zMin0_;
 
         //- Reference water depth / [m]
         scalar waterDepthRef_;
@@ -231,7 +234,7 @@ public:
         static word modelName(const word& patchName);
 
         //- Read from dictionary
-        virtual bool read(const dictionary& overrideDict);
+        virtual bool readDict(const dictionary& overrideDict);
 
         //- Return the latest wave velocity prediction
         virtual const vectorField& U() const;
