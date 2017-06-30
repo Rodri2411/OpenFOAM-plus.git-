@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2017 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -21,23 +21,51 @@ License
     You should have received a copy of the GNU General Public License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
+InNamespace
+    Foam::fvc
+
+Description
+    Correct flux-U difference in the internal loop  using relaxation factor
+
+SourceFiles
+    fvcCorrectAlpha.C
+
 \*---------------------------------------------------------------------------*/
 
-#include "mixedFixedValueSlipFvPatchFields.H"
-#include "addToRunTimeSelectionTable.H"
-#include "volFields.H"
+
+#ifndef fvcCorrectAlpha_H
+#define fvcCorrectAlpha_H
+
+#include "volFieldsFwd.H"
+#include "surfaceFieldsFwd.H"
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
 
-// * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
+/*---------------------------------------------------------------------------*\
+                     Namespace fvc functions Declaration
+\*---------------------------------------------------------------------------*/
 
-makePatchFields(mixedFixedValueSlip);
+namespace fvc
+{
+    tmp<GeometricField<scalar, fvsPatchField, surfaceMesh>> alphaCorr
+    (
+        const GeometricField<vector, fvPatchField, volMesh>& U,
+        const GeometricField<scalar, fvsPatchField, surfaceMesh>& phiU,
+        const bool finalIter
+    );
+}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#endif
 
 // ************************************************************************* //
