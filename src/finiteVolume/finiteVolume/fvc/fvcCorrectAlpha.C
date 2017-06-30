@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2017 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -21,13 +21,20 @@ License
     You should have received a copy of the GNU General Public License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
+InNamespace
+    Foam::fvc
+
+Description
+    Correct flux-U difference in the internal loop  using relaxation factor
+
+SourceFiles
+    fvcCorrectAlpha.C
+
 \*---------------------------------------------------------------------------*/
 
-#ifndef mixedFixedValueSlipFvPatchFields_H
-#define mixedFixedValueSlipFvPatchFields_H
-
-#include "mixedFixedValueSlipFvPatchField.H"
-#include "fieldTypes.H"
+#include "fvcCorrectAlpha.H"
+#include "fvMesh.H"
+#include "surfaceInterpolate.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -36,14 +43,38 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-makePatchTypeFieldTypedefs(mixedFixedValueSlip);
+namespace fvc
+{
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+tmp<GeometricField<scalar, fvsPatchField, surfaceMesh>> alphaCorr
+(
+    const GeometricField<vector, fvPatchField, volMesh>& U,
+    const GeometricField<scalar, fvsPatchField, surfaceMesh>& phiU,
+    const bool finalIter
+)
+{
+    const fvMesh& mesh = U.mesh();
+    const word fieldName = U.select(finalIter);
+
+    scalar alpha = 1;
+    if (mesh.relaxEquation(fieldName))
+    {
+        alpha = mesh.equationRelaxationFactor(fieldName);
+    }
+
+    return
+        (1 - alpha)
+       *(phiU.prevIter() - (fvc::interpolate(U.prevIter()) & mesh.Sf()));
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+} // End namespace fvc
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-#endif
 
 // ************************************************************************* //
