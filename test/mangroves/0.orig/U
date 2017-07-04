@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  1.7.1                                 |
+|  \\    /   O peration     | Version:  plus                                  |
 |   \\  /    A nd           | Web:      www.OpenFOAM.com                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -9,44 +9,45 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       volScalarField;
+    class       volVectorField;
     location    "0";
-    object      nut;
+    object      U;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dimensions      [0 2 -1 0 0 0 0];
+dimensions      [0 1 -1 0 0 0 0];
 
-internalField   uniform 0;
+internalField   uniform (0 0 0);
 
 boundaryField
 {
     left
     {
-        type            calculated;
-        value           uniform 0;
+        type            waveVelocity;
+        value           uniform (0 0 0);
     }
+
     right
     {
-        type            calculated;
-        value           uniform 0;
+        type            waveVelocity;
+        value           uniform (0 0 0);
     }
+
     sides
     {
         type            slip;
     }
 
-    top
-    {
-        type            calculated;
-        value           uniform 0;
-    }
     ground
     {
-        type            nutkWallFunction;
-        value           uniform 0;
+        type            noSlip;
+    }
+
+    top
+    {
+        type            pressureInletOutletVelocity;
+        value           uniform (0 0 0);
     }
 }
-
 
 // ************************************************************************* //

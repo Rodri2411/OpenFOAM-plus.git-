@@ -1,8 +1,8 @@
-/*--------------------------------*- C++ -*----------------------------------*\
+/*---------------------------------------------------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  1.6                                   |
-|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|  \\    /   O peration     | Version:  plus                                  |
+|   \\  /    A nd           | Web:      http://www.OpenFOAM.com               |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
 FoamFile
@@ -11,20 +11,33 @@ FoamFile
     format      ascii;
     class       dictionary;
     location    "constant";
-    object      turbulenceProperties;
+    object      wavesProperties;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-simulationType  RAS;
-
-RAS
+left
 {
-    RASModel        kEpsilon;
+    alpha           alpha.water;
 
-    turbulence      on;
+    waveModel       Boussinesq;
 
-    printCoeffs     on;
+    nPaddle         1;
+
+    waveHeight      0.05;
+
+    waveAngle       0.0;
+
+    activeAbsorption yes;
 }
 
+right
+{
+    alpha           alpha.water;
+
+    waveModel       shallowWaterAbsorption;
+
+    nPaddle         1;
+}
 
 // ************************************************************************* //
+

@@ -1,6 +1,4 @@
-multiphaseMangrovesSource/multiphaseMangrovesSource.C
-
-multiphaseMangrovesTurbulenceModel/multiphaseMangrovesTurbulenceModel.C
+mangroves/mangrovesSource.C
 
 multiphasePorosity/multiphasePorositySource.C
 
