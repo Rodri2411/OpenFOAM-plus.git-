@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
-    ihFoam
+    interFoam
 
 Group
     grpMultiphaseSolvers
@@ -38,21 +38,6 @@ Description
 
     For a two-fluid approach see twoPhaseEulerFoam.
 
-    IHFOAM solves the VARANS equations.
-
-\*---------------------------------------------------------------------------*\
-| Work developed at IH Cantabria       IIIII H   H FFFFF OOOOO AAAAA M   M    |
-|                                        I   H   H F     O   O A   A MM MM    |
-|   [ihfoam@ihcantabria.com]             I   HHHHH FFFF  O   O AAAAA M M M    |
-|   				         I   H   H F     O   O A   A M   M    |
-|                                      IIIII H   H F     OOOOO A   A M   M    |
-|   -----------------------------------------------------------------------   |
-| References:                                                                 |
-|                                                                             |
-| - Wave and current interaction under smooth and rough beds with OpenFOAM.   | 
-|   Javier L. Lara, Gabriel Barajas, Maria Maza, Inigo J. Losada.             |
-|   (2016)                                                                    |
-|                                                                             |
 \*---------------------------------------------------------------------------*/
 
 #include "fvCFD.H"
@@ -140,13 +125,6 @@ int main(int argc, char *argv[])
         }
 
         runTime.write();
-
-        // Write Porous Variables
-        if( activePorosity && runTime.outputTime() ) 
-        {
-            porosity.write();
-            porosityIndex.write();
-        }
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
             << "  ClockTime = " << runTime.elapsedClockTime() << " s"

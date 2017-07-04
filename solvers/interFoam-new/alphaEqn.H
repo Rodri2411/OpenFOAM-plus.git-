@@ -79,13 +79,6 @@
 
     if (MULESCorr)
     {
-        if( activePorosity && runTime.outputTime() ) 
-        {
-            Info << "WARNING: The VOF equation in this loop"
-                 << " does not include porosity.\n"
-                 << "Set MULESCorr to 'no' in ./system/fvSolution.\n" << endl;
-        }
-
         fvScalarMatrix alpha1Eqn
         (
             (
@@ -115,7 +108,16 @@
         if (alphaApplyPrevCorr && talphaPhiCorr0.valid())
         {
             Info<< "Applying the previous iteration compression flux" << endl;
-            MULES::correct(alpha1, alphaPhi, talphaPhiCorr0.ref(), 1, 0);
+
+            MULES::correct
+            (
+                porosity,
+                alpha1,
+                alphaPhi,
+                talphaPhiCorr0.ref(),
+                zeroField(), zeroField(),
+                1, 0
+            );
 
             alphaPhi += talphaPhiCorr0();
         }
@@ -143,7 +145,7 @@
                 )
             + fvc::flux
                 (
-                -fvc::flux(-phir, alpha2, alpharScheme),
+                   -fvc::flux(-phir, alpha2, alpharScheme),
                     alpha1,
                     alpharScheme
                 )
@@ -178,18 +180,17 @@
         {
             alphaPhi = alphaPhiUn;
 
-            //MULES::explicitSolve(alpha1, phiCN, alphaPhi, 1, 0);
             MULES::explicitSolve
-	        (
-	            porosity, 
-	            alpha1, 
-	            phiCN, 
-	            alphaPhi, 
-	            zeroField(), 
-	            zeroField(), 
-	            1.0, 
-	            0.0
-	        );
+            (
+                porosity,
+                alpha1,
+                phiCN,
+                alphaPhi,
+                zeroField(),
+                zeroField(),
+                1,
+                0
+            );
         }
 
         alpha2 = 1.0 - alpha1;

@@ -1,5 +1,4 @@
 #include "createRDeltaT.H"
-#include "createPorosity.H"
 
 Info<< "Reading field p_rgh\n" << endl;
 volScalarField p_rgh
@@ -149,6 +148,20 @@ surfaceScalarField alphaPhiUn
     ),
     mesh,
     dimensionedScalar("zero", phi.dimensions(), 0.0)
+);
+
+volScalarField porosity
+(
+    IOobject
+    (
+        "porosity",
+        runTime.timeName(),
+        mesh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE
+    ),
+    mesh,
+    dimensionedScalar("porosity0", dimless, 1)
 );
 
 // MULES Correction

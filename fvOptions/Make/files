@@ -1,0 +1,7 @@
+multiphaseMangrovesSource/multiphaseMangrovesSource.C
+
+multiphaseMangrovesTurbulenceModel/multiphaseMangrovesTurbulenceModel.C
+
+multiphasePorosity/multiphasePorositySource.C
+
+LIB = $(FOAM_USER_LIBBIN)/libfvOptions-extra
