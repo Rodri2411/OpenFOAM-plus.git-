@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -57,6 +57,9 @@ class hePsiThermo
         //- Calculate the thermo variables
         void calculate();
 
+        //- Calculate the thermo variables for thermos based on T
+        void calculateT();
+
         //- Construct as copy (not implemented)
         hePsiThermo(const hePsiThermo<BasicPsiThermo, MixtureType>&);
 
@@ -75,6 +78,14 @@ public:
             const word& phaseName
         );
 
+        //-  Construct from mesh and phase name and dict name
+        hePsiThermo
+        (
+            const fvMesh&,
+            const word& phaseName,
+            const word& dictionaryName
+        );
+
 
     //- Destructor
     virtual ~hePsiThermo();
@@ -84,6 +95,10 @@ public:
 
         //- Update properties
         virtual void correct();
+
+
+        //- Update properties from T
+        //virtual void correctT();
 };
 
 

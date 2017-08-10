@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -110,6 +110,9 @@ public:
 
         //- Integrate between two values
         Type integrate(const scalar x1, const scalar x2) const;
+
+        //- Return true for Constant type
+        virtual bool isConstant() const;
 
         //- Write in dictionary format
         virtual void writeData(Ostream& os) const;

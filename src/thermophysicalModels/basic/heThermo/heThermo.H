@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -79,6 +79,13 @@ private:
         //- Initialize heThermo
         void init();
 
+        //- Lookup or construct he
+//         volScalarField& lookupOrConstruct
+//         (
+//             const fvMesh& mesh,
+//             const word& name
+//         );
+
 
 public:
 
@@ -97,6 +104,14 @@ public:
             const fvMesh&,
             const dictionary&,
             const word& phaseName
+        );
+
+        //- Construct from mesh,dictionary,phase name with a single temperature
+        heThermo
+        (
+            const fvMesh&,
+            const word& phaseName,
+            const word& dictionaryName
         );
 
 

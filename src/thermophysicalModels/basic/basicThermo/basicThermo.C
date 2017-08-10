@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -40,6 +40,7 @@ namespace Foam
 {
     defineTypeNameAndDebug(basicThermo, 0);
     defineRunTimeSelectionTable(basicThermo, fvMesh);
+    defineRunTimeSelectionTable(basicThermo, fvMeshDictPhase);
 }
 
 const Foam::word Foam::basicThermo::dictName("thermophysicalProperties");
@@ -127,7 +128,7 @@ Foam::wordList Foam::basicThermo::heBoundaryTypes()
 Foam::volScalarField& Foam::basicThermo::lookupOrConstruct
 (
     const fvMesh& mesh,
-    const char* name
+    const word& name
 ) const
 {
     if (!mesh.objectRegistry::foundObject<volScalarField>(name))
@@ -181,18 +182,7 @@ Foam::basicThermo::basicThermo
 
     p_(lookupOrConstruct(mesh, "p")),
 
-    T_
-    (
-        IOobject
-        (
-            phasePropertyName("T"),
-            mesh.time().timeName(),
-            mesh,
-            IOobject::MUST_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh
-    ),
+    T_(lookupOrConstruct(mesh, phasePropertyName("T"))),
 
     alpha_
     (
@@ -208,7 +198,9 @@ Foam::basicThermo::basicThermo
         dimensionSet(1, -1, -1, 0, 0)
     ),
 
-    dpdt_(lookupOrDefault<Switch>("dpdt", true))
+    dpdt_(lookupOrDefault<Switch>("dpdt", true)),
+
+    tempBased_(false)
 {}
 
 
@@ -236,18 +228,7 @@ Foam::basicThermo::basicThermo
 
     p_(lookupOrConstruct(mesh, "p")),
 
-    T_
-    (
-        IOobject
-        (
-            phasePropertyName("T"),
-            mesh.time().timeName(),
-            mesh,
-            IOobject::MUST_READ,
-            IOobject::AUTO_WRITE
-        ),
-        mesh
-    ),
+    T_(lookupOrConstruct(mesh, phasePropertyName("T"))),
 
     alpha_
     (
@@ -261,7 +242,53 @@ Foam::basicThermo::basicThermo
         ),
         mesh,
         dimensionSet(1, -1, -1, 0, 0)
-    )
+    ),
+
+    tempBased_(false)
+{}
+
+Foam::basicThermo::basicThermo
+(
+    const fvMesh& mesh,
+    const word& phaseName,
+    const word& dictionaryName
+)
+:
+    IOdictionary
+    (
+        IOobject
+        (
+            dictionaryName,
+            mesh.time().constant(),
+            mesh,
+            IOobject::MUST_READ_IF_MODIFIED,
+            IOobject::NO_WRITE
+        )
+    ),
+
+    phaseName_(phaseName),
+
+    p_(lookupOrConstruct(mesh, "p")),
+
+    T_(lookupOrConstruct(mesh, "T")),
+
+    alpha_
+    (
+        IOobject
+        (
+            "thermo:alpha",
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        mesh,
+        dimensionSet(1, -1, -1, 0, 0)
+    ),
+
+    dpdt_(lookupOrDefault<Switch>("dpdt", true)),
+
+    tempBased_(true)
 {}
 
 

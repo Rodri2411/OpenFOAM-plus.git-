@@ -107,8 +107,28 @@ addToRunTimeSelectionTable                                                     \
     BaseThermo,                                                                \
     Cthermo##Mixture##Transport##Type##Thermo##EqnOfState##Specie,             \
     fvMesh                                                                     \
+);                                                                             \
+                                                                               \
+addToRunTimeSelectionTable                                                     \
+(                                                                              \
+    basicThermo,                                                               \
+    Cthermo##Mixture##Transport##Type##Thermo##EqnOfState##Specie,             \
+    fvMeshDictPhase                                                            \
+);                                                                             \
+                                                                               \
+addToRunTimeSelectionTable                                                     \
+(                                                                              \
+    fluidThermo,                                                               \
+    Cthermo##Mixture##Transport##Type##Thermo##EqnOfState##Specie,             \
+    fvMeshDictPhase                                                            \
+);                                                                             \
+                                                                               \
+addToRunTimeSelectionTable                                                     \
+(                                                                              \
+    BaseThermo,                                                                \
+    Cthermo##Mixture##Transport##Type##Thermo##EqnOfState##Specie,             \
+    fvMeshDictPhase                                                            \
 );
-
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

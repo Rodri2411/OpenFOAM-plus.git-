@@ -48,7 +48,7 @@ License
 namespace Foam
 {
     makeFunction1(label);
-    makeFunction1Type(Constant, label);
+    //makeFunction1Type(Constant, label);
     // Polynomial functions and interpolation do evaluate to label
     // Instead evaluate a scalar and convert to label as appropriate
 

@@ -489,29 +489,29 @@ Foam::scalar Foam::particle::trackToFace
             facei_ = -1;
         }
 
-        // Pout<< "track loop " << position_ << " " << endPosition << nl
-        //     << "    " << celli_
-        //     << "    " << facei_
-        //     << " " << tetFacei_
-        //     << " " << tetPti_
-        //     << " " << triI
-        //     << " " << lambdaMin
-        //     << " " << trackFraction
-        //     << endl;
-
-        // Pout<< "# Tracking loop tet "
-        //     << origId_ << " " << origProc_<< nl
-        //     << "# face: " << tetFacei_ << nl
-        //     << "# tetPti: " << tetPti_ << nl
-        //     << "# tetBasePtI: " << mesh_.tetBasePtIs()[tetFacei_] << nl
-        //     << "# tet.mag(): " << tet.mag() << nl
-        //     << "# tet.quality(): " << tet.quality()
-        //     << endl;
-
-        // meshTools::writeOBJ(Pout, tet.a());
-        // meshTools::writeOBJ(Pout, tet.b());
-        // meshTools::writeOBJ(Pout, tet.c());
-        // meshTools::writeOBJ(Pout, tet.d());
+//         Pout<< "track loop " << position_ << " " << endPosition << nl
+//             << "    " << celli_
+//             << "    " << facei_
+//             << " " << tetFacei_
+//             << " " << tetPti_
+//             << " " << triI
+//             << " " << lambdaMin
+//             << " " << trackFraction
+//             << endl;
+//
+//         Pout<< "# Tracking loop tet "
+//             << origId_ << " " << origProc_<< nl
+//             << "# face: " << tetFacei_ << nl
+//             << "# tetPti: " << tetPti_ << nl
+//             << "# tetBasePtI: " << mesh_.tetBasePtIs()[tetFacei_] << nl
+//             << "# tet.mag(): " << tet.mag() << nl
+//             << "# tet.quality(): " << tet.quality()
+//             << endl;
+//
+//         meshTools::writeOBJ(Pout, tet.a());
+//         meshTools::writeOBJ(Pout, tet.b());
+//         meshTools::writeOBJ(Pout, tet.c());
+//         meshTools::writeOBJ(Pout, tet.d());
 
         // Pout<< "f 1 3 2" << nl
         //     << "f 2 3 4" << nl

@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -79,6 +79,45 @@ void Foam::heThermo<BasicThermo, MixtureType>::init()
     this->heBoundaryCorrection(he_);
 }
 
+/*
+template<class BasicThermo, class MixtureType>
+Foam::volScalarField& Foam::heThermo<BasicThermo, MixtureType>::lookupOrConstruct
+(
+    const fvMesh& mesh,
+    const word& name
+)
+{
+    if (!mesh.objectRegistry::foundObject<volScalarField>(name))
+    {
+        volScalarField* fPtr
+        (
+            new volScalarField
+            (
+                IOobject
+                (
+                    name,
+                    mesh.time().timeName(),
+                    mesh,
+                    IOobject::NO_READ,
+                    IOobject::NO_WRITE
+                ),
+                mesh,
+                dimEnergy/dimMass,
+                this->heBoundaryTypes(),
+                this->heBoundaryBaseTypes()
+            )
+        );
+
+        // Transfer ownership of this object to the objectRegistry
+        fPtr->store(fPtr);
+    }
+
+    return const_cast<volScalarField&>
+    (
+        mesh.objectRegistry::lookupObject<volScalarField>(name)
+    );
+}
+*/
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -111,6 +150,19 @@ Foam::heThermo<BasicThermo, MixtureType>::heThermo
         this->heBoundaryTypes(),
         this->heBoundaryBaseTypes()
     )
+    /*
+    he_
+    (
+        this->lookupOrConstruct
+        (
+            mesh,
+            BasicThermo::phasePropertyName
+            (
+                MixtureType::thermoType::heName()
+            )
+        )
+    )
+    */
 {
     init();
 }
@@ -145,9 +197,67 @@ Foam::heThermo<BasicThermo, MixtureType>::heThermo
         this->heBoundaryTypes(),
         this->heBoundaryBaseTypes()
     )
+    /*
+    he_
+    (
+        this->lookupOrConstruct
+        (
+            mesh,
+            MixtureType::thermoType::heName()
+        )
+    )
+    */
 {
     init();
 }
+
+
+template<class BasicThermo, class MixtureType>
+Foam::heThermo<BasicThermo, MixtureType>::heThermo
+(
+    const fvMesh& mesh,
+    const word& phaseName,
+    const word& dictionaryName
+)
+:
+    BasicThermo(mesh, phaseName, dictionaryName),
+    MixtureType(*this, mesh, phaseName),
+
+    he_
+    (
+        IOobject
+        (
+            BasicThermo::phasePropertyName
+            (
+                MixtureType::thermoType::heName()
+            ),
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        mesh,
+        dimEnergy/dimMass,
+        this->heBoundaryTypes(),
+        this->heBoundaryBaseTypes()
+    )
+    /*
+    he_
+    (
+        this->lookupOrConstruct
+        (
+            mesh,
+            BasicThermo::phasePropertyName
+            (
+                MixtureType::thermoType::heName()
+            )
+        )
+    )
+    */
+{
+    init();
+}
+
 
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //

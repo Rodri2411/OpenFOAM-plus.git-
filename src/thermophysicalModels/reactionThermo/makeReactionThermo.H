@@ -78,7 +78,35 @@ addToRunTimeSelectionTable                                                     \
     CThermo,                                                                   \
     MixtureThermo##Mixture##ThermoPhys,                                        \
     fvMesh                                                                     \
+);                                                                             \
+addToRunTimeSelectionTable                                                     \
+(                                                                              \
+    basicThermo,                                                               \
+    MixtureThermo##Mixture##ThermoPhys,                                        \
+    fvMeshDictPhase                                                            \
+);                                                                             \
+                                                                               \
+addToRunTimeSelectionTable                                                     \
+(                                                                              \
+    fluidThermo,                                                               \
+    MixtureThermo##Mixture##ThermoPhys,                                        \
+    fvMeshDictPhase                                                            \
+);                                                                             \
+                                                                               \
+addToRunTimeSelectionTable                                                     \
+(                                                                              \
+    BaseThermo,                                                                \
+    MixtureThermo##Mixture##ThermoPhys,                                        \
+    fvMeshDictPhase                                                            \
+);                                                                             \
+                                                                               \
+addToRunTimeSelectionTable                                                     \
+(                                                                              \
+    CThermo,                                                                   \
+    MixtureThermo##Mixture##ThermoPhys,                                        \
+    fvMeshDictPhase                                                            \
 );
+
 
 
 #define makeReactionThermo(BaseThermo,CThermo,MixtureThermo,Mixture,Transport,Type,Thermo,EqnOfState,Specie) \

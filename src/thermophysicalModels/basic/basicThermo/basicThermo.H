@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -69,13 +69,16 @@ protected:
             volScalarField& p_;
 
             //- Temperature [K]
-            volScalarField T_;
+            volScalarField& T_;
 
             //- Laminar thermal diffusuvity [kg/m/s]
             volScalarField alpha_;
 
         //- Should the dpdt term be included in the enthalpy equation
         Switch dpdt_;
+
+        //- Temperature based thermo
+        Switch tempBased_;
 
 
     // Protected Member Functions
@@ -86,7 +89,7 @@ protected:
         volScalarField& lookupOrConstruct
         (
             const fvMesh& mesh,
-            const char* name
+            const word&
         ) const;
 
         //- Return the enthalpy/internal energy field boundary types
@@ -115,6 +118,17 @@ public:
     );
 
 
+    //- Declare run-time constructor selection table for dictionary based
+    declareRunTimeSelectionTable
+    (
+        autoPtr,
+        basicThermo,
+        fvMeshDictPhase,
+        (const fvMesh& mesh, const word& phaseName, const word& dictName),
+        (mesh, phaseName, dictName)
+    );
+
+
     // Constructors
 
         //- Construct from mesh and phase name
@@ -130,6 +144,15 @@ public:
             const fvMesh&,
             const dictionary&,
             const word& phaseName
+        );
+
+        //- Construct from mesh,dictionary,phase name with a single temperature
+        // solved on the top level solver (tempBased = true)
+        basicThermo
+        (
+            const fvMesh&,
+            const word& phaseName,
+            const word& dictionaryName
         );
 
 
@@ -158,6 +181,15 @@ public:
             const fvMesh&,
             const dictionary&,
             const word& phaseName=word::null
+        );
+
+        //- Generic New for each of the related thermodynamics packages
+        template<class Thermo>
+        static autoPtr<Thermo> New
+        (
+            const fvMesh&,
+            const word& phaseName,
+            const word& dictName
         );
 
         //- Specialisation of the Generic New for basicThermo
@@ -240,6 +272,9 @@ public:
         //- Update properties
         virtual void correct() = 0;
 
+        //- Update properties when using temperature based thermos
+        //virtual void correctT() = 0;
+
         //- Return true if the equation of state is incompressible
         //  i.e. rho != f(p)
         virtual bool incompressible() const = 0;
@@ -252,6 +287,12 @@ public:
         Switch dpdt() const
         {
             return dpdt_;
+        }
+
+        //- Is the thermo T based
+        Switch tempBased() const
+        {
+            return tempBased_;
         }
 
 

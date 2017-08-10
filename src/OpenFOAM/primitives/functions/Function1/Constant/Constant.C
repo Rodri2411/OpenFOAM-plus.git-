@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2015-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -92,6 +92,13 @@ Type Foam::Function1Types::Constant<Type>::value(const scalar x) const
 
 
 template<class Type>
+bool Foam::Function1Types::Constant<Type>::isConstant() const
+{
+    return true;
+}
+
+
+template<class Type>
 Type Foam::Function1Types::Constant<Type>::integrate
 (
     const scalar x1,
@@ -100,7 +107,6 @@ Type Foam::Function1Types::Constant<Type>::integrate
 {
     return (x2 - x1)*value_;
 }
-
 
 template<class Type>
 void Foam::Function1Types::Constant<Type>::writeData(Ostream& os) const

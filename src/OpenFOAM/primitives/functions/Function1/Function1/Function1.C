@@ -118,6 +118,13 @@ Foam::tmp<Foam::Field<Type>> Foam::Function1<Type>::integrate
 
 
 template<class Type>
+bool Foam::Function1<Type>::isConstant() const
+{
+    return false;
+}
+
+
+template<class Type>
 void Foam::Function1<Type>::writeData(Ostream& os) const
 {
     os.writeKeyword(name_) << type();
