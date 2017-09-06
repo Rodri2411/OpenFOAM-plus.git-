@@ -194,93 +194,60 @@ void Foam::dynamicRefineFvMesh::readDict()
         ).optionalSubDict(typeName + "Coeffs")
     );
 
-    List<Pair<word>> fluxVelocities = List<Pair<word>>
-    (
-        refineDict.lookup("correctFluxes")
-    );
-    // Rework into hashtable.
-    correctFluxes_.resize(fluxVelocities.size());
-    forAll(fluxVelocities, i)
+    // Handling of flux fields
     {
-        correctFluxes_.insert(fluxVelocities[i][0], fluxVelocities[i][1]);
+        List<Pair<word>> fluxVelocities = List<Pair<word>>
+        (
+            refineDict.lookup("correctFluxes")
+        );
+        // Rework into hashtable.
+        correctFluxes_.resize(fluxVelocities.size());
+        forAll(fluxVelocities, i)
+        {
+            correctFluxes_.insert(fluxVelocities[i][0], fluxVelocities[i][1]);
+        }
     }
+
+//    // Handling of non-flux fields
+//    {
+//        wordList surfFlds;
+//        if (refineDict.readIfPresent("mapSurfaceFields", surfFlds))
+//        {
+//            // Rework into hashtable.
+//            correctFluxes_.resize(surfFlds.size());
+//            forAll(surfFlds, i)
+//            {
+//                mapSurfaceFields_.insert(surfFlds[i], surfFlds[i]);
+//            }
+//        }
+//    }
 
     dumpLevel_ = Switch(refineDict.lookup("dumpLevel"));
 }
 
 
-// Refines cells, maps fields and recalculates (an approximate) flux
-Foam::autoPtr<Foam::mapPolyMesh>
-Foam::dynamicRefineFvMesh::refine
-(
-    const labelList& cellsToRefine
-)
+void Foam::dynamicRefineFvMesh::mapFields(const mapPolyMesh& mpm)
 {
-    // Mesh changing engine.
-    polyTopoChange meshMod(*this);
-
-    // Play refinement commands into mesh changer.
-    meshCutter_.setRefinement(cellsToRefine, meshMod);
-
-    // Create mesh (with inflation), return map from old to new mesh.
-    //autoPtr<mapPolyMesh> map = meshMod.changeMesh(*this, true);
-    autoPtr<mapPolyMesh> map = meshMod.changeMesh(*this, false);
-
-    Info<< "Refined from "
-        << returnReduce(map().nOldCells(), sumOp<label>())
-        << " to " << globalData().nTotalCells() << " cells." << endl;
-
-    if (debug)
-    {
-        // Check map.
-        for (label facei = 0; facei < nInternalFaces(); facei++)
-        {
-            label oldFacei = map().faceMap()[facei];
-
-            if (oldFacei >= nInternalFaces())
-            {
-                FatalErrorInFunction
-                    << "New internal face:" << facei
-                    << " fc:" << faceCentres()[facei]
-                    << " originates from boundary oldFace:" << oldFacei
-                    << abort(FatalError);
-            }
-        }
-    }
-
-    //    // Remove the stored tet base points
-    //    tetBasePtIsPtr_.clear();
-    //    // Remove the cell tree
-    //    cellTreePtr_.clear();
-
-    // Update fields
-    updateMesh(map);
-
-
-    // Move mesh
-    /*
-    pointField newPoints;
-    if (map().hasMotionPoints())
-    {
-        newPoints = map().preMotionPoints();
-    }
-    else
-    {
-        newPoints = points();
-    }
-    movePoints(newPoints);
-    */
-
+DebugVar(mpm.nOldCells());
+    dynamicFvMesh::mapFields(mpm);
     // Correct the flux for modified/added faces. All the faces which only
     // have been renumbered will already have been handled by the mapping.
     {
-        const labelList& faceMap = map().faceMap();
-        const labelList& reverseFaceMap = map().reverseFaceMap();
+        const labelList& faceMap = mpm.faceMap();
+        const labelList& reverseFaceMap = mpm.reverseFaceMap();
 
         // Storage for any master faces. These will be the original faces
         // on the coarse cell that get split into four (or rather the
         // master face gets modified and three faces get added from the master)
-        labelHashSet masterFaces(4*cellsToRefine.size());
+        // Estimate number of faces created
+        labelHashSet masterFaces
+        (
+            max
+            (
+                mag(nFaces()-mpm.nOldFaces())/4,
+                nFaces()/100
+            )
+        );
 
         forAll(faceMap, facei)
         {
@@ -435,6 +402,70 @@ Foam::dynamicRefineFvMesh::refine
             }
         }
     }
+}
+
+
+// Refines cells, maps fields and recalculates (an approximate) flux
+Foam::autoPtr<Foam::mapPolyMesh>
+Foam::dynamicRefineFvMesh::refine
+(
+    const labelList& cellsToRefine
+)
+{
+    // Mesh changing engine.
+    polyTopoChange meshMod(*this);
+
+    // Play refinement commands into mesh changer.
+    meshCutter_.setRefinement(cellsToRefine, meshMod);
+
+    // Create mesh (with inflation), return map from old to new mesh.
+    //autoPtr<mapPolyMesh> map = meshMod.changeMesh(*this, true);
+    autoPtr<mapPolyMesh> map = meshMod.changeMesh(*this, false);
+
+    Info<< "Refined from "
+        << returnReduce(map().nOldCells(), sumOp<label>())
+        << " to " << globalData().nTotalCells() << " cells." << endl;
+
+    if (debug)
+    {
+        // Check map.
+        for (label facei = 0; facei < nInternalFaces(); facei++)
+        {
+            label oldFacei = map().faceMap()[facei];
+
+            if (oldFacei >= nInternalFaces())
+            {
+                FatalErrorInFunction
+                    << "New internal face:" << facei
+                    << " fc:" << faceCentres()[facei]
+                    << " originates from boundary oldFace:" << oldFacei
+                    << abort(FatalError);
+            }
+        }
+    }
+
+    //    // Remove the stored tet base points
+    //    tetBasePtIsPtr_.clear();
+    //    // Remove the cell tree
+    //    cellTreePtr_.clear();
+
+    // Update fields
+    updateMesh(map);
+
+
+    // Move mesh
+    /*
+    pointField newPoints;
+    if (map().hasMotionPoints())
+    {
+        newPoints = map().preMotionPoints();
+    }
+    else
+    {
+        newPoints = points();
+    }
+    movePoints(newPoints);
+    */
 
 
 
