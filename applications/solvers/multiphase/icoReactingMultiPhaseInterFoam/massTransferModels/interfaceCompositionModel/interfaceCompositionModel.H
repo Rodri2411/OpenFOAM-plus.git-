@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2017 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2017 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -25,9 +25,9 @@ Class
     Foam::interfaceCompositionModel
 
 Description
-    Generic base class for interface composition models. These models describe
-    the composition in phase 1 of the supplied pair at the interface with phase
-    2.
+    Generic base class for interface models. Mass transer models are
+    interface models between two thermos.
+    Abstract class for mass transfer functions
 
 SourceFiles
     interfaceCompositionModel.C
@@ -84,8 +84,8 @@ protected:
         //- Phase pair
         const phasePair& pair_;
 
-        //- Names of the transferring species
-        const hashedWordList speciesNames_;
+        //- Names of the transferring specie
+        word speciesName_;
 
         //- Reference to mesh
         const fvMesh& mesh_;
@@ -138,15 +138,11 @@ public:
     // Member Functions
 
 
-        //- Return the transferring species names
-        const hashedWordList& species() const;
+        //- Return the transferring species name
+        const word transferSpecie() const;
 
         //- Return pair
         const phasePair& pair() const;
-
-        //- Returns whether the species is transported by the model and
-        //  provides the name of the diffused species
-        bool transports(word& speciesName) const;
 
         //- Interface mass fraction
         virtual tmp<volScalarField> Yf
@@ -173,12 +169,6 @@ public:
         (
             const word& speciesName,
             const volScalarField& Tf
-        ) const = 0;
-
-        //- Heat of formation (Hc) from source phase
-        virtual tmp<volScalarField> HcSource
-        (
-             const word& speciesName
         ) const = 0;
 
         //- Explicit mass transfer coefficient

@@ -87,6 +87,7 @@ public:
         //- Return the species fraction equation
         virtual tmp<fvScalarMatrix> YiEqn(volScalarField& Yi);
 
+
         // Thermo
 
             //- Return the species mass fractions
@@ -95,23 +96,18 @@ public:
             //- Access the species mass fractions
             virtual PtrList<volScalarField>& Y();
 
-            //- Access to thermo
+            //- Solve species fraction equation
+            virtual void solveYi
+            (
+                const PtrList<volScalarField::Internal>&,
+                const PtrList<volScalarField::Internal>&
+            );
+
+            //- Access to const thermo
             virtual const phaseThermo& thermo() const;
 
              //- Access non-const thermo
             virtual phaseThermo& thermo();
-
-            //- Return the laminar dynamic viscosity
-            virtual tmp<volScalarField> mu() const;
-
-            //- Access the laminar dynamic viscosity
-            virtual tmp<scalarField> mu(const label patchi) const;
-
-            //- Return the laminar kinematic viscosity
-            virtual tmp<volScalarField> nu() const;
-
-            //- Access the laminar kinematic viscosity
-            virtual tmp<scalarField> nu(const label patchi) const;
 };
 
 

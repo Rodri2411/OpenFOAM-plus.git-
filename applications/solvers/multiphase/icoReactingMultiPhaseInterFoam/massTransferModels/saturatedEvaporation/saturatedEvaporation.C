@@ -59,7 +59,7 @@ saturatedEvaporation<Thermo, OtherThermo>::Yf
     const volScalarField& Tf
 ) const
 {
-    const fvMesh& mesh = this->pair().dispersed().mesh();
+    const fvMesh& mesh = this->pair().from().mesh();
 
     tmp<volScalarField> twRatio
     (
@@ -88,15 +88,15 @@ saturatedEvaporation<Thermo, OtherThermo>::Yf
             this->otherThermo_
         );
 
-//     // Get the dispersed thermo
-//     const typename Thermo::thermoType& dispersedThermo =
+//     // Get the from thermo
+//     const typename Thermo::thermoType& fromThermo =
 //         this->getLocalThermo
 //         (
 //             speciesName,
 //             this->thermo_
 //         );
 
-    // If dispersed phase (liquid) is multicomponent
+    // If from phase (liquid) is multicomponent
     {
         wRatio =
             this->MwMixture(this->thermo_)
@@ -111,7 +111,7 @@ saturatedEvaporation<Thermo, OtherThermo>::Yf
           / this->MwMixture(this->otherThermo_);
     }
 
-    const volScalarField& p = this->pair().dispersed().thermo().p();
+    const volScalarField& p = this->pair().from().thermo().p();
 
     volScalarField Yf
     (
@@ -125,7 +125,7 @@ saturatedEvaporation<Thermo, OtherThermo>::Yf
          saturationPressureModel_->pSat(Tf)
     );
 
-    if (this->pair().dispersed().mesh().time().outputTime())
+    if (this->pair().from().mesh().time().outputTime())
     {
         Yf.write();
         pSat.write();
@@ -144,12 +144,12 @@ Foam::meltingEvaporationModels::saturatedEvaporation<Thermo, OtherThermo>
     {
         volScalarField limitedDispersed
         (
-            min(max(this->pair().dispersed(), scalar(0)), scalar(1))
+            min(max(this->pair().from(), scalar(0)), scalar(1))
         );
 
         volScalarField limitedContinous
         (
-            min(max(this->pair().continuous(), scalar(0)), scalar(1))
+            min(max(this->pair().to(), scalar(0)), scalar(1))
         );
 
         volScalarField nearInterFace
@@ -165,7 +165,7 @@ Foam::meltingEvaporationModels::saturatedEvaporation<Thermo, OtherThermo>
            *nearInterFace
            *limitedDispersed
            *pos(field.oldTime() - Tactivate_)
-           *this->pair().dispersed().rho()
+           *this->pair().from().rho()
         );
     }
     else
@@ -185,12 +185,12 @@ Foam::meltingEvaporationModels::saturatedEvaporation<Thermo, OtherThermo>
         /*
         volScalarField limitedDispersed
         (
-            min(max(this->pair().dispersed(), scalar(0)), scalar(1))
+            min(max(this->pair().from(), scalar(0)), scalar(1))
         );
 
         volScalarField limitedContinous
         (
-            min(max(this->pair().continuous(), scalar(0)), scalar(1))
+            min(max(this->pair().to(), scalar(0)), scalar(1))
         );
 
         volScalarField nearInterFace

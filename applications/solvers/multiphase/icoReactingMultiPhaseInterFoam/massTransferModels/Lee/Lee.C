@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2017 OpenCFD Ltd
+    \\  /    A nd           | Copyright (C) 2017 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,23 +23,24 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "constantMelting.H"
+#include "Lee.H"
 #include "addToRunTimeSelectionTable.H"
 
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 template<class Thermo, class OtherThermo>
-Foam::meltingEvaporationModels::constantMelting<Thermo, OtherThermo>::
-constantMelting
+Foam::meltingEvaporationModels::Lee<Thermo, OtherThermo>
+::Lee
 (
     const dictionary& dict,
     const phasePair& pair
 )
 :
     InterfaceCompositionModel<Thermo, OtherThermo>(dict, pair),
-    C_("C",  inv(dimTime)*inv(dimTemperature), dict.lookup("C")),
-    Tactivate_("Tactivate", dimTemperature, dict.lookup("Tactivate"))
+    C_("C", inv(dimTime), dict.lookup("C")),
+    Tactivate_("Tactivate", dimTemperature, dict.lookup("Tactivate")),
+    alphaMin_(dict.lookupOrDefault<scalar>("alphaMin", 0.0))
 {}
 
 
@@ -47,25 +48,41 @@ constantMelting
 
 template<class Thermo, class OtherThermo>
 Foam::tmp<Foam::volScalarField>
-Foam::meltingEvaporationModels::constantMelting<Thermo, OtherThermo>
-::Kexp(label variable, const volScalarField& field) const
+Foam::meltingEvaporationModels::Lee<Thermo, OtherThermo>
+::Kexp(label variable, const volScalarField& refValue) const
 {
-
     if (this->modelVariable_ == variable)
     {
-        volScalarField limitedDispersed
+        volScalarField from
         (
-            min(max(this->pair().dispersed(), scalar(0)), scalar(1))
+            min(max(this->pair().from(), scalar(0)), scalar(1))
         );
 
-        return
-        (
-            C_
-          * limitedDispersed
-          * this->pair().dispersed().rho()
-          * (field.oldTime() - Tactivate_)
-          * pos(field.oldTime() - Tactivate_)
-        );
+        if (sign(C_.value()) > 0)
+        {
+            return
+            (
+                C_
+              * from
+              * this->pair().from().rho()
+              * (refValue - Tactivate_)
+              * pos(from - alphaMin_)
+              * pos(refValue - Tactivate_)/Tactivate_
+            );
+        }
+        else
+        {
+            return
+            (
+               -C_
+              * from
+              * this->pair().from().rho()
+              * pos(from - alphaMin_)
+              * (Tactivate_ - refValue)
+              * pos(Tactivate_ - refValue)/Tactivate_
+            );
+
+        }
     }
     else
     {
@@ -73,37 +90,37 @@ Foam::meltingEvaporationModels::constantMelting<Thermo, OtherThermo>
     }
 }
 
+
 template<class Thermo, class OtherThermo>
 Foam::tmp<Foam::volScalarField>
-Foam::meltingEvaporationModels::constantMelting<Thermo, OtherThermo>
-::Kimp(label variable, const volScalarField& field) const
+Foam::meltingEvaporationModels::Lee<Thermo, OtherThermo>
+::Kimp(label variable, const volScalarField& refValue) const
 {
     if (this->modelVariable_ == variable)
     {
         volScalarField limitedDispersed
         (
-            min(max(this->pair().dispersed(), scalar(0)), scalar(1))
+            min(max(this->pair().from(), scalar(0)), scalar(1))
         );
 
         return
         (
-            C_
-          * limitedDispersed
-          * this->pair().dispersed().rho()
-          * pos(field.oldTime() - Tactivate_)
+             C_
+            *limitedDispersed
+            *this->pair().from().rho()
+            *pos(Tactivate_ - refValue.oldTime())
         );
     }
     else
     {
         return tmp<volScalarField> ();
     }
-
 }
 
 
 template<class Thermo, class OtherThermo>
 const Foam::dimensionedScalar&
-Foam::meltingEvaporationModels::constantMelting<Thermo, OtherThermo>
+Foam::meltingEvaporationModels::Lee<Thermo, OtherThermo>
 ::Tactivate() const
 {
     return Tactivate_;
@@ -112,10 +129,11 @@ Foam::meltingEvaporationModels::constantMelting<Thermo, OtherThermo>
 
 template<class Thermo, class OtherThermo>
 Foam::label
-Foam::meltingEvaporationModels::constantMelting<Thermo, OtherThermo>
+Foam::meltingEvaporationModels::Lee<Thermo, OtherThermo>
 ::dSdVariable()
 {
-    return label(1);
+    return label(-1);
 }
+
 
 // ************************************************************************* //

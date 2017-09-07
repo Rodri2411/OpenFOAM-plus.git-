@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2017 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2017 OpenCFD Ltd
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -61,11 +61,11 @@ protected:
 
     // Private data
 
-        //- Thermo (dispersed)(from)
-        const Thermo& thermo_;
+        //- Thermo (from)
+        const Thermo& fromThermo_;
 
-        //- Other Thermo (continuous)(to)
-        const OtherThermo& otherThermo_;
+        //- Other Thermo (to)
+        const OtherThermo& toThermo_;
 
         //- Lewis number
         const dimensionedScalar Le_;
@@ -128,11 +128,7 @@ public:
     // Constructors
 
         //- Construct from components
-        InterfaceCompositionModel
-        (
-            const dictionary& dict,
-            const phasePair& pair
-        );
+        InterfaceCompositionModel(const dictionary& dict, const phasePair& pair);
 
 
     //- Destructor
@@ -167,13 +163,6 @@ public:
             const word& speciesName,
             const volScalarField& Tf
         ) const;
-
-        //- Heat of formation (Hc) from source phase (thermo)
-        virtual tmp<volScalarField> HcSource
-        (
-             const word& speciesName
-        ) const;
-
 };
 
 
@@ -183,7 +172,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-// Instantiation for multi-component (dispersed) to single-component (continuous)
+// Instantiation for multi-component (from) to single-component (to)
 #define makeInterfaceDispSpecieMixtureType(Type, Thermo, Comp, Mix, Phys, OtherThermo, OtherComp, OtherMix, OtherPhys)\
                                                                                \
     typedef Thermo<Comp, SpecieMixture<Mix<Phys> > >                           \
@@ -201,7 +190,7 @@ public:
     )
 
 
-// Instantiation for single-component (dispersed) to multi-component (continuous)
+// Instantiation for single-component (from) to multi-component (to)
 #define makeInterfaceContSpecieMixtureType(Type, Thermo, Comp, Mix, Phys, OtherThermo, OtherComp, OtherMix, OtherPhys)\
                                                                                \
     typedef Thermo<Comp, Mix<Phys> >                                           \

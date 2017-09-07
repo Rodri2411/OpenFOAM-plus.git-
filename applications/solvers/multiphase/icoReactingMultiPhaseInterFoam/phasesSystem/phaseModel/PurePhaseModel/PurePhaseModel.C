@@ -78,6 +78,23 @@ Foam::PurePhaseModel<BasePhaseModel, phaseThermo>::YiEqn
 
 
 template<class BasePhaseModel, class phaseThermo>
+void Foam::PurePhaseModel<BasePhaseModel, phaseThermo>::solveYi
+(
+    const PtrList<Foam::volScalarField::Internal>&,
+    const PtrList<Foam::volScalarField::Internal>&
+)
+{
+    notImplemented
+    (
+        "template<class BasePhaseModel> "
+        "Foam::tmp<Foam::fvScalarMatrix> "
+        "Foam::PurePhaseModel<BasePhaseModel>::solveYi()"
+    );
+}
+
+
+
+template<class BasePhaseModel, class phaseThermo>
 const Foam::PtrList<Foam::volScalarField>&
 Foam::PurePhaseModel<BasePhaseModel, phaseThermo>::Y() const
 {
@@ -105,44 +122,6 @@ phaseThermo& Foam::PurePhaseModel<BasePhaseModel, phaseThermo>::
 thermo()
 {
     return thermoPtr_();
-}
-
-
-template<class BasePhaseModel, class phaseThermo>
-Foam::tmp<Foam::volScalarField>
-Foam::PurePhaseModel<BasePhaseModel, phaseThermo>::mu() const
-{
-    return thermoPtr_->mu();
-}
-
-
-template<class BasePhaseModel, class phaseThermo>
-Foam::tmp<Foam::scalarField>
-Foam::PurePhaseModel<BasePhaseModel, phaseThermo>::mu
-(
-    const label patchi
-) const
-{
-    return thermoPtr_->mu(patchi);
-}
-
-
-template<class BasePhaseModel, class phaseThermo>
-Foam::tmp<Foam::volScalarField>
-Foam::PurePhaseModel<BasePhaseModel, phaseThermo>::nu() const
-{
-    return thermoPtr_->nu();
-}
-
-
-template<class BasePhaseModel, class phaseThermo>
-Foam::tmp<Foam::scalarField>
-Foam::PurePhaseModel<BasePhaseModel, phaseThermo>::nu
-(
-    const label patchi
-) const
-{
-    return thermoPtr_->nu(patchi);
 }
 
 // ************************************************************************* //

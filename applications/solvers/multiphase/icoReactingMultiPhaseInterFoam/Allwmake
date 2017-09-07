@@ -2,9 +2,9 @@
 cd ${0%/*} || exit 1    # Run from this directory
 set -x
 
-wmakeLnInclude meltingEvaporationModel
+wmakeLnInclude massTransferModels
 wmake libso phasesSystem
-wmake libso meltingEvaporationModel
+wmake libso massTransferModels
 wmake libso CompressibleMultiPhaseTurbulenceModels
 wmake libso laserDTRM
 wmake

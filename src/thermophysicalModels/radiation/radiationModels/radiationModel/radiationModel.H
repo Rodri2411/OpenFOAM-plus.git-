@@ -249,7 +249,6 @@ public:
             //- Temperature source term
             virtual tmp<fvScalarMatrix> ST
             (
-                tmp<volScalarField> rhoCp,
                 volScalarField& T
             ) const;
 

@@ -101,14 +101,14 @@ Foam::meltingEvaporationModels::kineticGasEvaporation<Thermo, OtherThermo>
         dict.lookupOrDefault<scalar>("D", 1)
     )
 {
-    word speciesName = this->species()[0];
+    word speciesName = this->transferSpecie();
 
     // Get the continuous thermo
     const typename OtherThermo::thermoType& localThermo =
         this->getLocalThermo
         (
             speciesName,
-            this->otherThermo_
+            this->toThermo_
         );
 
     Mv_.value() = localThermo.W();
@@ -143,12 +143,12 @@ Foam::meltingEvaporationModels::kineticGasEvaporation<Thermo, OtherThermo>
     {
         volScalarField limitedContinous
         (
-            min(max(this->pair().continuous(), scalar(0)), scalar(1))
+            min(max(this->pair().to(), scalar(0)), scalar(1))
         );
 
         volScalarField limitedDispersed
         (
-            min(max(this->pair().dispersed(), scalar(0)), scalar(1))
+            min(max(this->pair().from(), scalar(0)), scalar(1))
         );
 
         const fvMesh& mesh = this->mesh_;
@@ -178,11 +178,11 @@ Foam::meltingEvaporationModels::kineticGasEvaporation<Thermo, OtherThermo>
 /*
         volScalarField rhoMean
         (
-            this->pair().continuous().rho()*this->pair().dispersed().rho()
-        /  (this->pair().dispersed().rho() - this->pair().continuous().rho())
+            this->pair().to().rho()*this->pair().from().rho()
+        /  (this->pair().from().rho() - this->pair().to().rho())
         );
 */
-        word species(this->species()[0]);
+        word species(this->transferSpecie());
 
         tmp<volScalarField> L = mag(this->L(species, field));
 
@@ -235,7 +235,7 @@ Foam::meltingEvaporationModels::kineticGasEvaporation<Thermo, OtherThermo>
             2*C_/(2 - C_)
           * HerztKnudsConst
           * L()
-          * this->pair().continuous().rho()
+          * this->pair().to().rho()
           * max
             (
                 (Tave - Tactivate_),
@@ -345,7 +345,7 @@ Foam::meltingEvaporationModels::kineticGasEvaporation<Thermo, OtherThermo>
 
         DebugVar(msPhiIntDot);
 
-        if (this->pair().dispersed().mesh().time().outputTime())
+        if (this->pair().from().mesh().time().outputTime())
         {
             massFluxEvap.write();
             areaDensity.write();

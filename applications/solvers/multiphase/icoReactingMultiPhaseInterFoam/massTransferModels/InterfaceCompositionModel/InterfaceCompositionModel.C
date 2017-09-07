@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2017 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2017 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -75,7 +75,7 @@ Foam::InterfaceCompositionModel<Thermo, OtherThermo>::getSpecieMassFraction
     const multiComponentMixture<ThermoType>& mixture
 ) const
 {
-    const fvMesh& mesh = thermo_.p().mesh();
+    const fvMesh& mesh = fromThermo_.p().mesh();
 
     tmp<volScalarField> tY
     (
@@ -111,7 +111,7 @@ Foam::InterfaceCompositionModel<Thermo, OtherThermo>::getSpecieMassFraction
     const pureMixture<ThermoType>& mixture
 ) const
 {
-    const fvMesh& mesh = thermo_.p().mesh();
+    const fvMesh& mesh = fromThermo_.p().mesh();
 
     tmp<volScalarField> tY
     (
@@ -143,7 +143,7 @@ Foam::InterfaceCompositionModel<Thermo, OtherThermo>::MwMixture
     const pureMixture<ThermoType>& mixture
 ) const
 {
-    const fvMesh& mesh = thermo_.p().mesh();
+    const fvMesh& mesh = fromThermo_.p().mesh();
 
     tmp<volScalarField> tM
     (
@@ -194,25 +194,25 @@ Foam::InterfaceCompositionModel<Thermo, OtherThermo>::InterfaceCompositionModel
 )
 :
     interfaceCompositionModel(dict, pair),
-    thermo_
+    fromThermo_
     (
-        pair.phase1().mesh().lookupObject<Thermo>
+        pair.from().mesh().lookupObject<Thermo>
         (
             IOobject::groupName
             (
                 basicThermo::dictName,
-                pair.dispersed().name()
+                pair.from().name()
             )
         )
     ),
-    otherThermo_
+    toThermo_
     (
-        pair.phase2().mesh().lookupObject<OtherThermo>
+        pair.to().mesh().lookupObject<OtherThermo>
         (
             IOobject::groupName
             (
                 basicThermo::dictName,
-                pair.continuous().name()
+                pair.to().name()
             )
         )
     ),
@@ -237,16 +237,16 @@ Foam::InterfaceCompositionModel<Thermo, OtherThermo>::D
     const word& speciesName
 ) const
 {
-    const typename Thermo::thermoType& localThermo =
+    const typename Thermo::thermoType& fromThermo =
         getLocalThermo
         (
             speciesName,
-            thermo_
+            fromThermo_
         );
 
-    const volScalarField& p(thermo_.p());
+    const volScalarField& p(fromThermo_.p());
 
-    const volScalarField& T(thermo_.T());
+    const volScalarField& T(fromThermo_.T());
 
     tmp<volScalarField> tmpD
     (
@@ -268,8 +268,8 @@ Foam::InterfaceCompositionModel<Thermo, OtherThermo>::D
     forAll(p, cellI)
     {
         D[cellI] =
-            localThermo.alphah(p[cellI], T[cellI])
-           /localThermo.rho(p[cellI], T[cellI]);
+            fromThermo.alphah(p[cellI], T[cellI])
+           /fromThermo.rho(p[cellI], T[cellI]);
     }
 
     D /= Le_;
@@ -287,20 +287,20 @@ Foam::InterfaceCompositionModel<Thermo, OtherThermo>::L
     const volScalarField& Tf
 ) const
 {
-    const typename Thermo::thermoType& localThermo =
+    const typename Thermo::thermoType& fromThermo =
         getLocalThermo
         (
             speciesName,
-            thermo_
+            fromThermo_
         );
-    const typename OtherThermo::thermoType& otherLocalThermo =
+    const typename OtherThermo::thermoType& toThermo =
         getLocalThermo
         (
             speciesName,
-            otherThermo_
+            toThermo_
         );
 
-    const volScalarField& p(thermo_.p());
+    const volScalarField& p(fromThermo_.p());
 
     tmp<volScalarField> tmpL
     (
@@ -320,56 +320,13 @@ Foam::InterfaceCompositionModel<Thermo, OtherThermo>::L
 
     volScalarField& L = tmpL.ref();
 
-    // localThermo (dispersed)(from)
-    // otherLocalThermo (continuous)(to)
-    // to - from
+    // from Thermo (from) to Thermo (to)
     forAll(p, cellI)
     {
-        L[cellI] = localThermo.Hc() - otherLocalThermo.Hc();
+        L[cellI] = fromThermo.Hc() - toThermo.Hc();
     }
 
     L.correctBoundaryConditions();
-
-    return tmpL;
-}
-
-
-template<class Thermo, class OtherThermo>
-Foam::tmp<Foam::volScalarField>
-Foam::InterfaceCompositionModel<Thermo, OtherThermo>::HcSource
-(
-    const word& speciesName
-) const
-{
-    const typename Thermo::thermoType& localThermo =
-        getLocalThermo
-        (
-            speciesName,
-            thermo_
-        );
-
-    const volScalarField& p(thermo_.p());
-    tmp<volScalarField> tmpL
-    (
-        new volScalarField
-        (
-            IOobject
-            (
-                IOobject::groupName("L", pair_.name()),
-                p.time().timeName(),
-                p.mesh()
-            ),
-            p.mesh(),
-            dimensionedScalar("zero", dimEnergy/dimMass, 0)
-        )
-    );
-
-    volScalarField& Hc = tmpL.ref();
-
-    forAll(p, cellI)
-    {
-         Hc[cellI] = localThermo.Hc();
-    }
 
     return tmpL;
 }

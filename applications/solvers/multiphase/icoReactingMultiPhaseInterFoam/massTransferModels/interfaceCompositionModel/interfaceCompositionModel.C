@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2017 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2017 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -70,11 +70,16 @@ Foam::interfaceCompositionModel::interfaceCompositionModel
 )
 :
     modelVariable_(modelVariableNames.read(dict.lookup("variable"))),
-    semiImplicit_(readBool(dict.lookup("semiImplicit"))),
+    semiImplicit_(dict.lookupOrDefault<bool>("semiImplicit", false)),
     pair_(pair),
-    speciesNames_(dict.lookup("species")),
-    mesh_(pair_.dispersed().mesh())
-{}
+    speciesName_(dict.lookupOrDefault<word>("species", "none")),
+    mesh_(pair_.from().mesh())
+{/*
+    if (dict.found("species"))
+    {
+        speciesNames_ = ;
+    }*/
+}
 
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
@@ -85,29 +90,15 @@ Foam::interfaceCompositionModel::~interfaceCompositionModel()
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-const Foam::hashedWordList& Foam::interfaceCompositionModel::species() const
+const Foam::word Foam::interfaceCompositionModel::transferSpecie() const
 {
-    return speciesNames_;
+    return speciesName_;
 }
 
 
 const Foam::phasePair& Foam::interfaceCompositionModel::pair() const
 {
     return pair_;
-}
-
-
-bool Foam::interfaceCompositionModel::transports
-(
-    word& speciesName
-) const
-{
-    if (this->speciesNames_.contains(speciesName))
-    {
-        return true;
-    }
-
-    return false;
 }
 
 

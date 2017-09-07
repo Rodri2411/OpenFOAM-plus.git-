@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2017 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2017 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -48,8 +48,7 @@ License
 #include "solidThermoPhysicsTypes.H"
 
 #include "kineticGasEvaporation.H"
-#include "constantMelting.H"
-#include "constantSolidification.H"
+#include "Lee.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -91,12 +90,12 @@ namespace Foam
 {
     using namespace meltingEvaporationModels;
 
-    //NOTE: First thermo (dispersed) and second otherThermo (continous)
-    // in the phaseProperties: (dispersed to continous)
+    //NOTE: First thermo (from) and second otherThermo (to)
+    // in the phaseProperties: (from to to)
 
     // kineticGasEvaporation model definitions
 /*
-        // multi-component dispersed phase and a pure continous phase
+        // multi-component from phase and a pure to phase
         makeInterfaceDispSpecieMixtureType
         (
             kineticGasEvaporation,
@@ -111,7 +110,7 @@ namespace Foam
         );
 */
 
-        // pure dispersed phase to a multi-component continous phase
+        // pure from phase to a multi-component to phase
         makeInterfaceContSpecieMixtureType
         (
             kineticGasEvaporation,
@@ -126,7 +125,7 @@ namespace Foam
         );
 
 
-        // pure dispersed phase and pure continous phase with incompressible gas
+        // pure from phase and pure to phase with incompressible gas
         makeInterfacePureType
         (
             kineticGasEvaporation,
@@ -140,7 +139,7 @@ namespace Foam
             constFluidHThermoPhysics
         );
 
-        // pure dispersed phase and pure continous phase with rhoConst gas
+        // pure from phase and pure to phase with rhoConst gas
         makeInterfacePureType
         (
             kineticGasEvaporation,
@@ -155,12 +154,12 @@ namespace Foam
         );
 
 
-    // constantMelting model definitions
+    // Lee model definitions
 
-        // pure dispersed phase and a pure continous phase
+        // pure from phase and a pure to phase
         makeInterfacePureType
         (
-            constantMelting,
+            Lee,
             heRhoThermo,
             rhoThermo,
             pureMixture,
@@ -173,7 +172,7 @@ namespace Foam
 
         makeInterfacePureType
         (
-            constantMelting,
+            Lee,
             heRhoThermo,
             rhoThermo,
             pureMixture,
@@ -187,7 +186,7 @@ namespace Foam
 
         makeInterfacePureType
         (
-            constantMelting,
+            Lee,
             heSolidThermo,
             solidThermo,
             pureMixture,
@@ -200,7 +199,7 @@ namespace Foam
 
         makeInterfacePureType
         (
-            constantMelting,
+            Lee,
             heRhoThermo,
             rhoThermo,
             pureMixture,
@@ -213,7 +212,7 @@ namespace Foam
 
         makeInterfaceContSpecieMixtureType
         (
-            constantMelting,
+            Lee,
             heRhoThermo,
             rhoThermo,
             pureMixture,
@@ -227,7 +226,7 @@ namespace Foam
 /*
         makeInterfaceDispSpecieMixtureType
         (
-            constantMelting,
+            Lee,
             heRhoThermo,
             rhoReactionThermo,
             multiComponentMixture,
@@ -238,12 +237,13 @@ namespace Foam
             constFluidHThermoPhysics
         );
 */
-    // constantSolidification model definitions
+    // Lee model definitions
 
-        // pure dispersed phase and a pure continous phase
+        // pure from phase and a pure to phase
+        /*
         makeInterfacePureType
         (
-            constantSolidification,
+            Lee,
             heRhoThermo,
             rhoThermo,
             pureMixture,
@@ -253,11 +253,12 @@ namespace Foam
             pureMixture,
             constFluidHThermoPhysics
         );
+        */
 
 
         makeInterfacePureType
         (
-            constantSolidification,
+            Lee,
             heRhoThermo,
             rhoThermo,
             pureMixture,
@@ -271,7 +272,7 @@ namespace Foam
 /*
     // saturatedEvaporation model definitions
 
-        // multi-component dispersed phase and a pure continous phase
+        // multi-component from phase and a pure to phase
         makeInterfaceDispSpecieMixtureType
         (
             saturatedEvaporation,
@@ -285,7 +286,7 @@ namespace Foam
             constFluidHThermoPhysics
         );
 
-        // pure dispersed phase and a multi-component continous phase
+        // pure from phase and a multi-component to phase
         makeInterfaceContSpecieMixtureType
         (
             saturatedEvaporation,
@@ -299,7 +300,7 @@ namespace Foam
             constIncompressibleGasHThermoPhysics
         );
 
-        // multi-component dispersed phase and a multi-componen continous phase
+        // multi-component from phase and a multi-componen to phase
         makeSpecieInterfaceSpecieMixtures
         (
             saturatedEvaporation,
@@ -313,7 +314,7 @@ namespace Foam
             constIncompressibleGasHThermoPhysics
         );
 
-        // pure dispersed phase and pure continous phase
+        // pure from phase and pure to phase
         makeInterfacePureType
         (
             saturatedEvaporation,

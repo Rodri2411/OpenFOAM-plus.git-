@@ -26,14 +26,18 @@ License
 #include "MultiComponentPhaseModel.H"
 
 #include "phaseSystem.H"
-
+#include "multiphaseSystem.H"
 #include "fvmDdt.H"
 #include "fvmDiv.H"
 #include "fvmSup.H"
 #include "fvmLaplacian.H"
 #include "fvcDdt.H"
 #include "fvcDiv.H"
+#include "fvcDDt.H"
 #include "fvMatrix.H"
+#include "fvcFlux.H"
+#include "CMULES.H"
+#include "subCycle.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -74,14 +78,34 @@ MultiComponentPhaseModel
 
     species_ = thermoPtr_->composition().species();
 
-    if (thermoPtr_().found("inertSpecie"))
+    inertIndex_ = species_[thermoPtr_().lookup("inertSpecie")];
+
+    X_.setSize(thermoPtr_->composition().species().size());
+
+    // Initiate X's using Y's to set BC's
+    forAll(species_, i)
     {
-        inertIndex_ =
-            species_
-            [
-                thermoPtr_().lookup("inertSpecie")
-            ];
+        X_.set
+        (
+            i,
+            new volScalarField
+            (
+                IOobject
+                (
+                    IOobject::groupName("X" + species_[i], phaseName),
+                    fluid.mesh().time().timeName(),
+                    fluid.mesh(),
+                    IOobject::NO_READ,
+                    IOobject::NO_WRITE
+                ),
+                Y()[i]
+            )
+        );
     }
+
+    // Init vol fractions from mass fractions
+    calculateVolumeFractions();
+
 }
 
 
@@ -94,6 +118,54 @@ Foam::MultiComponentPhaseModel<BasePhaseModel, phaseThermo>::
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+
+
+template<class BasePhaseModel, class phaseThermo>
+void Foam::MultiComponentPhaseModel<BasePhaseModel,phaseThermo>
+::calculateVolumeFractions()
+{
+    const basicSpecieMixture& mixture =
+        refCast<const basicSpecieMixture>(thermo().composition());
+
+    volScalarField Xtotal(0.0*X_[0]);
+    forAll(X_, i)
+    {
+        if (i != inertIndex_)
+        {
+            X_[i] = mixture.W()*Y()[i]/mixture.W(i);
+            Xtotal += X_[i];
+            X_[i].correctBoundaryConditions();
+        }
+    }
+    X_[inertIndex_] = 1.0 - Xtotal;
+    X_[inertIndex_].correctBoundaryConditions();
+}
+
+
+template<class BasePhaseModel, class phaseThermo>
+void Foam::MultiComponentPhaseModel<BasePhaseModel,phaseThermo>
+::calculateMassFractions()
+{
+    const basicSpecieMixture& mixture =
+        refCast<const basicSpecieMixture>(thermo().composition());
+
+    volScalarField W(X_[0]*mixture.W(0));
+    for(label i=1; i< species_.size(); i++)
+    {
+        W += X_[i]*mixture.W(i);
+    }
+
+    forAll(Y(), i)
+    {
+        Y()[i] = X_[i]*mixture.W(i)/W;
+
+        Info<< Y()[i].name() << " mass fraction = "
+            << "  Min(Y) = " << min(Y()[i]).value()
+            << "  Max(Y) = " << max(Y()[i]).value()
+            << endl;
+    }
+}
+
 
 template<class BasePhaseModel, class phaseThermo>
 const phaseThermo&
@@ -110,6 +182,200 @@ Foam::MultiComponentPhaseModel<BasePhaseModel, phaseThermo>::thermo()
     return thermoPtr_();
 }
 
+
+template<class BasePhaseModel, class phaseThermo>
+void Foam::MultiComponentPhaseModel<BasePhaseModel, phaseThermo>::correct()
+{
+    return thermo().correct();
+}
+
+
+template<class BasePhaseModel, class phaseThermo>
+void Foam::MultiComponentPhaseModel<BasePhaseModel, phaseThermo>::solveYi
+(
+    const PtrList<volScalarField::Internal>& Su,
+    const PtrList<volScalarField::Internal>& Sp
+)
+{
+    const volScalarField& alpha1 = *this;
+
+    const fvMesh& mesh = alpha1.mesh();
+
+    const dictionary& MULEScontrols = mesh.solverDict(alpha1.name());
+
+    scalar cAlpha(readScalar(MULEScontrols.lookup("cYi")));
+
+    PtrList<surfaceScalarField> phiYiCorrs(species_.size());
+    const surfaceScalarField& phi = this->fluid().phi();
+
+    surfaceScalarField phic(mag((phi)/mesh.magSf()));
+
+    phic = min(cAlpha*phic, max(phic));
+
+    surfaceScalarField phir(0.0*phi);
+
+    forAllConstIter(phaseSystem::phaseModelTable,this->fluid().phases(),iter2)
+    {
+        const volScalarField& alpha2 = iter2();
+        if (&alpha2 == &alpha1)
+        {
+            continue;
+        }
+
+        phir += phic*this->fluid().nHatf(alpha1, alpha2);
+    }
+
+    // Do not compress interface at non-coupled boundary faces
+    // (inlets, outlets etc.)
+    surfaceScalarField::Boundary& phirBf = phir.boundaryFieldRef();
+    forAll(phir.boundaryField(), patchi)
+    {
+        fvsPatchScalarField& phirp = phirBf[patchi];
+
+        if (!phirp.coupled())
+        {
+            phirp == 0;
+        }
+    }
+
+    word phirScheme("div(Yiphir," + alpha1.name() + ')');
+
+    forAll(X_, i)
+    {
+        if (inertIndex_ != i)
+        {
+            volScalarField& Yi = X_[i];
+
+            phiYiCorrs.set
+            (
+                i,
+                new surfaceScalarField
+                (
+                    "phi" + Yi.name() + "Corr",
+                    fvc::flux
+                    (
+                        phi,
+                        Yi,
+                        "div(phi," + Yi.name() + ')'
+                    )
+                )
+            );
+
+            surfaceScalarField& phiYiCorr = phiYiCorrs[i];
+
+            forAllConstIter
+            (
+                phaseSystem::phaseModelTable, this->fluid().phases(), iter2
+            )
+            {
+                const volScalarField& alpha2 = iter2();
+
+                if (&alpha2 == &alpha1)
+                {
+                    continue;
+                }
+
+                phiYiCorr += fvc::flux
+                (
+                   -fvc::flux(-phir, alpha2, phirScheme),
+                    Yi,
+                    phirScheme
+                );
+            }
+
+            MULES::limit
+            (
+                1.0/mesh.time().deltaT().value(),
+                geometricOneField(),
+                Yi,
+                phi,
+                phiYiCorr,
+                Sp[i],
+                Su[i],
+                1,
+                0,
+                true
+            );
+        }
+    }
+
+    volScalarField Yt(0.0*X_[0]);
+
+    scalar nYiSubCycles
+    (
+        MULEScontrols.lookupOrDefault<scalar>("nYiCyclies", 1)
+    );
+
+    forAll(X_, i)
+    {
+        if (inertIndex_ != i)
+        {
+            volScalarField& Yi = X_[i];
+
+            fvScalarMatrix YiEqn
+            (
+                fv::EulerDdtScheme<scalar>(mesh).fvmDdt(Yi)
+              + fv::gaussConvectionScheme<scalar>
+                (
+                    mesh,
+                    phi,
+                    upwind<scalar>(mesh, phi)
+                ).fvmDiv(phi, Yi)
+                 ==
+                Su[i] + fvm::Sp(Sp[i], Yi)
+            );
+
+            YiEqn.solve();
+
+            surfaceScalarField& phiYiCorr = phiYiCorrs[i];
+
+            // Add a bounded upwind U-mean flux
+            phiYiCorr += YiEqn.flux();
+
+            if (nYiSubCycles > 1)
+            {
+                for
+                (
+                    subCycle<volScalarField> YiSubCycle(Yi, nYiSubCycles);
+                    !(++YiSubCycle).end();
+                )
+                {
+                    MULES::explicitSolve
+                    (
+                        geometricOneField(),
+                        Yi,
+                        phi,
+                        phiYiCorr,
+                        Sp[i],
+                        Su[i],
+                        1,
+                        0
+                    );
+                }
+            }
+            else
+            {
+                MULES::explicitSolve
+                (
+                    geometricOneField(),
+                    Yi,
+                    phi,
+                    phiYiCorr,
+                    Sp[i],
+                    Su[i],
+                    1,
+                    0
+                );
+            }
+            Yt += Yi;
+        }
+    }
+
+    X_[inertIndex_] = scalar(1) - Yt;
+    X_[inertIndex_].max(0.0);
+
+    calculateMassFractions();
+}
 
 template<class BasePhaseModel, class phaseThermo>
 Foam::tmp<Foam::fvScalarMatrix>
@@ -134,25 +400,10 @@ Foam::MultiComponentPhaseModel<BasePhaseModel, phaseThermo>::YiEqn
     {
         return tmp<fvScalarMatrix>();
     }
-
-    const volScalarField& alpha = *this;
-    const surfaceScalarField& alphaPhi = this->alphaPhi();
-
-//     surfaceScalarField alphaRhoPhi
-//     (
-//         fvc::interpolate(alpha)*this->fluid().phi()
-//     );
-
-    return
-        tmp<fvScalarMatrix>
-        (
-            fvm::ddt(alpha, Yi)
-          + fvm::div(alphaPhi, Yi, "div(" + alphaPhi.name() + ",Yi)")
-//          - fvm::Sp(fvc::div(alphaPhi), Yi)
-          ==
-            fvc::ddt(residualAlpha_, Yi)
-          - fvm::ddt(residualAlpha_, Yi)
-        );
+    else
+    {
+        return tmp<fvScalarMatrix>();
+    }
 }
 
 
@@ -173,100 +424,10 @@ Foam::MultiComponentPhaseModel<BasePhaseModel, phaseThermo>::Y()
 
 
 template<class BasePhaseModel, class phaseThermo>
-Foam::dimensionedScalar
-Foam::MultiComponentPhaseModel<BasePhaseModel, phaseThermo>::hf
-(
-    label index
-) const
+Foam::label
+Foam::MultiComponentPhaseModel<BasePhaseModel, phaseThermo>::inertIndex() const
 {
-    return dimensionedScalar
-    (
-        "Hc",
-        sqr(dimLength)/sqr(dimTime),
-        thermoPtr_->composition().Hc(index)
-    );
+    return inertIndex_;
 }
-
-
-/*
-template<class BasePhaseModel, class phaseThermo>
-void Foam::MultiComponentPhaseModel<BasePhaseModel, phaseThermo>::
-correctMassFractions()
-{
-    volScalarField Yt
-    (
-        IOobject
-        (
-            IOobject::groupName("Yt", this->name()),
-            this->fluid().mesh().time().timeName(),
-            this->fluid().mesh()
-        ),
-        this->fluid().mesh(),
-        dimensionedScalar("zero", dimless, 0)
-    );
-
-    PtrList<volScalarField>& Yi = thermoPtr_->composition().Y();
-
-    forAll(Yi, i)
-    {
-        if (i != inertIndex_)
-        {
-            Yt += Yi[i];
-        }
-    }
-
-    if (inertIndex_ != -1)
-    {
-        Yi[inertIndex_] = scalar(1) - Yt;
-        Yi[inertIndex_].max(0);
-    }
-    else
-    {
-        forAll(Yi, i)
-        {
-            Yi[i] /= Yt;
-            Yi[i].max(0);
-        }
-    }
-}
-*/
-
-template<class BasePhaseModel, class phaseThermo>
-Foam::tmp<Foam::volScalarField>
-Foam::MultiComponentPhaseModel<BasePhaseModel, phaseThermo>::mu() const
-{
-    return thermoPtr_->mu();
-}
-
-
-template<class BasePhaseModel, class phaseThermo>
-Foam::tmp<Foam::scalarField>
-Foam::MultiComponentPhaseModel<BasePhaseModel, phaseThermo>::mu
-(
-    const label patchI
-) const
-{
-    return thermoPtr_->mu()().boundaryField()[patchI];
-}
-
-
-template<class BasePhaseModel, class phaseThermo>
-Foam::tmp<Foam::volScalarField>
-Foam::MultiComponentPhaseModel<BasePhaseModel, phaseThermo>::nu() const
-{
-    return thermoPtr_->nu();
-}
-
-
-template<class BasePhaseModel, class phaseThermo>
-Foam::tmp<Foam::scalarField>
-Foam::MultiComponentPhaseModel<BasePhaseModel, phaseThermo>::nu
-(
-    const label patchI
-) const
-{
-    return  thermoPtr_->nu(patchI);
-}
-
 
 // ************************************************************************* //

@@ -1,10 +1,9 @@
 EXE_INC = \
-    -I../meltingEvaporationModel/lnInclude \
+    -I../massTransferModels/lnInclude \
     -I$(LIB_SRC)/finiteVolume/lnInclude \
     -I$(LIB_SRC)/fvOptions/lnInclude \
     -I$(LIB_SRC)/meshTools/lnInclude \
     -I$(LIB_SRC)/sampling/lnInclude \
-    \
     -I$(LIB_SRC)/thermophysicalModels/basic/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/specie/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/reactionThermo/lnInclude \
@@ -16,9 +15,7 @@ EXE_INC = \
     -I$(LIB_SRC)/TurbulenceModels/turbulenceModels/lnInclude \
     -I$(LIB_SRC)/TurbulenceModels/compressible/lnInclude \
     -I$(LIB_SRC)/TurbulenceModels/phaseCompressible/lnInclude \
-    -I$(LIB_SRC)/combustionModels/lnInclude \
-    \
-    -I../interfacialModels/lnInclude \
+    -I$(LIB_SRC)/combustionModels/lnInclude
 
 LIB_LIBS = \
     -lcombustionModels

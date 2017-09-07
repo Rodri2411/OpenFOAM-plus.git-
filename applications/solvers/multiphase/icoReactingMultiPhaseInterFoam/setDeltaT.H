@@ -34,7 +34,19 @@ Description
 if (adjustTimeStep)
 {
     scalar maxDeltaTFact =
-        min(maxCo/(CoNum + SMALL), maxAlphaCo/(alphaCoNum + SMALL));
+        min
+        (
+            maxCo/(CoNum + SMALL),
+            min
+            (
+                maxAlphaCo/(alphaCoNum + SMALL),
+                min
+                (
+                    maxAlphaDdt/(ddtAlphaNum + SMALL),
+                    maxDi/(DiNum + SMALL)
+                )
+            )
+        );
 
     scalar deltaTFact = min(min(maxDeltaTFact, 1.0 + 0.1*maxDeltaTFact), 1.2);
 

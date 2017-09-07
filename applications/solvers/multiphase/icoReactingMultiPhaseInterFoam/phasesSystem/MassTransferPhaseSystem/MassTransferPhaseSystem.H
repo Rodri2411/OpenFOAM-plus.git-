@@ -22,18 +22,18 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::MeltingEvaporationPhaseSystem
+    Foam::MassTransferPhaseSystem
 
 Description
-    Holds mass transfer models
+    Class for mass transfer between phases
 
 SourceFiles
-    MeltingEvaporationPhaseSystem.C
+    MassTransferPhaseSystem.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef MeltingEvaporationPhaseSystem_H
-#define MeltingEvaporationPhaseSystem_H
+#ifndef MassTransferPhaseSystem_H
+#define MassTransferPhaseSystem_H
 
 #include "phaseSystem.H"
 #include "HashPtrTable.H"
@@ -45,27 +45,30 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                 Class MeltingEvaporationPhaseSystem Declaration
+                 Class MassTransferPhaseSystem Declaration
 \*---------------------------------------------------------------------------*/
 
 template<class BasePhaseSystem>
-class MeltingEvaporationPhaseSystem
+class MassTransferPhaseSystem
 :
     public BasePhaseSystem
 {
-protected:
+public:
 
-    // Protected typedefs
+    // Public typedefs
 
-        typedef
+     typedef
             HashTable
             <
                 autoPtr<interfaceCompositionModel>,
                 phasePairKey,
                 phasePairKey::hash
             >
-            meltingEvaporationModelTable;
+            massTransferModelTable;
 
+protected:
+
+    // Protected typedefs
 
        typedef
             HashPtrTable
@@ -99,14 +102,24 @@ protected:
 
     // Protected data
 
-        //- Overall inter-phase mass transfer rates
+        //- Overall inter-phase mass transfer rates [Kg/s]
         dmdtTable dmdt_;
 
         //- Mass transfer models
-        meltingEvaporationModelTable meltingEvaporationModels_;
+        massTransferModelTable massTransferModels_;
 
         //- Variable based inter-phase mass transfer rates
         dmdtPhaseVarYiTable dmdtYi_;
+
+    // Protected memebers
+
+        //- Calculate L between phases
+        tmp<volScalarField> calculateL
+        (
+            const phasePairKey& keyik,
+            const phasePairKey& keyki,
+            const volScalarField& T
+        ) const;
 
 
 public:
@@ -114,72 +127,60 @@ public:
     // Constructors
 
         //- Construct from fvMesh
-        MeltingEvaporationPhaseSystem(const fvMesh&);
+        MassTransferPhaseSystem(const fvMesh&);
 
 
     //- Destructor
-    virtual ~MeltingEvaporationPhaseSystem();
+    virtual ~MassTransferPhaseSystem();
 
 
     // Member Functions
 
-        // Total mass transfer per variable
-
-            //- Return total interfacial mass flow rate
-            virtual tmp<volScalarField> dmdt(const phasePairKey& key) const;
+        //- Return total interfacial mass flow rate
+        tmp<volScalarField> dmdt(const phasePairKey& key) const;
 
 
-            //- Return species interfacial source mass rate per species
-            //  driven by pressure or temperature
-            virtual tmp<volScalarField> dmdtYi
-            (
-                const word& phaseSpeciesName
-            ) const;
+        //- Return total species mass rate per species driven by pressure,
+        //  temperature or species.
+        virtual tmp<volScalarField> dmdtYi(const word& phaseSpeciesName) const;
 
 
-            //- Return total interfacial mass driven by modelVariable
-            tmp<volScalarField> dmdtYi
-            (
-                const phasePairKey& key,
-                word modelVar,
-                word specieName
-            ) const;
+        //- Return total interfacial mass driven by modelVariable
+        virtual tmp<volScalarField> dmdtYi
+        (
+            const phasePairKey& key,
+            word modelVar,
+            word specieName
+        ) const;
 
 
-            //- Return non-const reference total interfacial mass driven
-            //  by modelVariable
-            volScalarField& dmdtYi
-            (
-                const phasePairKey& key,
-                word modelVar,
-                word specieName
-            );
+        //- Return non-const reference total interfacial mass driven
+        //  by modelVariable
+        virtual volScalarField& dmdtYi
+        (
+            const phasePairKey& key,
+            word modelVar,
+            word specieName
+        );
 
 
-        // Explicit and Implicit mass transfer matrices
+    // Explicit and Implicit mass transfer matrices
 
-            //- Return the heat transfer matrix
-            virtual  tmp<fvScalarMatrix> heatTransfer
-            (
-                const volScalarField& T
-            );
+        //- Return the heat transfer matrix
+        virtual  tmp<fvScalarMatrix> heatTransfer(const volScalarField& T);
 
-            //- Return semi-implicit mass transfer matrix for
-            //  multicomponent phases based on mass fractions
-            virtual  autoPtr<phaseSystem::massTransferTable> massTransfer
-            (
-                const volScalarField& T
-            );
+        //- Calculate mass transfer
+        virtual  void massTransfer(const volScalarField& T);
 
+        //- Calculate mass transfer for species
+        virtual void massSpeciesTransfer
+        (
+            const phaseModel& phase,
+            volScalarField::Internal& Su,
+            volScalarField::Internal& Sp,
+            const word speciesName
+        );
 
-        //- Return phase inverse density
-        virtual tmp<volScalarField> coeffs(const word& key) const;
-
-        //- Correct the phase properties other than the thermo and turbulence
-        virtual void correct();
-
-        //- Read base phaseProperties dictionary
-        virtual bool read();
 };
 
 
@@ -190,7 +191,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "MeltingEvaporationPhaseSystem.C"
+#   include "MassTransferPhaseSystem.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -214,6 +214,7 @@ void turbulentHeatFluxTemperatureFvPatchScalarField::updateCoeffs()
         }
         case hsFlux:
         {
+
             gradient() = (q_ + qr)/kappa(Tp);
             break;
         }

@@ -265,7 +265,7 @@ Foam::tmp<Foam::scalarField> Foam::phaseModel::alphaEff
     return (thermo().alpha(patchI) + alphat);
 }
 
-/*
+
 Foam::tmp<Foam::volScalarField> Foam::phaseModel::mu() const
 {
     return thermo().mu();
@@ -280,16 +280,15 @@ Foam::tmp<Foam::scalarField> Foam::phaseModel::mu(const label patchi) const
 
 Foam::tmp<Foam::volScalarField> Foam::phaseModel::nu() const
 {
-    return (thermo().mu()/thermo().rho());
+    return thermo().nu();
 }
-
 
 
 Foam::tmp<Foam::scalarField> Foam::phaseModel::nu(const label patchi) const
 {
-    return (thermo().mu(patchi)/thermo().rho(patchi));
+    return thermo().nu(patchi);
 }
-*/
+
 
 bool Foam::phaseModel::read()
 {

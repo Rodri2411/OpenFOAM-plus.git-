@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2017 OpenCFD Ltd
+    \\  /    A nd           | Copyright (C) 2017 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -22,27 +22,32 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::phaseChangeTwoPhaseMixtures::constantMelting
+    Foam::phaseChangeTwoPhaseMixtures::Lee
 
 Description
-    General mass transfer model based on temperature. It follows:
+    Mass tranfer Lee model. Simple model driven by field value difference as:
 
-        Ce*alpha*rho*(fieldValue - Tactivate)
+    mDot = C*rho*alpha*(value - Tactivate)/Tactivate
 
-        or
+    if C > 0:
+        mDot = C*rho*alpha*(value - Tactivate)/Tactivate for value > Tactivate
+        mDot = 0.0                                           value < Tactivate
 
-        Ci*alpha*rho*
+    if C < 0:
+        mDot = -C*rho*alpha*(Tactivate - value)/Tactivate for value < Tactivate
+        mDot = 0.0                                            value > Tactivate
 
 
 SourceFiles
-    constantMelting.C
+    Lee.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef constantMelting_H
-#define constantMelting_H
+#ifndef Lee_H
+#define Lee_H
 
 #include "InterfaceCompositionModel.H"
+
 
 // * * * * * * * * * * * * * * * * *  * * * * * * * * * * * * * * * * * * * *//
 
@@ -52,33 +57,36 @@ namespace meltingEvaporationModels
 {
 
 /*---------------------------------------------------------------------------*\
-                              Class constantMelting
+                           Class Lee
 \*---------------------------------------------------------------------------*/
 
 template<class Thermo, class OtherThermo>
-class constantMelting
+class Lee
 :
-    public  InterfaceCompositionModel<Thermo, OtherThermo>
+    public InterfaceCompositionModel<Thermo, OtherThermo>
 {
     // Private data
 
-        //- Condensation coefficient [1/s/K]
+        //- Condensation coefficient [1/s]
         dimensionedScalar C_;
 
         //- Phase transition temperature
         const dimensionedScalar Tactivate_;
 
+        //- Phase minimum value for activation
+        scalar alphaMin_;
+
 
 public:
 
     //- Runtime type information
-    TypeName("constantMelting");
+    TypeName("Lee");
 
 
     // Constructors
 
         //- Construct from components
-        constantMelting
+        Lee
         (
             const dictionary& dict,
             const phasePair& pair
@@ -86,13 +94,13 @@ public:
 
 
     //- Destructor
-    virtual ~constantMelting()
+    virtual ~Lee()
     {}
 
 
     // Member Functions
 
-       //- Explicit mass transfer coefficient
+        //- Explicit mass transfer coefficient
         virtual tmp<volScalarField> Kexp
         (
             label variable,
@@ -118,16 +126,17 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-} // End namespace meltingEvaporationModel
+} // End namespace meltingEvaporationModels
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "constantMelting.C"
+#   include "Lee.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
 #endif
 
 // ************************************************************************* //

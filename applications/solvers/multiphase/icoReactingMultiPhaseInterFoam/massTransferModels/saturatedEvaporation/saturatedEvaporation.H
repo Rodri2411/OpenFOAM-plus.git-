@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2017 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2015 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -22,24 +22,24 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::phaseChangeTwoPhaseMixtures::constantSolidification
+    Foam::phaseChangeTwoPhaseMixtures::saturatedEvaporation
 
 Description
-    Solidification model. Simple model driven by temperature as:
+    Evaporation model based on the Saturated species concentration at the
+    interface.
 
-    mSol = C*rho*alpha*(T - Tsolification)
-
+    mEvap = C*rho*D*(Ysat - Yi)
 
 SourceFiles
-    constantSolidification.C
+    saturatedEvaporation.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef constantSolidification_H
-#define constantSolidification_H
+#ifndef saturatedEvaporation_H
+#define saturatedEvaporation_H
 
+#include "saturationPressureModel.H"
 #include "InterfaceCompositionModel.H"
-
 
 // * * * * * * * * * * * * * * * * *  * * * * * * * * * * * * * * * * * * * *//
 
@@ -49,41 +49,56 @@ namespace meltingEvaporationModels
 {
 
 /*---------------------------------------------------------------------------*\
-                           Class constantSolidification
+                            Class saturatedEvaporation
 \*---------------------------------------------------------------------------*/
 
 template<class Thermo, class OtherThermo>
-class constantSolidification
+class saturatedEvaporation
 :
     public InterfaceCompositionModel<Thermo, OtherThermo>
 {
     // Private data
 
-        //- Condensation coefficient [1/s/K]
+        //- Model coefficient
         dimensionedScalar C_;
 
-        //- Phase transition temperature
+        //- Vaporization minimum temperature
         const dimensionedScalar Tactivate_;
+
+        //- Saturated species name in both phases
+        word saturatedName_;
+
+        //- Saturated species index in to phase (receiving mass)
+        label continuousSaturatedIndex_;
+
+        //- Saturated species index in from phase (giving mass)
+        label dispersedSaturatedIndex_;
+
+        //- Saturation pressure model
+        autoPtr<saturationPressureModel> saturationPressureModel_;
+
+
+    // Private Member Functions
+
+        //- Constant of propotionality between partial pressure and mass
+        //  fraction
+        tmp<volScalarField> wRatio() const;
 
 
 public:
 
     //- Runtime type information
-    TypeName("constantSolidification");
+    TypeName("saturatedEvaporation");
 
 
     // Constructors
 
         //- Construct from components
-        constantSolidification
-        (
-            const dictionary& dict,
-            const phasePair& pair
-        );
+        saturatedEvaporation(const dictionary& dict, const phasePair& pair);
 
 
     //- Destructor
-    virtual ~constantSolidification()
+    virtual ~saturatedEvaporation()
     {}
 
 
@@ -103,12 +118,15 @@ public:
             const volScalarField& field
         ) const;
 
+        //- Interface mass fraction
+        virtual tmp<volScalarField> Yf
+        (
+            const word& speciesName,
+            const volScalarField& Tf
+        ) const;
+
         //- Return T transition between phases
         virtual const dimensionedScalar& Tactivate() const;
-
-        //- Derivate sign of the source term:
-        // d(Sk-i)/d(variable) > 0 or d(Si-k)/d(variable) < 0
-        virtual label dSdVariable();
 
 };
 
@@ -121,10 +139,11 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "constantSolidification.C"
+#   include "saturatedEvaporation.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
 
 #endif
 

@@ -104,10 +104,7 @@ Foam::tmp<Foam::surfaceScalarField> Foam::phaseSystem::generatePhi
 }
 
 
-void Foam::phaseSystem::generatePairs
-(
-    const dictTable& modelDicts
-)
+void Foam::phaseSystem::generatePairs(const dictTable& modelDicts)
 {
     forAllConstIter(dictTable, modelDicts, iter)
     {
@@ -242,8 +239,6 @@ Foam::phaseSystem::phaseSystem
     phaseModels_(generatePhaseModels(phaseNames_)),
     phasePairs_(),
     totalPhasePairs_(),
-    Su_(phaseModels_.size()),
-    Sp_(phaseModels_.size()),
     Prt_
     (   dimensioned<scalar>::lookupOrAddToDict
         (
@@ -267,44 +262,6 @@ Foam::phaseSystem::phaseSystem
 
     // Total phase pair
     generatePairsTable();
-
-    // Initiate Su and Sp
-    forAllConstIter(HashTable<autoPtr<phaseModel> >, phaseModels_, iter)
-    {
-        phaseModel& pm = const_cast<phaseModel&>(iter()());
-
-        Su_.insert
-        (
-            pm.name(),
-            volScalarField::Internal
-            (
-                IOobject
-                (
-                    "Su" + pm.name(),
-                    mesh_.time().timeName(),
-                    mesh_
-                ),
-                mesh_,
-                dimensionedScalar("Su", dimless/dimTime, 0.0)
-            )
-        );
-
-        Sp_.insert
-        (
-            pm.name(),
-            volScalarField::Internal
-            (
-                IOobject
-                (
-                    "Sp" + pm.name(),
-                    mesh_.time().timeName(),
-                    mesh_
-                ),
-                mesh_,
-                dimensionedScalar("Sp", dimless/dimTime, 0.0)
-            )
-        );
-    }
 }
 
 
@@ -710,16 +667,16 @@ Foam::tmp<Foam::volScalarField> Foam::phaseSystem::kappa() const
 
     tmp<volScalarField> tmpkappa
     (
-        phaseModelIter()()*phaseModelIter()->kappa()
+        phaseModelIter()()/phaseModelIter()->kappa()
     );
 
     ++phaseModelIter;
     for (; phaseModelIter != phaseModels_.end(); ++ phaseModelIter)
     {
-        tmpkappa.ref() += phaseModelIter()()*phaseModelIter()->kappa();
+        tmpkappa.ref() += phaseModelIter()()/phaseModelIter()->kappa();
     }
 
-    return tmpkappa;
+    return 1.0/tmpkappa;
 }
 
 
@@ -730,7 +687,7 @@ Foam::tmp<Foam::scalarField> Foam::phaseSystem::kappa(const label patchI) const
     tmp<scalarField> tmpKappa
     (
         phaseModelIter()().boundaryField()[patchI]
-       *phaseModelIter()->kappa(patchI)
+       /phaseModelIter()->kappa(patchI)
     );
 
     ++phaseModelIter;
@@ -738,10 +695,10 @@ Foam::tmp<Foam::scalarField> Foam::phaseSystem::kappa(const label patchI) const
     {
         tmpKappa.ref() +=
             phaseModelIter()().boundaryField()[patchI]
-           *phaseModelIter()->kappa(patchI);
+           /phaseModelIter()->kappa(patchI);
     }
 
-    return tmpKappa;
+    return 1.0/tmpKappa;
 }
 
 
@@ -959,8 +916,6 @@ bool Foam::phaseSystem::read()
             readOK &= phaseModelIter()->read();
         }
 
-        // models ...
-
         return readOK;
     }
     else
@@ -993,7 +948,6 @@ Foam::phaseSystem::phasePairTable& Foam::phaseSystem::totalPhasePairs()
 {
     return totalPhasePairs_;
 }
-
 
 
 bool Foam::phaseSystem::incompressible() const
@@ -1083,7 +1037,7 @@ Foam::phaseSystem::surfaceTensionForce() const
                 * fvc::interpolate(K(alpha1, alpha2))*
                     (
                         fvc::interpolate(alpha2)*fvc::snGrad(alpha1)
-                    - fvc::interpolate(alpha1)*fvc::snGrad(alpha2)
+                      - fvc::interpolate(alpha1)*fvc::snGrad(alpha2)
                     );
             }
         }
@@ -1121,33 +1075,7 @@ Foam::tmp<Foam::volVectorField> Foam::phaseSystem::U() const
 }
 
 
-Foam::tmp<Foam::surfaceScalarField> Foam::phaseSystem::phiMixture() const
-{
-    tmp<surfaceScalarField> tstf
-    (
-        new surfaceScalarField
-        (
-            IOobject
-            (
-                "phiMixture",
-                mesh_.time().timeName(),
-                mesh_
-            ),
-            mesh_,
-            dimensionedScalar("phi", dimVolume/dimTime, 0.0)
-        )
-    );
-
-    surfaceScalarField& stf = tstf.ref();
-
-    forAllConstIter(phaseModelTable, phaseModels_, iter1)
-    {
-        stf += fvc::interpolate(iter1()())*iter1()->phi();
-    }
-
-    return tstf;
-}
-
+/*
 Foam::tmp<Foam::surfaceScalarField> Foam::phaseSystem::phig
 (
     const surfaceScalarField& ghf
@@ -1189,12 +1117,21 @@ Foam::tmp<Foam::surfaceScalarField> Foam::phaseSystem::phig
 
     return tstf;
 }
-
+*/
 
 Foam::tmp<Foam::volScalarField>
 Foam::phaseSystem::surfaceTensionCoeff(const phasePairKey& key) const
 {
     return surfaceTensionModels_[key]->sigma();
+}
+
+
+Foam::tmp<Foam::volScalarField> Foam::phaseSystem::coeffs
+(
+    const word& key
+) const
+{
+    return 1.0/(phaseModels_[key]->thermo().rho());
 }
 
 
@@ -1349,6 +1286,7 @@ Foam::tmp<Foam::surfaceScalarField> Foam::phaseSystem::nHatf
     // Face unit interface normal flux
     return nHatfv(alpha1, alpha2) & mesh_.Sf();
 }
+
 
 // ************************************************************************* //
 
