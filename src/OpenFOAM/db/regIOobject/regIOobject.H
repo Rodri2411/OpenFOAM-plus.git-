@@ -79,6 +79,8 @@ protected:
         //  The results is NULL if the stream construction failed
         Istream* objectStream();
 
+    // Static data members
+
         //- To flag master-only reading of objects
         static bool masterOnlyReading;
 
@@ -127,6 +129,9 @@ public:
         TypeName("regIOobject");
 
         static float fileModificationSkew;
+
+        //- Suppress empty fields
+        static int suppressEmptyFields;
 
 
     // Constructors

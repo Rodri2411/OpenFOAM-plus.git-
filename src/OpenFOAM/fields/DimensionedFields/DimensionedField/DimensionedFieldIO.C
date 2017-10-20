@@ -112,6 +112,25 @@ Foam::DimensionedField<Type, GeoMesh>::DimensionedField
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class Type, class GeoMesh>
+bool Foam::DimensionedField<Type, GeoMesh>::writeObject
+(
+    IOstream::streamFormat fmt,
+    IOstream::versionNumber ver,
+    IOstream::compressionType cmp,
+    const bool valid
+) const
+{
+    const bool hasContent = valid &&
+    (
+        !suppressEmptyFields
+     || GeoMesh::size(this->mesh_) || !Pstream::parRun()
+    );
+
+    return regIOobject::writeObject(fmt, ver, cmp, hasContent);
+}
+
+
+template<class Type, class GeoMesh>
 bool Foam::DimensionedField<Type, GeoMesh>::writeData
 (
     Ostream& os,
@@ -121,7 +140,7 @@ bool Foam::DimensionedField<Type, GeoMesh>::writeData
     os.writeEntry("dimensions", dimensions());
     oriented_.writeEntry(os);
 
-    os<< nl << nl;
+    os  << nl << nl;
 
     Field<Type>::writeEntry(fieldDictEntry, os);
 

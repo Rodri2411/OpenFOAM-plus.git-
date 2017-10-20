@@ -83,6 +83,12 @@ class GeometricField
 {
     // Private Member Functions
 
+        //- Read the field from the dictionary
+        void readFields(const dictionary& dict);
+
+        //- Read the field - create the field dictionary on-the-fly
+        void readFields();
+
         //- Read from file if it is present
         bool readIfPresent();
 
@@ -261,16 +267,6 @@ private:
 
         //- Boundary Type field containing boundary field values
         Boundary boundaryField_;
-
-
-    // Private Member Functions
-
-        //- Read the field from the dictionary
-        void readFields(const dictionary&);
-
-        //- Read the field - create the field dictionary on-the-fly
-        void readFields();
-
 
 public:
 

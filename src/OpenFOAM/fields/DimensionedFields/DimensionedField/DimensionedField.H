@@ -335,11 +335,21 @@ public:
         ) const;
 
 
-        // Write
+      // Write
 
-            bool writeData(Ostream& os, const word& fieldDictEntry) const;
+        //- Write using given format, version and compression.
+        //  In parallel it only writes the field if the mesh also has cells.
+        virtual bool writeObject
+        (
+            IOstream::streamFormat fmt,
+            IOstream::versionNumber ver,
+            IOstream::compressionType cmp,
+            const bool valid
+        ) const;
 
-            bool writeData(Ostream& os) const;
+        bool writeData(Ostream& os, const word& fieldDictEntry) const;
+
+        bool writeData(Ostream& os) const;
 
 
     // Member Operators

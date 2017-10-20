@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2015-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -72,24 +72,128 @@ void Foam::GeometricField<Type, PatchField, GeoMesh>::readFields
 template<class Type, template<class> class PatchField, class GeoMesh>
 void Foam::GeometricField<Type, PatchField, GeoMesh>::readFields()
 {
-    const localIOdictionary dict
-    (
-        IOobject
+    // Normally MUST_READ, but allow special handling for empty meshes
+
+    if (Pstream::parRun())
+    {
+        labelList shouldRead(Pstream::nProcs());
+
+        shouldRead[Pstream::myProcNo()] = GeoMesh::size(this->mesh()) ? 1 : 0;
+
+        // Distribute to all processors
+        Pstream::gatherList(shouldRead);
+        Pstream::scatterList(shouldRead);
+
+        // If some processors are missing meshes, use the first processor that
+        // has a mesh (and thus a field) to redistribute.
+        // Use local sum, since the values are already gathered
+        const label firstMesh =
         (
-            this->name(),
-            this->instance(),
-            this->local(),
-            this->db(),
-            IOobject::MUST_READ,
-            IOobject::NO_WRITE,
-            false
-        ),
-        typeName
-    );
+            sum(shouldRead) < Pstream::nProcs()
+          ? shouldRead.find(1)
+          : -1
+        );
 
-    this->close();
+        Info<<"firstMesh: " << firstMesh
+            << " and " << flatOutput(shouldRead) << endl;
 
-    readFields(dict);
+        autoPtr<localIOdictionary> dictPtr;
+
+        // Mesh actually exists on this processor,
+        // or force read anyhow and let it crash.
+        if (shouldRead[Pstream::myProcNo()] || firstMesh == -1)
+        {
+            dictPtr.set
+            (
+                new localIOdictionary
+                (
+                    IOobject
+                    (
+                        this->name(),
+                        this->instance(),
+                        this->local(),
+                        this->db(),
+                        IOobject::MUST_READ,
+                        IOobject::NO_WRITE,
+                        false
+                    ),
+                    typeName
+                )
+            );
+
+            this->close();
+
+            readFields(dictPtr());
+        }
+
+        if (firstMesh == Pstream::myProcNo())
+        {
+            // Send out to others
+            const dictionary& boundaryDict =
+                dictPtr().subDict("boundaryField");
+
+            for (label proci = 0; proci < Pstream::nProcs(); ++proci)
+            {
+                if (!shouldRead[proci])
+                {
+                    OPstream send
+                    (
+                        UPstream::commsTypes::scheduled,
+                        proci,
+                        IOstream::ASCII
+                    );
+
+                    send<< Internal::dimensions().values()
+                        << label(Internal::oriented().oriented())
+                        << boundaryDict;
+                }
+            }
+        }
+        else if (firstMesh != -1 && !shouldRead[Pstream::myProcNo()])
+        {
+            // Receive from first-mesh
+            Internal::clear();
+
+            label orient;
+            dictionary boundaryDict;
+
+            IPstream recv
+            (
+                Pstream::commsTypes::scheduled,
+                firstMesh,
+                IOstream::ASCII
+            );
+
+            recv>> Internal::dimensions().values()
+                >> orient
+                >> boundaryDict;
+
+            Internal::oriented() = orientedType::orientedOption(orient);
+
+            boundaryField_.readField(*this, boundaryDict);
+        }
+    }
+    else
+    {
+        const localIOdictionary dict
+        (
+            IOobject
+            (
+                this->name(),
+                this->instance(),
+                this->local(),
+                this->db(),
+                IOobject::MUST_READ,
+                IOobject::NO_WRITE,
+                false
+            ),
+            typeName
+        );
+
+        this->close();
+
+        readFields(dict);
+    }
 }
 
 
@@ -103,9 +207,9 @@ bool Foam::GeometricField<Type, PatchField, GeoMesh>::readIfPresent()
     )
     {
         WarningInFunction
-            << "read option IOobject::MUST_READ or MUST_READ_IF_MODIFIED"
+            << "read option MUST_READ or MUST_READ_IF_MODIFIED"
             << " suggests that a read constructor for field " << this->name()
-            << " would be more appropriate." << endl;
+            << " would be more appropriate ... ignoring." << endl;
     }
     else if
     (
@@ -370,7 +474,7 @@ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
             << exit(FatalIOError);
     }
 
-    if (readOldTime)
+    if (readOldTime && GeoMesh::size(this->mesh()))
     {
         readOldTimeIfPresent();
     }

@@ -48,7 +48,18 @@ registerOptSwitch
 );
 
 
-bool Foam::regIOobject::masterOnlyReading = false;
+bool Foam::regIOobject::masterOnlyReading(false);
+
+int Foam::regIOobject::suppressEmptyFields
+(
+    Foam::debug::optimisationSwitch("suppressEmptyFields", 0)
+);
+registerOptSwitch
+(
+    "suppressEmptyFields",
+    int,
+    Foam::regIOobject::suppressEmptyFields
+);
 
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
