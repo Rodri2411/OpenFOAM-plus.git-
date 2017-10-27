@@ -60,9 +60,6 @@ protected:
 
     // Protected data
 
-        //- Residual phase fraction
-        dimensionedScalar residualAlpha_;
-
         //- Species table
         hashedWordList species_;
 

@@ -217,11 +217,11 @@ Foam::phaseSystem::phaseSystem
             "phi",
             mesh_.time().timeName(),
             mesh_,
-            IOobject::NO_READ,
-            IOobject::NO_WRITE
+            IOobject::READ_IF_PRESENT,
+            IOobject::AUTO_WRITE
         ),
         mesh_,
-        dimensionedScalar("rhoPhi", dimVolume/dimTime, 0.0)
+        dimensionedScalar("zero", dimVolume/dimTime, 0.0)
     ),
     rhoPhi_
     (
@@ -234,7 +234,7 @@ Foam::phaseSystem::phaseSystem
             IOobject::NO_WRITE
         ),
         mesh_,
-        dimensionedScalar("rhoPhi", dimMass/dimTime, 0.0)
+        dimensionedScalar("zero", dimMass/dimTime, 0.0)
     ),
     phaseModels_(generatePhaseModels(phaseNames_)),
     phasePairs_(),
@@ -667,16 +667,16 @@ Foam::tmp<Foam::volScalarField> Foam::phaseSystem::kappa() const
 
     tmp<volScalarField> tmpkappa
     (
-        phaseModelIter()()/phaseModelIter()->kappa()
+        phaseModelIter()()*phaseModelIter()->kappa()
     );
 
     ++phaseModelIter;
     for (; phaseModelIter != phaseModels_.end(); ++ phaseModelIter)
     {
-        tmpkappa.ref() += phaseModelIter()()/phaseModelIter()->kappa();
+        tmpkappa.ref() += phaseModelIter()()*phaseModelIter()->kappa();
     }
 
-    return 1.0/tmpkappa;
+    return tmpkappa;
 }
 
 
@@ -687,7 +687,7 @@ Foam::tmp<Foam::scalarField> Foam::phaseSystem::kappa(const label patchI) const
     tmp<scalarField> tmpKappa
     (
         phaseModelIter()().boundaryField()[patchI]
-       /phaseModelIter()->kappa(patchI)
+       *phaseModelIter()->kappa(patchI)
     );
 
     ++phaseModelIter;
@@ -695,10 +695,10 @@ Foam::tmp<Foam::scalarField> Foam::phaseSystem::kappa(const label patchI) const
     {
         tmpKappa.ref() +=
             phaseModelIter()().boundaryField()[patchI]
-           /phaseModelIter()->kappa(patchI);
+           *phaseModelIter()->kappa(patchI);
     }
 
-    return 1.0/tmpKappa;
+    return tmpKappa;
 }
 
 

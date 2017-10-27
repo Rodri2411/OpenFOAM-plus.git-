@@ -105,21 +105,10 @@ public:
         (
             label variable,
             const volScalarField& field
-        ) const;
-
-        //- Semi implicit species mass transfer coefficient
-        virtual tmp<volScalarField> Kimp
-        (
-            label variable,
-            const volScalarField& field
-        ) const;
+        );
 
         //- Return T transition between phases
         virtual const dimensionedScalar& Tactivate() const;
-
-        //- Derivate sign of the source term:
-        // d(Sk-i)/d(variable) > 0 or d(Si-k)/d(variable) < 0
-        virtual label dSdVariable();
 
 };
 

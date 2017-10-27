@@ -91,7 +91,6 @@ namespace Foam
     using namespace meltingEvaporationModels;
 
     //NOTE: First thermo (from) and second otherThermo (to)
-    // in the phaseProperties: (from to to)
 
     // kineticGasEvaporation model definitions
 /*
@@ -110,7 +109,7 @@ namespace Foam
         );
 */
 
-        // pure from phase to a multi-component to phase
+        // From pure liquid (rhoConst) to a multi-component gas incomp phase
         makeInterfaceContSpecieMixtureType
         (
             kineticGasEvaporation,
@@ -124,22 +123,36 @@ namespace Foam
             constIncompressibleGasHThermoPhysics
         );
 
+        // From pure liquid (BoussinesqFluid) to a multi-component gas incomp phase
+        makeInterfaceContSpecieMixtureType
+        (
+            kineticGasEvaporation,
+            heRhoThermo,
+            rhoThermo,
+            pureMixture,
+            BoussinesqFluidEThermoPhysics,
+            heRhoThermo,
+            rhoReactionThermo,
+            multiComponentMixture,
+            constIncompressibleGasHThermoPhysics
+        );
 
-        // pure from phase and pure to phase with incompressible gas
+
+        // From pure liquid (rhoConst) to pure gas (incompressible ideal gas)
         makeInterfacePureType
         (
             kineticGasEvaporation,
             heRhoThermo,
             rhoThermo,
             pureMixture,
-            constIncompressibleGasHThermoPhysics,
+            constFluidHThermoPhysics,
             heRhoThermo,
             rhoThermo,
             pureMixture,
-            constFluidHThermoPhysics
+            constIncompressibleGasHThermoPhysics
         );
 
-        // pure from phase and pure to phase with rhoConst gas
+        // From pure liquid (const rho) to pure gas (rhoConst) gas
         makeInterfacePureType
         (
             kineticGasEvaporation,
@@ -154,9 +167,38 @@ namespace Foam
         );
 
 
+        // From pure liquid (Boussinesq) to pure gas (incompressible ideal gas)
+        makeInterfacePureType
+        (
+            kineticGasEvaporation,
+            heRhoThermo,
+            rhoThermo,
+            pureMixture,
+            BoussinesqFluidEThermoPhysics,
+            heRhoThermo,
+            rhoThermo,
+            pureMixture,
+            constIncompressibleGasHThermoPhysics
+        );
+
+        // From pure liquid (Boussinesq) to pure gas (rho const)
+        makeInterfacePureType
+        (
+            kineticGasEvaporation,
+            heRhoThermo,
+            rhoThermo,
+            pureMixture,
+            BoussinesqFluidEThermoPhysics,
+            heRhoThermo,
+            rhoThermo,
+            pureMixture,
+            constFluidHThermoPhysics
+        );
+
+
     // Lee model definitions
 
-        // pure from phase and a pure to phase
+        // From pure phase (rho const) to phase (rho const)
         makeInterfacePureType
         (
             Lee,
@@ -170,6 +212,7 @@ namespace Foam
             constFluidHThermoPhysics
         );
 
+        // From pure phase (rho const) to phase (Boussinesq)
         makeInterfacePureType
         (
             Lee,
@@ -184,6 +227,7 @@ namespace Foam
         );
 
 
+        // From pure phase (solidThermo) to phase (Boussinesq)
         makeInterfacePureType
         (
             Lee,
@@ -197,19 +241,22 @@ namespace Foam
             BoussinesqFluidEThermoPhysics
         );
 
+        // From pure phase (solidThermo) to phase (rho const)
         makeInterfacePureType
         (
             Lee,
+            heSolidThermo,
+            solidThermo,
+            pureMixture,
+            hConstSolidThermoPhysics,
             heRhoThermo,
             rhoThermo,
             pureMixture,
-            constFluidHThermoPhysics,
-            heRhoThermo,
-            rhoThermo,
-            pureMixture,
-            constIncompressibleGasHThermoPhysics
+            constFluidHThermoPhysics
         );
 
+
+        // From pure phase (const rho) to multi phase (incomp ideal gas)
         makeInterfaceContSpecieMixtureType
         (
             Lee,
@@ -222,22 +269,6 @@ namespace Foam
             multiComponentMixture,
             constIncompressibleGasHThermoPhysics
         );
-
-/*
-        makeInterfaceDispSpecieMixtureType
-        (
-            Lee,
-            heRhoThermo,
-            rhoReactionThermo,
-            multiComponentMixture,
-            constIncompressibleGasHThermoPhysics,
-            heRhoThermo,
-            rhoThermo,
-            pureMixture,
-            constFluidHThermoPhysics
-        );
-*/
-    // Lee model definitions
 
         // pure from phase and a pure to phase
         /*
@@ -256,6 +287,7 @@ namespace Foam
         */
 
 
+        // From pure phase (Boussinesq) to phase (solidThermo)
         makeInterfacePureType
         (
             Lee,
@@ -269,65 +301,19 @@ namespace Foam
             hConstSolidThermoPhysics
         );
 
-/*
-    // saturatedEvaporation model definitions
-
-        // multi-component from phase and a pure to phase
-        makeInterfaceDispSpecieMixtureType
+        // From pure phase (rho const) to phase (solidThermo)
+        makeInterfacePureType
         (
-            saturatedEvaporation,
-            heRhoThermo,
-            rhoReactionThermo,
-            multiComponentMixture,
-            constIncompressibleGasHThermoPhysics,
-            heRhoThermo,
-            rhoThermo,
-            pureMixture,
-            constFluidHThermoPhysics
-        );
-
-        // pure from phase and a multi-component to phase
-        makeInterfaceContSpecieMixtureType
-        (
-            saturatedEvaporation,
+            Lee,
             heRhoThermo,
             rhoThermo,
             pureMixture,
             constFluidHThermoPhysics,
-            heRhoThermo,
-            rhoReactionThermo,
-            multiComponentMixture,
-            constIncompressibleGasHThermoPhysics
-        );
-
-        // multi-component from phase and a multi-componen to phase
-        makeSpecieInterfaceSpecieMixtures
-        (
-            saturatedEvaporation,
-            heRhoThermo,
-            rhoReactionThermo,
-            multiComponentMixture,
-            constIncompressibleGasHThermoPhysics,
-            heRhoThermo,
-            rhoReactionThermo,
-            multiComponentMixture,
-            constIncompressibleGasHThermoPhysics
-        );
-
-        // pure from phase and pure to phase
-        makeInterfacePureType
-        (
-            saturatedEvaporation,
-            heRhoThermo,
-            rhoThermo,
+            heSolidThermo,
+            solidThermo,
             pureMixture,
-            constIncompressibleGasHThermoPhysics,
-            heRhoThermo,
-            rhoThermo,
-            pureMixture,
-            constIncompressibleGasHThermoPhysics
+            hConstSolidThermoPhysics
         );
-*/
 }
 
 // ************************************************************************* //

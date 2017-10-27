@@ -50,6 +50,7 @@ SourceFiles
 #include "Function1.H"
 #include "interpolation2DTable.H"
 #include "labelField.H"
+#include "phasePairKey.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -78,7 +79,26 @@ public:
             pdUniform
         };
 
+
 private:
+
+
+    // Private types
+
+        typedef
+            HashTable<dictionary, phasePairKey, phasePairKey::hash> dictTable;
+
+
+
+    // Private types
+
+        typedef
+            HashTable
+            <
+                autoPtr<reflectionModel>,
+                phasePairKey,
+                phasePairKey::hash
+            > reflectionModelTable;
 
 
     // Private data
@@ -103,6 +123,7 @@ private:
 
         //- Maximum tracking length for particles
         scalar maxTrackLength_;
+
 
         // Laser parameters
 
@@ -138,19 +159,13 @@ private:
             // Reflection sub-model
 
                 //- Reflection model
-                autoPtr<reflectionModel> reflection_;
+                reflectionModelTable reflections_;
 
                 //- Reflection switch
                 bool reflectionSwitch_;
 
-                //- Phase in which the particles are inserted
-                word initialPhase_;
-
-                //- Phase name for absorbing medium 1
-                word alpha1_;
-
-                //- Phase name for absorbing medium 2
-                word alpha2_;
+                //- Alpha value at which reflection is set
+                scalar alphaCut_;
 
 
         // Fields
@@ -177,6 +192,9 @@ private:
         //- Initialise
         void initialise();
 
+        //- Initialise reflection model
+        void initialiseReflection();
+
         //- Calculate Intensity of the laser at p(t, theta) [W/m2]
         scalar calculateIp(scalar r, scalar theta);
 
@@ -191,6 +209,13 @@ private:
         //- Indicator of the proximity of the interface
         //  Field values are 1 near and 0 away for the interface.
         tmp<volScalarField> nearInterface
+        (
+            const volScalarField& alpha1,
+            const volScalarField& alpha2
+        ) const;
+
+        //- Indicator if the normal direction for each phase
+        tmp<volScalarField> sPhase
         (
             const volScalarField& alpha1,
             const volScalarField& alpha2

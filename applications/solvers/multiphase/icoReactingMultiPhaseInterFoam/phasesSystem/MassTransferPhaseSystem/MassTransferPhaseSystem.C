@@ -119,6 +119,7 @@ template<class BasePhaseSystem>
 Foam::tmp<Foam::volScalarField>
 Foam::MassTransferPhaseSystem<BasePhaseSystem>::calculateL
 (
+    const volScalarField& dmdtNetki,
     const phasePairKey& keyik,
     const phasePairKey& keyki,
     const volScalarField& T
@@ -153,11 +154,10 @@ Foam::MassTransferPhaseSystem<BasePhaseSystem>::calculateL
 
         const word species(speciesName(0, tempOpen));
 
-        L = -interfacePtr->L(species, T);
-
-        return tL;
+        L -= neg(dmdtNetki)*interfacePtr->L(species, T);
     }
-    else if (massTransferModels_.found(keyki))
+
+    if (massTransferModels_.found(keyki))
     {
         const autoPtr<interfaceCompositionModel>& interfacePtr =
             massTransferModels_[keyki];
@@ -168,9 +168,7 @@ Foam::MassTransferPhaseSystem<BasePhaseSystem>::calculateL
 
         const word species(speciesName(0, tempOpen));
 
-        L = interfacePtr->L(species, T);
-
-        return tL;
+        L += pos(dmdtNetki)*interfacePtr->L(species, T);
     }
 
     return tL;
@@ -399,10 +397,6 @@ Foam::MassTransferPhaseSystem<BasePhaseSystem>::heatTransfer
     const volScalarField& T
 )
 {
-//     tmp<fvScalarMatrix> tEqnPtr
-//     (
-//         new fvScalarMatrix(T, dimVolume*dimTemperature/dimTime)
-//     );
     tmp<fvScalarMatrix> tEqnPtr
     (
         new fvScalarMatrix(T, dimEnergy/dimTime)
@@ -413,10 +407,6 @@ Foam::MassTransferPhaseSystem<BasePhaseSystem>::heatTransfer
     forAllIter(phaseSystem::phaseModelTable,  this->phaseModels_, iteri)
     {
         phaseModel& phasei = iteri()();
-//         const volScalarField invRhoCpi
-//         (
-//             1.0/phasei.rho()/phasei.Cp()
-//         );
 
         phaseSystem::phaseModelTable::iterator iterk = iteri;
         iterk++;
@@ -431,62 +421,11 @@ Foam::MassTransferPhaseSystem<BasePhaseSystem>::heatTransfer
             {
                 phaseModel& phasek = iterk()();
 
-                //const volScalarField invRhoCpk(1.0/phasek.rho()/phasek.Cp());
-
                 // Phase i to phase k
                 const phasePairKey keyik(phasei.name(), phasek.name(), true);
 
                 // Phase k to phase i
                 const phasePairKey keyki(phasek.name(), phasei.name(), true);
-
-
-                // mass transfer models coeffs*(T - Tref) for phase i
-//                 tmp<volScalarField> tcoeffsi
-//                 (
-//                     new volScalarField
-//                     (
-//                         IOobject
-//                         (
-//                             "tcoeffsi",
-//                             this->mesh().time().timeName(),
-//                             this->mesh(),
-//                             IOobject::NO_READ,
-//                             IOobject::NO_WRITE
-//                         ),
-//                         this->mesh(),
-//                         dimensionedScalar
-//                         (
-//                             "zero",
-//                             dimDensity/dimTemperature/dimTime,
-//                             0
-//                         )
-//                     )
-//                 );
-//                 volScalarField& coeffsi = tcoeffsi.ref();
-
-                // mass transfer models coeffs*(T - Tref) for phase k
-//                 tmp<volScalarField> tcoeffsk
-//                 (
-//                     new volScalarField
-//                     (
-//                         IOobject
-//                         (
-//                             "tcoeffsk",
-//                             this->mesh().time().timeName(),
-//                             this->mesh(),
-//                             IOobject::NO_READ,
-//                             IOobject::NO_WRITE
-//                         ),
-//                         this->mesh(),
-//                         dimensionedScalar
-//                         (
-//                             "zero",
-//                             dimDensity/dimTemperature/dimTime,
-//                             0
-//                         )
-//                     )
-//                 );
-//                 volScalarField& coeffsk = tcoeffsk.ref();
 
                 // Net mass transfer from k to i phase
                 tmp<volScalarField> tdmdtNetki
@@ -518,125 +457,25 @@ Foam::MassTransferPhaseSystem<BasePhaseSystem>::heatTransfer
                     autoPtr<interfaceCompositionModel>& interfacePtr =
                         massTransferModels_[keyik];
 
-                    //word speciesName = interfacePtr->transferSpecie();
+                    // Explicit temperature mass transfer rate
+                    tmp<volScalarField> Kexp =
+                        interfacePtr->Kexp
+                        (
+                            interfaceCompositionModel::T,
+                            T
+                        );
 
-                    //dSikdVar = interfacePtr->dSdVariable();
-
-                    // Look for mass transfer i to k specie driven by Y and p
-//                     if (dmdtYi_.found(keyik) || speciesName != "none")
-//                     {
-//                         Pair<word> YSpecie
-//                         (
-//                             interfaceCompositionModel::modelVariableNames
-//                             [
-//                                 interfaceCompositionModel::Y
-//                             ],
-//                             speciesName
-//                         );
-//
-//                         if (dmdtYi_[keyik].found(YSpecie))
-//                         {
-//                             dmdtYki -= *dmdtYi_[keyik][YSpecie];
-//                         }
-//
-//                         Pair<word> PSpecie
-//                         (
-//                             interfaceCompositionModel::modelVariableNames
-//                             [
-//                                 interfaceCompositionModel::P
-//                             ],
-//                             speciesName
-//                         );
-//
-//                         if (dmdtYi_[keyik].found(PSpecie))
-//                         {
-//                             dmdtYki -= *dmdtYi_[keyik][PSpecie];
-//                         }
-//                     }
-
-
-//                     volScalarField& dmdtYiT =
-//                         dmdtYi
-//                         (
-//                             keyik,
-//                             interfaceCompositionModel::modelVariableNames
-//                             [
-//                                 interfaceCompositionModel::T
-//                             ],
-//                             speciesName
-//                         );
-
-                    //dimensionedScalar Tref(interfacePtr->Tactivate());
-
-                    // Fill dmdt for alpha's
-                    //volScalarField& dmdtik = *dmdt_[keyik];
-
-                    if (!interfacePtr->semiImplicit())
+                    if (Kexp.valid())
                     {
-                        // Explicit temperature mass transfer rate
-                        tmp<volScalarField> Kexp =
-                            interfacePtr->Kexp
-                            (
-                                interfaceCompositionModel::T,
-                                T
-                            );
+                        Info << "Explicit temperature mass transfer.." << endl;
+                        Info << "keyik :" << keyik << endl;
 
-                        //if (Kexp.valid())
-                        {
-                            Info << "Explicit temperature mass transfer.." << endl;
-                            Info << "keyik :" << keyik << endl;
-                            // Add explicit T based to all the other explixit terms
-                            dmdtNetki -= Kexp.ref();
-                            //dmdtYki -= *dmdt_[keyik];
-                            *dmdt_[keyik] = Kexp.ref();
+                        // Add explicit T based to all the other explixit terms
+                        dmdtNetki -= Kexp.ref();
+                        *dmdt_[keyik] = Kexp.ref();
 
-
-
-                            // Add explicit source to dmdt_
-                            //dmdtik = Kexp.ref();
-                            // Add explicit source to dmdtYi to be used in YEq's
-                            //dmdtYiT = Kexp.ref();
-
-//                             Info<< " max(dmdtik) "
-//                                 << max(dmdtik.internalField()) << endl;
-//                             Info<< "temperature based Mass rate [kg/s]: "   << keyik
-//                                 << gSum((dmdtik*this->mesh().V())()) << endl;
-                        }
-                    }
-                    else if (interfacePtr->semiImplicit())
-                    {
-                        // Implicit temperature based mass transfer type :
-                        // Kimp*(T - Tref)
-                        // NOTE: dmdtYiT for species and dmdt for alpha's are
-                        // lagged in T
-                        tmp<volScalarField> Kimp =
-                            interfacePtr->Kimp
-                            (
-                                interfaceCompositionModel::T,
-                                T
-                            );
-
-                        if (Kimp.valid())
-                        {
-                            Info << "Implicit temperature mass transfer.." << endl;
-                            Info << "keyik :" << keyik << endl;
-                            // Fill alpha mass transfer
-                            //dmdtik = Kimp.ref()*mag(T.oldTime() - Tref);
-                            // Fill species mass transfer
-                            //dmdtYiT = Kimp.ref()*mag(T.oldTime() - Tref);
-                            //coeffsi = Kimp.ref();
-                            ///Trefi = Tref;
-
-//                             Info<< " max(dmdtik) "
-//                                 << max(dmdtik.internalField()) << endl;
-//                             Info<< "temperature based Mass rate [kg/s]: "   << keyik << " "
-//                                 << gSum((dmdtik*this->mesh().V())()) << endl;
-                        }
                     }
                 }
-
-                // derivate of source on variable (dSki/dVar) from k to i
-                //label dSkidVar(0);
 
                 // Looking for mass transfer in the other direction (k to i)
                 if (massTransferModels_.found(keyki))
@@ -644,158 +483,35 @@ Foam::MassTransferPhaseSystem<BasePhaseSystem>::heatTransfer
                     autoPtr<interfaceCompositionModel>& interfacePtr =
                         massTransferModels_[keyki];
 
-                    //word speciesName = interfacePtr->transferSpecie();
+                    // Explicit temperature mass transfer rate
+                    const tmp<volScalarField> Kexp =
+                        interfacePtr->Kexp
+                        (
+                            interfaceCompositionModel::T,
+                            T
+                        );
 
-                    //dSkidVar = interfacePtr->dSdVariable();
-
-                    // Look for mass transfer from k to i specie and pressure driven
-//                     if (dmdtYi_.found(keyki) && speciesName != "none")
-//                     {
-//                         Pair<word> YSpecie
-//                         (
-//                             interfaceCompositionModel::modelVariableNames
-//                             [
-//                                 interfaceCompositionModel::Y
-//                             ],
-//                             speciesName
-//                         );
-//
-//                         if (dmdtYi_[keyki].found(YSpecie))
-//                         {
-//                             dmdtYki += *dmdtYi_[keyki][YSpecie];
-//                         }
-//
-//                         Pair<word> PSpecie
-//                         (
-//                             interfaceCompositionModel::modelVariableNames
-//                             [
-//                                 interfaceCompositionModel::P
-//                             ],
-//                             speciesName
-//                         );
-//
-//                         if (dmdtYi_[keyki].found(PSpecie))
-//                         {
-//                             dmdtYki += *dmdtYi_[keyki][PSpecie];
-//                         }
-//                     }
-
-                    //dimensionedScalar Tref(interfacePtr->Tactivate());
-                    //volScalarField& dmdtki = *dmdt_(keyki);
-
-//                     volScalarField& dmdtYiT =
-//                         dmdtYi
-//                         (
-//                             keyki,
-//                             interfaceCompositionModel::modelVariableNames
-//                             [
-//                                 interfaceCompositionModel::T
-//                             ],
-//                             speciesName
-//                        );
-
-                    if (!interfacePtr->semiImplicit())
+                    if (Kexp.valid())
                     {
-                        // Explicit temperature mass transfer rate
-                        const tmp<volScalarField> Kexp =
-                            interfacePtr->Kexp
-                            (
-                                interfaceCompositionModel::T,
-                                T
-                            );
+                        Info << "Explicit temperature mass transfer.." << endl;
+                        Info << "keyki :" << keyki << endl;
 
-                        if (Kexp.valid())
-                        {
-                            Info << "Explicit temperature mass transfer.." << endl;
-                            Info << "keyki :" << keyki << endl;
-
-                            dmdtNetki += Kexp.ref();
-                            //dmdtYki += *dmdt_[keyki];
-                            *dmdt_[keyki] = Kexp.ref();
-
-
-                            //dmdtki = Kexp.ref();
-                            //dmdtYiT = Kexp.ref();
-
-//                             Info<< " max(dmdtki) "
-//                                 << max(dmdtki.internalField()) << endl;
-                            Info<< " max(dmdtYki) "
-                                << max(dmdtNetki.internalField()) << endl;
-                            //Info<< " max(dmdtYiT) "
-                            //    << max(dmdtYiT.internalField()) << endl;
-
-//                             Info<< "temperature based Mass rate [kg/s]: "
-//                                 << gSum((dmdtki*this->mesh().V())()) << endl;
-                        }
+                        dmdtNetki += Kexp.ref();
+                        *dmdt_[keyki] = Kexp.ref();
                     }
-                    else if (interfacePtr->semiImplicit())
-                    {
-                        // Implicit temperature based mass transfer
-                        // NOTE: dmdtYiT and dmdt are lagged in T
-                        tmp<volScalarField> Kimp =
-                            interfacePtr->Kimp
-                            (
-                                interfaceCompositionModel::T,
-                                T
-                            );
 
-                        if (Kimp.valid())
-                        {
-                            Info << "Implicit temperature mass transfer.." << endl;
-
-                            //dmdtki = Kimp.ref()*mag(T.oldTime() - Tref);
-                            //dmdtYiT = Kimp.ref()*mag(T.oldTime() - Tref);
-                            //coeffsk = Kimp.ref();
-                            //Trefk = Tref;
-
-//                             Info<< " max(dmdtki) "
-//                                 << max(dmdtki.internalField()) << endl;
-//                             Info<< "temperature based Mass rate [kg/s]: "
-//                                 << keyki << " "
-//                                 << gSum((dmdtki*this->mesh().V())()) << endl;
-                        }
-                    }
                 }
-/*
-                 eqn +=
-                    (
-                          dmdtYki
-//                        + (-dSkidVar)*coeffsk*Trefk
-//                        + (dSikdVar)*coeffsi*Trefi
-                    )*tL.ref()
-                    * (invRhoCpk - invRhoCpi)
 
-                    - (
-                        dmdtYki
-//                      + (-dSkidVar)*coeffsk*Trefk
-//                      + (dSikdVar)*coeffsi*Trefi
-                      )*
-                      (
-                          invRhoCpk/iterk()->rho()
-                        - invRhoCpi/iteri()->rho()
-                      )*phasei.thermo().p();
-*/
-/*
-                    + fvm::SuSp
-                      (
-                         ((dSkidVar)*coeffsk + (-dSikdVar)*coeffsi)*L
-                        *(invRhoCpk - invRhoCpi)
-                       - ((dSkidVar)*coeffsk + (-dSikdVar)*coeffsi)*
-                         (
-                            invRhoCpk/iterk()->rho()
-                          - invRhoCpi/iteri()->rho()
-                         )*phasei.thermo().p(),
-                         T
-                      );
-*/
+                word keyikName(phasei.name() + phasek.name());
+                word keykiName(phasek.name() + phasei.name());
 
                 eqn -=
                         (
                             dmdtNetki
                            *(
-                              calculateL(keyik, keyki, T)
-                            - (phasek.Cp() - phasei.Cp())
-                              *dimensionedScalar("T0", dimTemperature, 298.0)
+                                calculateL(dmdtNetki, keyik, keyki, T)
+                              - (phasek.Cp() - phasei.Cp())
+                              * dimensionedScalar("T0", dimTemperature, 298.0)
                             )
                         );
             }
@@ -820,60 +536,29 @@ void Foam::MassTransferPhaseSystem<BasePhaseSystem>::massSpeciesTransfer
     {
         if (iter()->transferSpecie() == speciesName)
         {
-            //forAll (iter()->transferSpecie(), specieI)
-            {
-                //word speciesName = iter()->transferSpecie()[specieI];
+            // Extract alpha*div(u) added in alpha's
+            tmp<volScalarField> divU = fvc::div(this->phi());
 
-                //const phasePair& pair(this->phasePairs_[iter.key()]);
+            // Explicit source
+            Su =
+                  this->Su()[phase.name()]
+                - divU.ref().internalField()*phase.oldTime()
+                + this->Sp()[phase.name()]*phase;
 
-                //const word from(pair.from().name());
-                //const word to(pair.to().name());
-
-                //const phasePairKey key(from, to, true);
-
-                //const phaseModel& phaseFrom = this->phases()(from);
-                //const volScalarField& phaseTo = phaseSystem::phases()(to);
-
-//                 volScalarField& dmdtYiY =
-//                     dmdtYi
-//                     (
-//                         key,
-//                         interfaceCompositionModel::modelVariableNames
-//                         [
-//                             interfaceCompositionModel::T
-//                         ],
-//                         speciesName
-//                     );
-                DebugVar(max(this->Su()[phase.name()]));
-                DebugVar(min(this->Su()[phase.name()]));
-
-                DebugVar(max(this->Sp()[phase.name()]));
-                DebugVar(min(this->Sp()[phase.name()]));
-
-                // Extract alpha*div(u) added in alpha's
-                tmp<volScalarField> divU = fvc::div(this->phi());
-
-                // Explicit source
-                Su =
-                    this->Su()[phase.name()]
-                  - divU.ref().internalField()*phase.oldTime()
-                  - this->Sp()[phase.name()]*phase;
-
-                // Implicit source
-                //Sp = this->Sp()[phase.name()];//*phase/phase.oldTime();
-            }
+            // Implicit source
+            //Sp = this->Sp()[phase.name()];
         }
     }
 }
 
-
+/*
 template<class BasePhaseSystem>
 void Foam::MassTransferPhaseSystem<BasePhaseSystem>::massTransfer
 (
     const volScalarField& T
 )
 {
-    forAllConstIter(massTransferModelTable, massTransferModels_, iter)
+    forAllIter(massTransferModelTable, massTransferModels_, iter)
     {
         const phasePair& pair
         (
@@ -894,35 +579,21 @@ void Foam::MassTransferPhaseSystem<BasePhaseSystem>::massTransfer
         // Mass transfer with species
         if (iter()->transferSpecie() != "none")
         {
-            //if (!iter()->semiImplicit())
+            if (Kexp.valid())
             {
-                //forAll (iter()->transferSpecie(), specieI)
-                {
-                    //word speciesName = iter()->transferSpecie();
+                volScalarField& dmdtYiY =
+                    dmdtYi
+                    (
+                        iter.key(),
+                        interfaceCompositionModel::modelVariableNames
+                        [
+                            interfaceCompositionModel::T
+                        ],
+                        speciesName
+                    );
 
-                    //word nameDisp(IOobject::groupName(speciesName, from.name()));
-                    //word nameCont(IOobject::groupName(speciesName, to.name()));
-
-                    //Info<< "key : " << key <<  " nameDisp to nameCont " << " "
-                    //    << nameDisp << " " << nameCont << endl;
-
-                    if (Kexp.valid())
-                    {
-//                         volScalarField& dmdtYiY =
-//                             dmdtYi
-//                             (
-//                                 iter.key(),
-//                                 interfaceCompositionModel::modelVariableNames
-//                                 [
-//                                     interfaceCompositionModel::T
-//                                 ],
-//                                 speciesName
-//                             );
-
-                        *dmdt_[key] = Kexp.ref();
-                        //dmdtYiY = Kexp.ref();
-                    }
-                }
+                *dmdt_[key] = Kexp.ref();
+                dmdtYiY = Kexp.ref();
             }
         }
         else
@@ -932,65 +603,7 @@ void Foam::MassTransferPhaseSystem<BasePhaseSystem>::massTransfer
                 *dmdt_[key] = Kexp.ref();
             }
         }
-            /*
-            else if (iter()->semiImplicit())
-            {
-                // Implicit species based mass transfer
-                tmp<volScalarField> Kimp = iter()->Kimp
-                (
-                    interfaceCompositionModel::Y,
-                    T
-                );
-
-                if (Kimp.valid())
-                {
-                    Info << "Semi-implicit species based mass transfer.." << endl;
-
-                    volScalarField& dmdtYiY =
-                        dmdtYi
-                        (
-                            iter.key(),
-                            interfaceCompositionModel::modelVariableNames
-                            [
-                                interfaceCompositionModel::Y
-                            ],
-                            speciesName
-                        );
-
-                    // Fill dm used in alpha's
-                    dmdt = Kimp.ref()*
-                    (
-                        max
-                        (
-                            eqns[nameCont]->psi()
-                          - iter()->Yf(speciesName, T),
-                            0.0
-                        )
-                    );
-                    dmdtYiY = dmdt;
-
-                    *eqns[nameCont] +=
-                      - Kimp.ref()*iter()->Yf(speciesName, T)
-                      + fvm::Sp
-                        (
-                            Kimp.ref(),
-                            eqns[nameCont]->psi()
-                        );
-
-                    // Explicit in the from phase
-                    if (eqns.found(nameDisp))
-                    {
-                        *eqns[nameDisp] -= dmdt;
-                    }
-                }
-            }
-            */
-        //}
-
-        Info<< "Species based Mass rate [kg/s]: "
-            << key << " "
-            << gSum((dmdt*this->mesh().V())()) << endl;
     }
 }
-
+*/
 // ************************************************************************* //

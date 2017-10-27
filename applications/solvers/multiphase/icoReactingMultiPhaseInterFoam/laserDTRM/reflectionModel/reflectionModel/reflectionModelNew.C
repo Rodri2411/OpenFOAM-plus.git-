@@ -36,7 +36,7 @@ New
     const fvMesh& mesh
 )
 {
-    const word modelType(dict.lookup("reflectionModel"));
+    const word modelType(dict.lookup("type"));
 
     Info<< "Selecting reflectionModel " << modelType << endl;
 

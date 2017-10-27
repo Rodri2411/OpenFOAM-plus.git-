@@ -49,7 +49,7 @@ Foam::meltingEvaporationModels::Lee<Thermo, OtherThermo>
 template<class Thermo, class OtherThermo>
 Foam::tmp<Foam::volScalarField>
 Foam::meltingEvaporationModels::Lee<Thermo, OtherThermo>
-::Kexp(label variable, const volScalarField& refValue) const
+::Kexp(label variable, const volScalarField& refValue)
 {
     if (this->modelVariable_ == variable)
     {
@@ -65,9 +65,9 @@ Foam::meltingEvaporationModels::Lee<Thermo, OtherThermo>
                 C_
               * from
               * this->pair().from().rho()
-              * (refValue - Tactivate_)
+              * (refValue.oldTime() - Tactivate_)
               * pos(from - alphaMin_)
-              * pos(refValue - Tactivate_)/Tactivate_
+              * pos(refValue.oldTime() - Tactivate_)/Tactivate_
             );
         }
         else
@@ -78,38 +78,11 @@ Foam::meltingEvaporationModels::Lee<Thermo, OtherThermo>
               * from
               * this->pair().from().rho()
               * pos(from - alphaMin_)
-              * (Tactivate_ - refValue)
-              * pos(Tactivate_ - refValue)/Tactivate_
+              * (Tactivate_ - refValue.oldTime())
+              * pos(Tactivate_ - refValue.oldTime())/Tactivate_
             );
 
         }
-    }
-    else
-    {
-        return tmp<volScalarField> ();
-    }
-}
-
-
-template<class Thermo, class OtherThermo>
-Foam::tmp<Foam::volScalarField>
-Foam::meltingEvaporationModels::Lee<Thermo, OtherThermo>
-::Kimp(label variable, const volScalarField& refValue) const
-{
-    if (this->modelVariable_ == variable)
-    {
-        volScalarField limitedDispersed
-        (
-            min(max(this->pair().from(), scalar(0)), scalar(1))
-        );
-
-        return
-        (
-             C_
-            *limitedDispersed
-            *this->pair().from().rho()
-            *pos(Tactivate_ - refValue.oldTime())
-        );
     }
     else
     {
@@ -124,15 +97,6 @@ Foam::meltingEvaporationModels::Lee<Thermo, OtherThermo>
 ::Tactivate() const
 {
     return Tactivate_;
-}
-
-
-template<class Thermo, class OtherThermo>
-Foam::label
-Foam::meltingEvaporationModels::Lee<Thermo, OtherThermo>
-::dSdVariable()
-{
-    return label(-1);
 }
 
 

@@ -283,7 +283,11 @@ void Foam::multiphaseSystem::calculateSuSp()
 
         // Update ddtAlphaMax
         ddtAlphaMax_ =
-            max(gMax((dmdt21*coeffs1)()), gMax((dmdt12*coeffs2)()));
+            max
+            (
+                ddtAlphaMax_.value(),
+                max(gMax((dmdt21*coeffs1)()), gMax((dmdt12*coeffs2)()))
+            );
     }
 }
 
@@ -296,6 +300,9 @@ void Foam::multiphaseSystem::solve()
     label nAlphaSubCycles(readLabel(alphaControls.lookup("nAlphaSubCycles")));
     label nAlphaCorr(readLabel(alphaControls.lookup("nAlphaCorr")));
     mesh.solverDict("alpha").lookup("cAlphas") >> cAlphas_;
+
+    // Reset ddtAlphaMax
+    ddtAlphaMax_ = dimensionedScalar("zero", dimless, 0.0);
 
     PtrList<surfaceScalarField> phiAlphaCorrs(phases_.size());
 
@@ -378,7 +385,7 @@ void Foam::multiphaseSystem::solve()
                     phirScheme
                 );
             }
-/*
+
             // Ensure that the flux at inflow BCs is preserved
             forAll(phiAlphaCorr.boundaryField(), patchi)
             {
@@ -400,8 +407,6 @@ void Foam::multiphaseSystem::solve()
                     }
                 }
             }
-*/
-//            limitedPhiAlphas_.set(phase1.name(), phiAlphaCorr);
 
             phasei++;
         }
@@ -488,8 +493,8 @@ void Foam::multiphaseSystem::solve()
                     phi,
                     upwind<scalar>(mesh, phi)
                 ).fvmDiv(phi, alpha1)
-             ==
-                Su + fvm::Sp(Sp, alpha1)
+              ==
+                 Su + fvm::Sp(Sp, alpha1)
             );
 
             alpha1Eqn.solve();
@@ -508,8 +513,6 @@ void Foam::multiphaseSystem::solve()
                     !(++alphaSubCycle).end();
                 )
                 {
-                    //surfaceScalarField phiAlphaCorrs0(phiAlphaCorrs[phasei]);
-
                     MULES::explicitSolve
                     (
                         geometricOneField(),
@@ -518,17 +521,17 @@ void Foam::multiphaseSystem::solve()
                         phiAlpha,
                         (alphaSubCycle.index()*Sp)(),
                         (Su - (alphaSubCycle.index() - 1)*Sp*alpha1)(),
-                        phase.alphaMax(),
+                        1,
                         0
                     );
 
                     if (alphaSubCycle.index() == 1)
                     {
-                        phase.alphaPhi() = phiAlpha;//phiAlphaCorrs0;
+                        phase.alphaPhi() = phiAlpha;
                     }
                     else
                     {
-                        phase.alphaPhi() += phiAlpha;//phiAlphaCorrs0;
+                        phase.alphaPhi() += phiAlpha;
                     }
                 }
 
@@ -540,8 +543,6 @@ void Foam::multiphaseSystem::solve()
                 phaseModel& phase = iter();
                 volScalarField& alpha1 = phase;
 
-                //surfaceScalarField& phiAlpha = phiAlphaCorrs[phasei];
-
                 MULES::explicitSolve
                 (
                     geometricOneField(),
@@ -550,10 +551,9 @@ void Foam::multiphaseSystem::solve()
                     phiAlpha,
                     Sp,
                     Su,
-                    phase.alphaMax(),
+                    1,
                     0
                 );
-
 
                 phase.alphaPhi() = phiAlpha;
             }
@@ -588,29 +588,16 @@ void Foam::multiphaseSystem::solve()
                 rhoPhi_ +=
                     fvc::interpolate(phase.rho())*phase.alphaPhi();
 
-                Info<< alpha1.name() << " volume fraction = "
-                    << alpha1.weightedAverage(mesh.V()).value()
-                    << "  Min(alpha) = " << min(alpha1).value()
-                    << "  Max(alpha) = " << max(alpha1).value()
-                << endl;
-
                 if (mesh.time().outputTime())
                 {
                     volScalarField dAlphadt("dAlphadt", fvc::ddt(alpha1));
                     volScalarField divrhoPhi("divrhoPhi", fvc::div(rhoPhi_));
+
                     divrhoPhi.write();
                     dAlphadt.write();
+
                 }
 
-            }
-
-            // Normalize alphas
-            volScalarField sumCorr(1.0 - sumAlpha);
-            forAllIter(UPtrList<phaseModel>, phases_, iter)
-            {
-                phaseModel& phase = iter();
-                volScalarField& alpha = phase;
-                alpha += alpha*sumCorr;
             }
 
             Info<< "Phase-sum volume fraction, min, max = "
@@ -618,6 +605,21 @@ void Foam::multiphaseSystem::solve()
                 << ' ' << min(sumAlpha).value()
                 << ' ' << max(sumAlpha).value()
                 << endl;
+
+            volScalarField sumCorr(1.0 - sumAlpha);
+
+            forAllIter(UPtrList<phaseModel>, phases_, iter)
+            {
+                phaseModel& phase = iter();
+                volScalarField& alpha = phase;
+                alpha += alpha*sumCorr;
+
+                Info<< alpha.name() << " volume fraction = "
+                    << alpha.weightedAverage(mesh.V()).value()
+                    << "  Min(alpha) = " << min(alpha).value()
+                    << "  Max(alpha) = " << max(alpha).value()
+                    << endl;
+            }
         }
     }
 }

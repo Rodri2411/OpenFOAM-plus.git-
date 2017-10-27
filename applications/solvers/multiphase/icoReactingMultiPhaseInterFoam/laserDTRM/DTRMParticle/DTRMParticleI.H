@@ -34,7 +34,7 @@ inline Foam::DTRMParticle::trackingData::trackingData
     const interpolationCell<scalar>& TInterp,
     const interpolationCellPoint<vector>& nHatInterp,
     const labelField& relfectedCell,
-    const reflectionModel& reflection,
+    const UPtrList<reflectionModel>& reflection,
     volScalarField& Q
 )
 :
@@ -92,7 +92,7 @@ Foam::DTRMParticle::trackingData::relfectedCells() const
 }
 
 
-inline const Foam::reflectionModel&
+inline const Foam::UPtrList<Foam::radiation::reflectionModel>&
 Foam::DTRMParticle::trackingData::reflection() const
 {
     return reflection_;
@@ -144,12 +144,6 @@ inline Foam::scalar& Foam::DTRMParticle::dA()
 inline Foam::point& Foam::DTRMParticle::p0()
 {
     return p0_;
-}
-
-
-inline Foam::label& Foam::DTRMParticle::reflectedId()
-{
-    return reflectedId_;
 }
 
 

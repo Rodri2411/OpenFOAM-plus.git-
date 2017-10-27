@@ -50,12 +50,6 @@ MultiComponentPhaseModel
 )
 :
     BasePhaseModel(fluid, phaseName),
-    residualAlpha_
-    (
-        "residualAlpha",
-        dimless,
-        fluid.mesh().solverDict("Yi").lookup("residualAlpha")
-    ),
     species_(),
     inertIndex_(-1)
 {
@@ -375,6 +369,12 @@ void Foam::MultiComponentPhaseModel<BasePhaseModel, phaseThermo>::solveYi
     X_[inertIndex_].max(0.0);
 
     calculateMassFractions();
+
+    if (mesh.time().outputTime())
+    {
+        X_[0].write();
+        X_[1].write();
+    }
 }
 
 template<class BasePhaseModel, class phaseThermo>

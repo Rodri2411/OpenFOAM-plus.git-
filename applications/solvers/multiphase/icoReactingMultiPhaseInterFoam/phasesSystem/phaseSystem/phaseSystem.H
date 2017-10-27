@@ -520,7 +520,7 @@ public:
         ) = 0;
 
         //- Calculate mass transfer
-        virtual void massTransfer(const volScalarField& T) = 0;
+        //virtual void massTransfer(const volScalarField& T) = 0;
 
         //- Calculate mass transfer for species
         virtual void massSpeciesTransfer

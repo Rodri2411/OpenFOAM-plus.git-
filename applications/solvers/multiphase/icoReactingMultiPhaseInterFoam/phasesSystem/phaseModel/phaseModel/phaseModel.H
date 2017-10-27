@@ -64,9 +64,6 @@ class phaseModel
         //- Name of phase
         word name_;
 
-        //- Optional maximum phase-fraction (e.g. packing limit)
-        scalar alphaMax_;
-
 
 public:
 
@@ -113,12 +110,6 @@ public:
 
         //- Return the system to which this phase belongs
         const phaseSystem& fluid() const;
-
-        //- Return the other phase in a two-phase system
-        //const phaseModel& otherPhase() const;
-
-        //- Return the maximum phase-fraction (e.g. packing limit)
-        scalar alphaMax() const;
 
         //- Correct phase thermo
         virtual void correct();

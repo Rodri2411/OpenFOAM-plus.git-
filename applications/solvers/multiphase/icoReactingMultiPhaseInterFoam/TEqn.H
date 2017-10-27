@@ -10,8 +10,6 @@
         fluid.kappa() + fluid.Cp()*turbulence->mut()/fluid.Prt()
     );
 
-    //dimensionedScalar S("S", dimEnergy/dimVolume/dimTime, 1.225e8);
-
     fvScalarMatrix TEqn
     (
         fvm::ddt(rhoCp, T)
@@ -23,6 +21,11 @@
       + radiation->ST(T)
       + fvOptions(rhoCp, T)
     );
+
+    if (T.mesh().time().outputTime())
+    {
+        kappaEff.write();
+    }
 
     TEqn.relax();
 

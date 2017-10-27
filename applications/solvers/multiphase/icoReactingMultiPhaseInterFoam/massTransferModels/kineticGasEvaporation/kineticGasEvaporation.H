@@ -37,7 +37,6 @@ SourceFiles
 
 
 #include "InterfaceCompositionModel.H"
-#include "saturationPressureModel.H"
 
 // * * * * * * * * * * * * * * * * *  * * * * * * * * * * * * * * * * * * * *//
 
@@ -69,23 +68,14 @@ class kineticGasEvaporation
         //- Molar weight of the vapour in the continous phase
         dimensionedScalar Mv_;
 
-        //- Pointer to saturation pressure model
-        autoPtr<saturationPressureModel> saturationPressureModel_;
-
         //- Source
-        mutable volScalarField phi0_;
+        volScalarField phi0_;
 
-        //- Spread source
-        mutable volScalarField sPhi_;
+        //- Alpha maximum value for the mass transfer
+        scalar alphaMax_;
 
-        //- Diffusivity for source term
-        dimensionedScalar D_;
-
-    // Private Member Functions
-
-        //- Constant of propotionality between partial pressure and mass
-        //  fraction
-        tmp<volScalarField> wRatio() const;
+        //- Alpha minumum value for the mass transfer
+        scalar alphaMin_;
 
 
 public:
@@ -116,30 +106,10 @@ public:
         (
             label variable,
             const volScalarField& field
-        ) const;
-
-        //- Semi implicit species mass transfer coefficient
-        virtual tmp<volScalarField> Kimp
-        (
-            label variable,
-            const volScalarField& field
-        ) const;
+        );
 
         //- Return Tref
         virtual const dimensionedScalar& Tactivate() const;
-
-
-        //- Explicit mass transfer for energy
-        virtual tmp<volScalarField> KexpEnergy
-        (
-            label modelVariable,
-            const volScalarField& field
-        ) const;
-
-
-        //- Derivate sign of the source term:
-        // d(Sk-i)/d(variable) > 0 or d(Si-k)/d(variable) < 0
-        virtual label dSdVariable();
 
 };
 

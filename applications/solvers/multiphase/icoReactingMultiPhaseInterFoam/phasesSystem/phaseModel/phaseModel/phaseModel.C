@@ -56,8 +56,7 @@ Foam::phaseModel::phaseModel
         dimensionedScalar("alpha", dimless, 0)
     ),
     fluid_(fluid),
-    name_(phaseName),
-    alphaMax_(fluid.subDict(phaseName).lookupOrDefault("alphaMax", 1.0))
+    name_(phaseName)
 {}
 
 
@@ -78,12 +77,6 @@ const Foam::word& Foam::phaseModel::name() const
 const Foam::phaseSystem& Foam::phaseModel::fluid() const
 {
     return fluid_;
-}
-
-
-Foam::scalar Foam::phaseModel::alphaMax() const
-{
-    return alphaMax_;
 }
 
 

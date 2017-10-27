@@ -58,10 +58,6 @@ class FresnelLaser
 
     // Private data
 
-        //- Coefficients dictionary
-        dictionary coeffsDict_;
-
-
         //- Model constant
         scalar epsilon_;
 

@@ -70,16 +70,10 @@ Foam::interfaceCompositionModel::interfaceCompositionModel
 )
 :
     modelVariable_(modelVariableNames.read(dict.lookup("variable"))),
-    semiImplicit_(dict.lookupOrDefault<bool>("semiImplicit", false)),
     pair_(pair),
     speciesName_(dict.lookupOrDefault<word>("species", "none")),
     mesh_(pair_.from().mesh())
-{/*
-    if (dict.found("species"))
-    {
-        speciesNames_ = ;
-    }*/
-}
+{}
 
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
@@ -106,24 +100,5 @@ const Foam::word Foam::interfaceCompositionModel::variable() const
 {
     return modelVariableNames[modelVariable_];
 }
-
-
-bool Foam::interfaceCompositionModel::semiImplicit() const
-{
-    return semiImplicit_;
-}
-
-
-Foam::tmp<Foam::volScalarField> Foam::interfaceCompositionModel::KexpEnergy
-(
-    label modelVariable,
-    const volScalarField& field
-)
-const
-{
-    NotImplemented;
-    return tmp<volScalarField>();
-}
-
 
 // ************************************************************************* //

@@ -38,8 +38,7 @@ Foam::DTRMParticle::DTRMParticle
     const scalar I,
     const label cellI,
     const scalar dA,
-    const label reflectedId,
-    const scalar Imin,
+    const label transmissiveId,
     bool doCellFacePt
 )
 :
@@ -49,8 +48,7 @@ Foam::DTRMParticle::DTRMParticle
     I0_(I),
     I_(I),
     dA_(dA),
-    reflectedId_(reflectedId),
-    Imin_(Imin)
+    transmissiveId_(transmissiveId)
 {}
 
 
@@ -62,8 +60,7 @@ Foam::DTRMParticle::DTRMParticle(const DTRMParticle& p)
     I0_(p.I0_),
     I_(p.I_),
     dA_(p.dA_),
-    reflectedId_(p.reflectedId_),
-    Imin_(p.Imin_)
+    transmissiveId_(p.transmissiveId_)
 {}
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
@@ -94,43 +91,28 @@ bool Foam::DTRMParticle::move
 
         // Boltzman constant
         const scalar sigma = physicoChemical::sigma.value();
+
+        label reflectedZoneId = td.relfectedCells()[celli];
+
         if
         (
-            (!td.relfectedCells()[celli] > 0 && reflectedId_ == 0)
-         || reflectedId_ > 0
+            (reflectedZoneId > -1)
+         && (
+                (transmissiveId_ == -1)
+             || (transmissiveId_ != reflectedZoneId)
+            )
         )
         {
-            scalar a = td.aInterp().interpolate(position(), cell0);
-            scalar e = td.eInterp().interpolate(position(), cell0);
-            scalar E = td.EInterp().interpolate(position(), cell0);
-            scalar T = td.TInterp().interpolate(position(), cell0);
-
-            const scalar I1 =
-            (
-                I_
-                + ds*(e*sigma*pow4(T)/mathematical::pi + E)
-            ) / (1 + ds*a);
-
-            td.Q(cell0) += (I_ - I1)*dA_;
-
-            I_ = I1;
-
-            if ((I_ <= 0.01*I0_) || (I_ < Imin_))
-            {
-                break;
-            }
-        }
-        else
-        {
             scalar rho(0);
+
             // Create a new reflected particle when the particles is not
             // transmissive and larger than an absolute I
-            if (reflectedId_ == 0 && I_ > Imin_)
+            if (I_ > 0.01*I0_)
             {
                 vector pDir = dsv/ds;
 
                 cellPointWeight cpw(mesh_, position(), celli, face());
-                //vector nHat = td.nHatCells()[celli];
+
                 vector nHat = td.nHatInterp().interpolate(cpw);
 
                 nHat /= mag(nHat);
@@ -138,12 +120,26 @@ bool Foam::DTRMParticle::move
                 // Only new incoming rays
                 if (cosTheta > SMALL)
                 {
-                    vector newDir = td.reflection().R(pDir, nHat);
-
-                    //scalar theta = acos(-pDir & nHat);
+                    vector newDir =
+                        td.reflection()
+                        [
+                            td.relfectedCells()[celli]
+                        ].R(pDir, nHat);
 
                     // reflectivity
-                    rho = min(max(td.reflection().rho(cosTheta), 0.0), 0.98);
+                    rho =
+                        min
+                        (
+                            max
+                            (
+                                td.reflection()
+                                [
+                                    td.relfectedCells()[celli]
+                                ].rho(cosTheta)
+                                , 0.0
+                            )
+                            , 0.98
+                        );
 
                     scalar delaM = sqrt(mesh_.cellVolumes()[cell0]);
 
@@ -155,8 +151,7 @@ bool Foam::DTRMParticle::move
                         I_*rho,
                         cell0,
                         dA_,
-                        reflectedId_,
-                        Imin_,
+                        transmissiveId_,
                         true
                     );
                     // Add to cloud
@@ -164,7 +159,8 @@ bool Foam::DTRMParticle::move
                 }
             }
 
-            reflectedId_++;
+            // Change transmissiveId of the particle
+            transmissiveId_ = reflectedZoneId;
 
             const point p0 = position();
 
@@ -186,11 +182,33 @@ bool Foam::DTRMParticle::move
               + ds*(e*sigma*pow4(T)/mathematical::pi + E)
             ) / (1 + ds*a);
 
-            td.Q(celli) += (Itran - I1)*dA_;
+            td.Q(celli) += (Itran - max(I1, 0.0))*dA_;
 
             I_ = I1;
 
-            if (I_ <= 0.01*I0_ || I_ < Imin_)
+            if (I_ <= 0.01*I0_)
+            {
+                break;
+            }
+        }
+        else
+        {
+            scalar a = td.aInterp().interpolate(position(), cell0);
+            scalar e = td.eInterp().interpolate(position(), cell0);
+            scalar E = td.EInterp().interpolate(position(), cell0);
+            scalar T = td.TInterp().interpolate(position(), cell0);
+
+            const scalar I1 =
+            (
+                I_
+                + ds*(e*sigma*pow4(T)/mathematical::pi + E)
+            ) / (1 + ds*a);
+
+            td.Q(cell0) += (I_ -  max(I1, 0.0))*dA_;
+
+            I_ = I1;
+
+            if ((I_ <= 0.01*I0_))
             {
                 break;
             }

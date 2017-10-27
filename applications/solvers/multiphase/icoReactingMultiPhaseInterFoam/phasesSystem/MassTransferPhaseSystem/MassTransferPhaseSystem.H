@@ -116,6 +116,7 @@ protected:
         //- Calculate L between phases
         tmp<volScalarField> calculateL
         (
+            const volScalarField& dmdtNetki,
             const phasePairKey& keyik,
             const phasePairKey& keyki,
             const volScalarField& T
@@ -164,13 +165,13 @@ public:
         );
 
 
-    // Explicit and Implicit mass transfer matrices
+    // mass transfer functions
 
-        //- Return the heat transfer matrix
+        //- Return the heat transfer matrix and fill dmdt for phases
         virtual  tmp<fvScalarMatrix> heatTransfer(const volScalarField& T);
 
         //- Calculate mass transfer
-        virtual  void massTransfer(const volScalarField& T);
+        //virtual  void massTransfer(const volScalarField& T);
 
         //- Calculate mass transfer for species
         virtual void massSpeciesTransfer

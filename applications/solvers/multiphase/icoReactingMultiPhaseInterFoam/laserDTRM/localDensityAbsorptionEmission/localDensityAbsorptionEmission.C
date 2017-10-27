@@ -109,16 +109,19 @@ Foam::radiation::localDensityAbsorptionEmission::aCont(const label bandI) const
                 false
             ),
             mesh_,
-            dimensionedScalar("zero", dimless/dimLength, 0)
+            dimensionedScalar("zero", inv(dimLength), 0)
         )
     );
 
-    scalarField& a = ta.ref().primitiveFieldRef();
+    volScalarField& a = ta.ref();
 
     forAll(alphaNames_, i)
     {
         dimensionedScalar aPhase("a", dimless/dimLength, aCoeff_[i]);
-        a += max(alpha(alphaNames_[i]), 0.0)*aPhase;
+        a +=
+            max(alpha(alphaNames_[i]), 0.0)
+           *pos(alpha(alphaNames_[i]) - 0.1)
+           *aPhase;
     }
 
     return ta;
@@ -142,16 +145,19 @@ Foam::radiation::localDensityAbsorptionEmission::eCont(const label bandI) const
                 false
             ),
             mesh_,
-            dimensionedScalar("zero", dimless/dimLength, 0)
+            dimensionedScalar("zero", inv(dimLength), 0)
         )
     );
 
-    scalarField& e = te.ref().primitiveFieldRef();
+    volScalarField& e = te.ref();
 
     forAll(alphaNames_, i)
     {
         dimensionedScalar ePhase("e", dimless/dimLength, eCoeff_[i]);
-        e += max(alpha(alphaNames_[i]), 0.0)*ePhase;
+        e +=
+            max(alpha(alphaNames_[i]), 0.0)
+           *pos(alpha(alphaNames_[i]) - 0.1)
+           *ePhase;
     }
 
     return te;

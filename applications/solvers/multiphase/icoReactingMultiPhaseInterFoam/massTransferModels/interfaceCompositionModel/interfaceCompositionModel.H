@@ -73,9 +73,6 @@ public:
         //- Enumeration for model variables
         modelVariable modelVariable_;
 
-        //- Semi-Implicit or Explicit model
-        bool semiImplicit_;
-
 
 protected:
 
@@ -176,38 +173,13 @@ public:
         (
             label modelVariable,
             const volScalarField& field
-        ) const = 0;
-
-        //- Implicit mass transfer coefficient of the shape
-        //  Kimp*(variable - refValue)
-        virtual tmp<volScalarField> Kimp
-        (
-            label modelVariable,
-            const volScalarField& field
-        ) const = 0;
-
-        //- Explicit mass transfer for energy
-        virtual tmp<volScalarField> KexpEnergy
-        (
-            label modelVariable,
-            const volScalarField& field
-        ) const;
+        ) = 0;
 
         //- Reference value
         virtual const dimensionedScalar& Tactivate() const = 0;
 
         //- Returns the variable on which the model is based
         const word variable() const;
-
-        //- Returns type of model. false is fully Explicit
-        // true is treated semiImplicit as :
-        // Sk-i = Kimp()(variable - Tactivate) for positive k to i
-        // Si-k = Kimp()(Tactivate - variable) for positive i to k
-        bool semiImplicit() const;
-
-        //- Derivate sign of the source term:
-        // d(Sk-i)/d(variable) > 0 or d(Si-k)/d(variable) < 0
-        virtual label dSdVariable() = 0;
 
 };
 

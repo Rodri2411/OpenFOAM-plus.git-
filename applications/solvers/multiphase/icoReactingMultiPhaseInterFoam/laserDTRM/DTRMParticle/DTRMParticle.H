@@ -43,7 +43,6 @@ SourceFiles
 #include "reflectionModel.H"
 #include "interpolationCellPoint.H"
 
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
@@ -65,6 +64,7 @@ class DTRMParticle
 {
 private:
 
+
     // Private data
 
         //- Size in bytes of the fields
@@ -85,11 +85,8 @@ private:
         //- Area of radiation
         scalar dA_;
 
-        //- Reflected index
-        label reflectedId_;
-
-        //- Minimum radiation intensity to which the particle is tracked [W/m2]
-        scalar Imin_;
+        //- Trasnmissive index
+        label transmissiveId_;
 
 
 public:
@@ -101,6 +98,8 @@ public:
     :
         public particle::TrackingData<Cloud<DTRMParticle>>
     {
+
+
         // Interpolators for continuous phase fields
 
             const interpolationCell<scalar>& aInterp_;
@@ -111,7 +110,8 @@ public:
             const interpolationCellPoint<vector>& nHatInterp_;
 
             const labelField& relfectedCells_;
-            const reflectionModel& reflection_;
+            //const reflectionModelTable& reflection_;
+            UPtrList<reflectionModel> reflection_;
 
             //- Heat source term
             volScalarField& Q_;
@@ -130,7 +130,7 @@ public:
                 const interpolationCell<scalar>& TInterp,
                 const interpolationCellPoint<vector>& nHatInterp,
                 const labelField&,
-                const reflectionModel&,
+                const UPtrList<reflectionModel>&,
                 volScalarField& Q
             );
 
@@ -147,7 +147,7 @@ public:
             inline const interpolationCell<scalar>& TInterp() const;
             inline const interpolationCellPoint<vector>& nHatInterp() const;
             inline const labelField& relfectedCells() const;
-            inline const reflectionModel& reflection() const;
+            inline const UPtrList<reflectionModel>& reflection() const;
 
             inline scalar& Q(label celli);
 
@@ -190,8 +190,7 @@ public:
             const scalar I,
             const label cellI,
             const scalar dA,
-            const label reflectedId,
-            const scalar Imin,
+            const label transmissiveId,
             bool doCellFacePt = true
         );
 
@@ -273,15 +272,6 @@ public:
 
         //- Return access to reflectedId
         inline label& reflectedId();
-
-        //- Return access to initial tet face
-        //inline label& tetFace0();
-
-        //- Return access to initial tet point
-        //inline label& tetPt0();
-
-        //- Return access to initial proc Id
-        //inline label& origProc0();
 
 
    // Tracking

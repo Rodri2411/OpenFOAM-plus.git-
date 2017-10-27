@@ -278,6 +278,20 @@ Foam::tmp<Foam::fvScalarMatrix> Foam::radiation::radiationModel::ST
 }
 
 
+Foam::tmp<Foam::fvScalarMatrix> Foam::radiation::radiationModel::ST
+(
+    const volScalarField& rhoCp,
+    volScalarField& T
+) const
+{
+    return
+    (
+        Ru()/rhoCp
+      - fvm::Sp(Rp()*pow3(T)/rhoCp, T)
+    );
+}
+
+
 const Foam::radiation::absorptionEmissionModel&
 Foam::radiation::radiationModel::absorptionEmission() const
 {
