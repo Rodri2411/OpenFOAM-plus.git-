@@ -102,6 +102,14 @@ Foam::fileName Foam::fileOperations::masterUncollatedFileOperation::filePathInfo
 {
     newInstancePath = word::null;
 
+    if (true)
+    {
+        Pout<< "masterUncollatedFileOperation::filePathInfo :"
+            << " lookup" << io.objectPath()
+            << " procase" <<  io.time().processorCase() << endl;
+    }
+
+    // Special treatment for absolute paths
     if (io.instance().isAbsolute())
     {
         fileName objectPath = io.instance()/io.name();
@@ -166,14 +174,8 @@ Foam::fileName Foam::fileOperations::masterUncollatedFileOperation::filePathInfo
 
         // Check for approximately same time. E.g. if time = 1e-2 and
         // directory is 0.01 (due to different time formats)
-        HashPtrTable<instantList>::const_iterator pathFnd
-        (
-            times_.find
-            (
-                io.time().path()
-            )
-        );
-        if (search && (pathFnd != times_.end()))
+        const auto pathFnd = times_.cfind(io.time().path());
+        if (search && pathFnd.found())
         {
             newInstancePath = findInstancePath
             (
@@ -247,10 +249,8 @@ Foam::fileOperations::masterUncollatedFileOperation::processorsPath
 )
 {
     // Check if directory is processorXXX
-    word caseName(dir.name());
 
-    std::string::size_type pos = caseName.find("processor");
-    if (pos == 0)
+    if (dir.name().startsWith("processor"))
     {
         return dir.path()/processorsDir;
     }
@@ -271,7 +271,7 @@ Foam::fileOperations::masterUncollatedFileOperation::splitProcessorPath
 {
     // Search for processor at start of line or /processor
     std::string::size_type pos = objectPath.find("processor");
-    if (pos == string::npos)
+    if (pos == std::string::npos)
     {
         return -1;
     }
@@ -294,7 +294,7 @@ Foam::fileOperations::masterUncollatedFileOperation::splitProcessorPath
     label proci;
 
     pos = local.find('/');
-    if (pos == string::npos)
+    if (pos == std::string::npos)
     {
         // processorXXX without local
         if (Foam::read(local, proci))
@@ -702,8 +702,19 @@ Foam::fileName Foam::fileOperations::masterUncollatedFileOperation::filePath
     pathType searchType = NOTFOUND;
     word newInstancePath;
 
+    if (debug > 1)
+    {
+        Pout<< "masterUncollatedFileOperation::filePath :"
+            << " [filePathInfo]"
+            << " objectPath:" << io.objectPath() << endl;
+    }
+
     if (Pstream::master())
     {
+        Pout<< "masterUncollatedFileOperation::filePath :"
+            << " call filePathInfo"
+            << " objectPath:" << io.objectPath() << endl;
+
         objPath =
             filePathInfo
             (
@@ -714,6 +725,9 @@ Foam::fileName Foam::fileOperations::masterUncollatedFileOperation::filePath
                 searchType,
                 newInstancePath
             );
+
+        Pout<< "masterUncollatedFileOperation::filePath :"
+            << " [master] " << objPath << endl;
     }
 
     {
@@ -724,6 +738,11 @@ Foam::fileName Foam::fileOperations::masterUncollatedFileOperation::filePath
 
     Pstream::scatter(newInstancePath);
 
+    if (debug > 1)
+    {
+        Pout<< "masterUncollatedFileOperation::filePath :" << label(searchType)
+            << " [scattered] " << newInstancePath << endl;
+    }
 
     // Use the master type to determine if additional information is
     // needed to construct the local equivalent
@@ -931,6 +950,19 @@ bool Foam::fileOperations::masterUncollatedFileOperation::readHeader
     const word& typeName
 ) const
 {
+    boolList result;
+    return readHeader(io, fName, typeName, result);
+}
+
+
+bool Foam::fileOperations::masterUncollatedFileOperation::readHeader
+(
+    IOobject& io,
+    const fileName& fName,
+    const word& typeName,
+    boolList& result
+) const
+{
     bool ok = false;
 
     if (debug)
@@ -940,17 +972,31 @@ bool Foam::fileOperations::masterUncollatedFileOperation::readHeader
             << "    fName     :" << fName << endl;
     }
 
+    result.setSize(Pstream::nProcs());
+
     fileNameList filePaths(Pstream::nProcs());
     filePaths[Pstream::myProcNo()] = fName;
     Pstream::gatherList(filePaths);
 
+    if (Pstream::master())
+    {
+        Pout<<"check uniform: >> " << filePaths << endl;
+    }
+
     bool uniform = uniformFile(filePaths);
     Pstream::scatter(uniform);
+
+    if (Pstream::master())
+    {
+        Pout<<"filePaths: >> " << filePaths << endl;
+    }
 
     if (uniform)
     {
         if (Pstream::master())
         {
+            Pout<<"uniform file: " << filePaths[0] << endl;
+
             if (!fName.empty())
             {
                 IFstream is(fName);
@@ -970,14 +1016,18 @@ bool Foam::fileOperations::masterUncollatedFileOperation::readHeader
         Pstream::scatter(ok);
         Pstream::scatter(io.headerClassName());
         Pstream::scatter(io.note());
+
+        result = ok;
     }
     else
     {
-        boolList result(Pstream::nProcs(), false);
         wordList headerClassName(Pstream::nProcs());
         stringList note(Pstream::nProcs());
         if (Pstream::master())
         {
+            result = false;
+            Pout<<"files to check: " << filePaths << endl;
+
             forAll(filePaths, proci)
             {
                 if (!filePaths[proci].empty())
@@ -1008,6 +1058,7 @@ bool Foam::fileOperations::masterUncollatedFileOperation::readHeader
                 }
             }
         }
+
         ok = scatterList(result);
         io.headerClassName() = scatterList(headerClassName);
         io.note() = scatterList(note);
@@ -1439,8 +1490,8 @@ Foam::instantList Foam::fileOperations::masterUncollatedFileOperation::findTimes
             << " Finding times in directory " << directory << endl;
     }
 
-    HashPtrTable<instantList>::const_iterator iter = times_.find(directory);
-    if (iter != times_.end())
+    const auto iter = times_.cfind(directory);
+    if (iter.found())
     {
         if (debug)
         {
@@ -1477,8 +1528,8 @@ void Foam::fileOperations::masterUncollatedFileOperation::setTime
     const Time& tm
 ) const
 {
-    HashPtrTable<instantList>::const_iterator iter = times_.find(tm.path());
-    if (iter != times_.end())
+    const auto iter = times_.cfind(tm.path());
+    if (iter.found())
     {
         if (debug)
         {

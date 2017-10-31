@@ -41,12 +41,55 @@ Foam::localIOdictionary::localIOdictionary(const IOobject& io)
 Foam::localIOdictionary::localIOdictionary
 (
     const IOobject& io,
-    const word& wantedType
+    const word& wantedType,
+    const bool valid
 )
 :
     baseIOdictionary(io)
 {
+    // const bool valid = true;
+
+    Pout<<"<" << wantedType <<"> localIOdictionary "
+        << io.objectPath() << " valid=" << valid
+        <<" readOpt: " << io.readOpt()
+        << endl;
+
+#if 0
     readHeaderOk(IOstream::ASCII, wantedType);
+#else
+
+    const bool isHeaderOk =
+    (
+        io.readOpt() == IOobject::READ_IF_PRESENT
+     || io.readOpt() == IOobject::MUST_READ
+     || io.readOpt() == IOobject::MUST_READ_IF_MODIFIED
+    ) && headerOk();
+
+    Pout<<"header: " << isHeaderOk << endl;
+
+    if
+    (
+        (isHeaderOk && io.readOpt() == IOobject::READ_IF_PRESENT)
+     ||
+        (
+            (valid || isHeaderOk)
+         &&
+            (
+                io.readOpt() == IOobject::MUST_READ
+             || io.readOpt() == IOobject::MUST_READ_IF_MODIFIED
+            )
+        )
+    )
+    {
+        Pout<< "call readStream(" << wantedType << ", " << (valid || isHeaderOk) << ")" << endl;
+        Istream& is = readStream(wantedType, valid || isHeaderOk);
+
+        is >> *this;
+        close();
+    }
+
+#endif
+    Pout<<"dict: " << flatOutput(this->sortedToc()) << endl;
 
     // For if MUST_READ_IF_MODIFIED
     addWatch();

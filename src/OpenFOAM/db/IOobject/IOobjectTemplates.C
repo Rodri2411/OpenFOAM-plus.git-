@@ -32,6 +32,37 @@ License
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class Type>
+bool Foam::IOobject::localTypeHeaderOk
+(
+    const bool checkType,
+    const bool search,
+    const bool verbose
+)
+{
+    const fileOperation& fp = Foam::fileHandler();
+
+    // Determine local status only
+    fileName fName(this->localFilePath(Type::typeName, search));
+
+    bool ok = fp.readHeader(*this, fName, Type::typeName);
+    if (ok && checkType && headerClassName_ != Type::typeName)
+    {
+        if (verbose)
+        {
+            WarningInFunction
+                << "unexpected class name " << headerClassName_
+                << " expected " << Type::typeName
+                << " when reading " << fName << endl;
+        }
+
+        ok = false;
+    }
+
+    return ok;
+}
+
+
+template<class Type>
 bool Foam::IOobject::typeHeaderOk
 (
     const bool checkType,

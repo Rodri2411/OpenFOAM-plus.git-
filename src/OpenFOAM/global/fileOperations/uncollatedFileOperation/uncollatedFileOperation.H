@@ -244,6 +244,16 @@ public:
                 const word& typeName
             ) const;
 
+            //- Read object header from supplied file and store the per-process
+            //  result.
+            virtual bool readHeader
+            (
+                IOobject&,
+                const fileName&,
+                const word& typeName,
+                boolList& result
+            ) const;
+
             //- Reads header for regIOobject and returns an ISstream
             //  to read the contents.
             virtual autoPtr<ISstream> readStream

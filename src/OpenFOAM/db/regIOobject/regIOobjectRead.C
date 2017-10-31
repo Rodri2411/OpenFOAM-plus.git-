@@ -112,6 +112,15 @@ Foam::Istream& Foam::regIOobject::readStream(const bool valid)
         {
             // File is being watched. Read exact file that is being watched.
             objPath = fileHandler().getFile(watchIndices_.last());
+
+            if (IFstream::debug)
+            {
+                Pout<< "regIOobject::readStream() : "
+                    << "watched object " << name()
+                    << " (global " << global() << ")"
+                    << " in file " << objPath
+                    << endl;
+            }
         }
         else
         {
@@ -147,6 +156,7 @@ Foam::Istream& Foam::regIOobject::readStream
             << "reading object " << name()
             << " of type " << type()
             << " from file " << filePath()
+            << " existing IFstream:" << (isPtr_.valid())
             << endl;
     }
 

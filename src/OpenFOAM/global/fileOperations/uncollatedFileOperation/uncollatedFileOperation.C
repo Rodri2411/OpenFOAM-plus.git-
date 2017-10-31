@@ -480,6 +480,52 @@ bool Foam::fileOperations::uncollatedFileOperation::readHeader
 }
 
 
+bool Foam::fileOperations::uncollatedFileOperation::readHeader
+(
+    IOobject& io,
+    const fileName& fName,
+    const word& typeName,
+    boolList& result
+) const
+{
+    bool ok = false;
+
+    if (fName.empty())
+    {
+        if (IOobject::debug)
+        {
+            InfoInFunction
+                << "file " << io.objectPath() << " could not be opened"
+                << endl;
+        }
+    }
+    else
+    {
+        autoPtr<ISstream> isPtr(NewIFstream(fName));
+
+        if (isPtr.valid() && isPtr->good())
+        {
+            ok = io.readHeader(isPtr());
+
+            if (io.headerClassName() == decomposedBlockData::typeName)
+            {
+                // Read the header inside the container (master data)
+                ok = decomposedBlockData::readMasterHeader(io, isPtr());
+            }
+        }
+    }
+
+    result.setSize(Pstream::nProcs());
+    result[Pstream::myProcNo()] = ok;
+
+    // Distribute to all processors
+    Pstream::gatherList(result);
+    Pstream::scatterList(result);
+
+    return ok;
+}
+
+
 Foam::autoPtr<Foam::ISstream>
 Foam::fileOperations::uncollatedFileOperation::readStream
 (

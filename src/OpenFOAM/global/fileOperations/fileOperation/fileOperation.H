@@ -44,6 +44,7 @@ Description
 #include "fileNameList.H"
 #include "instantList.H"
 #include "fileMonitor.H"
+#include "boolList.H"
 #include "labelList.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -96,13 +97,13 @@ public:
         //- Enumeration for the location of an IOobject
         enum pathType
         {
-            NOTFOUND,               // not found
-            ABSOLUTE,               // instance is absolute directory
-            OBJECT,                 // objectPath exists
-            PROCESSORSOBJECT,       // objectPath exists in processors/
-            PARENTOBJECT,           // parent of object path
-            FINDINSTANCE,           // file found in time directory
-            PROCESSORSFINDINSTANCE  // as above but in processors/
+            NOTFOUND,               //!< not found
+            ABSOLUTE,               //!< instance is absolute directory
+            OBJECT,                 //!< objectPath exists
+            PROCESSORSOBJECT,       //!< objectPath exists in processors/
+            PARENTOBJECT,           //!< parent of object path
+            FINDINSTANCE,           //!< file found in time directory
+            PROCESSORSFINDINSTANCE  //!< as above but in processors/
         };
 
 
@@ -320,6 +321,16 @@ public:
                 IOobject&,
                 const fileName&,
                 const word& typeName
+            ) const = 0;
+
+            //- Read object header from supplied file and store the per-process
+            //  result.
+            virtual bool readHeader
+            (
+                IOobject&,
+                const fileName&,
+                const word& typeName,
+                boolList& result
             ) const = 0;
 
             //- Reads header for regIOobject and returns an ISstream

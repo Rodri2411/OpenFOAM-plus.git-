@@ -65,8 +65,14 @@ public:
         //- Construct given an IOobject and Istream
         localIOdictionary(const IOobject& io, Istream& is);
 
-        //- Construct given an IOobject, supply wanted typeName
-        localIOdictionary(const IOobject& io, const word& wantedType);
+        //- Construct given an IOobject, supply wanted typeName,
+        //  does local processor require reading?
+        localIOdictionary
+        (
+            const IOobject& io,
+            const word& wantedType,
+            const bool valid = true
+        );
 
 
     //- Destructor

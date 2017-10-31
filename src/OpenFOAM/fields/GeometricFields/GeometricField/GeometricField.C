@@ -74,126 +74,167 @@ void Foam::GeometricField<Type, PatchField, GeoMesh>::readFields()
 {
     // Normally MUST_READ, but allow special handling for empty meshes
 
-    if (Pstream::parRun())
-    {
-        labelList shouldRead(Pstream::nProcs());
+    IOobject io
+    (
+        this->name(),
+        this->instance(),
+        this->local(),
+        this->db(),
+        IOobject::MUST_READ,
+        IOobject::NO_WRITE,
+        false
+    );
 
-        shouldRead[Pstream::myProcNo()] = GeoMesh::size(this->mesh()) ? 1 : 0;
+    Pout<<"call localIOdictionary with " << io.objectPath()
+        << " and option:" << io.readOpt() << endl;
+    Pout<<"typename: " << typeName << endl;
 
-        // Distribute to all processors
-        Pstream::gatherList(shouldRead);
-        Pstream::scatterList(shouldRead);
-
-        // If some processors are missing meshes, use the first processor that
-        // has a mesh (and thus a field) to redistribute.
-        // Use local sum, since the values are already gathered
-        const label firstMesh =
-        (
-            sum(shouldRead) < Pstream::nProcs()
-          ? shouldRead.find(1)
-          : -1
-        );
-
-        Info<<"firstMesh: " << firstMesh
-            << " and " << flatOutput(shouldRead) << endl;
-
-        autoPtr<localIOdictionary> dictPtr;
-
-        // Mesh actually exists on this processor,
-        // or force read anyhow and let it crash.
-        if (shouldRead[Pstream::myProcNo()] || firstMesh == -1)
-        {
-            dictPtr.set
-            (
-                new localIOdictionary
-                (
-                    IOobject
-                    (
-                        this->name(),
-                        this->instance(),
-                        this->local(),
-                        this->db(),
-                        IOobject::MUST_READ,
-                        IOobject::NO_WRITE,
-                        false
-                    ),
-                    typeName
-                )
-            );
-
-            this->close();
-
-            readFields(dictPtr());
-        }
-
-        if (firstMesh == Pstream::myProcNo())
-        {
-            // Send out to others
-            const dictionary& boundaryDict =
-                dictPtr().subDict("boundaryField");
-
-            for (label proci = 0; proci < Pstream::nProcs(); ++proci)
-            {
-                if (!shouldRead[proci])
-                {
-                    OPstream send
-                    (
-                        UPstream::commsTypes::scheduled,
-                        proci,
-                        IOstream::ASCII
-                    );
-
-                    send<< Internal::dimensions().values()
-                        << label(Internal::oriented().oriented())
-                        << boundaryDict;
-                }
-            }
-        }
-        else if (firstMesh != -1 && !shouldRead[Pstream::myProcNo()])
-        {
-            // Receive from first-mesh
-            Internal::clear();
-
-            label orient;
-            dictionary boundaryDict;
-
-            IPstream recv
-            (
-                Pstream::commsTypes::scheduled,
-                firstMesh,
-                IOstream::ASCII
-            );
-
-            recv>> Internal::dimensions().values()
-                >> orient
-                >> boundaryDict;
-
-            Internal::oriented() = orientedType::orientedOption(orient);
-
-            boundaryField_.readField(*this, boundaryDict);
-        }
-    }
-    else
+    if (!Pstream::parRun())
     {
         const localIOdictionary dict
         (
-            IOobject
-            (
-                this->name(),
-                this->instance(),
-                this->local(),
-                this->db(),
-                IOobject::MUST_READ,
-                IOobject::NO_WRITE,
-                false
-            ),
-            typeName
+            io,  // MUST_READ
+            typeName,
+            true // <- enforce MUST_READ
         );
+
+        Info<<"Read in dict = " << flatOutput(dict.sortedToc()) << endl;
 
         this->close();
 
         readFields(dict);
+
+        return;
     }
+
+#if 1
+    // In parallel, some files may not be present on all processors
+
+    Pout<<"call check " << io.objectPath() << endl;
+
+    const word theTypeName =
+        GeometricField<Type, PatchField, GeoMesh>::typeName;
+
+    const fileOperation& fp = Foam::fileHandler();
+
+    const bool search = false;
+    const bool checkType = true;
+
+    // Determine local status only
+    fileName fName(io.localFilePath(theTypeName, search));
+
+    Pout<<"checking " << fName << endl;
+
+//     const fileOperation& fp = Foam::fileHandler();
+//    bool ok = fp.readHeader(*this, fName, theTypeName);
+
+    boolList result(Pstream::nProcs(), false);
+
+    bool ok = fName.size() && fp.readHeader(io, fName, theTypeName, result);
+    if (ok && checkType && io.headerClassName() != theTypeName)
+    {
+        ok = false;
+    }
+    Pout<<"checked " << io.name() << " " << ok << " : " << fName << endl;
+
+    labelList shouldRead(Pstream::nProcs(), 0);
+
+    if (GeoMesh::size(this->mesh()))
+    {
+        shouldRead[Pstream::myProcNo()] = 1;
+    }
+    else
+    {
+        shouldRead[Pstream::myProcNo()] = (ok ? 1 : 0);
+    }
+
+    // Distribute to all processors
+    Pstream::gatherList(shouldRead);
+    Pstream::scatterList(shouldRead);
+
+    Pout<<"done check " << io.objectPath() << " " << shouldRead << endl;
+    Pout<<"scattered " << flatOutput(shouldRead) << endl;
+
+    // If some processors are missing meshes, use the first available
+    // mesh/field to redistribute.
+    const label firstMesh =
+    (
+        // Local sum, since the values are already gathered
+        sum(shouldRead) < Pstream::nProcs()
+      ? shouldRead.find(1)
+      : -1
+    );
+
+    Pout<<"firstMesh: " << firstMesh
+        << " and " << flatOutput(shouldRead)
+        << " reading " << this->name() << " / "
+        << this->instance() << " / " << this->local() << endl;
+
+    const localIOdictionary dict
+    (
+        io, // MUST_READ
+        typeName,
+        (firstMesh == -1)
+    );
+    this->close();
+
+    Pout<<"Got dict " << io.name() << " = " << flatOutput(dict.sortedToc()) << endl;
+
+    if (!dict.empty())
+    {
+        readFields(dict);
+    }
+
+    if (firstMesh == Pstream::myProcNo())
+    {
+        // Send out to others
+        const dictionary& boundaryDict = dict.subDict("boundaryField");
+
+        for (label proci = 0; proci < Pstream::nProcs(); ++proci)
+        {
+            if (!shouldRead[proci])
+            {
+                OPstream send
+                (
+                    UPstream::commsTypes::scheduled,
+                    proci,
+                    IOstream::ASCII
+                );
+
+                send<< Internal::dimensions().values()
+                    << label(Internal::oriented().oriented())
+                    << boundaryDict;
+            }
+        }
+    }
+    else if (firstMesh != -1 && !shouldRead[Pstream::myProcNo()])
+    {
+        // Receive from first-mesh
+        Internal::clear();
+
+        label orient;
+        dictionary boundaryDict;
+
+        IPstream recv
+        (
+            Pstream::commsTypes::scheduled,
+            firstMesh,
+            IOstream::ASCII
+        );
+
+        recv>> Internal::dimensions().values()
+            >> orient
+            >> boundaryDict;
+
+        Internal::oriented() = orientedType::orientedOption(orient);
+
+        // Since the patches are zero-sized, the constructor will
+        // ignore any 'values' entry
+        boundaryField_.readField(*this, boundaryDict);
+    }
+
+    Pout<<"done read of " << io.name() << endl;
+#endif
 }
 
 
@@ -220,6 +261,8 @@ bool Foam::GeometricField<Type, PatchField, GeoMesh>::readIfPresent()
         )
     )
     {
+        Pout<< "called: readIfPresent for " << this->name() << endl;
+
         readFields();
 
         // Check compatibility between field and mesh
@@ -254,6 +297,8 @@ bool Foam::GeometricField<Type, PatchField, GeoMesh>::readOldTimeIfPresent()
         IOobject::AUTO_WRITE,
         this->registerObject()
     );
+
+    Pout<<"readOldTimeIfPresent: " << this->name() + "_0" << endl;
 
     if
     (

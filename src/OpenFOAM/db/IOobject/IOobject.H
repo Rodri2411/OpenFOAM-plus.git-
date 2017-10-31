@@ -419,6 +419,18 @@ public:
             const bool verbose = true
         );
 
+        //- Read header (uses localFilePath to find file) and check its info.
+        //  Optionally checks headerClassName against the type-name.
+        //  When search is false, simply use the current instance,
+        //  otherwise search previous instances.
+        template<class Type>
+        bool localTypeHeaderOk
+        (
+            const bool checkType = true,
+            const bool search = true,
+            const bool verbose = true
+        );
+
         //- Helper: warn that type does not support re-reading
         template<class Type>
         void warnNoRereading() const;
