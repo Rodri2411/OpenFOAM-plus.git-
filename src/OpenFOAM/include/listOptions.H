@@ -1,28 +1,28 @@
 argList::addBoolOption
 (
-    "listSwitches",
+    "list-switches",
     "List switches declared in libraries but not set in etc/controlDict"
 );
 argList::addBoolOption
 (
-    "listRegisteredSwitches",
+    "list-registered-switches",
     "List switches registered for run-time modification"
 );
 argList::addBoolOption
 (
-    "listUnsetSwitches",
+    "list-unset-switches",
     "List switches declared in libraries but not set in etc/controlDict"
 );
 
 #ifdef fvPatchField_H
 argList::addBoolOption
 (
-    "listScalarBCs",
+    "list-scalar-bcs",
     "List scalar field boundary conditions (fvPatchField<scalar>)"
 );
 argList::addBoolOption
 (
-    "listVectorBCs",
+    "list-vector-bcs",
     "List vector field boundary conditions (fvPatchField<vector>)"
 );
 #endif
@@ -30,15 +30,15 @@ argList::addBoolOption
 #ifdef functionObject_H
 argList::addBoolOption
 (
-    "listFunctionObjects",
-    "List functionObjects"
+    "list-function-objects",
+    "List function objects"
 );
 #endif
 
 #ifdef fvOption_H
 argList::addBoolOption
 (
-    "listFvOptions",
+    "list-fvoptions",
     "List fvOptions"
 );
 #endif
@@ -46,7 +46,7 @@ argList::addBoolOption
 #if defined(turbulentTransportModel_H) || defined(turbulentFluidThermoModel_H)
 argList::addBoolOption
 (
-    "listTurbulenceModels",
+    "list-turbulence-models",
     "List turbulenceModels"
 );
 #endif
