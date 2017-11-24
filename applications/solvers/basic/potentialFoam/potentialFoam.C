@@ -121,8 +121,14 @@ int main(int argc, char *argv[])
 
     argList::addBoolOption
     (
-        "withFunctionObjects",
-        "execute functionObjects"
+        "with-function-objects",
+        "execute function objects"
+    );
+
+    // Changed in 1712, but only warn after 1806
+    argList::addOptionCompat
+    (
+        "with-function-objects", {"withFunctionObjects", 1806}
     );
 
     #include "setRootCase.H"

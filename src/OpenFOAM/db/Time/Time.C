@@ -516,10 +516,10 @@ Foam::Time::Time
     functionObjects_
     (
         *this,
-        argList::validOptions.found("withFunctionObjects")
-      ? args.optionFound("withFunctionObjects")
-      : argList::validOptions.found("noFunctionObjects")
-      ? !args.optionFound("noFunctionObjects")
+        argList::validOptions.found("with-function-objects")
+      ? args.optionFound("with-function-objects")
+      : argList::validOptions.found("no-function-objects")
+      ? !args.optionFound("no-function-objects")
       : false
     )
 {

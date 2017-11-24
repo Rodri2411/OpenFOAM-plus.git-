@@ -84,8 +84,14 @@ Foam::argList::initValidTables::initValidTables()
 
     argList::addBoolOption
     (
-        "noFunctionObjects",
+        "no-function-objects",
         "do not execute function objects"
+    );
+
+    // Changed in 1712, but only warn after 1806
+    argList::addOptionCompat
+    (
+        "no-function-objects", {"noFunctionObjects", 1806}
     );
 
     argList::addOption
@@ -94,12 +100,6 @@ Foam::argList::initValidTables::initValidTables()
         "handler",
         "override the file handler type"
     );
-
-    // Some standard option aliases (with or without version warnings)
-//     argList::addOptionCompat
-//     (
-//         "noFunctionObjects", {"no-function-objects", 0}
-//     );
 
     Pstream::addValidParOptions(validParOptions);
 }
@@ -269,14 +269,14 @@ bool Foam::argList::bannerEnabled()
 
 void Foam::argList::noFunctionObjects(bool addWithOption)
 {
-    removeOption("noFunctionObjects");
+    removeOption("no-function-objects");
 
     if (addWithOption)
     {
         addBoolOption
         (
-            "withFunctionObjects",
-            "execute functionObjects"
+            "with-function-objects",
+            "execute function objects"
         );
     }
 }
@@ -1374,8 +1374,8 @@ void Foam::argList::printUsage(bool full) const
             // Adhoc filtering of some options to suppress
             if
             (
-                optionName.startsWith("list")
-             && optionName != "list"
+                optionName.startsWith("include-")
+             || optionName.startsWith("list-")
             )
             {
                 continue;

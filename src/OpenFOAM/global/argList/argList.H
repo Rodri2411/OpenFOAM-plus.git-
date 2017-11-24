@@ -53,7 +53,7 @@ Description
       - \par -help
         Print the usage
 
-    Additionally, the \b -noFunctionObjects and \b -postProcess options
+    Additionally, the \b -no-function-objects and \b -postProcess options
     may be present for some solvers or utilities.
 
     Environment variables set by argList or by Time:
@@ -410,8 +410,8 @@ public:
             //- Banner status (enabled/disabled)
             static bool bannerEnabled();
 
-            //- Remove the 'noFunctionObjects' option,
-            //  optionally adding a 'withFunctionObjects' option instead
+            //- Remove the 'no-function-objects' option,
+            //  optionally adding a 'with-function-objects' option instead
             static void noFunctionObjects(bool addWithOption = false);
 
             //- Suppress JobInfo, overriding controlDict setting
