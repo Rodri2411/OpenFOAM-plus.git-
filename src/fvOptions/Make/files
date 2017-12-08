@@ -24,6 +24,7 @@ $(derivedSources)/effectivenessHeatExchangerSource/effectivenessHeatExchangerSou
 $(derivedSources)/explicitPorositySource/explicitPorositySource.C
 $(derivedSources)/jouleHeatingSource/jouleHeatingSource.C
 $(derivedSources)/jouleHeatingSource/jouleHeatingSourceIO.C
+$(derivedSources)/mangroves/mangrovesSource.C
 $(derivedSources)/meanVelocityForce/meanVelocityForce.C
 $(derivedSources)/meanVelocityForce/meanVelocityForceIO.C
 $(derivedSources)/meanVelocityForce/patchMeanVelocityForce/patchMeanVelocityForce.C

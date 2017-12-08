@@ -1,0 +1,4 @@
+interPorousFoam.C
+fvOptions/multiphasePorosity/multiphasePorositySource.C
+
+EXE = $(FOAM_APPBIN)/interPorousFoam

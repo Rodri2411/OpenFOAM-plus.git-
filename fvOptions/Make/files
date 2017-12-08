@@ -1,5 +1,0 @@
-mangroves/mangrovesSource.C
-
-multiphasePorosity/multiphasePorositySource.C
-
-LIB = $(FOAM_USER_LIBBIN)/libfvOptions-extra

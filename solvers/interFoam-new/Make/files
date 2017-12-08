@@ -1,3 +1,0 @@
-interFoam-new.C
-
-EXE = $(FOAM_USER_APPBIN)/interFoam-new
