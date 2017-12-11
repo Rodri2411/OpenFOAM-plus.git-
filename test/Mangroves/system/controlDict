@@ -15,7 +15,7 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application     interFoam;
+application     interFoam-new;
 
 startFrom       latestTime;
 
@@ -51,6 +51,8 @@ maxCo           0.4;
 maxAlphaCo      0.4;
 
 maxDeltaT       0.01; 
+
+libs            ("libfvOptions-extra.so");
 
 functions
 {
