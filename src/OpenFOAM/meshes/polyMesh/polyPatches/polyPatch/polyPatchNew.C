@@ -43,15 +43,14 @@ Foam::autoPtr<Foam::polyPatch> Foam::polyPatch::New
         InfoInFunction << "Constructing polyPatch" << endl;
     }
 
-    wordConstructorTable::iterator cstrIter =
-        wordConstructorTablePtr_->find(patchType);
+    auto cstrIter = wordConstructorTablePtr_->cfind(patchType);
 
-    if (cstrIter == wordConstructorTablePtr_->end())
+    if (!cstrIter.found())
     {
         FatalErrorInFunction
             << "Unknown polyPatch type "
             << patchType << " for patch " << name << nl << nl
-            << "Valid polyPatch types are :" << endl
+            << "Valid polyPatch types :" << endl
             << wordConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
@@ -105,24 +104,23 @@ Foam::autoPtr<Foam::polyPatch> Foam::polyPatch::New
         InfoInFunction << "Constructing polyPatch" << endl;
     }
 
-    dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(patchType);
+    auto cstrIter = dictionaryConstructorTablePtr_->cfind(patchType);
 
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    if (!cstrIter.found())
     {
         if (!disallowGenericPolyPatch)
         {
-            cstrIter = dictionaryConstructorTablePtr_->find("genericPatch");
+            cstrIter = dictionaryConstructorTablePtr_->cfind("genericPatch");
         }
 
-        if (cstrIter == dictionaryConstructorTablePtr_->end())
+        if (!cstrIter.found())
         {
             FatalIOErrorInFunction
             (
                 dict
             )   << "Unknown polyPatch type "
                 << patchType << " for patch " << name << nl << nl
-                << "Valid polyPatch types are :" << endl
+                << "Valid polyPatch types :" << endl
                 << dictionaryConstructorTablePtr_->sortedToc()
                 << exit(FatalIOError);
         }

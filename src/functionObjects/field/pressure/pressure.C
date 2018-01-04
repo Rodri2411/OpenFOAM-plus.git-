@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2012-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2016-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -70,7 +70,23 @@ Foam::tmp<Foam::volScalarField> Foam::functionObjects::pressure::rhoScale
 {
     if (p.dimensions() == dimPressure)
     {
-        return p;
+        return tmp<volScalarField>
+        (
+            new volScalarField
+            (
+                IOobject
+                (
+                    "rhoScale",
+                    p.mesh().time().timeName(),
+                    p.mesh(),
+                    IOobject::NO_READ,
+                    IOobject::NO_WRITE,
+                    false
+                ),
+                p,
+                fvPatchField<scalar>::calculatedType()
+            )
+        );
     }
     else
     {
@@ -180,7 +196,14 @@ bool Foam::functionObjects::pressure::calc()
         (
             new volScalarField
             (
-                resultName_,
+                IOobject
+                (
+                    resultName_,
+                    p.mesh().time().timeName(),
+                    p.mesh(),
+                    IOobject::NO_READ,
+                    IOobject::NO_WRITE
+                ),
                 coeff(pRef(pDyn(p, rhoScale(p))))
             )
         );
@@ -249,7 +272,7 @@ bool Foam::functionObjects::pressure::read(const dictionary& dict)
     dict.lookup("calcTotal") >> calcTotal_;
     if (calcTotal_)
     {
-        dict.lookup("pRef") >> pRef_;
+        pRef_ = dict.lookupOrDefault<scalar>("pRef", 0.0);
     }
 
     dict.lookup("calcCoeff") >> calcCoeff_;

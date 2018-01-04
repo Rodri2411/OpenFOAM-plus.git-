@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2016-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -29,7 +29,7 @@ License
 #include "SLList.H"
 #include "contiguous.H"
 
-// * * * * * * * * * * * * * * * Ostream Operator *  * * * * * * * * * * * * //
+// * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * //
 
 template<class T>
 void Foam::UList<T>::writeEntry(Ostream& os) const
@@ -56,6 +56,8 @@ void Foam::UList<T>::writeEntry(Ostream& os) const
 }
 
 
+// * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
+
 template<class T>
 void Foam::UList<T>::writeEntry(const word& keyword, Ostream& os) const
 {
@@ -66,16 +68,24 @@ void Foam::UList<T>::writeEntry(const word& keyword, Ostream& os) const
 
 
 template<class T>
-Foam::Ostream& Foam::operator<<(Foam::Ostream& os, const Foam::UList<T>& L)
+Foam::Ostream& Foam::UList<T>::writeList
+(
+    Ostream& os,
+    const label shortListLen
+) const
 {
+    const UList<T>& L = *this;
+
+    const label sz = L.size();
+
     // Write list contents depending on data format
     if (os.format() == IOstream::ASCII || !contiguous<T>())
     {
         // Can the contents be considered 'uniform' (ie, identical)?
-        bool uniform = (L.size() > 1 && contiguous<T>());
+        bool uniform = (sz > 1 && contiguous<T>());
         if (uniform)
         {
-            forAll(L, i)
+            for (label i=1; i < sz; ++i)
             {
                 if (L[i] != L[0])
                 {
@@ -87,68 +97,83 @@ Foam::Ostream& Foam::operator<<(Foam::Ostream& os, const Foam::UList<T>& L)
 
         if (uniform)
         {
-            // Write size and start delimiter
-            os << L.size() << token::BEGIN_BLOCK;
+            // Size and start delimiter
+            os << sz << token::BEGIN_BLOCK;
 
-            // Write contents
+            // Contents
             os << L[0];
 
-            // Write end delimiter
+            // End delimiter
             os << token::END_BLOCK;
         }
-        else if (L.size() <= 1 || (L.size() < 11 && contiguous<T>()))
+        else if
+        (
+            sz <= 1 || !shortListLen
+         || (sz <= shortListLen && contiguous<T>())
+        )
         {
-            // Write size and start delimiter
-            os << L.size() << token::BEGIN_LIST;
+            // Size and start delimiter
+            os << sz << token::BEGIN_LIST;
 
-            // Write contents
-            forAll(L, i)
+            // Contents
+            for (label i=0; i < sz; ++i)
             {
                 if (i) os << token::SPACE;
                 os << L[i];
             }
 
-            // Write end delimiter
+            // End delimiter
             os << token::END_LIST;
         }
         else
         {
-            // Write size and start delimiter
-            os << nl << L.size() << nl << token::BEGIN_LIST;
+            // Size and start delimiter
+            os << nl << sz << nl << token::BEGIN_LIST << nl;
 
-            // Write contents
-            forAll(L, i)
+            // Contents
+            for (label i=0; i < sz; ++i)
             {
-                os << nl << L[i];
+                os << L[i] << nl;
             }
 
-            // Write end delimiter
-            os << nl << token::END_LIST << nl;
+            // End delimiter
+            os << token::END_LIST << nl;
         }
     }
     else
     {
         // Contents are binary and contiguous
-        os << nl << L.size() << nl;
+        os << nl << sz << nl;
 
-        if (L.size())
+        if (sz)
         {
             // write(...) includes surrounding start/end delimiters
-            os.write(reinterpret_cast<const char*>(L.cdata()), L.byteSize());
+            os.write
+            (
+                reinterpret_cast<const char*>(L.cdata()),
+                L.byteSize()
+            );
         }
     }
 
-    // Check state of IOstream
-    os.check("Ostream& operator<<(Ostream&, const UList&)");
-
+    os.check(FUNCTION_NAME);
     return os;
+}
+
+
+// * * * * * * * * * * * * * * * Ostream Operator *  * * * * * * * * * * * * //
+
+template<class T>
+Foam::Ostream& Foam::operator<<(Ostream& os, const UList<T>& lst)
+{
+    return lst.writeList(os, 10);
 }
 
 
 template<class T>
 Foam::Istream& Foam::operator>>(Istream& is, UList<T>& L)
 {
-    is.fatalCheck("operator>>(Istream&, UList<T>&)");
+    is.fatalCheck(FUNCTION_NAME);
 
     token firstToken(is);
 
@@ -165,29 +190,29 @@ Foam::Istream& Foam::operator>>(Istream& is, UList<T>& L)
             )
         );
         // Check list length
-        label s = elems.size();
+        const label sz = elems.size();
 
-        if (s != L.size())
+        if (sz != L.size())
         {
             FatalIOErrorInFunction(is)
-                << "incorrect length for UList. Read " << s
+                << "incorrect length for UList. Read " << sz
                 << " expected " << L.size()
                 << exit(FatalIOError);
         }
-        for (label i=0; i<s; i++)
+        for (label i=0; i<sz; ++i)
         {
             L[i] = elems[i];
         }
     }
     else if (firstToken.isLabel())
     {
-        label s = firstToken.labelToken();
+        const label sz = firstToken.labelToken();
 
         // Set list length to that read
-        if (s != L.size())
+        if (sz != L.size())
         {
             FatalIOErrorInFunction(is)
-                << "incorrect length for UList. Read " << s
+                << "incorrect length for UList. Read " << sz
                 << " expected " << L.size()
                 << exit(FatalIOError);
         }
@@ -197,13 +222,13 @@ Foam::Istream& Foam::operator>>(Istream& is, UList<T>& L)
         if (is.format() == IOstream::ASCII || !contiguous<T>())
         {
             // Read beginning of contents
-            char delimiter = is.readBeginList("List");
+            const char delimiter = is.readBeginList("List");
 
-            if (s)
+            if (sz)
             {
                 if (delimiter == token::BEGIN_LIST)
                 {
-                    for (label i=0; i<s; i++)
+                    for (label i=0; i<sz; ++i)
                     {
                         is >> L[i];
 
@@ -226,7 +251,7 @@ Foam::Istream& Foam::operator>>(Istream& is, UList<T>& L)
                         "reading the single entry"
                     );
 
-                    for (label i=0; i<s; i++)
+                    for (label i=0; i<sz; ++i)
                     {
                         L[i] = element;
                     }
@@ -240,9 +265,9 @@ Foam::Istream& Foam::operator>>(Istream& is, UList<T>& L)
         {
             // contents are binary and contiguous
 
-            if (s)
+            if (sz)
             {
-                is.read(reinterpret_cast<char*>(L.data()), s*sizeof(T));
+                is.read(reinterpret_cast<char*>(L.data()), sz*sizeof(T));
 
                 is.fatalCheck
                 (
@@ -281,7 +306,7 @@ Foam::Istream& Foam::operator>>(Istream& is, UList<T>& L)
         (
             typename SLList<T>::const_iterator iter = sll.begin();
             iter != sll.end();
-            ++iter
+            ++iter, ++i
         )
         {
             L[i] = iter();

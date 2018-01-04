@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -37,7 +37,7 @@ Foam::LduMatrix<Type, DType, LUType>::solver::New
     const dictionary& solverDict
 )
 {
-    word solverName = solverDict.lookup("solver");
+    const word solverName = solverDict.lookup("solver");
 
     if (matrix.diagonal())
     {
@@ -53,22 +53,21 @@ Foam::LduMatrix<Type, DType, LUType>::solver::New
     }
     else if (matrix.symmetric())
     {
-        typename symMatrixConstructorTable::iterator constructorIter =
-            symMatrixConstructorTablePtr_->find(solverName);
+        auto cstrIter = symMatrixConstructorTablePtr_->cfind(solverName);
 
-        if (constructorIter == symMatrixConstructorTablePtr_->end())
+        if (!cstrIter.found())
         {
             FatalIOErrorInFunction(solverDict)
                 << "Unknown symmetric matrix solver " << solverName
                 << endl << endl
                 << "Valid symmetric matrix solvers are :" << endl
-                << symMatrixConstructorTablePtr_->toc()
+                << symMatrixConstructorTablePtr_->sortedToc()
                 << exit(FatalIOError);
         }
 
         return autoPtr<typename LduMatrix<Type, DType, LUType>::solver>
         (
-            constructorIter()
+            cstrIter()
             (
                 fieldName,
                 matrix,
@@ -78,22 +77,21 @@ Foam::LduMatrix<Type, DType, LUType>::solver::New
     }
     else if (matrix.asymmetric())
     {
-        typename asymMatrixConstructorTable::iterator constructorIter =
-            asymMatrixConstructorTablePtr_->find(solverName);
+        auto cstrIter = asymMatrixConstructorTablePtr_->cfind(solverName);
 
-        if (constructorIter == asymMatrixConstructorTablePtr_->end())
+        if (!cstrIter.found())
         {
             FatalIOErrorInFunction(solverDict)
                 << "Unknown asymmetric matrix solver " << solverName
                 << endl << endl
                 << "Valid asymmetric matrix solvers are :" << endl
-                << asymMatrixConstructorTablePtr_->toc()
+                << asymMatrixConstructorTablePtr_->sortedToc()
                 << exit(FatalIOError);
         }
 
         return autoPtr<typename LduMatrix<Type, DType, LUType>::solver>
         (
-            constructorIter()
+            cstrIter()
             (
                 fieldName,
                 matrix,
@@ -131,7 +129,7 @@ Foam::LduMatrix<Type, DType, LUType>::solver::solver
 
     controlDict_(solverDict),
 
-    maxIter_(1000),
+    maxIter_(defaultMaxIter_),
     minIter_(0),
     tolerance_(1e-6*pTraits<Type>::one),
     relTol_(Zero)

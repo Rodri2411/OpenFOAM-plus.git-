@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2015-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -495,13 +495,18 @@ void Foam::addPatchCellLayer::setFaceProps
 
         if (!found)
         {
-            FatalErrorInFunction
+            //FatalErrorInFunction
+            WarningInFunction
                 << "Problem: cannot find patch edge " << ppEdgeI
                 << " with mesh vertices " << patchEdge
                 << " at " << patchEdge.line(mesh.points())
-                << " is not in face " << faceI << " with mesh vertices "
+                << " in face " << faceI << " with mesh vertices "
                 << f
-                << exit(FatalError);
+                << " at " << pointField(mesh.points(), f)
+                << endl
+                << "Continuing with potentially incorrect faceZone orientation"
+                //<< exit(FatalError);
+                << endl;
         }
     }
 }
@@ -515,7 +520,7 @@ void Foam::addPatchCellLayer::findZoneFace
     const polyMesh& mesh,
     const indirectPrimitivePatch& pp,
     const label ppEdgeI,
-    const UIndirectList<label>& excludeFaces,
+    const labelUIndList& excludeFaces,
     const labelList& meshFaces,
 
     label& inflateFaceI,
@@ -535,7 +540,7 @@ void Foam::addPatchCellLayer::findZoneFace
 
         if
         (
-            (findIndex(excludeFaces, faceI) == -1)
+            !excludeFaces.found(faceI)
          && (
                 (mesh.isInternalFace(faceI) && useInternalFaces)
              || (!mesh.isInternalFace(faceI) && useBoundaryFaces)
@@ -744,7 +749,7 @@ void Foam::addPatchCellLayer::calcExtrudeInfo
 
             if (otherProci != -1)
             {
-                if (findIndex(gd[Pstream::myProcNo()], otherProci) != -1)
+                if (gd[Pstream::myProcNo()].found(otherProci))
                 {
                     // There is already a processorPolyPatch to otherProci.
                     // Use it. Note that we can only index procPatchMap
@@ -784,7 +789,7 @@ void Foam::addPatchCellLayer::calcExtrudeInfo
     {
         if (edgePatchID[edgei] == -1)
         {
-            UIndirectList<label> ppFaces(pp.addressing(), edgeFaces[edgei]);
+            labelUIndList ppFaces(pp.addressing(), edgeFaces[edgei]);
 
             label meshEdgei = meshEdges[edgei];
             const labelList& meshFaces = mesh.edgeFaces
@@ -1108,7 +1113,7 @@ void Foam::addPatchCellLayer::setRefinement
 
         {
             labelList n(mesh_.nPoints(), 0);
-            UIndirectList<label>(n, meshPoints) = nPointLayers;
+            labelUIndList(n, meshPoints) = nPointLayers;
             syncTools::syncPointList(mesh_, n, maxEqOp<label>(), label(0));
 
             // Non-synced
@@ -1911,7 +1916,7 @@ void Foam::addPatchCellLayer::setRefinement
                                                 stringedVerts
                                             ) << nl
                                         << "stringNLayers:"
-                                        <<  UIndirectList<label>
+                                        <<  labelUIndList
                                             (
                                                 nPointLayers,
                                                 stringedVerts

@@ -33,7 +33,6 @@ License
 #include "plane.H"
 #include "geompack.H"
 
-
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 const Foam::label Foam::triSurfaceTools::ANYEDGE = -1;
@@ -102,7 +101,7 @@ void Foam::triSurfaceTools::greenRefine
 
     // Find index of edge in face.
 
-    label fp0 = findIndex(f, e[0]);
+    label fp0 = f.find(e[0]);
     label fp1 = f.fcIndex(fp0);
     label fp2 = f.fcIndex(fp1);
 
@@ -882,7 +881,7 @@ Foam::surfaceLocation Foam::triSurfaceTools::cutEdge
     {
         // Excluded point. Test only opposite edge.
 
-        label fp0 = findIndex(s.localFaces()[triI], excludePointi);
+        label fp0 = s.localFaces()[triI].find(excludePointi);
 
         if (fp0 == -1)
         {
@@ -1063,7 +1062,7 @@ void Foam::triSurfaceTools::snapToEnd
             // endpoint on edge; current on triangle
             const labelList& fEdges = s.faceEdges()[current.index()];
 
-            if (findIndex(fEdges, end.index()) != -1)
+            if (fEdges.found(end.index()))
             {
                 //if (debug)
                 //{
@@ -1112,7 +1111,7 @@ void Foam::triSurfaceTools::snapToEnd
             // endpoint on point; current on triangle
             const triSurface::FaceType& f = s.localFaces()[current.index()];
 
-            if (findIndex(f, end.index()) != -1)
+            if (f.found(end.index()))
             {
                 //if (debug)
                 //{
@@ -1376,54 +1375,6 @@ Foam::labelList Foam::triSurfaceTools::getVertexVertices
 }
 
 
-//// Order vertices consistent with face
-//void Foam::triSurfaceTools::orderVertices
-//(
-//    const labelledTri& f,
-//    const label v1,
-//    const label v2,
-//    label& vA,
-//    label& vB
-//)
-//{
-//    // Order v1, v2 in anticlockwise order.
-//    bool reverse = false;
-//
-//    if (f[0] == v1)
-//    {
-//        if (f[1] != v2)
-//        {
-//            reverse = true;
-//        }
-//    }
-//    else if (f[1] == v1)
-//    {
-//        if (f[2] != v2)
-//        {
-//            reverse = true;
-//        }
-//    }
-//    else
-//    {
-//        if (f[0] != v2)
-//        {
-//            reverse = true;
-//        }
-//    }
-//
-//    if (reverse)
-//    {
-//        vA = v2;
-//        vB = v1;
-//    }
-//    else
-//    {
-//        vA = v1;
-//        vB = v2;
-//    }
-//}
-
-
 // Get the other face using edgeI
 Foam::label Foam::triSurfaceTools::otherFace
 (
@@ -1464,7 +1415,7 @@ void Foam::triSurfaceTools::otherEdges
 {
     const labelList& eFaces = surf.faceEdges()[facei];
 
-    label i0 = findIndex(eFaces, edgeI);
+    label i0 = eFaces.find(edgeI);
 
     if (i0 == -1)
     {
@@ -2632,7 +2583,6 @@ void Foam::triSurfaceTools::calcInterpolationWeights
     forAll(samplePts, i)
     {
         const point& samplePt = samplePts[i];
-
 
         FixedList<label, 3>& verts = allVerts[i];
         FixedList<scalar, 3>& weights = allWeights[i];

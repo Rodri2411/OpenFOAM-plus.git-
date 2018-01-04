@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -27,6 +27,11 @@ Class
 Description
     A HashTable to objects of type \<T\> with a label key.
 
+Note
+    The Map contents are unordered.
+    When the key order is important, use the sortedToc() method to obtain
+    a list of sorted keys and use that for further access.
+
 See also
     PtrMap
 
@@ -43,7 +48,7 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                           Class Map Declaration
+                             Class Map Declaration
 \*---------------------------------------------------------------------------*/
 
 template<class T>
@@ -51,51 +56,86 @@ class Map
 :
     public HashTable<T, label, Hash<label>>
 {
-
 public:
 
-    typedef typename HashTable<T, label, Hash<label>>::iterator iterator;
+    //- The template instance used for this Map
+    typedef Map<T> this_type;
 
-    typedef typename HashTable<T, label, Hash<label>>::const_iterator
-        const_iterator;
+    //- The template instance used for the parent HashTable
+    typedef HashTable<T, label, Hash<label>> parent_type;
+
+    using iterator = typename parent_type::iterator;
+    using const_iterator = typename parent_type::const_iterator;
+
 
     // Constructors
 
-        //- Construct given initial size
-        Map(const label size = 128)
+        //- Construct null with default table capacity
+        Map()
         :
-            HashTable<T, label, Hash<label>>(size)
+            parent_type()
         {}
 
-        //- Construct from Istream
+        //- Construct with given initial table capacity
+        explicit Map(const label size)
+        :
+            parent_type(size)
+        {}
+
+        //- Construct from Istream with default table capacity
         Map(Istream& is)
         :
-            HashTable<T, label, Hash<label>>(is)
+            parent_type(is)
         {}
 
-        //- Construct as copy
-        Map(const Map<T>& map)
+        //- Copy construct
+        Map(const this_type& map)
         :
-            HashTable<T, label, Hash<label>>(map)
+            parent_type(map)
+        {}
+
+        //- Move construct
+        Map(this_type&& map)
+        :
+            parent_type(std::move(map))
         {}
 
         //- Construct by transferring the parameter contents
-        Map(const Xfer<Map<T>>& map)
+        Map(const Xfer<this_type>& map)
         :
-            HashTable<T, label, Hash<label>>(map)
+            parent_type(map)
         {}
 
         //- Construct by transferring the parameter contents
-        Map(const Xfer<HashTable<T, label, Hash<label>>>& map)
+        Map(const Xfer<parent_type>& map)
         :
-            HashTable<T, label, Hash<label>>(map)
+            parent_type(map)
         {}
 
         //- Construct from an initializer list
-        Map(std::initializer_list<Tuple2<label, T>> map)
+        Map(std::initializer_list<std::pair<label, T>> map)
         :
-            HashTable<T, label, Hash<label>>(map)
+            parent_type(map)
         {}
+
+
+    // Member Operators
+
+        using parent_type::operator=;
+
+        //- Copy assignment
+        void operator=(const this_type& rhs)
+        {
+            parent_type::operator=(rhs);
+        }
+
+        //- Move assignment
+        void operator=(this_type&& rhs)
+        {
+            parent_type::operator=(std::move(rhs));
+        }
+
+
 };
 
 

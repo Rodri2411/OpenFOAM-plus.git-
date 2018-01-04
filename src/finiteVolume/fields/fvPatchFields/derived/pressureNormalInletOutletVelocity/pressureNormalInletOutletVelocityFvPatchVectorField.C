@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -76,6 +76,7 @@ pressureNormalInletOutletVelocityFvPatchVectorField
     phiName_(dict.lookupOrDefault<word>("phi", "phi")),
     rhoName_(dict.lookupOrDefault<word>("rho", "rho"))
 {
+    patchType() = dict.lookupOrDefault<word>("patchType", word::null);
     fvPatchVectorField::operator=(vectorField("value", dict, p.size()));
     refValue() = *this;
     refGrad() = Zero;
@@ -147,7 +148,7 @@ void Foam::pressureNormalInletOutletVelocityFvPatchVectorField::updateCoeffs()
             << exit(FatalError);
     }
 
-    valueFraction() = 1.0 - pos(phip);
+    valueFraction() = 1.0 - pos0(phip);
 
     mixedFvPatchVectorField::updateCoeffs();
 }
@@ -159,8 +160,8 @@ void Foam::pressureNormalInletOutletVelocityFvPatchVectorField::write
 ) const
 {
     fvPatchVectorField::write(os);
-    os.writeKeyword("phi") << phiName_ << token::END_STATEMENT << nl;
-    os.writeKeyword("rho") << rhoName_ << token::END_STATEMENT << nl;
+    os.writeEntry("phi", phiName_);
+    os.writeEntry("rho", rhoName_);
     writeEntry("value", os);
 }
 

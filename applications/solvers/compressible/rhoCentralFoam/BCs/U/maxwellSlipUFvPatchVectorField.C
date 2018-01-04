@@ -38,7 +38,7 @@ Foam::maxwellSlipUFvPatchVectorField::maxwellSlipUFvPatchVectorField
     const DimensionedField<vector, volMesh>& iF
 )
 :
-    mixedFixedValueSlipFvPatchVectorField(p, iF),
+    partialSlipFvPatchVectorField(p, iF),
     TName_("T"),
     rhoName_("rho"),
     psiName_("thermo:psi"),
@@ -59,7 +59,7 @@ Foam::maxwellSlipUFvPatchVectorField::maxwellSlipUFvPatchVectorField
     const fvPatchFieldMapper& mapper
 )
 :
-    mixedFixedValueSlipFvPatchVectorField(mspvf, p, iF, mapper),
+    partialSlipFvPatchVectorField(mspvf, p, iF, mapper),
     TName_(mspvf.TName_),
     rhoName_(mspvf.rhoName_),
     psiName_(mspvf.psiName_),
@@ -79,7 +79,7 @@ Foam::maxwellSlipUFvPatchVectorField::maxwellSlipUFvPatchVectorField
     const dictionary& dict
 )
 :
-    mixedFixedValueSlipFvPatchVectorField(p, iF),
+    partialSlipFvPatchVectorField(p, iF),
     TName_(dict.lookupOrDefault<word>("T", "T")),
     rhoName_(dict.lookupOrDefault<word>("rho", "rho")),
     psiName_(dict.lookupOrDefault<word>("psi", "thermo:psi")),
@@ -132,7 +132,7 @@ Foam::maxwellSlipUFvPatchVectorField::maxwellSlipUFvPatchVectorField
     const DimensionedField<vector, volMesh>& iF
 )
 :
-    mixedFixedValueSlipFvPatchVectorField(mspvf, iF),
+    partialSlipFvPatchVectorField(mspvf, iF),
     TName_(mspvf.TName_),
     rhoName_(mspvf.rhoName_),
     psiName_(mspvf.psiName_),
@@ -193,25 +193,23 @@ void Foam::maxwellSlipUFvPatchVectorField::updateCoeffs()
         refValue() -= C1/prho*transform(I - n*n, (n & ptauMC));
     }
 
-    mixedFixedValueSlipFvPatchVectorField::updateCoeffs();
+    partialSlipFvPatchVectorField::updateCoeffs();
 }
 
 
 void Foam::maxwellSlipUFvPatchVectorField::write(Ostream& os) const
 {
     fvPatchVectorField::write(os);
-    writeEntryIfDifferent<word>(os, "T", "T", TName_);
-    writeEntryIfDifferent<word>(os, "rho", "rho", rhoName_);
-    writeEntryIfDifferent<word>(os, "psi", "thermo:psi", psiName_);
-    writeEntryIfDifferent<word>(os, "mu", "thermo:mu", muName_);
-    writeEntryIfDifferent<word>(os, "tauMC", "tauMC", tauMCName_);
+    os.writeEntryIfDifferent<word>("T", "T", TName_);
+    os.writeEntryIfDifferent<word>("rho", "rho", rhoName_);
+    os.writeEntryIfDifferent<word>("psi", "thermo:psi", psiName_);
+    os.writeEntryIfDifferent<word>("mu", "thermo:mu", muName_);
+    os.writeEntryIfDifferent<word>("tauMC", "tauMC", tauMCName_);
 
-    os.writeKeyword("accommodationCoeff")
-        << accommodationCoeff_ << token::END_STATEMENT << nl;
+    os.writeEntry("accommodationCoeff", accommodationCoeff_);
     Uwall_.writeEntry("Uwall", os);
-    os.writeKeyword("thermalCreep")
-        << thermalCreep_ << token::END_STATEMENT << nl;
-    os.writeKeyword("curvature") << curvature_ << token::END_STATEMENT << nl;
+    os.writeEntry("thermalCreep", thermalCreep_);
+    os.writeEntry("curvature", curvature_);
 
     refValue().writeEntry("refValue", os);
     valueFraction().writeEntry("valueFraction", os);

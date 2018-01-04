@@ -28,11 +28,11 @@ License
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-template<unsigned SizeInc, unsigned SizeMult, unsigned SizeDiv>
+template<int SizeMin>
 Foam::label Foam::face::triangles
 (
-    const pointField& points,
-    DynamicList<face, SizeInc, SizeMult, SizeDiv>& triFaces
+    const UList<point>& points,
+    DynamicList<face, SizeMin>& triFaces
 ) const
 {
     label triI = triFaces.size();
@@ -49,7 +49,7 @@ Foam::label Foam::face::triangles
 template<class Type>
 Type Foam::face::average
 (
-    const pointField& meshPoints,
+    const UList<point>& meshPoints,
     const Field<Type>& fld
 ) const
 {

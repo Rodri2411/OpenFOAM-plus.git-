@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
@@ -83,18 +83,13 @@ Foam::AMIInterpolation<SourcePatch, TargetPatch>::wordTointerpolationMethod
 {
     interpolationMethod method = imDirect;
 
-    wordList methods
-    (
-        IStringStream
-        (
-            "("
-                "directAMI "
-                "mapNearestAMI "
-                "faceAreaWeightAMI "
-                "partialFaceAreaWeightAMI"
-            ")"
-        )()
-    );
+    const wordList methods
+    {
+        "directAMI",
+        "mapNearestAMI",
+        "faceAreaWeightAMI",
+        "partialFaceAreaWeightAMI"
+    };
 
     if (im == "directAMI")
     {
@@ -478,7 +473,7 @@ void Foam::AMIInterpolation<SourcePatch, TargetPatch>::agglomerate
                 label elemi = elems[i];
                 label coarseElemi = tgtCompactMap[elemi];
 
-                label index = findIndex(newElems, coarseElemi);
+                label index = newElems.find(coarseElemi);
                 if (index == -1)
                 {
                     newElems.append(coarseElemi);
@@ -524,7 +519,7 @@ void Foam::AMIInterpolation<SourcePatch, TargetPatch>::agglomerate
                 label elemi = elems[i];
                 label coarseElemi = targetRestrictAddressing[elemi];
 
-                label index = findIndex(newElems, coarseElemi);
+                label index = newElems.find(coarseElemi);
                 if (index == -1)
                 {
                     newElems.append(coarseElemi);
@@ -1017,7 +1012,7 @@ void Foam::AMIInterpolation<SourcePatch, TargetPatch>::update
 
         mapDistributeBase::distribute
         (
-            Pstream::nonBlocking,
+            Pstream::commsTypes::nonBlocking,
             List<labelPair>(),
             tgtPatch.size(),
             map.constructMap(),
@@ -1032,7 +1027,7 @@ void Foam::AMIInterpolation<SourcePatch, TargetPatch>::update
 
         mapDistributeBase::distribute
         (
-            Pstream::nonBlocking,
+            Pstream::commsTypes::nonBlocking,
             List<labelPair>(),
             tgtPatch.size(),
             map.constructMap(),

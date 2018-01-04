@@ -51,10 +51,6 @@ Usage
       - \par -noLagrangian
         Suppress writing lagrangian positions and fields.
 
-      - \par -index \<start\>
-        Ignore the time index contained in the time file and use a
-        simple indexing when creating the \c Ensight/data/######## files.
-
       - \par -noMesh
         Suppress writing the geometry. Can be useful for converting partial
         results for a static geometry.
@@ -128,8 +124,7 @@ int main(int argc, char *argv[])
     (
         "name",
         "subdir",
-        "define sub-directory name to use for Ensight data "
-        "(default: \"Ensight\")"
+        "sub-directory name for ensight output (default: 'Ensight')"
     );
     argList::addOption
     (
@@ -386,8 +381,13 @@ int main(int argc, char *argv[])
                 cloudPrefix/cloudName
             );
 
-            // Check that the positions field is present for this time
-            if (!cloudObjs.found("positions"))
+            // Check that the positions/coordinates field is present for this
+            // time
+            if
+            (
+                !cloudObjs.found("positions")
+             || !cloudObjs.found("coordinates")
+            )
             {
                 continue;
             }

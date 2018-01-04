@@ -27,30 +27,17 @@ License
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
-const Foam::NamedEnum<Foam::fileFormats::FIRECore::fileExt3d, 4>
-    Foam::fileFormats::FIRECore::file3dExtensions;
-
-namespace Foam
+const Foam::Enum
+<
+    Foam::fileFormats::FIRECore::fileExt3d
+>
+Foam::fileFormats::FIRECore::file3dExtensions
 {
-    template<>
-    const char* Foam::NamedEnum
-    <
-        Foam::fileFormats::FIRECore::fileExt3d,
-        4
-    >::names[] =
-    {
-        "fpma",
-        "fpmb",
-        "fpmaz",
-        "fpmbz"
-    };
-}
-
-
-// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
-
-Foam::fileFormats::FIRECore::FIRECore()
-{}
+    { fileExt3d::POLY_ASCII, "fpma" },
+    { fileExt3d::POLY_BINARY, "fpmb" },
+    { fileExt3d::POLY_ASCII_Z, "fpmaz" },
+    { fileExt3d::POLY_BINARY_Z, "fpmbz" }
+};
 
 
 // * * * * * * * * * * *  Protected Member Functions * * * * * * * * * * * * //

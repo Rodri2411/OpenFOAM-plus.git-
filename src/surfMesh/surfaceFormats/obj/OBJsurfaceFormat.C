@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2016-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -25,11 +25,10 @@ License
 
 #include "OBJsurfaceFormat.H"
 #include "clock.H"
-#include "IFstream.H"
-#include "IStringStream.H"
-#include "Ostream.H"
-#include "OFstream.H"
+#include "Fstream.H"
+#include "StringStream.H"
 #include "ListOps.H"
+#include "faceTraits.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -81,10 +80,9 @@ bool Foam::fileFormats::OBJsurfaceFormat<Face>::read
     {
         string line = this->getLineNoComment(is);
 
-        // handle continuations
-        if (line[line.size()-1] == '\\')
+        // Handle continuations
+        if (line.removeEnd("\\"))
         {
-            line.substr(0, line.size()-1);
             line += this->getLineNoComment(is);
         }
 
@@ -148,7 +146,7 @@ bool Foam::fileFormats::OBJsurfaceFormat<Face>::read
                 }
                 else
                 {
-                    vertexSpec = line.substr(startNum, line.size() - startNum);
+                    vertexSpec = line.substr(startNum);
                 }
 
                 string::size_type slashPos = vertexSpec.find('/');
@@ -172,15 +170,15 @@ bool Foam::fileFormats::OBJsurfaceFormat<Face>::read
 
             labelUList& f = static_cast<labelUList&>(dynVertices);
 
-            if (MeshedSurface<Face>::isTri() && f.size() > 3)
+            if (faceTraits<Face>::isTri() && f.size() > 3)
             {
                 // simple face triangulation about f[0]
                 // points may be incomplete
                 for (label fp1 = 1; fp1 < f.size() - 1; fp1++)
                 {
-                    label fp2 = f.fcIndex(fp1);
+                    const label fp2 = f.fcIndex(fp1);
 
-                    dynFaces.append(triFace(f[0], f[fp1], f[fp2]));
+                    dynFaces.append(Face{f[0], f[fp1], f[fp2]});
                     dynZones.append(zoneI);
                     dynSizes[zoneI]++;
                 }
@@ -210,15 +208,16 @@ template<class Face>
 void Foam::fileFormats::OBJsurfaceFormat<Face>::write
 (
     const fileName& filename,
-    const MeshedSurfaceProxy<Face>& surf
+    const MeshedSurfaceProxy<Face>& surf,
+    const dictionary& options
 )
 {
-    const pointField& pointLst = surf.points();
-    const List<Face>&  faceLst = surf.surfFaces();
-    const List<label>& faceMap = surf.faceMap();
+    const UList<point>& pointLst = surf.points();
+    const UList<Face>&  faceLst  = surf.surfFaces();
+    const UList<label>& faceMap  = surf.faceMap();
 
     // for no zones, suppress the group name
-    const List<surfZone>& zones =
+    const UList<surfZone>& zones =
     (
         surf.surfZones().empty()
       ? surfaceFormatsCore::oneZone(faceLst, "")
@@ -237,48 +236,46 @@ void Foam::fileFormats::OBJsurfaceFormat<Face>::write
 
 
     os  << "# Wavefront OBJ file written " << clock::dateTime().c_str() << nl
-        << "o " << os.name().lessExt().name() << nl
+        << "o " << os.name().nameLessExt() << nl
         << nl
         << "# points : " << pointLst.size() << nl
         << "# faces  : " << faceLst.size() << nl
         << "# zones  : " << zones.size() << nl;
 
     // Print zone names as comment
-    forAll(zones, zoneI)
+    forAll(zones, zonei)
     {
-        os  << "#   " << zoneI << "  " << zones[zoneI].name()
-            << "  (nFaces: " << zones[zoneI].size() << ")" << nl;
+        os  << "#   " << zonei << "  " << zones[zonei].name()
+            << "  (nFaces: " << zones[zonei].size() << ")" << nl;
     }
 
     os  << nl
         << "# <points count=\"" << pointLst.size() << "\">" << nl;
 
     // Write vertex coords
-    forAll(pointLst, ptI)
+    for (const point& pt : pointLst)
     {
-        const point& pt = pointLst[ptI];
-
         os  << "v " << pt.x() << ' '  << pt.y() << ' '  << pt.z() << nl;
     }
 
     os  << "# </points>" << nl
         << nl
-        << "# <faces count=\"" << faceLst.size() << "\">" << endl;
+        << "# <faces count=\"" << faceLst.size() << "\">" << nl;
 
 
     label faceIndex = 0;
-    forAll(zones, zoneI)
+    for (const surfZone& zone : zones)
     {
-        const surfZone& zone = zones[zoneI];
-
         if (zone.name().size())
         {
-            os << "g " << zone.name() << endl;
+            os << "g " << zone.name() << nl;
         }
+
+        const label nLocalFaces = zone.size();
 
         if (useFaceMap)
         {
-            forAll(zone, localFacei)
+            for (label i=0; i<nLocalFaces; ++i)
             {
                 const Face& f = faceLst[faceMap[faceIndex++]];
 
@@ -287,12 +284,12 @@ void Foam::fileFormats::OBJsurfaceFormat<Face>::write
                 {
                     os << ' ' << f[fp] + 1;
                 }
-                os << endl;
+                os << nl;
             }
         }
         else
         {
-            forAll(zone, localFacei)
+            for (label i=0; i<nLocalFaces; ++i)
             {
                 const Face& f = faceLst[faceIndex++];
 
@@ -301,11 +298,11 @@ void Foam::fileFormats::OBJsurfaceFormat<Face>::write
                 {
                     os << ' ' << f[fp] + 1;
                 }
-                os << endl;
+                os << nl;
             }
         }
     }
-    os << "# </faces>" << endl;
+    os << "# </faces>" << nl;
 }
 
 

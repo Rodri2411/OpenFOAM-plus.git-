@@ -67,10 +67,9 @@ tmp<snGradScheme<Type>> snGradScheme<Type>::New
 
     const word schemeName(schemeData);
 
-    typename MeshConstructorTable::iterator constructorIter =
-        MeshConstructorTablePtr_->find(schemeName);
+    auto cstrIter = MeshConstructorTablePtr_->cfind(schemeName);
 
-    if (constructorIter == MeshConstructorTablePtr_->end())
+    if (!cstrIter.found())
     {
         FatalIOErrorInFunction
         (
@@ -82,7 +81,7 @@ tmp<snGradScheme<Type>> snGradScheme<Type>::New
             << exit(FatalIOError);
     }
 
-    return constructorIter()(mesh, schemeData);
+    return cstrIter()(mesh, schemeData);
 }
 
 
@@ -124,6 +123,7 @@ snGradScheme<Type>::snGrad
         )
     );
     GeometricField<Type, fvsPatchField, surfaceMesh>& ssf = tsf.ref();
+    ssf.setOriented();
 
     // set reference to difference factors array
     const scalarField& deltaCoeffs = tdeltaCoeffs();

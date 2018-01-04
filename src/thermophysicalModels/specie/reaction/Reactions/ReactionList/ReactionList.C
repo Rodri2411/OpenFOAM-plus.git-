@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -61,25 +61,6 @@ Foam::ReactionList<ThermoType>::ReactionList
 
 
 template<class ThermoType>
-Foam::ReactionList<ThermoType>::ReactionList
-(
-    const speciesTable& species,
-    const HashPtrTable<ThermoType>& thermoDb,
-    const fileName& fName
-)
-:
-    SLPtrList<Reaction<ThermoType>>
-    (
-        dictionary(IFstream(fName)()).lookup("reactions"),
-        Reaction<ThermoType>::iNew(species, thermoDb)
-    ),
-    species_(species),
-    thermoDb_(thermoDb),
-    dict_(dictionary::null)
-{}
-
-
-template<class ThermoType>
 Foam::ReactionList<ThermoType>::ReactionList(const ReactionList& reactions)
 :
     SLPtrList<Reaction<ThermoType>>(reactions),
@@ -125,20 +106,21 @@ bool Foam::ReactionList<ThermoType>::readReactionDict()
 template<class ThermoType>
 void Foam::ReactionList<ThermoType>::write(Ostream& os) const
 {
-    os  << "reactions" << nl;
-    os  << token::BEGIN_BLOCK << incrIndent << nl;
+    os.beginBlock("reactions");
 
     forAllConstIter(typename SLPtrList<Reaction<ThermoType>>, *this, iter)
     {
         const Reaction<ThermoType>& r = iter();
-        os  << indent << r.name() << nl
-            << indent << token::BEGIN_BLOCK << incrIndent << nl;
-        os.writeKeyword("type") << r.type() << token::END_STATEMENT << nl;
+
+        os.beginBlock(r.name());
+
+        os.writeEntry("type", r.type());
         r.write(os);
-        os  << decrIndent << indent << token::END_BLOCK << nl;
+
+        os.endBlock();
     }
 
-    os << decrIndent << token::END_BLOCK << nl;
+    os.endBlock();
 }
 
 

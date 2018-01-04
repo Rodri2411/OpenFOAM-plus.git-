@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2016-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -40,7 +40,7 @@ Description
     - \b group (site) settings (when $WM_PROJECT_SITE is not set):
       - $WM_PROJECT_INST_DIR/site/\<VERSION\>/caseDicts/postProcessing
       - $WM_PROJECT_INST_DIR/site/caseDicts/postProcessing
-    - \b other (shipped) settings:
+    - \b other (project) settings:
       - $WM_PROJECT_DIR/etc/caseDicts/postProcessing
 
     The optional field arguments included in the name are inserted in 'field' or
@@ -53,6 +53,16 @@ Description
         #includeFunc components(U)
         #includeFunc mag(Ux)
         #includeFunc mag(p)
+    \endverbatim
+
+    Other dictionary entries may also be specified using named arguments, for
+    example the \c name of the \c faceZone in the \c flowRateFaceZone \c
+    functionObject configuration set and the \c orientedFields entry which
+    defaults to \c phi may also be overridden as required, e.g.
+
+    \verbatim
+        #includeFunc flowRateFaceZone(name=fZone1)
+        #includeFunc flowRateFaceZone(orientedFields=(phiAlpha),name=fZone1)
     \endverbatim
 
 See also
@@ -83,17 +93,10 @@ class includeFuncEntry
 :
     public functionEntry
 {
-
 public:
 
-    //- Runtime type information
-    ClassName("includeFunc");
-
-
-    // Member Functions
-
-        //- Execute the functionEntry in a sub-dict context
-        static bool execute(dictionary& parentDict, Istream&);
+    //- Run function in a sub-dict context
+    static bool execute(dictionary& parentDict, Istream& is);
 };
 
 

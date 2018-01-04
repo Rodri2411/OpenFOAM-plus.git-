@@ -51,7 +51,6 @@ SourceFiles
 namespace Foam
 {
 
-
 class mapPolyMesh;
 class polyMesh;
 class primitiveMesh;
@@ -108,7 +107,29 @@ protected:
 
 
         //- Disallow default bitwise copy construct
-        topoSet(const topoSet&);
+        topoSet(const topoSet&) = delete;
+
+
+protected:
+
+        //- Helper for constructor - return IOobject in the polyMesh/sets
+        static IOobject findIOobject
+        (
+            const polyMesh& mesh,
+            const word& name,
+            readOption r,
+            writeOption w
+        );
+
+        //- Helper for constructor - return IOobject in the polyMesh/sets
+        static IOobject findIOobject
+        (
+            const Time& runTime,
+            const word& name,
+            readOption r,
+            writeOption w
+        );
+
 
 public:
 
@@ -175,7 +196,7 @@ public:
 
         //- Construct from IOobject as explicitly passed type.
         //  Can't use typeName info here since subclasses not yet instantiated
-        topoSet(const IOobject&, const word& wantedType);
+        topoSet(const IOobject& obj, const word& wantedType);
 
         //- Construct from polyMesh and name. Searches for a polyMesh/sets
         //  directory but not beyond mesh.facesInstance.
@@ -195,7 +216,7 @@ public:
         (
             const polyMesh& mesh,
             const word& name,
-            const label,
+            const label size,
             writeOption w=NO_WRITE
         );
 
@@ -206,7 +227,18 @@ public:
         (
             const polyMesh& mesh,
             const word& name,
-            const labelHashSet&,
+            const labelHashSet& set,
+            writeOption w=NO_WRITE
+        );
+
+        //- Construct empty from additional labelHashSet
+        //  Searches for a polyMesh/sets
+        //  directory but not beyond mesh.facesInstance.
+        topoSet
+        (
+            const polyMesh& mesh,
+            const word& name,
+            const labelUList& set,
             writeOption w=NO_WRITE
         );
 

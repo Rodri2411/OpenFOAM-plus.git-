@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
@@ -50,10 +50,11 @@ Foam::ReactingMultiphaseParcel<ParcelType>::ReactingMultiphaseParcel
 (
     const polyMesh& mesh,
     Istream& is,
-    bool readFields
+    bool readFields,
+    bool newFormat
 )
 :
-    ParcelType(mesh, is, readFields),
+    ParcelType(mesh, is, readFields, newFormat),
     YGas_(0),
     YLiquid_(0),
     YSolid_(0),
@@ -78,16 +79,7 @@ Foam::ReactingMultiphaseParcel<ParcelType>::ReactingMultiphaseParcel
         YSolid_ /= YMix[SLD] + ROOTVSMALL;
     }
 
-    // Check state of Istream
-    is.check
-    (
-        "ReactingMultiphaseParcel<ParcelType>::ReactingMultiphaseParcel"
-        "("
-            "const polyMesh&, "
-            "Istream&, "
-            "bool"
-        ")"
-    );
+    is.check(FUNCTION_NAME);
 }
 
 
@@ -95,11 +87,6 @@ template<class ParcelType>
 template<class CloudType>
 void Foam::ReactingMultiphaseParcel<ParcelType>::readFields(CloudType& c)
 {
-    if (!c.size())
-    {
-        return;
-    }
-
     ParcelType::readFields(c);
 }
 
@@ -112,10 +99,7 @@ void Foam::ReactingMultiphaseParcel<ParcelType>::readFields
     const CompositionType& compModel
 )
 {
-    if (!c.size())
-    {
-        return;
-    }
+    bool valid = c.size();
 
     ParcelType::readFields(c, compModel);
 
@@ -146,7 +130,8 @@ void Foam::ReactingMultiphaseParcel<ParcelType>::readFields
             (
                 "Y" + gasNames[j] + stateLabels[idGas],
                 IOobject::MUST_READ
-            )
+            ),
+            valid
         );
 
         label i = 0;
@@ -170,7 +155,8 @@ void Foam::ReactingMultiphaseParcel<ParcelType>::readFields
             (
                 "Y" + liquidNames[j] + stateLabels[idLiquid],
                  IOobject::MUST_READ
-            )
+            ),
+            valid
         );
 
         label i = 0;
@@ -194,7 +180,8 @@ void Foam::ReactingMultiphaseParcel<ParcelType>::readFields
             (
                 "Y" + solidNames[j] + stateLabels[idSolid],
                 IOobject::MUST_READ
-            )
+            ),
+            valid
         );
 
         label i = 0;
@@ -233,7 +220,6 @@ void Foam::ReactingMultiphaseParcel<ParcelType>::writeFields
     label np = c.size();
 
     // Write the composition fractions
-    if (np > 0)
     {
         const wordList& stateLabels = compModel.stateLabels();
 
@@ -263,7 +249,7 @@ void Foam::ReactingMultiphaseParcel<ParcelType>::writeFields
                 YGas[i++] = p0.YGas()[j]*p0.Y()[GAS];
             }
 
-            YGas.write();
+            YGas.write(np > 0);
         }
 
         const label idLiquid = compModel.idLiquid();
@@ -292,7 +278,7 @@ void Foam::ReactingMultiphaseParcel<ParcelType>::writeFields
                 YLiquid[i++] = p0.YLiquid()[j]*p0.Y()[LIQ];
             }
 
-            YLiquid.write();
+            YLiquid.write(np > 0);
         }
 
         const label idSolid = compModel.idSolid();
@@ -321,7 +307,7 @@ void Foam::ReactingMultiphaseParcel<ParcelType>::writeFields
                 YSolid[i++] = p0.YSolid()[j]*p0.Y()[SLD];
             }
 
-            YSolid.write();
+            YSolid.write(np > 0);
         }
     }
 }
@@ -454,16 +440,7 @@ Foam::Ostream& Foam::operator<<
         os  << YGasLoc << YLiquidLoc << YSolidLoc;
     }
 
-    // Check state of Ostream
-    os.check
-    (
-        "Ostream& operator<<"
-        "("
-            "Ostream&, "
-            "const ReactingMultiphaseParcel<ParcelType>&"
-        ")"
-    );
-
+    os.check(FUNCTION_NAME);
     return os;
 }
 

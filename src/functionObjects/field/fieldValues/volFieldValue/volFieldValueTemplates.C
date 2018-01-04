@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2015-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -82,51 +82,8 @@ Type Foam::functionObjects::fieldValues::volFieldValue::processValues
     Type result = Zero;
     switch (operation_)
     {
-        case opSum:
+        case opNone:
         {
-            result = gSum(values);
-            break;
-        }
-        case opSumMag:
-        {
-            result = gSum(cmptMag(values));
-            break;
-        }
-        case opAverage:
-        {
-            label n = returnReduce(values.size(), sumOp<label>());
-            result = gSum(values)/(scalar(n) + ROOTVSMALL);
-            break;
-        }
-        case opWeightedAverage:
-        {
-            label wSize = returnReduce(weightField.size(), sumOp<label>());
-
-            if (wSize > 0)
-            {
-                result =
-                    gSum(weightField*values)/(gSum(weightField) + ROOTVSMALL);
-            }
-            else
-            {
-                label n = returnReduce(values.size(), sumOp<label>());
-                result = gSum(values)/(scalar(n) + ROOTVSMALL);
-            }
-            break;
-        }
-        case opVolAverage:
-        {
-            result = gSum(values*V)/(gSum(V) + ROOTVSMALL);
-            break;
-        }
-        case opWeightedVolAverage:
-        {
-            result = gSum(weightField*V*values)/gSum(weightField*V);
-            break;
-        }
-        case opVolIntegrate:
-        {
-            result = gSum(V*values);
             break;
         }
         case opMin:
@@ -139,18 +96,80 @@ Type Foam::functionObjects::fieldValues::volFieldValue::processValues
             result = gMax(values);
             break;
         }
+        case opSumMag:
+        {
+            result = gSum(cmptMag(values));
+            break;
+        }
+        case opSum:
+        case opWeightedSum:
+        {
+            if (canWeight(weightField))
+            {
+                result = gSum(weightField*values);
+            }
+            else
+            {
+                // Unweighted form
+                result = gSum(values);
+            }
+            break;
+        }
+        case opAverage:
+        case opWeightedAverage:
+        {
+            if (canWeight(weightField))
+            {
+                result =
+                    gSum(weightField*values)/(gSum(weightField) + ROOTVSMALL);
+            }
+            else
+            {
+                // Unweighted form
+                const label n = returnReduce(values.size(), sumOp<label>());
+                result = gSum(values)/(scalar(n) + ROOTVSMALL);
+            }
+            break;
+        }
+        case opVolAverage:
+        case opWeightedVolAverage:
+        {
+            if (canWeight(weightField))
+            {
+                result = gSum(weightField*V*values)
+                    /(gSum(weightField*V) + ROOTVSMALL);
+            }
+            else
+            {
+                // Unweighted form
+                result = gSum(V*values)/(gSum(V) + ROOTVSMALL);
+            }
+            break;
+        }
+        case opVolIntegrate:
+        case opWeightedVolIntegrate:
+        {
+            if (canWeight(weightField))
+            {
+                result = gSum(weightField*V*values);
+            }
+            else
+            {
+                // Unweighted form
+                result = gSum(V*values);
+            }
+            break;
+        }
         case opCoV:
         {
             const scalar sumV = gSum(V);
 
             Type meanValue = gSum(V*values)/sumV;
 
-            const label nComp = pTraits<Type>::nComponents;
-
-            for (direction d=0; d<nComp; ++d)
+            for (direction d=0; d < pTraits<Type>::nComponents; ++d)
             {
-                scalarField vals(values.component(d));
-                scalar mean = component(meanValue, d);
+                tmp<scalarField> vals(values.component(d));
+                const scalar mean = component(meanValue, d);
                 scalar& res = setComponent(result, d);
 
                 res = sqrt(gSum(V*sqr(vals - mean))/sumV)/(mean + ROOTVSMALL);
@@ -158,8 +177,6 @@ Type Foam::functionObjects::fieldValues::volFieldValue::processValues
 
             break;
         }
-        case opNone:
-        {}
     }
 
     return result;
@@ -172,6 +189,7 @@ template<class Type>
 bool Foam::functionObjects::fieldValues::volFieldValue::writeValues
 (
     const word& fieldName,
+    const scalarField& V,
     const scalarField& weightField
 )
 {
@@ -180,7 +198,6 @@ bool Foam::functionObjects::fieldValues::volFieldValue::writeValues
     if (ok)
     {
         Field<Type> values(getFieldValues<Type>(fieldName));
-        scalarField V(filterField(fieldValue::mesh_.V()));
 
         if (writeFields_)
         {
@@ -189,12 +206,17 @@ bool Foam::functionObjects::fieldValues::volFieldValue::writeValues
 
             if (Pstream::master())
             {
+                word outName = fieldName + '_' + regionTypeNames_[regionType_];
+                if (this->volRegion::regionName_ != polyMesh::defaultRegion)
+                {
+                    outName = outName + '-' + this->volRegion::regionName_;
+                }
+
                 IOField<Type>
                 (
                     IOobject
                     (
-                        fieldName + '_' + regionTypeNames_[regionType_]
-                      + '-' + volRegion::regionName_,
+                        outName,
                         obr_.time().timeName(),
                         obr_,
                         IOobject::NO_READ,
@@ -213,13 +235,17 @@ bool Foam::functionObjects::fieldValues::volFieldValue::writeValues
         file()<< tab << result;
 
         Log << "    " << operationTypeNames_[operation_]
-            << "(" << volRegion::regionName_ << ") of " << fieldName
+            << "(" << this->volRegion::regionName_ << ") of " << fieldName
             <<  " = " << result << endl;
 
         // Write state/results information
         const word& opName = operationTypeNames_[operation_];
-        word resultName =
-            opName + '(' + volRegion::regionName_ + ',' + fieldName + ')';
+        word outName = fieldName;
+        if (this->volRegion::regionName_ != polyMesh::defaultRegion)
+        {
+            outName = this->volRegion::regionName_ + ',' + outName;
+        }
+        word resultName = opName + '(' + outName + ')';
         this->setResult(resultName, result);
     }
 

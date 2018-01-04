@@ -27,23 +27,17 @@ License
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
-namespace Foam
+const Foam::Enum
+<
+    Foam::volumeType
+>
+Foam::volumeType::names
 {
-    template<>
-    const char* Foam::NamedEnum
-    <
-        Foam::volumeType,
-        4
-    >::names[] =
-    {
-        "unknown",
-        "mixed",
-        "inside",
-        "outside"
-    };
-}
-
-const Foam::NamedEnum<Foam::volumeType, 4> Foam::volumeType::names;
+    { type::UNKNOWN, "unknown" },
+    { type::MIXED, "mixed" },
+    { type::INSIDE, "inside" },
+    { type::OUTSIDE, "outside" },
+};
 
 
 // * * * * * * * * * * * * * * * IOstream Operators  * * * * * * * * * * * * //
@@ -61,9 +55,7 @@ Foam::Istream& Foam::operator>>(Istream& is, volumeType& vt)
     // Read end of volumeType
     is.readEnd("volumeType");
 
-    // Check state of Istream
-    is.check("operator>>(Istream&, volumeType&)");
-
+    is.check(FUNCTION_NAME);
     return is;
 }
 

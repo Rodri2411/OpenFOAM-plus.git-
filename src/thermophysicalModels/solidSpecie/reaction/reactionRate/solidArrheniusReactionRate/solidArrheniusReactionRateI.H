@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2012 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -36,18 +36,6 @@ inline Foam::solidArrheniusReactionRate::solidArrheniusReactionRate
     A_(A),
     Ta_(Ta),
     Tcrit_(Tcrit)
-{}
-
-
-inline Foam::solidArrheniusReactionRate::solidArrheniusReactionRate
-(
-    const speciesTable&,
-    Istream& is
-)
-:
-    A_(readScalar(is.readBegin("solidArrheniusReaction(Istream&)"))),
-    Ta_(readScalar(is)),
-    Tcrit_(readScalar(is))
 {}
 
 
@@ -89,9 +77,9 @@ inline Foam::scalar Foam::solidArrheniusReactionRate::operator()
 
 inline void Foam::solidArrheniusReactionRate::write(Ostream& os) const
 {
-    os.writeKeyword("A") << A_ << token::END_STATEMENT << nl;
-    os.writeKeyword("Ta") << Ta_ << token::END_STATEMENT << nl;
-    os.writeKeyword("Tcrit") << Tcrit_ << token::END_STATEMENT << nl;
+    os.writeEntry("A", A_);
+    os.writeEntry("Ta", Ta_);
+    os.writeEntry("Tcrit", Tcrit_);
 }
 
 
@@ -101,9 +89,7 @@ inline Foam::Ostream& Foam::operator<<
     const solidArrheniusReactionRate& arr
 )
 {
-    os  << token::BEGIN_LIST
-        << arr.A_ << token::SPACE << arr.Ta_ << token::SPACE << arr.Tcrit_
-        << token::END_LIST;
+    arr.write(os);
     return os;
 }
 

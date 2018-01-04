@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -28,10 +28,6 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "argList.H"
-#include "IOobject.H"
-#include "IOstreams.H"
-#include "IFstream.H"
-#include "IStringStream.H"
 #include "labelRanges.H"
 
 using namespace Foam;
@@ -42,7 +38,8 @@ using namespace Foam;
 int main(int argc, char *argv[])
 {
     argList::noParallel();
-    argList::validArgs.insert("start size .. startN sizeN");
+    argList::noFunctionObjects();
+    argList::addArgument("start size .. startN sizeN");
     argList::addOption("verbose");
     argList::addNote
     (
@@ -57,7 +54,36 @@ int main(int argc, char *argv[])
         labelRange::debug = 1;
     }
 
+    {
+        Info<<"test sorting" << endl;
+        DynamicList<labelRange> list1(10);
+        list1.append(labelRange(25, 8));
+        list1.append(labelRange::identity(8));
+        list1.append(labelRange(15, 5));
+        list1.append(labelRange(50, -10));
 
+        sort(list1);
+        Info<<"sorted" << list1 << endl;
+    }
+
+    {
+        Info<<"test intersections" << endl;
+        labelRange range1(-15, 25);
+        labelRange range2(7, 8);
+        labelRange range3(-20, 8);
+        labelRange range4(50, 8);
+
+        Info<<range1 << " & " << range2
+            << " = " << range1.subset(range2) << nl;
+
+        Info<< range1 << " & " << range3
+            << " = " << range1.subset(range3) << nl;
+
+        Info<< range2 << " & " << range4
+            << " = " << range2.subset(range4) << nl;
+    }
+
+    labelRange range;
     labelRanges ranges;
 
     bool removeMode = false;
@@ -74,22 +100,21 @@ int main(int argc, char *argv[])
             continue;
         }
 
-        label start = 0;
-        label size  = 0;
+        {
+            label start = args.argRead<label>(argI);
+            label size  = args.argRead<label>(argI+1);
+            ++argI;
 
-        IStringStream(args[argI])() >> start;
-        ++argI;
-        IStringStream(args[argI])() >> size;
-
-        labelRange range(start, size);
+            range.reset(start, size);
+        }
 
         Info<< "---------------" << nl;
         if (removeMode)
         {
             Info<< "del " << range << " :";
-            forAllConstIter(labelRange, range, iter)
+            for (auto i : range)
             {
-                Info<< " " << iter();
+                Info<< " " << i;
             }
             Info<< nl;
 
@@ -98,19 +123,20 @@ int main(int argc, char *argv[])
         else
         {
             Info<< "add " << range  << " :";
-            forAllConstIter(labelRange, range, iter)
+            for (auto i : range)
             {
-                Info<< " " << iter();
+                Info<< " " << i;
             }
             Info<< nl;
 
             ranges.add(range);
         }
 
-        Info<< "<list>" << ranges << "</list>" << nl;
-        forAllConstIter(labelRanges, ranges, iter)
+        Info<< "<list>" << ranges << "</list>" << nl
+            << "content:";
+        for (auto i : ranges)
         {
-            Info<< " " << iter();
+            Info<< " " << i;
         }
         Info<< nl;
     }

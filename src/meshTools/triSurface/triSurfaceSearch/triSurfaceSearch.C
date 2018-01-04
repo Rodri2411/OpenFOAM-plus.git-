@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2015-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -33,7 +33,7 @@ License
 bool Foam::triSurfaceSearch::checkUniqueHit
 (
     const pointIndexHit& currHit,
-    const DynamicList<pointIndexHit, 1, 1>& hits,
+    const UList<pointIndexHit>& hits,
     const vector& lineVec
 ) const
 {
@@ -109,10 +109,10 @@ bool Foam::triSurfaceSearch::checkUniqueHit
                             surface().faceNormals()[edgeFacei];
 
                         const label signCurrHit =
-                            pos(currHitNormal & lineVec);
+                            pos0(currHitNormal & lineVec);
 
                         const label signExistingHit =
-                            pos(existingHitNormal & lineVec);
+                            pos0(existingHitNormal & lineVec);
 
                         if (signCurrHit == signExistingHit)
                         {
@@ -175,7 +175,12 @@ Foam::triSurfaceSearch::triSurfaceSearch
     tolerance_(tolerance),
     maxTreeDepth_(maxTreeDepth),
     treePtr_(nullptr)
-{}
+{
+    if (tolerance_ < 0)
+    {
+        tolerance_ = indexedOctree<treeDataTriSurface>::perturbTol();
+    }
+}
 
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
@@ -227,7 +232,7 @@ Foam::triSurfaceSearch::tree() const
             bb.max() += point(ROOTVSMALL, ROOTVSMALL, ROOTVSMALL);
         }
 
-        scalar oldTol = indexedOctree<treeDataTriSurface>::perturbTol();
+        const scalar oldTol = indexedOctree<treeDataTriSurface>::perturbTol();
         indexedOctree<treeDataTriSurface>::perturbTol() = tolerance_;
 
         treePtr_.reset
@@ -285,7 +290,7 @@ void Foam::triSurfaceSearch::findNearest
     List<pointIndexHit>& info
 ) const
 {
-    scalar oldTol = indexedOctree<treeDataTriSurface>::perturbTol();
+    const scalar oldTol = indexedOctree<treeDataTriSurface>::perturbTol();
     indexedOctree<treeDataTriSurface>::perturbTol() = tolerance();
 
     const indexedOctree<treeDataTriSurface>& octree = tree();
@@ -332,7 +337,7 @@ void Foam::triSurfaceSearch::findLine
 
     info.setSize(start.size());
 
-    scalar oldTol = indexedOctree<treeDataTriSurface>::perturbTol();
+    const scalar oldTol = indexedOctree<treeDataTriSurface>::perturbTol();
     indexedOctree<treeDataTriSurface>::perturbTol() = tolerance();
 
     forAll(start, i)
@@ -355,7 +360,7 @@ void Foam::triSurfaceSearch::findLineAny
 
     info.setSize(start.size());
 
-    scalar oldTol = indexedOctree<treeDataTriSurface>::perturbTol();
+    const scalar oldTol = indexedOctree<treeDataTriSurface>::perturbTol();
     indexedOctree<treeDataTriSurface>::perturbTol() = tolerance();
 
     forAll(start, i)
@@ -378,11 +383,11 @@ void Foam::triSurfaceSearch::findLineAll
 
     info.setSize(start.size());
 
-    scalar oldTol = indexedOctree<treeDataTriSurface>::perturbTol();
+    const scalar oldTol = indexedOctree<treeDataTriSurface>::perturbTol();
     indexedOctree<treeDataTriSurface>::perturbTol() = tolerance();
 
     // Work array
-    DynamicList<pointIndexHit, 1, 1> hits;
+    DynamicList<pointIndexHit> hits;
 
     DynamicList<label> shapeMask;
 

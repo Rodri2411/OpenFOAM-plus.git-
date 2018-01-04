@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -25,7 +25,7 @@ License
 
 #include "CSV.H"
 #include "DynamicList.H"
-#include "IFstream.H"
+//#include "IFstream.H"
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
@@ -43,7 +43,7 @@ Foam::label Foam::Function1Types::CSV<Foam::label>::readValue
             << exit(FatalError);
     }
 
-    return readLabel(IStringStream(splitted[componentColumns_[0]])());
+    return readLabel(splitted[componentColumns_[0]]);
 }
 
 
@@ -61,7 +61,7 @@ Foam::scalar Foam::Function1Types::CSV<Foam::scalar>::readValue
             << exit(FatalError);
     }
 
-    return readScalar(IStringStream(splitted[componentColumns_[0]])());
+    return readScalar(splitted[componentColumns_[0]]);
 }
 
 
@@ -70,18 +70,17 @@ Type Foam::Function1Types::CSV<Type>::readValue(const List<string>& splitted)
 {
     Type result;
 
-    for (label i = 0; i < pTraits<Type>::nComponents; i++)
+    for (label i = 0; i < pTraits<Type>::nComponents; ++i)
     {
         if (componentColumns_[i] >= splitted.size())
         {
             FatalErrorInFunction
-            << "No column " << componentColumns_[i] << " in "
+                << "No column " << componentColumns_[i] << " in "
                 << splitted << endl
                 << exit(FatalError);
         }
 
-        result[i] =
-        readScalar(IStringStream(splitted[componentColumns_[i]])());
+        result[i] = readScalar(splitted[componentColumns_[i]]);
     }
 
     return result;
@@ -92,7 +91,9 @@ template<class Type>
 void Foam::Function1Types::CSV<Type>::read()
 {
     fileName expandedFile(fName_);
-    IFstream is(expandedFile.expand());
+    //IFstream is(expandedFile.expand());
+    autoPtr<ISstream> isPtr(fileHandler().NewIFstream(expandedFile.expand()));
+    ISstream& is = isPtr();
 
     if (!is.good())
     {
@@ -187,7 +188,7 @@ void Foam::Function1Types::CSV<Type>::read()
             break;
         }
 
-        scalar x = readScalar(IStringStream(splitted[refColumn_])());
+        scalar x = readScalar(splitted[refColumn_]);
         Type value = readValue(splitted);
 
         values.append(Tuple2<scalar,Type>(x, value));
@@ -204,18 +205,16 @@ Foam::Function1Types::CSV<Type>::CSV
 (
     const word& entryName,
     const dictionary& dict,
-    const word& ext,
     const fileName& fName
 )
 :
-    TableBase<Type>(entryName, dict.subDict(entryName + ext)),
-    coeffs_(dict.subDict(entryName + ext)),
-    nHeaderLine_(readLabel(coeffs_.lookup("nHeaderLine"))),
-    refColumn_(readLabel(coeffs_.lookup("refColumn"))),
-    componentColumns_(coeffs_.lookup("componentColumns")),
-    separator_(coeffs_.lookupOrDefault<string>("separator", string(","))[0]),
-    mergeSeparators_(readBool(coeffs_.lookup("mergeSeparators"))),
-    fName_(fName != fileName::null ? fName : coeffs_.lookup("fileName"))
+    TableBase<Type>(entryName, dict),
+    nHeaderLine_(readLabel(dict.lookup("nHeaderLine"))),
+    refColumn_(readLabel(dict.lookup("refColumn"))),
+    componentColumns_(dict.lookup("componentColumns")),
+    separator_(dict.lookupOrDefault<string>("separator", string(","))[0]),
+    mergeSeparators_(readBool(dict.lookup("mergeSeparators"))),
+    fName_(fName != fileName::null ? fName : dict.lookup("file"))
 {
     if (componentColumns_.size() != pTraits<Type>::nComponents)
     {
@@ -232,15 +231,15 @@ Foam::Function1Types::CSV<Type>::CSV
 
 
 template<class Type>
-Foam::Function1Types::CSV<Type>::CSV(const CSV<Type>& tbl)
+Foam::Function1Types::CSV<Type>::CSV(const CSV<Type>& csv)
 :
-    TableBase<Type>(tbl),
-    nHeaderLine_(tbl.nHeaderLine_),
-    refColumn_(tbl.refColumn_),
-    componentColumns_(tbl.componentColumns_),
-    separator_(tbl.separator_),
-    mergeSeparators_(tbl.mergeSeparators_),
-    fName_(tbl.fName_)
+    TableBase<Type>(csv),
+    nHeaderLine_(csv.nHeaderLine_),
+    refColumn_(csv.refColumn_),
+    componentColumns_(csv.componentColumns_),
+    separator_(csv.separator_),
+    mergeSeparators_(csv.mergeSeparators_),
+    fName_(csv.fName_)
 {}
 
 
@@ -273,7 +272,7 @@ void Foam::Function1Types::CSV<Type>::writeData(Ostream& os) const
     TableBase<Type>::writeEntries(os);
 
     os.writeEntry("nHeaderLine", nHeaderLine_);
-    os.writeEntry("refColumn",   refColumn_);
+    os.writeEntry("refColumn", refColumn_);
 
     // Force writing labelList in ascii
     const enum IOstream::streamFormat fmt = os.format();
@@ -281,9 +280,9 @@ void Foam::Function1Types::CSV<Type>::writeData(Ostream& os) const
     os.writeEntry("componentColumns", componentColumns_);
     os.format(fmt);
 
-    os.writeEntry("separator",       string(separator_));
+    os.writeEntry("separator", string(separator_));
     os.writeEntry("mergeSeparators", mergeSeparators_);
-    os.writeEntry("fileName",        fName_);
+    os.writeEntry("file", fName_);
 
     os.endBlock() << flush;
 }

@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2016-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -39,12 +39,11 @@ SourceFiles
 
 #include "pointField.H"
 #include "labelledTri.H"
-
+#include "HashSet.H"
 #include "surfZoneList.H"
 #include "surfaceFormatsCore.H"
 #include "runTimeSelectionTables.H"
 #include "memberFunctionSelectionTables.H"
-#include "HashSet.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -64,16 +63,15 @@ class MeshedSurfaceProxy
 :
     public fileFormats::surfaceFormatsCore
 {
-    //- Private data
+    // Private Member Data
 
         const pointField& points_;
 
-        const List<Face>& faces_;
+        const UList<Face>& faces_;
 
-        const List<surfZone>& zones_;
+        const UList<surfZone>& zones_;
 
-        const List<label>& faceMap_;
-
+        const UList<label>& faceMap_;
 
 public:
 
@@ -100,15 +98,15 @@ public:
         //- Construct from component references
         MeshedSurfaceProxy
         (
-            const pointField&,
-            const List<Face>&,
-            const List<surfZone>& = List<surfZone>(),
-            const List<label>& faceMap = List<label>()
+            const pointField& pointLst,
+            const UList<Face>& faceLst,
+            const UList<surfZone>& zoneLst = List<surfZone>(),
+            const labelUList& faceMap = List<label>()
         );
 
 
     //- Destructor
-    virtual ~MeshedSurfaceProxy();
+    virtual ~MeshedSurfaceProxy() = default;
 
 
     // Member Function Selectors
@@ -121,16 +119,27 @@ public:
             fileExtension,
             (
                 const fileName& name,
-                const MeshedSurfaceProxy<Face>& surf
+                const MeshedSurfaceProxy<Face>& surf,
+                const dictionary& options
             ),
-            (name, surf)
+            (name, surf, options)
         );
 
-        //- Write to file
+        //- Write to file, select based on its extension
         static void write
         (
-            const fileName&,
-            const MeshedSurfaceProxy<Face>&
+            const fileName& name,
+            const MeshedSurfaceProxy& surf,
+            const dictionary& options
+        );
+
+        //- Write to file, selected based on given extension
+        static void write
+        (
+            const fileName& name,
+            const word& ext,
+            const MeshedSurfaceProxy& surf,
+            const dictionary& options
         );
 
 
@@ -151,7 +160,7 @@ public:
             }
 
             //- Return const access to the faces
-            inline const List<Face>& surfFaces() const
+            inline const UList<Face>& surfFaces() const
             {
                 return faces_;
             }
@@ -159,13 +168,13 @@ public:
             //- Const access to the surface zones.
             //  If zones are defined, they must be contiguous and cover the
             //  entire surface
-            inline const List<surfZone>& surfZones() const
+            inline const UList<surfZone>& surfZones() const
             {
                 return zones_;
             }
 
             //- Const access to the faceMap, zero-sized when unused
-            inline const List<label>& faceMap() const
+            inline const labelUList& faceMap() const
             {
                 return faceMap_;
             }
@@ -182,16 +191,31 @@ public:
 
         // Write
 
-            //- Generic write routine. Chooses writer based on extension.
-            virtual void write(const fileName& name) const
+            //- Generic write routine. Chooses writer based on its extension.
+            virtual void write
+            (
+                const fileName& name,
+                const dictionary& options = dictionary::null
+            ) const
             {
-                write(name, *this);
+                write(name, *this, options);
+            }
+
+            //- Generic write routine. Chooses writer based on extension.
+            virtual void write
+            (
+                const fileName& name,
+                const word& ext,
+                const dictionary& options = dictionary::null
+            ) const
+            {
+                write(name, ext, *this, options);
             }
 
             //- Write to database
             virtual void write
             (
-                const Time&,
+                const Time& t,
                 const word& surfName = word::null
             ) const;
 };

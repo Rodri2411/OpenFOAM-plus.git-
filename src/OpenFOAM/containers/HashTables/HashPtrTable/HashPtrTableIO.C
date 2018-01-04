@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -35,33 +35,33 @@ template<class T, class Key, class Hash>
 template<class INew>
 void Foam::HashPtrTable<T, Key, Hash>::read(Istream& is, const INew& inewt)
 {
-    is.fatalCheck("HashPtrTable<T, Key, Hash>::read(Istream&, const INew&)");
+    is.fatalCheck(FUNCTION_NAME);
 
     token firstToken(is);
 
     is.fatalCheck
     (
-        "HashPtrTable<T, Key, Hash>::read(Istream&, const INew&) : "
+        "HashPtrTable::read(Istream&, const INew&) : "
         "reading first token"
     );
 
     if (firstToken.isLabel())
     {
-        label s = firstToken.labelToken();
+        const label s = firstToken.labelToken();
 
         // Read beginning of contents
-        char delimiter = is.readBeginList("HashPtrTable<T, Key, Hash>");
+        const char delimiter = is.readBeginList("HashPtrTable");
 
         if (s)
         {
-            if (2*s > this->tableSize_)
+            if (2*s > this->capacity())
             {
                 this->resize(2*s);
             }
 
             if (delimiter == token::BEGIN_LIST)
             {
-                for (label i=0; i<s; i++)
+                for (label i=0; i<s; ++i)
                 {
                     Key key;
                     is >> key;
@@ -69,8 +69,8 @@ void Foam::HashPtrTable<T, Key, Hash>::read(Istream& is, const INew& inewt)
 
                     is.fatalCheck
                     (
-                        "HashPtrTable<T, Key, Hash>::"
-                        "read(Istream&, const INew&) : reading entry"
+                        "HashPtrTable::read(Istream&, const INew&) : "
+                        "reading entry"
                     );
                 }
             }
@@ -114,7 +114,7 @@ void Foam::HashPtrTable<T, Key, Hash>::read(Istream& is, const INew& inewt)
 
             is.fatalCheck
             (
-                "HashPtrTable<T, Key, Hash>::read(Istream&, const INew&) : "
+                "HashPtrTable::read(Istream&, const INew&) : "
                 "reading entry"
             );
 
@@ -131,7 +131,7 @@ void Foam::HashPtrTable<T, Key, Hash>::read(Istream& is, const INew& inewt)
             << exit(FatalIOError);
     }
 
-    is.fatalCheck("HashPtrTable<T, Key, Hash>::read(Istream&, const INew&)");
+    is.fatalCheck(FUNCTION_NAME);
 }
 
 
@@ -145,11 +145,9 @@ void Foam::HashPtrTable<T, Key, Hash>::read
 {
     forAllConstIter(dictionary, dict, iter)
     {
-        this->insert
-        (
-            iter().keyword(),
-            inewt(dict.subDict(iter().keyword())).ptr()
-        );
+        const word& k = iter().keyword();
+
+        this->insert(k, inewt(dict.subDict(k)).ptr());
     }
 }
 
@@ -157,17 +155,13 @@ void Foam::HashPtrTable<T, Key, Hash>::read
 template<class T, class Key, class Hash>
 void Foam::HashPtrTable<T, Key, Hash>::write(Ostream& os) const
 {
-
-    for
-    (
-        typename HashPtrTable<T, Key, Hash>::const_iterator
-        iter = this->begin();
-        iter != this->end();
-        ++iter
-    )
+    for (const_iterator iter = this->cbegin(); iter != this->cend(); ++iter)
     {
-        const T* ptr = iter();
-        ptr->write(os);
+        const T* ptr = iter.object();
+        if (ptr)
+        {
+            ptr->write(os);
+        }
     }
 }
 
@@ -199,10 +193,10 @@ Foam::HashPtrTable<T, Key, Hash>::HashPtrTable(const dictionary& dict)
 // * * * * * * * * * * * * * * * IOstream Operators  * * * * * * * * * * * * //
 
 template<class T, class Key, class Hash>
-Foam::Istream& Foam::operator>>(Istream& is, HashPtrTable<T, Key, Hash>& L)
+Foam::Istream& Foam::operator>>(Istream& is, HashPtrTable<T, Key, Hash>& tbl)
 {
-    L.clear();
-    L.read(is, INew<T>());
+    tbl.clear();
+    tbl.read(is, INew<T>());
 
     return is;
 }
@@ -212,29 +206,37 @@ template<class T, class Key, class Hash>
 Foam::Ostream& Foam::operator<<
 (
     Ostream& os,
-    const HashPtrTable<T, Key, Hash>& L
+    const HashPtrTable<T, Key, Hash>& tbl
 )
 {
-    // Write size and start delimiter
-    os << nl << L.size() << nl << token::BEGIN_LIST << nl;
+    const label sz = tbl.size();
 
-    // Write contents
-    for
-    (
-        typename HashPtrTable<T, Key, Hash>::const_iterator iter = L.begin();
-        iter != L.end();
-        ++iter
-    )
+    if (sz)
     {
-        os << iter.key() << token::SPACE << *iter() << nl;
+        // Size and start list delimiter
+        os << nl << sz << nl << token::BEGIN_LIST << nl;
+
+        // Contents
+        for (auto iter = tbl.cbegin(); iter != tbl.cend(); ++iter)
+        {
+            const T* ptr = iter.object();
+
+            os << iter.key();
+            if (ptr)
+            {
+                os << token::SPACE << *ptr;
+            }
+            os << nl;
+        }
+        os << token::END_LIST; // End list delimiter
+    }
+    else
+    {
+        // Empty hash table
+        os << sz << token::BEGIN_LIST << token::END_LIST;
     }
 
-    // Write end delimiter
-    os << token::END_LIST;
-
-    // Check state of IOstream
-    os.check("Ostream& operator<<(Ostream&, const HashPtrTable&)");
-
+    os.check(FUNCTION_NAME);
     return os;
 }
 

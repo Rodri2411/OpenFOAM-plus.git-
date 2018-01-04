@@ -93,7 +93,10 @@ int main(int argc, char *argv[])
         surfaceScalarField p_neg("p_neg", rho_neg*rPsi_neg);
 
         surfaceScalarField phiv_pos("phiv_pos", U_pos & mesh.Sf());
+        // Note: extracted out the orientation so becomes unoriented
+        phiv_pos.setOriented(false);
         surfaceScalarField phiv_neg("phiv_neg", U_neg & mesh.Sf());
+        phiv_neg.setOriented(false);
 
         volScalarField c("c", sqrt(thermo.Cp()/thermo.Cv()*rPsi));
         surfaceScalarField cSf_pos
@@ -101,6 +104,7 @@ int main(int argc, char *argv[])
             "cSf_pos",
             interpolate(c, pos, T.name())*mesh.magSf()
         );
+
         surfaceScalarField cSf_neg
         (
             "cSf_neg",
@@ -112,6 +116,7 @@ int main(int argc, char *argv[])
             "ap",
             max(max(phiv_pos + cSf_pos, phiv_neg + cSf_neg), v_zero)
         );
+
         surfaceScalarField am
         (
             "am",
@@ -160,11 +165,12 @@ int main(int argc, char *argv[])
 
         phi = aphiv_pos*rho_pos + aphiv_neg*rho_neg;
 
-        surfaceVectorField phiUp
-        (
-            (aphiv_pos*rhoU_pos + aphiv_neg*rhoU_neg)
-          + (a_pos*p_pos + a_neg*p_neg)*mesh.Sf()
-        );
+        surfaceVectorField phiU(aphiv_pos*rhoU_pos + aphiv_neg*rhoU_neg);
+        // Note: reassembled orientation from the pos and neg parts so becomes
+        // oriented
+        phiU.setOriented(true);
+
+        surfaceVectorField phiUp(phiU + (a_pos*p_pos + a_neg*p_neg)*mesh.Sf());
 
         surfaceScalarField phiEp
         (

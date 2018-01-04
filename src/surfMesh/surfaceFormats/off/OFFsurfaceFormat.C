@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2016-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -25,10 +25,9 @@ License
 
 #include "OFFsurfaceFormat.H"
 #include "clock.H"
-#include "IFstream.H"
-#include "IStringStream.H"
-#include "Ostream.H"
-#include "OFstream.H"
+#include "Fstream.H"
+#include "StringStream.H"
+#include "faceTraits.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -113,9 +112,9 @@ bool Foam::fileFormats::OFFsurfaceFormat<Face>::read
                 lineStream >> verts[vertI];
             }
 
-            labelUList& f = static_cast<labelUList&>(verts);
+            const labelUList& f = static_cast<const labelUList&>(verts);
 
-            if (MeshedSurface<Face>::isTri() && f.size() > 3)
+            if (faceTraits<Face>::isTri() && f.size() > 3)
             {
                 // simple face triangulation about f[0]
                 // cannot use face::triangulation (points may be incomplete)
@@ -123,7 +122,7 @@ bool Foam::fileFormats::OFFsurfaceFormat<Face>::read
                 {
                     label fp2 = f.fcIndex(fp1);
 
-                    dynFaces.append(triFace(f[0], f[fp1], f[fp2]));
+                    dynFaces.append(Face{f[0], f[fp1], f[fp2]});
                 }
             }
             else
@@ -144,13 +143,14 @@ template<class Face>
 void Foam::fileFormats::OFFsurfaceFormat<Face>::write
 (
     const fileName& filename,
-    const MeshedSurfaceProxy<Face>& surf
+    const MeshedSurfaceProxy<Face>& surf,
+    const dictionary&
 )
 {
-    const pointField& pointLst = surf.points();
-    const List<Face>&  faceLst = surf.surfFaces();
-    const List<label>& faceMap = surf.faceMap();
-    const List<surfZone>& zoneLst = surf.surfZones();
+    const UList<point>& pointLst = surf.points();
+    const UList<Face>&  faceLst  = surf.surfFaces();
+    const UList<label>& faceMap  = surf.faceMap();
+    const UList<surfZone>& zoneLst = surf.surfZones();
 
     OFstream os(filename);
     if (!os.good())
@@ -198,16 +198,18 @@ void Foam::fileFormats::OFFsurfaceFormat<Face>::write
     {
         os << "# <zone name=\"" << zoneLst[zoneI].name() << "\">" << endl;
 
+        const label nLocalFaces = zoneLst[zoneI].size();
+
         if (surf.useFaceMap())
         {
-            forAll(zoneLst[zoneI], localFacei)
+            for (label i=0; i<nLocalFaces; ++i)
             {
                 const Face& f = faceLst[faceMap[faceIndex++]];
 
                 os << f.size();
-                forAll(f, fp)
+                for (const label verti : f)
                 {
-                    os << ' ' << f[fp];
+                    os << ' ' << verti;
                 }
 
                 // add optional zone information
@@ -216,14 +218,14 @@ void Foam::fileFormats::OFFsurfaceFormat<Face>::write
         }
         else
         {
-            forAll(zoneLst[zoneI], localFacei)
+            for (label i=0; i<nLocalFaces; ++i)
             {
                 const Face& f = faceLst[faceIndex++];
 
                 os << f.size();
-                forAll(f, fp)
+                for (const label verti : f)
                 {
-                    os << ' ' << f[fp];
+                    os << ' ' << verti;
                 }
 
                 // add optional zone information

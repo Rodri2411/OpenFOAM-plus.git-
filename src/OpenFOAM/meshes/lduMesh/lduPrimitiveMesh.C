@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2013-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2013-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -328,7 +328,7 @@ Foam::lduPrimitiveMesh::lduPrimitiveMesh
                 << " agglomerates to " << procAgglomMap[procIDs[i]]
                 << " whereas other processors " << procIDs
                 << " agglomerate to "
-                << UIndirectList<label>(procAgglomMap, procIDs)
+                << labelUIndList(procAgglomMap, procIDs)
                 << exit(FatalError);
         }
     }
@@ -426,11 +426,8 @@ Foam::lduPrimitiveMesh::lduPrimitiveMesh
                                 << endl;
                         }
 
-                        label nbrProcMeshI = findIndex
-                        (
-                            procIDs,
-                            pldui.neighbProcNo()
-                        );
+                        const label nbrProcMeshI =
+                            procIDs.find(pldui.neighbProcNo());
 
                         if (procMeshI < nbrProcMeshI)
                         {
@@ -625,7 +622,7 @@ Foam::lduPrimitiveMesh::lduPrimitiveMesh
                     // Look up corresponding interfaces
                     label myP = pldui.myProcNo();
                     label nbrP = pldui.neighbProcNo();
-                    label nbrProcMeshI = findIndex(procIDs, nbrP);
+                    label nbrProcMeshI = procIDs.find(nbrP);
 
                     if (procMeshI < nbrProcMeshI)
                     {
@@ -993,7 +990,7 @@ void Foam::lduPrimitiveMesh::gather
 
             IPstream fromSlave
             (
-                Pstream::scheduled,
+                Pstream::commsTypes::scheduled,
                 procIDs[i],
                 0,          // bufSize
                 Pstream::msgType(),
@@ -1052,7 +1049,7 @@ void Foam::lduPrimitiveMesh::gather
             );
        }
     }
-    else if (findIndex(procIDs, Pstream::myProcNo(comm)) != -1)
+    else if (procIDs.found(Pstream::myProcNo(comm)))
     {
         // Send to master
 
@@ -1066,7 +1063,7 @@ void Foam::lduPrimitiveMesh::gather
 
         OPstream toMaster
         (
-            Pstream::scheduled,
+            Pstream::commsTypes::scheduled,
             procIDs[0],
             0,
             Pstream::msgType(),

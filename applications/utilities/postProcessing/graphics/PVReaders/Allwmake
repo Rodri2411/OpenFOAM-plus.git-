@@ -7,34 +7,17 @@ export WM_CONTINUE_ON_ERROR=true
 # Parse arguments for library compilation
 . $WM_PROJECT_DIR/wmake/scripts/AllwmakeParseArguments
 
-#
-# There are several prerequisites for building plugins
-#
-#set -x
-canBuildPlugin()
-{
-    [ -d "$ParaView_DIR" -a -r "$ParaView_DIR" ] || {
-        echo "==> cannot build ParaView plugins without paraview directory"
-        echo "    ParaView_DIR=$ParaView_DIR"
-        return 1
-    }
-
-    [ -n "$PV_PLUGIN_PATH" ] || {
-        echo "==> ${PWD##*/} : invalid PV_PLUGIN_PATH for building ParaView plugins"
-        echo "    PV_PLUGIN_PATH=${PV_PLUGIN_PATH:-unset}"
-        return 1
-    }
-
-    type cmake > /dev/null 2>&1 || {
-        echo "==> cannot build ParaView plugins without cmake"
-        return 1
-    }
-
-    return 0 # success
-}
-
+# Source CMake functions
+. $WM_PROJECT_DIR/wmake/scripts/cmakeFunctions
 
 # -----------------------------------------------------------------------------
+
+warnIncomplete()
+{
+    echo
+    echo "    WARNING: incomplete build of ParaView plugin: $@"
+    echo
+}
 
 # major version as per paraview include directory:
 # Eg, "PREFIX/include/paraview-5.0" -> "5.0"
@@ -45,13 +28,15 @@ case "$major" in
     if canBuildPlugin
     then
     (
-        wmake $targetType vtkPVReaders
-        PVblockMeshReader/Allwmake $targetType $*
-        PVFoamReader/Allwmake $targetType  $*
+        wmakeLibPv foamPv
+        wmakeLibPv vtkPVblockMesh
+        wmakeLibPv vtkPVFoam
 
-        # Dummy directory to trigger proper 'wclean all' behaviour
-        # - the Allwclean will otherwise not be used
-        mkdir -p Make
+        if [ "$targetType" != objects ]
+        then
+            cmakePv $PWD/PVblockMeshReader || warnIncomplete "BlockMesh"
+            cmakePv $PWD/PVFoamReader || warnIncomplete "OpenFOAM"
+        fi
     )
     fi
     ;;

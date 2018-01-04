@@ -33,8 +33,7 @@ Description
     // Pressure reference
     pRef            0;
 
-    // Number of samples in sampling window
-    // Must be a power of 2, default = 2^16 (=65536)
+    // Number of samples in sampling window, default = 2^16 (=65536)
     N               4096;
 
     // Lower frequency bounds
@@ -53,15 +52,13 @@ Description
     }
 
     // Pressure data supplied in CSV file format
-    csvFileData
-    {
-        fileName        "pressureData";
-        nHeaderLine     1;
-        refColumn       0;
-        componentColumns (1);
-        separator       " ";
-        mergeSeparators yes;
-    }
+    file            "pressureData";
+    //files           ("pressureData1" "pressureData2");
+    nHeaderLine     1;
+    refColumn       0;
+    componentColumns (1);
+    separator       " ";
+    mergeSeparators yes;
 
     graphFormat     raw;
 
@@ -117,7 +114,11 @@ protected:
         ) const;
 
         //- Process the CSV data
-        void processData(const Function1Types::CSV<scalar>& data);
+        void processData
+        (
+            const label dataseti,
+            const Function1Types::CSV<scalar>& data
+        );
 
 
 public:

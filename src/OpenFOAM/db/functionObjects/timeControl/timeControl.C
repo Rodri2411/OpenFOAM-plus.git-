@@ -28,26 +28,22 @@ License
 
 // * * * * * * * * * * * * * Static Member Data  * * * * * * * * * * * * * * //
 
-namespace Foam
+const Foam::Enum
+<
+    Foam::timeControl::timeControls
+>
+Foam::timeControl::timeControlNames_
 {
-    template<>
-    const char* NamedEnum<timeControl::timeControls, 9>::
-    names[] =
-    {
-        "timeStep",
-        "writeTime",
-        "outputTime",
-        "adjustableRunTime",
-        "runTime",
-        "clockTime",
-        "cpuTime",
-        "onEnd",
-        "none"
-    };
-}
-
-const Foam::NamedEnum<Foam::timeControl::timeControls, 9>
-    Foam::timeControl::timeControlNames_;
+    { timeControl::ocTimeStep, "timeStep" },
+    { timeControl::ocWriteTime, "writeTime" },
+    { timeControl::ocOutputTime, "outputTime" },
+    { timeControl::ocAdjustableRunTime, "adjustableRunTime" },
+    { timeControl::ocRunTime, "runTime" },
+    { timeControl::ocClockTime, "clockTime" },
+    { timeControl::ocCpuTime, "cpuTime" },
+    { timeControl::ocOnEnd, "onEnd" },
+    { timeControl::ocNone, "none" },
+};
 
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
@@ -78,6 +74,23 @@ Foam::timeControl::~timeControl()
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
+bool Foam::timeControl::entriesPresent
+(
+    const dictionary& dict,
+    const word& prefix
+)
+{
+    const word controlName(prefix + "Control");
+
+    if (dict.found(controlName))
+    {
+        return true;
+    }
+
+    return false;
+}
+
+
 void Foam::timeControl::read(const dictionary& dict)
 {
     word controlName(prefix_ + "Control");
@@ -99,7 +112,7 @@ void Foam::timeControl::read(const dictionary& dict)
 
     if (dict.found(controlName))
     {
-        timeControl_ = timeControlNames_.read(dict.lookup(controlName));
+        timeControl_ = timeControlNames_.lookup(controlName, dict);
     }
     else
     {
@@ -126,7 +139,8 @@ void Foam::timeControl::read(const dictionary& dict)
         case ocCpuTime:
         case ocAdjustableRunTime:
         {
-            interval_ = readScalar(dict.lookup(intervalName));
+            const scalar userTime = readScalar(dict.lookup(intervalName));
+            interval_ = time_.userTimeToTime(userTime);
             break;
         }
 
@@ -229,7 +243,7 @@ bool Foam::timeControl::execute()
         default:
         {
             FatalErrorInFunction
-                << "Undefined output control: "
+                << "Undefined time control: "
                 << timeControlNames_[timeControl_] << nl
                 << abort(FatalError);
             break;

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2013-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2013-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -132,7 +132,7 @@ Foam::twoPhaseSystem::twoPhaseSystem
     phasePair::scalarTable sigmaTable(lookup("sigma"));
     phasePair::dictTable aspectRatioTable(lookup("aspectRatio"));
 
-    pair_.set
+    pair_.reset
     (
         new phasePair
         (
@@ -143,7 +143,7 @@ Foam::twoPhaseSystem::twoPhaseSystem
         )
     );
 
-    pair1In2_.set
+    pair1In2_.reset
     (
         new orderedPhasePair
         (
@@ -155,7 +155,7 @@ Foam::twoPhaseSystem::twoPhaseSystem
         )
     );
 
-    pair2In1_.set
+    pair2In1_.reset
     (
         new orderedPhasePair
         (
@@ -170,7 +170,7 @@ Foam::twoPhaseSystem::twoPhaseSystem
 
     // Models
 
-    drag_.set
+    drag_.reset
     (
         new BlendedInterfacialModel<dragModel>
         (
@@ -187,7 +187,7 @@ Foam::twoPhaseSystem::twoPhaseSystem
         )
     );
 
-    virtualMass_.set
+    virtualMass_.reset
     (
         new BlendedInterfacialModel<virtualMassModel>
         (
@@ -203,7 +203,7 @@ Foam::twoPhaseSystem::twoPhaseSystem
         )
     );
 
-    heatTransfer_.set
+    heatTransfer_.reset
     (
         new BlendedInterfacialModel<heatTransferModel>
         (
@@ -219,7 +219,7 @@ Foam::twoPhaseSystem::twoPhaseSystem
         )
     );
 
-    lift_.set
+    lift_.reset
     (
         new BlendedInterfacialModel<liftModel>
         (
@@ -235,7 +235,7 @@ Foam::twoPhaseSystem::twoPhaseSystem
         )
     );
 
-    wallLubrication_.set
+    wallLubrication_.reset
     (
         new BlendedInterfacialModel<wallLubricationModel>
         (
@@ -251,7 +251,7 @@ Foam::twoPhaseSystem::twoPhaseSystem
         )
     );
 
-    turbulentDispersion_.set
+    turbulentDispersion_.reset
     (
         new BlendedInterfacialModel<turbulentDispersionModel>
         (
@@ -444,7 +444,7 @@ void Foam::twoPhaseSystem::solve()
             )
         );
 
-        phase1_.correctInflowFlux(alphaPhic1);
+        phase1_.correctInflowOutflow(alphaPhic1);
 
         if (nAlphaSubCycles > 1)
         {
@@ -515,8 +515,7 @@ void Foam::twoPhaseSystem::solve()
             fvc::interpolate(phase1_.rho())*phase1_.alphaPhi();
 
         phase2_.alphaPhi() = phi_ - phase1_.alphaPhi();
-        alpha2 = scalar(1) - alpha1;
-        phase2_.correctInflowFlux(phase2_.alphaPhi());
+        phase2_.correctInflowOutflow(phase2_.alphaPhi());
         phase2_.alphaRhoPhi() =
             fvc::interpolate(phase2_.rho())*phase2_.alphaPhi();
 
@@ -525,6 +524,12 @@ void Foam::twoPhaseSystem::solve()
             << "  Min(" << alpha1.name() << ") = " << min(alpha1).value()
             << "  Max(" << alpha1.name() << ") = " << max(alpha1).value()
             << endl;
+
+        // Ensure the phase-fractions are bounded
+        alpha1.max(0);
+        alpha1.min(1);
+
+        alpha2 = scalar(1) - alpha1;
     }
 }
 

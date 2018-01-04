@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -27,7 +27,7 @@ License
 #include "dictionary.H"
 #include "polyMesh.H"
 #include "volFields.H"
-
+#include "coordinateSystem.H"
 #include "addToRunTimeSelectionTable.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
@@ -55,7 +55,7 @@ Foam::sampledPlane::sampledPlane
     triangulate_(triangulate),
     needsUpdate_(true)
 {
-    if (debug && zoneKey_.size() && mesh.cellZones().findIndex(zoneKey_) < 0)
+    if (debug && zoneKey_.size() && mesh.cellZones().findIndex(zoneKey_) == -1)
     {
         Info<< "cellZone " << zoneKey_
             << " not found - using entire mesh" << endl;
@@ -91,7 +91,7 @@ Foam::sampledPlane::sampledPlane
 
     dict.readIfPresent("zone", zoneKey_);
 
-    if (debug && zoneKey_.size() && mesh.cellZones().findIndex(zoneKey_) < 0)
+    if (debug && zoneKey_.size() && mesh.cellZones().findIndex(zoneKey_) == -1)
     {
         Info<< "cellZone " << zoneKey_
             << " not found - using entire mesh" << endl;
@@ -139,7 +139,7 @@ bool Foam::sampledPlane::update()
 
     labelList selectedCells = mesh().cellZones().findMatching(zoneKey_).used();
 
-    if (selectedCells.empty())
+    if (returnReduce(selectedCells.empty(), andOp<bool>()))
     {
         reCut(mesh(), triangulate_);
     }

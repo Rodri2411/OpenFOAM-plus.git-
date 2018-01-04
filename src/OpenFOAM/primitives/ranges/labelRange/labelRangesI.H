@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -28,38 +28,28 @@ License
 
 inline Foam::labelRanges::labelRanges()
 :
-    ParentType()
+    StorageContainer()
 {}
 
 
 inline Foam::labelRanges::labelRanges(const label nElem)
 :
-    ParentType(nElem)
+    StorageContainer(nElem)
 {}
 
 
 // * * * * * * * * * * * * * * * * Iterators * * * * * * * * * * * * * * * * //
 
-inline Foam::labelRanges::const_iterator::const_iterator()
+inline Foam::labelRanges::const_iterator::const_iterator
+(
+    const labelRanges* lst,
+    const label i
+)
 :
-   list_(*reinterpret_cast<Foam::labelRanges* >(0)),
-   index_(-1),
-   subIndex_(-1)
+    list_(lst),
+    index_(i < 0 ? lst->size() : i),
+    subIndex_(0)
 {}
-
-
-inline Foam::labelRanges::const_iterator::const_iterator(const labelRanges& lst)
-:
-   list_(lst),
-   index_(0),
-   subIndex_(0)
-{
-    if (list_.empty())
-    {
-        // equivalent to end iterator
-        index_ = subIndex_ = -1;
-    }
-}
 
 
 inline bool Foam::labelRanges::const_iterator::operator==
@@ -69,7 +59,7 @@ inline bool Foam::labelRanges::const_iterator::operator==
 {
     return
     (
-        this->index_ == iter.index_
+        this->index_    == iter.index_
      && this->subIndex_ == iter.subIndex_
     );
 }
@@ -86,28 +76,18 @@ inline bool Foam::labelRanges::const_iterator::operator!=
 
 inline Foam::label Foam::labelRanges::const_iterator::operator*()
 {
-    return list_[index_][subIndex_];
-}
-
-
-inline Foam::label Foam::labelRanges::const_iterator::operator()()
-{
-    return list_[index_][subIndex_];
+    return list_->operator[](index_)[subIndex_];
 }
 
 
 inline Foam::labelRanges::const_iterator&
 Foam::labelRanges::const_iterator::operator++()
 {
-    if (++subIndex_ >= list_[index_].size())
+    if (++subIndex_ >= list_->operator[](index_).size())
     {
-        // go to next list entry
+        // Next sub-list
+        ++index_;
         subIndex_ = 0;
-        if (++index_ >= list_.size())
-        {
-            // equivalent to end iterator
-            index_ = subIndex_ = -1;
-        }
     }
 
     return *this;
@@ -125,35 +105,35 @@ Foam::labelRanges::const_iterator::operator++(int)
 
 inline Foam::labelRanges::const_iterator Foam::labelRanges::cbegin() const
 {
-    return const_iterator(*this);
+    return const_iterator(this, 0);
 }
 
 
-inline const Foam::labelRanges::const_iterator& Foam::labelRanges::cend() const
+inline const Foam::labelRanges::const_iterator Foam::labelRanges::cend() const
 {
-    return endIter_;
+    return const_iterator(this, -1);
 }
 
 
 inline Foam::labelRanges::const_iterator Foam::labelRanges::begin() const
 {
-    return const_iterator(*this);
+    return const_iterator(this, 0);
 }
 
 
-inline const Foam::labelRanges::const_iterator& Foam::labelRanges::end() const
+inline const Foam::labelRanges::const_iterator Foam::labelRanges::end() const
 {
-    return endIter_;
+    return const_iterator(this, -1);
 }
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-inline bool Foam::labelRanges::contains(const label value) const
+inline bool Foam::labelRanges::found(const label value) const
 {
     forAll(*this, i)
     {
-        if (this->ParentType::operator[](i).contains(value))
+        if (StorageContainer::operator[](i).found(value))
         {
             return true;
         }

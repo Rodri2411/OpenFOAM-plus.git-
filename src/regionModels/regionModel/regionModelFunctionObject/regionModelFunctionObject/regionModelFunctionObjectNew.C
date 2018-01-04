@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2012-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2012-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -31,7 +31,7 @@ Foam::autoPtr<Foam::regionModels::regionModelFunctionObject>
 Foam::regionModels::regionModelFunctionObject::New
 (
     const dictionary& dict,
-    regionModel& owner,
+    regionModel& region,
     const word& modelName
 )
 {
@@ -39,15 +39,14 @@ Foam::regionModels::regionModelFunctionObject::New
 
     Info<< "        " << modelType << endl;
 
-    dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(modelType);
+    auto cstrIter = dictionaryConstructorTablePtr_->cfind(modelType);
 
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    if (!cstrIter.found())
     {
         FatalErrorInFunction
             << "Unknown region model function type "
             << modelType << nl << nl
-            << "Valid region model function types are:" << nl
+            << "Valid region model function types :" << nl
             << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
@@ -58,7 +57,7 @@ Foam::regionModels::regionModelFunctionObject::New
             cstrIter()
             (
                 dict.subDict(modelName),
-                owner
+                region
             )
         );
 }

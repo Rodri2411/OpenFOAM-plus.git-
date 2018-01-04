@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2012 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -47,23 +47,6 @@ inline Foam::FallOffReactionRate<ReactionRate, FallOffFunction>::
 FallOffReactionRate
 (
     const speciesTable& species,
-    Istream& is
-)
-:
-    k0_(species, is.readBegin("FallOffReactionRate(Istream&)")),
-    kInf_(species, is),
-    F_(is),
-    thirdBodyEfficiencies_(species, is)
-{
-    is.readEnd("FallOffReactionRate(Istream&)");
-}
-
-
-template<class ReactionRate, class FallOffFunction>
-inline Foam::FallOffReactionRate<ReactionRate, FallOffFunction>::
-FallOffReactionRate
-(
-    const speciesTable& species,
     const dictionary& dict
 )
 :
@@ -85,10 +68,10 @@ Foam::FallOffReactionRate<ReactionRate, FallOffFunction>::operator()
     const scalarField& c
 ) const
 {
-    scalar k0 = k0_(p, T, c);
-    scalar kInf = kInf_(p, T, c);
+    const scalar k0 = k0_(p, T, c);
+    const scalar kInf = kInf_(p, T, c);
 
-    scalar Pr = k0*thirdBodyEfficiencies_.M(c)/kInf;
+    const scalar Pr = k0*thirdBodyEfficiencies_.M(c)/kInf;
 
     return kInf*(Pr/(1 + Pr))*F_(T, Pr);
 }
@@ -100,33 +83,21 @@ inline void Foam::FallOffReactionRate<ReactionRate, FallOffFunction>::write
     Ostream& os
 ) const
 {
-    os  << indent << "k0" << nl;
-    os  << indent << token::BEGIN_BLOCK << nl;
-    os  << incrIndent;
+    os.beginBlock("k0");
     k0_.write(os);
-    os  << decrIndent;
-    os  << indent << token::END_BLOCK << nl;
+    os.endBlock();
 
-    os  << indent << "kInf" << nl;
-    os  << indent << token::BEGIN_BLOCK << nl;
-    os  << incrIndent;
+    os.beginBlock("kInf");
     kInf_.write(os);
-    os  << decrIndent;
-    os  << indent << token::END_BLOCK << nl;
+    os.endBlock();
 
-    os  << indent << "F" << nl;
-    os  << indent << token::BEGIN_BLOCK << nl;
-    os  << incrIndent;
+    os.beginBlock("F");
     F_.write(os);
-    os  << decrIndent;
-    os  << indent << token::END_BLOCK << nl;
+    os.endBlock();
 
-    os  << indent << "thirdBodyEfficiencies" << nl;
-    os  << indent << token::BEGIN_BLOCK << nl;
-    os  << incrIndent;
+    os.beginBlock("thirdBodyEfficiencies");
     thirdBodyEfficiencies_.write(os);
-    os  << decrIndent;
-    os  << indent << token::END_BLOCK << nl;
+    os.endBlock();
 }
 
 
@@ -137,12 +108,7 @@ inline Foam::Ostream& Foam::operator<<
     const FallOffReactionRate<ReactionRate, FallOffFunction>& forr
 )
 {
-    os  << token::BEGIN_LIST
-        << forr.k0_ << token::SPACE
-        << forr.kInf_ << token::SPACE
-        << forr.F_ << token::SPACE
-        << forr.thirdBodyEfficiencies_
-        << token::END_LIST;
+    forr.write(os);
     return os;
 }
 

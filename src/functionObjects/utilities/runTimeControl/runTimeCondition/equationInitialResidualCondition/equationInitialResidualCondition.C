@@ -47,32 +47,21 @@ namespace runTimeControls
 }
 }
 }
-template<>
-const char* Foam::NamedEnum
-<
-    Foam
-  ::functionObjects
-  ::runTimeControls
-  ::equationInitialResidualCondition
-  ::operatingMode,
-    2
->::names[] =
-{
-    "minimum",
-    "maximum"
-};
 
-const Foam::NamedEnum
+const Foam::Enum
 <
     Foam
   ::functionObjects
   ::runTimeControls
   ::equationInitialResidualCondition
-  ::operatingMode,
-    2
+  ::operatingMode
 >
 Foam::functionObjects::runTimeControls::equationInitialResidualCondition::
-    operatingModeNames;
+operatingModeNames
+{
+    { operatingMode::omMin, "minimum" },
+    { operatingMode::omMax, "maximum" },
+};
 
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
@@ -90,9 +79,13 @@ equationInitialResidualCondition
     fieldNames_(dict.lookup("fields")),
     value_(readScalar(dict.lookup("value"))),
     timeStart_(dict.lookupOrDefault("timeStart", -GREAT)),
-    mode_(operatingModeNames.read(dict.lookup("mode")))
+    mode_(operatingModeNames.lookup("mode", dict))
 {
-    if (!fieldNames_.size())
+    if (fieldNames_.size())
+    {
+        timeStart_ = obr.time().userTimeToTime(timeStart_);
+    }
+    else
     {
         WarningInFunction
             << "No fields supplied: deactivating" << endl;

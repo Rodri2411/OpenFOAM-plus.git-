@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -55,7 +55,7 @@ template<class Type> class Function1;
 template<class Type> Ostream& operator<<(Ostream&, const Function1<Type>&);
 
 /*---------------------------------------------------------------------------*\
-                         Class Function1 Declaration
+                          Class Function1 Declaration
 \*---------------------------------------------------------------------------*/
 
 template<class Type>
@@ -66,7 +66,7 @@ class Function1
     // Private Member Functions
 
         //- Disallow default bitwise assignment
-        void operator=(const Function1<Type>&);
+        void operator=(const Function1<Type>&) = delete;
 
 
 protected:
@@ -78,6 +78,8 @@ protected:
 
 
 public:
+
+    typedef Type returnType;
 
     //- Runtime type information
     TypeName("Function1")
@@ -96,19 +98,16 @@ public:
     );
 
 
-    // Constructor
+    // Constructors
 
         //- Construct from entry name
-        Function1(const word& entryName);
+        explicit Function1(const word& entryName);
 
         //- Copy constructor
-        Function1(const Function1<Type>& de);
+        explicit Function1(const Function1<Type>& f1);
 
         //- Construct and return a clone
-        virtual tmp<Function1<Type>> clone() const
-        {
-            return tmp<Function1<Type>>(new Function1<Type>(*this));
-        }
+        virtual tmp<Function1<Type>> clone() const = 0;
 
 
     //- Selector
@@ -162,11 +161,59 @@ public:
             friend Ostream& operator<< <Type>
             (
                 Ostream& os,
-                const Function1<Type>& de
+                const Function1<Type>& func
             );
 
             //- Write in dictionary format
             virtual void writeData(Ostream& os) const;
+};
+
+
+/*---------------------------------------------------------------------------*\
+                        Class FieldFunction1 Declaration
+\*---------------------------------------------------------------------------*/
+
+template<class Function1Type>
+class FieldFunction1
+:
+    public Function1Type
+{
+
+public:
+
+    typedef typename Function1Type::returnType Type;
+
+
+    // Constructors
+
+        //- Construct from entry name and dictionary
+        FieldFunction1(const word& entryName, const dictionary& dict);
+
+        //- Construct and return a clone
+        virtual tmp<Function1<Type>> clone() const;
+
+
+    //- Destructor
+    virtual ~FieldFunction1()
+    {}
+
+
+    // Member Functions
+
+        // Evaluation
+
+            using Function1Type::value;
+            using Function1Type::integrate;
+
+            //- Return value as a function of (scalar) independent variable
+            virtual tmp<Field<Type>> value(const scalarField& x) const;
+
+            //- Integrate between two (scalar) values
+            virtual tmp<Field<Type>> integrate
+            (
+                const scalarField& x1,
+                const scalarField& x2
+            ) const;
 };
 
 
@@ -191,15 +238,23 @@ public:
                                                                                \
     defineNamedTemplateTypeNameAndDebug(Function1Types::SS<Type>, 0);          \
                                                                                \
-    Function1<Type>::adddictionaryConstructorToTable<Function1Types::SS<Type>> \
+    Function1<Type>::adddictionaryConstructorToTable                           \
+        <FieldFunction1<Function1Types::SS<Type>>>                             \
         add##SS##Type##ConstructorToTable_;
+
+
+#define makeScalarFunction1(SS)                                                \
+                                                                               \
+    defineTypeNameAndDebug(SS, 0);                                             \
+                                                                               \
+    Function1<scalar>::adddictionaryConstructorToTable<FieldFunction1<SS>>     \
+        add##SS##ConstructorToTable_;
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
     #include "Function1.C"
-    #include "Constant.H"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

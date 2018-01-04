@@ -54,7 +54,7 @@ Foam::label Foam::meshCutAndRemove::firstCommon
 {
     forAll(elems1, elemI)
     {
-        label index1 = findIndex(elems2, elems1[elemI]);
+        label index1 = elems2.find(elems1[elemI]);
 
         if (index1 != -1)
         {
@@ -72,7 +72,7 @@ bool Foam::meshCutAndRemove::isIn
     const labelList& cuts
 )
 {
-    label index = findIndex(cuts, twoCuts[0]);
+    label index = cuts.find(twoCuts[0]);
 
     if (index == -1)
     {
@@ -434,7 +434,7 @@ void Foam::meshCutAndRemove::splitFace
 ) const
 {
     // Check if we find any new vertex which is part of the splitEdge.
-    label startFp = findIndex(f, v0);
+    label startFp = f.find(v0);
 
     if (startFp == -1)
     {
@@ -444,7 +444,7 @@ void Foam::meshCutAndRemove::splitFace
             << abort(FatalError);
     }
 
-    label endFp = findIndex(f, v1);
+    label endFp = f.find(v1);
 
     if (endFp == -1)
     {
@@ -479,13 +479,13 @@ Foam::face Foam::meshCutAndRemove::addEdgeCutsToFace(const label facei) const
         // Check if edge has been cut.
         label fp1 = f.fcIndex(fp);
 
-        HashTable<label, edge, Hash<edge>>::const_iterator fnd =
+        EdgeMap<label>::const_iterator fnd =
             addedPoints_.find(edge(f[fp], f[fp1]));
 
-        if (fnd != addedPoints_.end())
+        if (fnd.found())
         {
             // edge has been cut. Introduce new vertex.
-            newFace[newFp++] = fnd();
+            newFace[newFp++] = fnd.object();
         }
     }
 
@@ -541,12 +541,12 @@ Foam::face Foam::meshCutAndRemove::loopToFace
                 if (edgeI != -1)
                 {
                     // Existing edge. Insert split-edge point if any.
-                    HashTable<label, edge, Hash<edge>>::const_iterator fnd =
+                    EdgeMap<label>::const_iterator fnd =
                         addedPoints_.find(mesh().edges()[edgeI]);
 
-                    if (fnd != addedPoints_.end())
+                    if (fnd.found())
                     {
-                        newFace[newFacei++] = fnd();
+                        newFace[newFacei++] = fnd.object();
                     }
                 }
             }
@@ -1302,23 +1302,16 @@ void Foam::meshCutAndRemove::updateMesh(const mapPolyMesh& map)
     }
 
     {
-        HashTable<label, edge, Hash<edge>> newAddedPoints(addedPoints_.size());
+        EdgeMap<label> newAddedPoints(addedPoints_.size());
 
-        for
-        (
-            HashTable<label, edge, Hash<edge>>::const_iterator iter =
-                addedPoints_.begin();
-            iter != addedPoints_.end();
-            ++iter
-        )
+        forAllConstIters(addedPoints_, iter)
         {
             const edge& e = iter.key();
+            const label addedPointi = iter.object();
 
             label newStart = map.reversePointMap()[e.start()];
 
             label newEnd = map.reversePointMap()[e.end()];
-
-            label addedPointi = iter();
 
             label newAddedPointi = map.reversePointMap()[addedPointi];
 

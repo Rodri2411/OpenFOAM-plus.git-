@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2016-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -25,6 +25,7 @@ License
 
 #include "MeshedSurface.H"
 #include "boundBox.H"
+#include "faceTraits.H"
 #include "Istream.H"
 #include "Ostream.H"
 
@@ -37,7 +38,7 @@ Foam::Istream& Foam::MeshedSurface<Face>::read(Istream& is)
         >> this->storedPoints()
         >> this->storedFaces();
 
-    is.check("MeshedSurface::read(Istream&)");
+    is.check(FUNCTION_NAME);
     return is;
 }
 
@@ -49,7 +50,7 @@ Foam::Ostream& Foam::MeshedSurface<Face>::write(Ostream& os) const
         << this->points()
         << this->surfFaces();
 
-    os.check("MeshedSurface::write(Ostream&) const");
+    os.check(FUNCTION_NAME);
     return os;
 }
 
@@ -58,31 +59,30 @@ template<class Face>
 void Foam::MeshedSurface<Face>::writeStats(Ostream& os) const
 {
     os  << "points      : " << this->points().size() << nl;
-    if (MeshedSurface<Face>::isTri())
+    if (faceTraits<Face>::isTri())
     {
         os << "triangles   : " << this->size() << nl;
     }
     else
     {
-        label nTri = 0;
-        label nQuad = 0;
-        forAll(*this, i)
+        label nTri = 0, nQuad = 0;
+        for (const Face& f : *this)
         {
-            const label n = this->operator[](i).size();
+            const label n = f.size();
 
             if (n == 3)
             {
-                nTri++;
+                ++nTri;
             }
             else if (n == 4)
             {
-                nQuad++;
+                ++nQuad;
             }
         }
 
         os  << "faces       : " << this->size()
             << "  (tri:" << nTri << " quad:" << nQuad
-            << " poly:" << (this->size() - nTri - nQuad ) << ")" << nl;
+            << " poly:" << (this->size() - nTri - nQuad) << ")" << nl;
     }
 
     os  << "boundingBox : " << boundBox(this->points()) << endl;

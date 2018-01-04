@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2012-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -46,7 +46,7 @@ SourceFiles
 #include "treeBoundBox.H"
 #include "mapDistribute.H"
 #include "volFieldsFwd.H"
-#include "NamedEnum.H"
+#include "Enum.H"
 #include "AMIPatchToPatchInterpolation.H"
 #include "pointList.H"
 
@@ -74,8 +74,7 @@ public:
             imCorrectedCellVolumeWeight
         };
 
-        static const NamedEnum<interpolationMethod, 4>
-            interpolationMethodNames_;
+        static const Enum<interpolationMethod> interpolationMethodNames_;
 
 private:
 
@@ -205,7 +204,7 @@ private:
         );
 
         //- Calculate - main driver function
-        void calculate(const word& methodName);
+        void calculate(const word& methodName, const bool normalise);
 
         //- Calculate patch overlap
         void calculatePatchAMIs(const word& amiMethodName);
@@ -224,7 +223,8 @@ private:
             const word& methodName,
             const word& AMIMethodName,
             const HashTable<word>& patchMap,
-            const wordList& cuttingPatches
+            const wordList& cuttingPatches,
+            const bool normalise
         );
 
         // Parallel operations
@@ -320,7 +320,8 @@ public:
         const polyMesh& tgt,
         const interpolationMethod& method,
         const HashTable<word>& patchMap,
-        const wordList& cuttingPatches
+        const wordList& cuttingPatches,
+        const bool normalise = true
     );
 
 
@@ -332,7 +333,8 @@ public:
         const word& methodName,     // internal mapping
         const word& AMIMethodName,  // boundary mapping
         const HashTable<word>& patchMap,
-        const wordList& cuttingPatches
+        const wordList& cuttingPatches,
+        const bool normalise = true
     );
 
 
@@ -381,6 +383,15 @@ public:
             //- Return the list of AMIs between source and target patches
             inline const PtrList<AMIPatchToPatchInterpolation>&
             patchAMIs() const;
+
+
+            // Explicit access. Can probably be done with combine operator.
+
+                //- Source map pointer - valid if no singleMeshProc
+                inline const autoPtr<mapDistribute>& srcMap() const;
+
+                //- Target map pointer - valid if no singleMeshProc
+                inline const autoPtr<mapDistribute>& tgtMap() const;
 
 
         // Evaluation

@@ -31,25 +31,17 @@ License
 
 // * * * * * * * * * * * * * Static Member Data  * * * * * * * * * * * * * * //
 
-namespace Foam
+const Foam::Enum
+<
+    Foam::temperatureCoupledBase::KMethodType
+>
+Foam::temperatureCoupledBase::KMethodTypeNames_
 {
-    template<>
-    const char* Foam::NamedEnum
-    <
-        Foam::temperatureCoupledBase::KMethodType,
-        4
-    >::names[] =
-    {
-        "fluidThermo",
-        "solidThermo",
-        "directionalSolidThermo",
-        "lookup"
-    };
-}
-
-
-const Foam::NamedEnum<Foam::temperatureCoupledBase::KMethodType, 4>
-    Foam::temperatureCoupledBase::KMethodTypeNames_;
+    { KMethodType::mtFluidThermo, "fluidThermo" },
+    { KMethodType::mtSolidThermo, "solidThermo" },
+    { KMethodType::mtDirectionalSolidThermo, "directionalSolidThermo" },
+    { KMethodType::mtLookup, "lookup" },
+};
 
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
@@ -76,9 +68,9 @@ Foam::temperatureCoupledBase::temperatureCoupledBase
 )
 :
     patch_(patch),
-    method_(KMethodTypeNames_.read(dict.lookup("kappaMethod"))),
+    method_(KMethodTypeNames_.lookup("kappaMethod", dict)),
     kappaName_(dict.lookupOrDefault<word>("kappa", "none")),
-    alphaAniName_(dict.lookupOrDefault<word>("alphaAni","Anialpha"))
+    alphaAniName_(dict.lookupOrDefault<word>("alphaAni","none"))
 {}
 
 
@@ -111,7 +103,7 @@ Foam::tmp<Foam::scalarField> Foam::temperatureCoupledBase::kappa
         {
             typedef compressible::turbulenceModel turbulenceModel;
 
-            word turbName(turbulenceModel::propertiesName);
+            const word turbName(turbulenceModel::propertiesName);
 
             if
             (
@@ -205,8 +197,8 @@ Foam::tmp<Foam::scalarField> Foam::temperatureCoupledBase::kappa
                     << " on mesh " << mesh.name() << " patch " << patch_.name()
                     << nl
                     << "Please set 'kappaMethod' to one of "
-                    << KMethodTypeNames_.toc()
-                    << " and 'kappa' to the name of the volScalar"
+                    << flatOutput(KMethodTypeNames_.sortedToc()) << nl
+                    << "and 'kappa' to the name of the volScalar"
                     << " or volSymmTensor field (if kappaMethod=lookup)"
                     << exit(FatalError);
             }
@@ -219,8 +211,8 @@ Foam::tmp<Foam::scalarField> Foam::temperatureCoupledBase::kappa
             FatalErrorInFunction
                 << "Unimplemented method " << KMethodTypeNames_[method_] << nl
                 << "Please set 'kappaMethod' to one of "
-                << KMethodTypeNames_.toc()
-                << " and 'kappa' to the name of the volScalar"
+                << flatOutput(KMethodTypeNames_.sortedToc()) << nl
+                << "and 'kappa' to the name of the volScalar"
                 << " or volSymmTensor field (if kappaMethod=lookup)"
                 << exit(FatalError);
         }
@@ -232,10 +224,9 @@ Foam::tmp<Foam::scalarField> Foam::temperatureCoupledBase::kappa
 
 void Foam::temperatureCoupledBase::write(Ostream& os) const
 {
-    os.writeKeyword("kappaMethod") << KMethodTypeNames_[method_]
-        << token::END_STATEMENT << nl;
-    os.writeKeyword("kappa") << kappaName_ << token::END_STATEMENT << nl;
-    os.writeKeyword("alphaAni") << alphaAniName_ << token::END_STATEMENT << nl;
+    os.writeEntry("kappaMethod", KMethodTypeNames_[method_]);
+    os.writeEntry("kappa", kappaName_);
+    os.writeEntry("alphaAni", alphaAniName_);
 }
 
 

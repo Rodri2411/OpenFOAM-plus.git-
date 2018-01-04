@@ -21,10 +21,10 @@ solvers
     {
         nAlphaCorr      4;
         nAlphaSubCycles 4;
-        cAlpha          2;
+        cAlpha          1;
     }
 
-    pcorr
+    "pcorr.*"
     {
         solver          PCG;
         preconditioner  DIC;
@@ -48,11 +48,11 @@ solvers
         relTol          0;
     }
 
-    U
+    "(U|T).*"
     {
         solver          smoothSolver;
         smoother        symGaussSeidel;
-        tolerance       1e-06;
+        tolerance       1e-08;
         relTol          0;
     }
 }
@@ -71,7 +71,7 @@ relaxationFactors
 {
     equations
     {
-        "U.*"           1;
+        ".*"           1;
     }
 }
 

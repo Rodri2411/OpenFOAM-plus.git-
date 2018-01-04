@@ -51,7 +51,7 @@ namespace functionObjects
 {
 
 /*---------------------------------------------------------------------------*\
-                     Class functionObjectFile Declaration
+                          Class writeFile Declaration
 \*---------------------------------------------------------------------------*/
 
 class writeFile
@@ -78,6 +78,9 @@ protected:
 
         //- Flag to enable/disable writing to file
         bool writeToFile_;
+
+        //- Flag to identify whether the header has been written
+        bool writtenHeader_;
 
 
     // Protected Member Functions
@@ -170,6 +173,9 @@ public:
 
         //- Write the current time to stream
         virtual void writeTime(Ostream& os) const;
+
+        //- Write a break marker to the stream
+        virtual void writeBreak(Ostream& os) const;
 
         //- Write a (commented) header property and value pair
         template<class Type>

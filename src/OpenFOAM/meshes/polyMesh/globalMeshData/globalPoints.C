@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -138,20 +138,18 @@ void Foam::globalPoints::addToSend
     // information is the patch faces using the point and the relative position
     // of the point in the face)
 
-    label meshPointi = pp.meshPoints()[patchPointi];
+    const label meshPointi = pp.meshPoints()[patchPointi];
 
     // Add all faces using the point so we are sure we find it on the
     // other side.
     const labelList& pFaces = pp.pointFaces()[patchPointi];
 
-    forAll(pFaces, i)
+    for (const label patchFacei : pFaces)
     {
-        label patchFacei = pFaces[i];
-
         const face& f = pp[patchFacei];
 
         patchFaces.append(patchFacei);
-        indexInFace.append(findIndex(f, meshPointi));
+        indexInFace.append(f.find(meshPointi));
 
         // Add patch transformation
         allInfo.append(addSendTransform(pp.index(), knownInfo));
@@ -901,8 +899,8 @@ void Foam::globalPoints::calculateSharedPoints
         PstreamBuffers pBufs
         (
             (
-                Pstream::defaultCommsType == Pstream::scheduled
-              ? Pstream::nonBlocking
+                Pstream::defaultCommsType == Pstream::commsTypes::scheduled
+              ? Pstream::commsTypes::nonBlocking
               : Pstream::defaultCommsType
             )
         );
@@ -939,8 +937,8 @@ void Foam::globalPoints::calculateSharedPoints
         PstreamBuffers pBufs
         (
             (
-                Pstream::defaultCommsType == Pstream::scheduled
-              ? Pstream::nonBlocking
+                Pstream::defaultCommsType == Pstream::commsTypes::scheduled
+              ? Pstream::commsTypes::nonBlocking
               : Pstream::defaultCommsType
             )
         );

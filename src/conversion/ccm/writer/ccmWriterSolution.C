@@ -26,7 +26,7 @@ License
 #include "ccmWriter.H"
 #include "dictionary.H"
 #include "IFstream.H"
-#include "IStringStream.H"
+#include "StringStream.H"
 #include "volFields.H"
 #include "surfaceFields.H"
 #include "ccmInternal.H"  // include last to avoid any strange interactions
@@ -253,8 +253,8 @@ void Foam::ccm::writer::writeSolution
             processorNode,
             topoFileName.c_str(), &verticesNode,// verticesFile, verticesNode
             topoFileName.c_str(), &topoNode,    // topologyFile, topologyNode
-            nullptr, nullptr,                   // initialField unchanged
-            nullptr, nullptr                    // no solutionFile, solution unchanged
+            nullptr, nullptr,   // initialField unchanged
+            nullptr, nullptr    // no solutionFile, solution unchanged
         );
     }
     assertNoError("Error after writing geometry processor");
@@ -462,8 +462,6 @@ void Foam::ccm::writer::writeSolution
         "Phase_0001",
         &phaseNode
     );
-
-
 
     forAllConstIter(IOobjectList, objects, iter)
     {

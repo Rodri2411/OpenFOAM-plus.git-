@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2015 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2016-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -29,8 +29,7 @@ License
 #include "fvPatchFieldMapper.H"
 #include "momentOfInertia.H"
 #include "cartesianCS.H"
-#include "IFstream.H"
-#include "OFstream.H"
+#include "Fstream.H"
 #include "globalIndex.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
@@ -109,16 +108,29 @@ void Foam::turbulentDFSEMInletFvPatchVectorField::writeLumleyCoeffs() const
     {
         fileName valsFile
         (
-            this->db().time().caseConstant()
-           /"boundaryData"
-           /this->patch().name()
-           /"0"
-           /"R"
+            fileHandler().filePath
+            (
+                fileName
+                (
+                    db().time().path()
+                   /db().time().caseConstant()
+                   /"boundaryData"
+                   /this->patch().name()
+                   /"0"
+                   /"R"
+                )
+            )
         );
 
-        IFstream is(valsFile);
+        autoPtr<ISstream> isPtr
+        (
+            fileHandler().NewIFstream
+            (
+                valsFile
+            )
+        );
 
-        Field<symmTensor> Rexp(is);
+        Field<symmTensor> Rexp(isPtr());
 
         OFstream os(db().time().path()/"lumley_input.out");
 
@@ -311,6 +323,7 @@ void Foam::turbulentDFSEMInletFvPatchVectorField::initialisePatch()
 
     // Determine if all eddies spawned from a single processor
     singleProc_ = patch.size() == returnReduce(patch.size(), sumOp<label>());
+    reduce(singleProc_, orOp<bool>());
 }
 
 
@@ -591,7 +604,7 @@ Foam::vector Foam::turbulentDFSEMInletFvPatchVectorField::uDashEddy
 
 void Foam::turbulentDFSEMInletFvPatchVectorField::calcOverlappingProcEddies
 (
-    List<List<eddy> >& overlappingEddies
+    List<List<eddy>>& overlappingEddies
 ) const
 {
     int oldTag = UPstream::msgType();
@@ -603,7 +616,7 @@ void Foam::turbulentDFSEMInletFvPatchVectorField::calcOverlappingProcEddies
     Pstream::scatterList(patchBBs);
 
     // Per processor indices into all segments to send
-    List<DynamicList<label> > dynSendMap(Pstream::nProcs());
+    List<DynamicList<label>> dynSendMap(Pstream::nProcs());
 
     forAll(eddies_, i)
     {
@@ -672,7 +685,7 @@ void Foam::turbulentDFSEMInletFvPatchVectorField::calcOverlappingProcEddies
 
     mapDistribute map(segmentI, sendMap.xfer(), constructMap.xfer());
 
-    PstreamBuffers pBufs(Pstream::nonBlocking);
+    PstreamBuffers pBufs(Pstream::commsTypes::nonBlocking);
 
     for (label domain = 0; domain < Pstream::nProcs(); domain++)
     {
@@ -745,7 +758,7 @@ turbulentDFSEMInletFvPatchVectorField
     nCellPerEddy_(5),
     patchNormal_(vector::zero),
     v0_(0),
-    rndGen_(0, -1),
+    rndGen_(Pstream::myProcNo()),
     sigmax_(size(), 0),
     maxSigmaX_(0),
     nEddy_(0),
@@ -1049,7 +1062,7 @@ void Foam::turbulentDFSEMInletFvPatchVectorField::updateCoeffs()
             }
 
             // Add contributions from overlapping eddies
-            List<List<eddy> > overlappingEddies(Pstream::nProcs());
+            List<List<eddy>> overlappingEddies(Pstream::nProcs());
             calcOverlappingProcEddies(overlappingEddies);
 
             forAll(overlappingEddies, procI)
@@ -1103,12 +1116,12 @@ void Foam::turbulentDFSEMInletFvPatchVectorField::write(Ostream& os) const
 {
     fvPatchField<vector>::write(os);
     writeEntry("value", os);
-    os.writeKeyword("delta") << delta_ << token::END_STATEMENT << nl;
-    writeEntryIfDifferent<scalar>(os, "d", 1.0, d_);
-    writeEntryIfDifferent<scalar>(os, "kappa", 0.41, kappa_);
-    writeEntryIfDifferent<scalar>(os, "perturb", 1e-5, perturb_);
-    writeEntryIfDifferent<label>(os, "nCellPerEddy", 5, nCellPerEddy_);
-    writeEntryIfDifferent(os, "writeEddies", false, writeEddies_);
+    os.writeEntry("delta", delta_);
+    os.writeEntryIfDifferent<scalar>("d", 1.0, d_);
+    os.writeEntryIfDifferent<scalar>("kappa", 0.41, kappa_);
+    os.writeEntryIfDifferent<scalar>("perturb", 1e-5, perturb_);
+    os.writeEntryIfDifferent<label>("nCellPerEddy", 5, nCellPerEddy_);
+    os.writeEntryIfDifferent("writeEddies", false, writeEddies_);
 
     if (!interpolateR_)
     {
@@ -1125,14 +1138,14 @@ void Foam::turbulentDFSEMInletFvPatchVectorField::write(Ostream& os) const
         U_.writeEntry("U", os);
     }
 
-    if
-    (
-       !mapMethod_.empty()
-     && mapMethod_ != "planarInterpolation"
-    )
+    if (!mapMethod_.empty())
     {
-        os.writeKeyword("mapMethod") << mapMethod_
-            << token::END_STATEMENT << nl;
+        os.writeEntryIfDifferent<word>
+        (
+            "mapMethod",
+            "planarInterpolation",
+            mapMethod_
+        );
     }
 }
 

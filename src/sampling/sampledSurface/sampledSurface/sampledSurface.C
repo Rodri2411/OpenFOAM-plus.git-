@@ -61,15 +61,14 @@ Foam::autoPtr<Foam::sampledSurface> Foam::sampledSurface::New
         Info<< "Selecting sampledType " << sampleType << endl;
     }
 
-    wordConstructorTable::iterator cstrIter =
-        wordConstructorTablePtr_->find(sampleType);
+    auto cstrIter = wordConstructorTablePtr_->cfind(sampleType);
 
-    if (cstrIter == wordConstructorTablePtr_->end())
+    if (!cstrIter.found())
     {
         FatalErrorInFunction
             << "Unknown sample type "
             << sampleType << nl << nl
-            << "Valid sample types : " << endl
+            << "Valid sample types :" << endl
             << wordConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
@@ -244,7 +243,7 @@ void Foam::sampledSurface::print(Ostream& os) const
 Foam::Ostream& Foam::operator<<(Ostream &os, const sampledSurface& s)
 {
     s.print(os);
-    os.check("Ostream& operator<<(Ostream&, const sampledSurface&");
+    os.check(FUNCTION_NAME);
     return os;
 }
 

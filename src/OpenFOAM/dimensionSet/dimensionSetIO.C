@@ -49,7 +49,7 @@ Foam::dimensionSet::tokeniser::tokeniser(Istream& is)
 
 void Foam::dimensionSet::tokeniser::push(const token& t)
 {
-    label end = (start_+size_)%tokens_.size();
+    const label end = (start_+size_)%tokens_.size();
     tokens_[end] = t;
     if (size_ == tokens_.size())
     {
@@ -140,10 +140,10 @@ void Foam::dimensionSet::tokeniser::splitWord(const word& w)
         {
             if (i > start)
             {
-                word subWord = w(start, i-start);
+                const word subWord = w.substr(start, i-start);
                 if (isdigit(subWord[0]) || subWord[0] == token::SUBTRACT)
                 {
-                    push(token(readScalar(IStringStream(subWord)())));
+                    push(token(readScalar(subWord)));
                 }
                 else
                 {
@@ -154,11 +154,13 @@ void Foam::dimensionSet::tokeniser::splitWord(const word& w)
             {
                 if (isdigit(w[i]))
                 {
-                    push(token(readScalar(IStringStream(w[i])())));
+                    // Single digit: as scalar value
+                    const scalar val = (w[i] - '0');
+                    push(token(val));
                 }
                 else
                 {
-                    push(token::punctuationToken(w[i]));
+                    push(token(token::punctuationToken(w[i])));
                 }
             }
             start = i+1;
@@ -166,10 +168,10 @@ void Foam::dimensionSet::tokeniser::splitWord(const word& w)
     }
     if (start < w.size())
     {
-        word subWord = w(start, w.size()-start);
+        const word subWord = w.substr(start);
         if (isdigit(subWord[0]) || subWord[0] == token::SUBTRACT)
         {
-            push(token(readScalar(IStringStream(subWord)())));
+            push(token(readScalar(subWord)));
         }
         else
         {
@@ -442,9 +444,9 @@ Foam::Istream& Foam::dimensionSet::read
     {
         // Read first five dimensions
         exponents_[dimensionSet::MASS] = nextToken.number();
-        for (int Dimension=1; Dimension<dimensionSet::CURRENT; Dimension++)
+        for (int d=1; d<dimensionSet::CURRENT; ++d)
         {
-            is >> exponents_[Dimension];
+            is >> exponents_[d];
         }
 
         // Read next token
@@ -477,9 +479,8 @@ Foam::Istream& Foam::dimensionSet::read
                 << exit(FatalIOError);
         }
     }
-    // Check state of Istream
-    is.check("Istream& operator>>(Istream&, dimensionSet&)");
 
+    is.check(FUNCTION_NAME);
     return is;
 }
 
@@ -525,9 +526,9 @@ Foam::Istream& Foam::dimensionSet::read
         do
         {
             word symbolPow = nextToken.wordToken();
-            if (symbolPow[symbolPow.size()-1] == token::END_SQR)
+            if (symbolPow.back() == token::END_SQR)
             {
-                symbolPow = symbolPow(0, symbolPow.size()-1);
+                symbolPow.resize(symbolPow.size()-1);
                 continueParsing = false;
             }
 
@@ -538,9 +539,9 @@ Foam::Istream& Foam::dimensionSet::read
             size_t index = symbolPow.find('^');
             if (index != string::npos)
             {
-                word symbol = symbolPow(0, index);
-                word exp = symbolPow(index+1, symbolPow.size()-index+1);
-                scalar exponent = readScalar(IStringStream(exp)());
+                const word symbol = symbolPow.substr(0, index);
+                const word exp = symbolPow.substr(index+1);
+                scalar exponent = readScalar(exp);
 
                 dimensionedScalar s;
                 s.read(readSet[symbol], readSet);
@@ -581,9 +582,9 @@ Foam::Istream& Foam::dimensionSet::read
     {
         // Read first five dimensions
         exponents_[dimensionSet::MASS] = nextToken.number();
-        for (int Dimension=1; Dimension<dimensionSet::CURRENT; Dimension++)
+        for (int d=1; d < dimensionSet::CURRENT; ++d)
         {
-            is >> exponents_[Dimension];
+            is >> exponents_[d];
         }
 
         // Read next token
@@ -617,9 +618,7 @@ Foam::Istream& Foam::dimensionSet::read
         }
     }
 
-    // Check state of Istream
-    is.check("Istream& operator>>(Istream&, dimensionSet&)");
-
+    is.check(FUNCTION_NAME);
     return is;
 }
 
@@ -682,18 +681,16 @@ Foam::Ostream& Foam::dimensionSet::write
     }
     else
     {
-        for (int d=0; d<dimensionSet::nDimensions-1; d++)
+        for (int d=0; d<dimensionSet::nDimensions; ++d)
         {
-            os << exponents_[d] << token::SPACE;
+            if (d) os << token::SPACE;
+            os << exponents_[d];
         }
-        os << exponents_[dimensionSet::nDimensions-1];
     }
 
     os  << token::END_SQR;
 
-    // Check state of Ostream
-    os.check("Ostream& operator<<(Ostream&, const dimensionSet&)");
-
+    os.check(FUNCTION_NAME);
     return os;
 }
 
@@ -722,9 +719,7 @@ Foam::Istream& Foam::operator>>(Istream& is, dimensionSet& dset)
             << exit(FatalIOError);
     }
 
-    // Check state of Istream
-    is.check("Istream& operator>>(Istream&, dimensionSet&)");
-
+    is.check(FUNCTION_NAME);
     return is;
 }
 
@@ -734,9 +729,7 @@ Foam::Ostream& Foam::operator<<(Ostream& os, const dimensionSet& dset)
     scalar multiplier;
     dset.write(os, multiplier);
 
-    // Check state of Ostream
-    os.check("Ostream& operator<<(Ostream&, const dimensionSet&)");
-
+    os.check(FUNCTION_NAME);
     return os;
 }
 

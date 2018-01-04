@@ -39,7 +39,7 @@ Foam::label Foam::ccm::writer::prostarCellFaceId
     const cellShape&  shape = mesh_.cellShapes()[cellId];
     const labelList& cFaces = mesh_.cells()[cellId];
 
-    label cellFaceId = findIndex(cFaces, faceI);
+    label cellFaceId = cFaces.find(faceI);
     label mapIndex = shape.model().index();
 
     if (ccm::debug > 1)
@@ -162,7 +162,8 @@ void Foam::ccm::writer::writeFaces
 
     if (ccm::debug)
     {
-        Info<<"CCMIOWriteFaces()  size:" << size << " streamSize:" << streamSize << endl;
+        Info<<"CCMIOWriteFaces()  size:" << size << " streamSize:"
+            << streamSize << endl;
     }
 
     CCMIOWriteFaces
@@ -567,9 +568,9 @@ void Foam::ccm::writer::writeCells
                     tableId = cellTable_.append(dict);
                 }
 
-                forAll(cZone, i)
+                for (auto id : cZone)
                 {
-                    mapData[cZone[i]] = tableId;
+                    mapData[id] = tableId;
                 }
             }
         }
@@ -582,11 +583,11 @@ void Foam::ccm::writer::writeCells
             dict.add("MaterialType", "fluid");
             label tableId = cellTable_.append(dict);
 
-            forAll(mapData, i)
+            for (auto& id : mapData)
             {
-                if (mapData[i] < 0)
+                if (id < 0)
                 {
-                    mapData[i] = tableId;
+                    id = tableId;
                 }
             }
         }

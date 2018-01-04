@@ -51,7 +51,6 @@ class faceSet
     public topoSet
 {
 
-
 public:
 
     //- Runtime type information
@@ -60,9 +59,8 @@ public:
 
     // Constructors
 
-
         //- Construct from IOobject
-        faceSet(const IOobject& obj);
+        explicit faceSet(const IOobject& obj);
 
         //- Construct from objectRegistry and name
         faceSet
@@ -78,7 +76,7 @@ public:
         (
             const polyMesh& mesh,
             const word& name,
-            const label,
+            const label size,
             writeOption w=NO_WRITE
         );
 
@@ -87,7 +85,7 @@ public:
         (
             const polyMesh& mesh,
             const word& name,
-            const topoSet&,
+            const topoSet& set,
             writeOption w=NO_WRITE
         );
 
@@ -96,7 +94,16 @@ public:
         (
             const polyMesh& mesh,
             const word& name,
-            const labelHashSet&,
+            const labelHashSet& set,
+            writeOption w=NO_WRITE
+        );
+
+        //- Construct from additional list of labels for the labelHashSet
+        faceSet
+        (
+            const polyMesh& mesh,
+            const word& name,
+            const labelUList& set,
             writeOption w=NO_WRITE
         );
 

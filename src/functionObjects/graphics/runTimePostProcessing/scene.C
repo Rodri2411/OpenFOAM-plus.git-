@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2015 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2015-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -131,6 +131,21 @@ void Foam::functionObjects::runTimePostPro::scene::readColours
 }
 
 
+void Foam::functionObjects::runTimePostPro::scene::setActorVisibility
+(
+    vtkRenderer* renderer,
+    const bool visible
+) const
+{
+    vtkActorCollection *actors = renderer->GetActors();
+    for (int i = 0; i < actors->GetNumberOfItems(); ++i)
+    {
+        vtkActor *actor = vtkActor::SafeDownCast(actors->GetItemAsObject(i));
+        actor->SetVisibility(visible);
+    }
+}
+
+
 void Foam::functionObjects::runTimePostPro::scene::initialise
 (
     vtkRenderer* renderer,
@@ -171,20 +186,19 @@ void Foam::functionObjects::runTimePostPro::scene::initialise
     renderer->SetOcclusionRatio(0);
 
     // Set the camera
-    vtkSmartPointer<vtkCamera> camera = vtkSmartPointer<vtkCamera>::New();
+    auto camera = vtkSmartPointer<vtkCamera>::New();
     camera->SetParallelProjection(parallelProjection_);
     renderer->SetActiveCamera(camera);
 
     // Add the lights
-    vtkSmartPointer<vtkLightKit> lightKit = vtkSmartPointer<vtkLightKit>::New();
+    auto lightKit = vtkSmartPointer<vtkLightKit>::New();
     lightKit->AddLightsToRenderer(renderer);
 
-    if (clipBox_ != boundBox::greatBox)
+    if (!clipBox_.empty())
     {
         const point& min = clipBox_.min();
         const point& max = clipBox_.max();
-        vtkSmartPointer<vtkCubeSource> clipBox =
-            vtkSmartPointer<vtkCubeSource>::New();
+        auto clipBox = vtkSmartPointer<vtkCubeSource>::New();
         clipBox->SetXLength(max.x() - min.x());
         clipBox->SetYLength(max.y() - min.y());
         clipBox->SetZLength(max.z() - min.z());
@@ -194,8 +208,7 @@ void Foam::functionObjects::runTimePostPro::scene::initialise
             min.y() + 0.5*(max.y() - min.y()),
             min.z() + 0.5*(max.z() - min.z())
         );
-        vtkSmartPointer<vtkPolyDataMapper> clipMapper =
-            vtkSmartPointer<vtkPolyDataMapper>::New();
+        auto clipMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
         clipMapper->SetInputConnection(clipBox->GetOutputPort());
 
         clipBoxActor_ = vtkSmartPointer<vtkActor>::New();
@@ -237,11 +250,15 @@ void Foam::functionObjects::runTimePostPro::scene::setCamera
     // Apply clipping if required
     // Note: possible optimisation - if the camera is static, this only needs
     //       to be done once on initialisation
-    if (clipBox_ != boundBox::greatBox)
+    if (!clipBox_.empty())
     {
-        // Call ResetCamera() to fit clip box in view
+        setActorVisibility(renderer, false);
         clipBoxActor_->VisibilityOn();
+
+        // Call ResetCamera() to fit clip box in view
         renderer->ResetCamera();
+
+        setActorVisibility(renderer, true);
         clipBoxActor_->VisibilityOff();
     }
 
@@ -278,7 +295,7 @@ Foam::functionObjects::runTimePostPro::scene::scene
     cameraUp_(nullptr),
     cameraViewAngle_(nullptr),
     cameraZoom_(nullptr),
-    clipBox_(boundBox::greatBox),
+    clipBox_(boundBox::invertedBox),
     clipBoxActor_(),
     parallelProjection_(true),
     nFrameTotal_(1),
@@ -382,8 +399,7 @@ void Foam::functionObjects::runTimePostPro::scene::saveImage
     renderWindow->Render();
 
     // Set up off-screen rendering
-    vtkSmartPointer<vtkWindowToImageFilter> windowToImageFilter =
-        vtkSmartPointer<vtkWindowToImageFilter>::New();
+    auto windowToImageFilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
 
     windowToImageFilter->SetInput(renderWindow);
 
@@ -395,7 +411,7 @@ void Foam::functionObjects::runTimePostPro::scene::saveImage
     windowToImageFilter->Update();
 
     // Save the image
-    vtkSmartPointer<vtkPNGWriter> writer = vtkSmartPointer<vtkPNGWriter>::New();
+    auto writer = vtkSmartPointer<vtkPNGWriter>::New();
     fileName fName(prefix/outputName_ + '.' + frameIndexStr() + ".png");
     writer->SetFileName(fName.c_str());
     writer->SetInputConnection(windowToImageFilter->GetOutputPort());

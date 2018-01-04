@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
@@ -40,6 +40,7 @@ License
 #include "syncTools.H"
 #include "CompactListList.H"
 #include "fvMeshTools.H"
+#include "labelPairHashes.H"
 #include "ListOps.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
@@ -655,7 +656,7 @@ Foam::autoPtr<Foam::mapPolyMesh> Foam::fvMeshDistribute::repatch
 
     if (debug)
     {
-        label index = findIndex(map().reverseFaceMap(), -1);
+        label index = map().reverseFaceMap().find(-1);
 
         if (index != -1)
         {
@@ -788,7 +789,7 @@ void Foam::fvMeshDistribute::getNeighbourData
 
             // Which processor they will end up on
             SubList<label>(nbrNewNbrProc, pp.size(), offset) =
-                UIndirectList<label>(distribution, pp.faceCells())();
+                labelUIndList(distribution, pp.faceCells())();
         }
     }
 
@@ -982,7 +983,7 @@ void Foam::fvMeshDistribute::findCouples
 {
     // Store domain neighbour as map so we can easily look for pair
     // with same face+proc.
-    HashTable<label, labelPair, labelPair::Hash<>> map(domainFace.size());
+    labelPairLookup map(domainFace.size());
 
     forAll(domainProc, bFacei)
     {
@@ -1009,8 +1010,7 @@ void Foam::fvMeshDistribute::findCouples
         {
             labelPair myData(sourceFace[bFacei], sourceProc[bFacei]);
 
-            HashTable<label, labelPair, labelPair::Hash<>>::const_iterator
-                iter = map.find(myData);
+            labelPairLookup::const_iterator iter = map.find(myData);
 
             if (iter != map.end())
             {
@@ -1413,7 +1413,7 @@ void Foam::fvMeshDistribute::sendMesh
     //
     //    forAll(cellZones, zoneI)
     //    {
-    //        UIndirectList<label>(cellZoneID, cellZones[zoneI]) = zoneI;
+    //        labelUIndList(cellZoneID, cellZones[zoneI]) = zoneI;
     //    }
     //}
 
@@ -1870,7 +1870,7 @@ Foam::autoPtr<Foam::mapDistributePolyMesh> Foam::fvMeshDistribute::distribute
 
 
     // Allocate buffers
-    PstreamBuffers pBufs(Pstream::nonBlocking);
+    PstreamBuffers pBufs(Pstream::commsTypes::nonBlocking);
 
 
     // What to send to neighbouring domains
@@ -1899,7 +1899,7 @@ Foam::autoPtr<Foam::mapDistributePolyMesh> Foam::fvMeshDistribute::distribute
             }
 
             // Pstream for sending mesh and fields
-            //OPstream str(Pstream::blocking, recvProc);
+            //OPstream str(Pstream::commsTypes::blocking, recvProc);
             UOPstream str(recvProc, pBufs);
 
             // Mesh subsetting engine

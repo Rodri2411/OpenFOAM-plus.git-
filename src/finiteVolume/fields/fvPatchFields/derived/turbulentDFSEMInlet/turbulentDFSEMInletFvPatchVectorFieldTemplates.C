@@ -30,7 +30,7 @@ License
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 template<class Type>
-Foam::tmp<Foam::Field<Type> >
+Foam::tmp<Foam::Field<Type>>
 Foam::turbulentDFSEMInletFvPatchVectorField::interpolateOrRead
 (
     const word& fieldName,
@@ -40,7 +40,7 @@ Foam::turbulentDFSEMInletFvPatchVectorField::interpolateOrRead
 {
     if (dict.found(fieldName))
     {
-        tmp<Field<Type> > tFld
+        tmp<Field<Type>> tFld
         (
             new Field<Type>
             (
@@ -62,7 +62,7 @@ Foam::turbulentDFSEMInletFvPatchVectorField::interpolateOrRead
 
 
 template<class Type>
-Foam::tmp<Foam::Field<Type> >
+Foam::tmp<Foam::Field<Type>>
 Foam::turbulentDFSEMInletFvPatchVectorField::interpolateBoundaryData
 (
     const word& fieldName
@@ -72,16 +72,29 @@ Foam::turbulentDFSEMInletFvPatchVectorField::interpolateBoundaryData
 
     fileName valsFile
     (
-        this->db().time().path()
-       /this->db().time().caseConstant()
-       /"boundaryData"
-       /patchName
-       /"0"
-       /fieldName
+        fileHandler().filePath
+        (
+            fileName
+            (
+                this->db().time().path()
+               /this->db().time().caseConstant()
+               /"boundaryData"
+               /patchName
+               /"0"
+               /fieldName
+            )
+        )
     );
 
-    IFstream is(valsFile);
-    Field<Type> vals(is);
+    autoPtr<ISstream> isPtr
+    (
+        fileHandler().NewIFstream
+        (
+            valsFile
+        )
+    );
+
+    Field<Type> vals(isPtr());
 
     Info<< "Turbulent DFSEM patch " << patchName
         << ": interpolating field " << fieldName

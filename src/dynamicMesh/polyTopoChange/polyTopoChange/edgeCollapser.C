@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -42,7 +42,7 @@ defineTypeNameAndDebug(edgeCollapser, 0);
 }
 
 
-Foam::HashSet<Foam::label> Foam::edgeCollapser::checkBadFaces
+Foam::labelHashSet Foam::edgeCollapser::checkBadFaces
 (
     const polyMesh& mesh,
     const dictionary& meshQualityDict
@@ -423,7 +423,7 @@ void Foam::edgeCollapser::faceCollapseAxisAndAspectRatio
 
     if (detJ < 1e-5)
     {
-        collapseAxis = f.edges()[longestEdge(f, pts)].vec(pts);
+        collapseAxis = f.edges()[f.longestEdge(pts)].vec(pts);
 
         // It is possible that all the points of a face are the same
         if (magSqr(collapseAxis) > VSMALL)
@@ -446,7 +446,7 @@ void Foam::edgeCollapser::faceCollapseAxisAndAspectRatio
             // Cannot necessarily determine linearly independent
             // eigenvectors, or any at all, use longest edge direction.
 
-            collapseAxis = f.edges()[longestEdge(f, pts)].vec(pts);
+            collapseAxis = f.edges()[f.longestEdge(pts)].vec(pts);
 
             collapseAxis /= mag(collapseAxis);
 
@@ -1138,9 +1138,9 @@ void Foam::edgeCollapser::filterFace
         // Do we have a local point for this index?
         if (collapseStrings.found(collapseIndex))
         {
-            label localPointi = collapseStrings[collapseIndex][0];
+            const label localPointi = collapseStrings[collapseIndex][0];
 
-            if (findIndex(SubList<label>(f, newFp), localPointi) == -1)
+            if (!SubList<label>(f, newFp).found(localPointi))
             {
                 f[newFp++] = localPointi;
             }
@@ -1176,7 +1176,7 @@ void Foam::edgeCollapser::filterFace
         label pointi = f[fp];
 
         // Search for previous occurrence.
-        label index = findIndex(SubList<label>(f, fp), pointi);
+        const label index = SubList<label>(f, fp).find(pointi);
 
         if (index == fp1)
         {

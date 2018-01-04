@@ -50,7 +50,7 @@ Foam::Distribution<Type>::Distribution(const Type& binWidth)
 template<class Type>
 Foam::Distribution<Type>::Distribution(const Distribution<Type>& d)
 :
-    List<List<scalar>>(static_cast<const List<List<scalar>>& >(d)),
+    List<List<scalar>>(static_cast<const List<List<scalar>>&>(d)),
     binWidth_(d.binWidth()),
     listStarts_(d.listStarts())
 {}
@@ -591,9 +591,7 @@ Foam::Istream& Foam::operator>>
         >> d.binWidth_
         >> d.listStarts_;
 
-    // Check state of Istream
-    is.check("Istream& operator>>(Istream&, Distribution<Type>&)");
-
+    is.check(FUNCTION_NAME);
     return is;
 }
 
@@ -605,13 +603,11 @@ Foam::Ostream& Foam::operator<<
     const Distribution<Type>& d
 )
 {
-    os  <<  static_cast<const List<List<scalar>>& >(d)
+    os  << static_cast<const List<List<scalar>>&>(d)
         << d.binWidth_ << token::SPACE
         << d.listStarts_;
 
-    // Check state of Ostream
-    os.check("Ostream& operator<<(Ostream&, " "const Distribution&)");
-
+    os.check(FUNCTION_NAME);
     return os;
 }
 

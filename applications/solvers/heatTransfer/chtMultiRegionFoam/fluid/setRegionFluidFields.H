@@ -32,4 +32,8 @@
         initialMassFluid[i]
     );
 
-    const bool frozenFlow = frozenFlowFluid[i];
+    bool frozenFlow = frozenFlowFluid[i];
+
+    const label pRefCell = pRefCellFluid[i];
+    const scalar pRefValue = pRefValueFluid[i];
+

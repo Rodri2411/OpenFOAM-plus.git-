@@ -33,10 +33,9 @@ Foam::autoPtr<Foam::surfaceReader> Foam::surfaceReader::New
     const fileName& fName
 )
 {
-    fileNameConstructorTable::iterator cstrIter =
-        fileNameConstructorTablePtr_->find(readerType);
+    auto cstrIter = fileNameConstructorTablePtr_->cfind(readerType);
 
-    if (cstrIter == fileNameConstructorTablePtr_->end())
+    if (!cstrIter.found())
     {
         FatalErrorInFunction
             << "Unknown reader type \"" << readerType << "\"\n\n"

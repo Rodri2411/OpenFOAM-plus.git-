@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2012-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2012-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -26,56 +26,47 @@ License
 #include "faceAreaWeightModel.H"
 #include "addToRunTimeSelectionTable.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 namespace Foam
 {
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
 defineTypeNameAndDebug(faceAreaWeightModel, 0);
 defineRunTimeSelectionTable(faceAreaWeightModel, dictionary);
-
+}
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-faceAreaWeightModel::faceAreaWeightModel
+Foam::faceAreaWeightModel::faceAreaWeightModel
 (
     const word& type,
     const dictionary& relaxationDict
 )
 :
     dictionary(relaxationDict),
-    coeffDict_(subDict(type + "Coeffs"))
+    coeffDict_(optionalSubDict(type + "Coeffs"))
 {}
 
 
 // * * * * * * * * * * * * * * * * * Selectors * * * * * * * * * * * * * * * //
 
-autoPtr<faceAreaWeightModel> faceAreaWeightModel::New
+Foam::autoPtr<Foam::faceAreaWeightModel> Foam::faceAreaWeightModel::New
 (
     const dictionary& relaxationDict
 )
 {
-    word faceAreaWeightModelTypeName
-    (
-        relaxationDict.lookup("faceAreaWeightModel")
-    );
+    const word modelType(relaxationDict.lookup("faceAreaWeightModel"));
 
-    Info<< nl << "Selecting faceAreaWeightModel "
-        << faceAreaWeightModelTypeName << endl;
+    Info<< nl << "Selecting faceAreaWeightModel " << modelType << endl;
 
-    dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(faceAreaWeightModelTypeName);
+    auto cstrIter = dictionaryConstructorTablePtr_->cfind(modelType);
 
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    if (!cstrIter.found())
     {
         FatalErrorInFunction
             << "Unknown faceAreaWeightModel type "
-            << faceAreaWeightModelTypeName
-            << endl << endl
-            << "Valid faceAreaWeightModel types are :" << endl
-            << dictionaryConstructorTablePtr_->toc()
+            << modelType << nl << nl
+            << "Valid faceAreaWeightModel types :" << endl
+            << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
 
@@ -85,12 +76,8 @@ autoPtr<faceAreaWeightModel> faceAreaWeightModel::New
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-faceAreaWeightModel::~faceAreaWeightModel()
+Foam::faceAreaWeightModel::~faceAreaWeightModel()
 {}
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

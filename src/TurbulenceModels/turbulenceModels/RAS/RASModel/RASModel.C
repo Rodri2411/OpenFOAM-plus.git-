@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2013-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2013-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -32,7 +32,7 @@ void Foam::RASModel<BasicTurbulenceModel>::printCoeffs(const word& type)
 {
     if (printCoeffs_)
     {
-        Info<< type << "Coeffs" << coeffDict_ << endl;
+        Info<< coeffDict_.dictName() << coeffDict_ << endl;
     }
 }
 
@@ -67,7 +67,7 @@ Foam::RASModel<BasicTurbulenceModel>::RASModel
     RASDict_(this->subOrEmptyDict("RAS")),
     turbulence_(RASDict_.lookup("turbulence")),
     printCoeffs_(RASDict_.lookupOrDefault<Switch>("printCoeffs", false)),
-    coeffDict_(RASDict_.subOrEmptyDict(type + "Coeffs")),
+    coeffDict_(RASDict_.optionalSubDict(type + "Coeffs")),
 
     kMin_
     (
@@ -143,10 +143,9 @@ Foam::RASModel<BasicTurbulenceModel>::New
 
     Info<< "Selecting RAS turbulence model " << modelType << endl;
 
-    typename dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(modelType);
+    auto cstrIter = dictionaryConstructorTablePtr_->cfind(modelType);
 
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    if (!cstrIter.found())
     {
         FatalErrorInFunction
             << "Unknown RASModel type "
@@ -173,10 +172,7 @@ bool Foam::RASModel<BasicTurbulenceModel>::read()
         RASDict_ <<= this->subDict("RAS");
         RASDict_.lookup("turbulence") >> turbulence_;
 
-        if (const dictionary* dictPtr = RASDict_.subDictPtr(type() + "Coeffs"))
-        {
-            coeffDict_ <<= *dictPtr;
-        }
+        coeffDict_ <<= RASDict_.optionalSubDict(type() + "Coeffs");
 
         kMin_.readIfPresent(RASDict_);
         epsilonMin_.readIfPresent(RASDict_);

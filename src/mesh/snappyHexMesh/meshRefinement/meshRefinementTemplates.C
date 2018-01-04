@@ -171,7 +171,7 @@ void Foam::meshRefinement::collectAndPrint
         points,
         allPoints,
         UPstream::msgType(),
-        Pstream::blocking
+        Pstream::commsTypes::blocking
     );
 
     List<T> allData;
@@ -182,7 +182,7 @@ void Foam::meshRefinement::collectAndPrint
         data,
         allData,
         UPstream::msgType(),
-        Pstream::blocking
+        Pstream::commsTypes::blocking
     );
 
 
@@ -252,21 +252,20 @@ void Foam::meshRefinement::reorderPatchFields
 }
 
 
-template<class Enum>
+template<class EnumContainer>
 int Foam::meshRefinement::readFlags
 (
-    const Enum& namedEnum,
+    const EnumContainer& namedEnum,
     const wordList& words
 )
 {
     int flags = 0;
 
-    forAll(words, i)
+    for (const word& w : words)
     {
-        int index = namedEnum[words[i]];
-        int val = 1<<index;
-        flags |= val;
+        flags |= namedEnum[w];
     }
+
     return flags;
 }
 

@@ -90,8 +90,8 @@ Foam::boundaryPatch::~boundaryPatch()
 void Foam::boundaryPatch::write(Ostream& os) const
 {
     patchIdentifier::write(os);
-    os.writeKeyword("nFaces") << size_ << token::END_STATEMENT << nl;
-    os.writeKeyword("startFace") << start_ << token::END_STATEMENT << nl;
+    os.writeEntry("nFaces", size_);
+    os.writeEntry("startFace", start_);
 }
 
 
@@ -100,7 +100,7 @@ void Foam::boundaryPatch::write(Ostream& os) const
 Foam::Ostream& Foam::operator<<(Ostream& os, const boundaryPatch& p)
 {
     p.write(os);
-    os.check("Ostream& operator<<(Ostream& f, const boundaryPatch&)");
+    os.check(FUNCTION_NAME);
     return os;
 }
 

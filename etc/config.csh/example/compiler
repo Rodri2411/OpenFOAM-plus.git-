@@ -3,23 +3,11 @@
 # \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
 #  \\    /   O peration     |
 #   \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-#    \\/     M anipulation  |
+#    \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 #------------------------------------------------------------------------------
 # License
-#     This file is part of OpenFOAM.
-#
-#     OpenFOAM is free software: you can redistribute it and/or modify it
-#     under the terms of the GNU General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
-#     (at your option) any later version.
-#
-#     OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
-#     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-#     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-#     for more details.
-#
-#     You should have received a copy of the GNU General Public License
-#     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
+#     This file is part of OpenFOAM, licensed under GNU General Public License
+#     <http://www.gnu.org/licenses/>.
 #
 # File
 #     config.csh/example/compiler
@@ -30,21 +18,16 @@
 #
 #------------------------------------------------------------------------------
 
-# Modified compiler settings
+# Load the standard versions
+eval `$WM_PROJECT_DIR/bin/foamEtcFile -csh -mode=o config.csh/compiler`
+
+# Modify/override compiler settings
 switch ("$WM_COMPILER")
-case Gcc46:
-case Gcc46++0x:
-    set gcc_version=gcc-4.6.0
-    set gmp_version=gmp-5.0.1
-    set mpfr_version=mpfr-2.4.2
-    set mpc_version=mpc-0.8.1
-    breaksw
-case Gcc45:
-case Gcc45++0x:
-    set gcc_version=gcc-4.5.2
-    set gmp_version=gmp-5.0.1
-    set mpfr_version=mpfr-2.4.2
-    set mpc_version=mpc-0.8.1
+case Gcc70:
+    set gcc_version=gcc-7.0.0
+    set gmp_version=gmp-6.1.2
+    set mpfr_version=mpfr-3.1.5
+    set mpc_version=mpc-1.0.3
     breaksw
 endsw
 

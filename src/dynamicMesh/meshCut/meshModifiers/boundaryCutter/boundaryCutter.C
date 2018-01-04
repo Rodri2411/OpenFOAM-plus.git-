@@ -657,8 +657,8 @@ void Foam::boundaryCutter::setRefinement
         // Split face from one side of diagonal to other.
         const labelPair& diag = iter();
 
-        label fp0 = findIndex(newFace, f[diag[0]]);
-        label fp1 = findIndex(newFace, f[diag[1]]);
+        label fp0 = newFace.find(f[diag[0]]);
+        label fp1 = newFace.find(f[diag[1]]);
 
         if (fp0 == -1 || fp1 == -1 || fp0 == fp1)
         {
@@ -869,16 +869,9 @@ void Foam::boundaryCutter::updateMesh(const mapPolyMesh& morphMap)
 
     {
         // Create copy since we're deleting entries
-        HashTable<labelList, edge, Hash<edge>>
-            newEdgeAddedPoints(edgeAddedPoints_.size());
+        EdgeMap<labelList> newEdgeAddedPoints(edgeAddedPoints_.size());
 
-        for
-        (
-            HashTable<labelList, edge, Hash<edge>>::const_iterator iter =
-                edgeAddedPoints_.begin();
-            iter != edgeAddedPoints_.end();
-            ++iter
-        )
+        forAllConstIters(edgeAddedPoints_, iter)
         {
             const edge& e = iter.key();
 
@@ -888,7 +881,7 @@ void Foam::boundaryCutter::updateMesh(const mapPolyMesh& morphMap)
 
             if (newStart >= 0 && newEnd >= 0)
             {
-                const labelList& addedPoints = iter();
+                const labelList& addedPoints = iter.object();
 
                 labelList newAddedPoints(addedPoints.size());
                 label newI = 0;

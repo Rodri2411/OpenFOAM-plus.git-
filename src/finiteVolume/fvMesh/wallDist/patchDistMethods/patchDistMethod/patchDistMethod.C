@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -56,19 +56,47 @@ Foam::autoPtr<Foam::patchDistMethod> Foam::patchDistMethod::New
     const labelHashSet& patchIDs
 )
 {
-    word patchDistMethodType(dict.lookup("method"));
+    const word methodType(dict.lookup("method"));
 
-    Info<< "Selecting patchDistMethod " << patchDistMethodType << endl;
+    Info<< "Selecting patchDistMethod " << methodType << endl;
 
-    dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(patchDistMethodType);
+    auto cstrIter = dictionaryConstructorTablePtr_->cfind(methodType);
 
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    if (!cstrIter.found())
+    {
+        FatalErrorInFunction
+            << "Unknown patchDistMethod type "
+            << methodType << endl << endl
+            << "Valid patchDistMethod types : " << nl
+            << dictionaryConstructorTablePtr_->sortedToc()
+            << exit(FatalError);
+    }
+
+    return cstrIter()(dict, mesh, patchIDs);
+}
+
+
+
+Foam::autoPtr<Foam::patchDistMethod> Foam::patchDistMethod::New
+(
+    const dictionary& dict,
+    const fvMesh& mesh,
+    const labelHashSet& patchIDs,
+    const word& defaultPatchDistMethod
+)
+{
+    word methodType = defaultPatchDistMethod;
+    dict.readIfPresent("method", methodType);
+
+    Info<< "Selecting patchDistMethod " << methodType << endl;
+    auto cstrIter = dictionaryConstructorTablePtr_->cfind(methodType);
+
+    if (!cstrIter.found())
     {
         FatalErrorInFunction
             << "Unknown patchDistMethodType type "
-            << patchDistMethodType << endl << endl
-            << "Valid patchDistMethod types are : " << endl
+            << methodType << endl << endl
+            << "Valid patchDistMethod types : " << endl
             << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }

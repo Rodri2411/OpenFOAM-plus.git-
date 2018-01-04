@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -41,7 +41,15 @@ namespace Foam
         simpleGeomDecomp,
         dictionary
     );
+
+    addToRunTimeSelectionTable
+    (
+        decompositionMethod,
+        simpleGeomDecomp,
+        dictionaryRegion
+    );
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -297,9 +305,19 @@ Foam::labelList Foam::simpleGeomDecomp::decomposeOneProc
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-Foam::simpleGeomDecomp::simpleGeomDecomp(const dictionary& decompositionDict)
+Foam::simpleGeomDecomp::simpleGeomDecomp(const dictionary& decompDict)
 :
-    geomDecomp(decompositionDict, typeName)
+    geomDecomp(typeName, decompDict)
+{}
+
+
+Foam::simpleGeomDecomp::simpleGeomDecomp
+(
+    const dictionary& decompDict,
+    const word& regionName
+)
+:
+    geomDecomp(typeName, decompDict, regionName)
 {}
 
 
@@ -331,7 +349,7 @@ Foam::labelList Foam::simpleGeomDecomp::decompose
             // Add slaves
             for (int slave=1; slave<Pstream::nProcs(); slave++)
             {
-                IPstream fromSlave(Pstream::scheduled, slave);
+                IPstream fromSlave(Pstream::commsTypes::scheduled, slave);
                 pointField nbrPoints(fromSlave);
                 SubField<point>
                 (
@@ -348,7 +366,7 @@ Foam::labelList Foam::simpleGeomDecomp::decompose
             // Send back
             for (int slave=1; slave<Pstream::nProcs(); slave++)
             {
-                OPstream toSlave(Pstream::scheduled, slave);
+                OPstream toSlave(Pstream::commsTypes::scheduled, slave);
                 toSlave << SubField<label>
                 (
                     finalDecomp,
@@ -365,12 +383,20 @@ Foam::labelList Foam::simpleGeomDecomp::decompose
         {
             // Send my points
             {
-                OPstream toMaster(Pstream::scheduled, Pstream::masterNo());
+                OPstream toMaster
+                (
+                    Pstream::commsTypes::scheduled,
+                    Pstream::masterNo()
+                );
                 toMaster<< points;
             }
 
             // Receive back decomposition
-            IPstream fromMaster(Pstream::scheduled, Pstream::masterNo());
+            IPstream fromMaster
+            (
+                Pstream::commsTypes::scheduled,
+                Pstream::masterNo()
+            );
             labelList finalDecomp(fromMaster);
 
             return finalDecomp;
@@ -408,7 +434,7 @@ Foam::labelList Foam::simpleGeomDecomp::decompose
             // Add slaves
             for (int slave=1; slave<Pstream::nProcs(); slave++)
             {
-                IPstream fromSlave(Pstream::scheduled, slave);
+                IPstream fromSlave(Pstream::commsTypes::scheduled, slave);
                 pointField nbrPoints(fromSlave);
                 scalarField nbrWeights(fromSlave);
                 SubField<point>
@@ -432,7 +458,7 @@ Foam::labelList Foam::simpleGeomDecomp::decompose
             // Send back
             for (int slave=1; slave<Pstream::nProcs(); slave++)
             {
-                OPstream toSlave(Pstream::scheduled, slave);
+                OPstream toSlave(Pstream::commsTypes::scheduled, slave);
                 toSlave << SubField<label>
                 (
                     finalDecomp,
@@ -449,12 +475,20 @@ Foam::labelList Foam::simpleGeomDecomp::decompose
         {
             // Send my points
             {
-                OPstream toMaster(Pstream::scheduled, Pstream::masterNo());
+                OPstream toMaster
+                (
+                    Pstream::commsTypes::scheduled,
+                    Pstream::masterNo()
+                );
                 toMaster<< points << weights;
             }
 
             // Receive back decomposition
-            IPstream fromMaster(Pstream::scheduled, Pstream::masterNo());
+            IPstream fromMaster
+            (
+                Pstream::commsTypes::scheduled,
+                Pstream::masterNo()
+            );
             labelList finalDecomp(fromMaster);
 
             return finalDecomp;

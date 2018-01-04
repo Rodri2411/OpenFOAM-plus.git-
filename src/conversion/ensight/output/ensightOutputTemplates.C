@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2016-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -63,7 +63,7 @@ void Foam::ensightOutput::writeFieldContent
 
                 for (int slave=1; slave<Pstream::nProcs(); ++slave)
                 {
-                    IPstream fromSlave(Pstream::scheduled, slave);
+                    IPstream fromSlave(Pstream::commsTypes::scheduled, slave);
                     scalarField received(fromSlave);
                     os.writeList(received);
                 }
@@ -75,7 +75,12 @@ void Foam::ensightOutput::writeFieldContent
             {
                 const label cmpt = ensightPTraits<Type>::componentOrder[d];
 
-                OPstream toMaster(Pstream::scheduled, Pstream::masterNo());
+                OPstream toMaster
+                (
+                    Pstream::commsTypes::scheduled,
+                    Pstream::masterNo()
+                );
+
                 toMaster
                     << fld.component(cmpt);
             }
@@ -166,8 +171,7 @@ bool Foam::ensightOutput::writeCellField
 (
     const Field<Type>& vf,
     const ensightCells& ensCells,
-    ensightFile& os,
-    const bool deprecatedOrder
+    ensightFile& os
 )
 {
     if (ensCells.total())
@@ -175,32 +179,6 @@ bool Foam::ensightOutput::writeCellField
         if (Pstream::master())
         {
             os.beginPart(ensCells.index());
-        }
-
-        if (deprecatedOrder)
-        {
-            // element ordering used in older versions
-            ensightCells::elemType oldOrder[5] =
-            {
-                ensightCells::HEXA8,
-                ensightCells::PENTA6,
-                ensightCells::PYRAMID5,
-                ensightCells::TETRA4,
-                ensightCells::NFACED
-            };
-
-            for (label typei=0; typei < ensightCells::nTypes; ++typei)
-            {
-                const ensightCells::elemType& what = oldOrder[typei];
-
-                writeFieldContent
-                (
-                    ensightCells::key(what),
-                    Field<Type>(vf, ensCells.cellIds(what)),
-                    os
-                );
-            }
-            return true;
         }
 
         for (label typei=0; typei < ensightCells::nTypes; ++typei)
@@ -243,7 +221,7 @@ bool Foam::ensightOutput::writeField
     //
     if (ensMesh.useInternalMesh())
     {
-        writeCellField(vf, meshCells, os, ensMesh.deprecatedOrder());
+        writeCellField(vf, meshCells, os);
     }
 
     //
@@ -254,7 +232,7 @@ bool Foam::ensightOutput::writeField
     forAll(patchIds, listi)
     {
         const label patchId   = patchIds[listi];
-        const word& patchName = patchLookup[listi];
+        const word& patchName = patchLookup[patchId];
         const ensightFaces& ensFaces = patchFaces[patchName];
 
         writeFaceField

@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2016-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -37,8 +37,9 @@ SourceFiles
 #define objectRegistry_H
 
 #include "HashTable.H"
+#include "HashSet.H"
 #include "regIOobject.H"
-#include "wordReList.H"
+#include "wordRes.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -74,6 +75,24 @@ class objectRegistry
         //- Is the objectRegistry parent_ different from time_
         //  Used to terminate searching within the ancestors
         bool parentNotTime() const;
+
+        //- Templated implementation for classes()
+        template<class UnaryMatchPredicate>
+        static HashTable<wordHashSet> classesImpl
+        (
+            const objectRegistry& list,
+            const UnaryMatchPredicate& matcher
+        );
+
+        //- Templated implementation for names()
+        template<class Type, class UnaryMatchPredicate>
+        static wordList namesImpl
+        (
+            const objectRegistry& list,
+            const UnaryMatchPredicate& matcher,
+            const bool doSort
+        );
+
 
         //- Disallow Copy constructor
         objectRegistry(const objectRegistry&) = delete;
@@ -133,46 +152,69 @@ public:
                 return dbDir_;
             }
 
+
+        // Summary of classes
+
+            //- A summary hash of classes used and their associated object names.
+            //  Behaviour and usage as per IOobjectList::classes
+            HashTable<wordHashSet> classes() const;
+
+            //- A summary hash of classes used and their associated object names
+            //  restricted to objects with names that satisfy the input matcher
+            HashTable<wordHashSet> classes(const wordRe& matcher) const;
+
+            //- A summary hash of classes used and their associated object names
+            //  restricted to objects with names that satisfy the input matcher
+            HashTable<wordHashSet> classes(const wordRes& matcher) const;
+
+
+        // Summary of names
+
             //- A list of names of the objects
             wordList names() const;
+
+            //- The names of objects with the given class name
+            wordList names(const word& clsName) const;
+
+            //- The names of objects with the given type
+            template<class Type>
+            wordList names() const;
+
+            //- The names of objects with the given type that also
+            //  have a name satisfying the input matcher
+            template<class Type>
+            wordList names(const wordRe& matcher) const;
+
+            //- The names of objects with the given type that also
+            //  have a name satisfying the input matcher
+            template<class Type>
+            wordList names(const wordRes& matcher) const;
+
+
+        // Summary of names (sorted)
 
             //- A sorted list of names of the objects
             wordList sortedNames() const;
 
-            //- A list of names of objects that have the given class name
-            wordList names(const word& className) const;
+            //- The sorted names of objects with the given class name
+            wordList sortedNames(const word& clsName) const;
 
-            //- A sorted list of names of objects that have the given class name
-            wordList sortedNames(const word& className) const;
-
-            //- A list of names of objects that have the given type
-            template<class Type>
-            wordList names() const;
-
-            //- A list of names of objects that have the given type,
-            //  and that also satisfy the input matcher
-            template<class Type>
-            wordList names(const wordRe&) const;
-
-            //- A list of names for objects that have the given type,
-            //  and that also satisfy the input matchers
-            template<class Type>
-            wordList names(const wordReList&) const;
-
-            //- A sorted list of names of objects that have the given type
+            //- The sorted names of objects with the given type
             template<class Type>
             wordList sortedNames() const;
 
-            //- A sorted list of names of objects that have the given type,
-            //  and that also satisfy the input matcher
+            //- The sorted names of objects with the given type that also
+            //  have a name satisfying the input matcher
             template<class Type>
-            wordList sortedNames(const wordRe&) const;
+            wordList sortedNames(const wordRe& matcher) const;
 
-            //- A sorted list of names of objects that have the given type,
-            //  and that also satisfy the input matchers
+            //- The sorted names of objects with the given type that also
+            //  have a name satisfying the input matcher
             template<class Type>
-            wordList sortedNames(const wordReList&) const;
+            wordList sortedNames(const wordRes& matcher) const;
 
+
+        // Lookup
 
             //- Lookup and return a const sub-objectRegistry.
             //  Optionally create it if it does not exist.
@@ -245,6 +287,8 @@ public:
             ) const;
 
 
+        // Events
+
             //- Return new event number.
             label getEvent() const;
 
@@ -255,10 +299,10 @@ public:
             virtual void rename(const word& newName);
 
             //- Add an regIOobject to registry
-            bool checkIn(regIOobject&) const;
+            bool checkIn(regIOobject& io) const;
 
             //- Remove an regIOobject from registry
-            bool checkOut(regIOobject&) const;
+            bool checkOut(regIOobject& io) const;
 
 
         // Reading
@@ -289,7 +333,8 @@ public:
             (
                 IOstream::streamFormat fmt,
                 IOstream::versionNumber ver,
-                IOstream::compressionType cmp
+                IOstream::compressionType cmp,
+                const bool valid
             ) const;
 };
 

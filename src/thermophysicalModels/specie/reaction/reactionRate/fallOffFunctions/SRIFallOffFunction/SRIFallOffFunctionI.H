@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -42,18 +42,6 @@ inline Foam::SRIFallOffFunction::SRIFallOffFunction
 {}
 
 
-inline Foam::SRIFallOffFunction::SRIFallOffFunction(Istream& is)
-:
-    a_(readScalar(is.readBegin("SRIFallOffFunction(Istream&)"))),
-    b_(readScalar(is)),
-    c_(readScalar(is)),
-    d_(readScalar(is)),
-    e_(readScalar(is))
-{
-    is.readEnd("SRIFallOffFunction(Istream&)");
-}
-
-
 inline Foam::SRIFallOffFunction::SRIFallOffFunction(const dictionary& dict)
 :
     a_(readScalar(dict.lookup("a"))),
@@ -79,11 +67,11 @@ inline Foam::scalar Foam::SRIFallOffFunction::operator()
 
 inline void Foam::SRIFallOffFunction::write(Ostream& os) const
 {
-    os.writeKeyword("a") << a_ << token::END_STATEMENT << nl;
-    os.writeKeyword("b") << b_ << token::END_STATEMENT << nl;
-    os.writeKeyword("c") << c_ << token::END_STATEMENT << nl;
-    os.writeKeyword("d") << d_ << token::END_STATEMENT << nl;
-    os.writeKeyword("e") << e_ << token::END_STATEMENT << nl;
+    os.writeEntry("a", a_);
+    os.writeEntry("b", b_);
+    os.writeEntry("c", c_);
+    os.writeEntry("d", d_);
+    os.writeEntry("e", e_);
 }
 
 
@@ -95,14 +83,7 @@ inline Foam::Ostream& Foam::operator<<
     const Foam::SRIFallOffFunction& srifof
 )
 {
-    os  << token::BEGIN_LIST
-        << srifof.a_
-        << token::SPACE << srifof.b_
-        << token::SPACE << srifof.c_
-        << token::SPACE << srifof.d_
-        << token::SPACE << srifof.e_
-        << token::END_LIST;
-
+    srifof.write(os);
     return os;
 }
 

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2016 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2016-2017 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -58,6 +58,13 @@ Description
 namespace Foam
 {
 
+// Forward declarations
+class Ostream;
+class CStringList;
+template<class String> class SubStrings;
+
+Ostream& operator<<(Ostream& os, const CStringList& list);
+
 /*---------------------------------------------------------------------------*\
                          Class CStringList Declaration
 \*---------------------------------------------------------------------------*/
@@ -73,7 +80,7 @@ class CStringList
         //  Does not include the final nul-character
         size_t len_;
 
-        //- List of strings, including trailing NULL pointer
+        //- List of strings, including trailing nullptr
         char** argv_;
 
         //- Flattened content with interspersed nul-characters
@@ -81,6 +88,19 @@ class CStringList
 
 
     // Private Member Functions
+
+        //- Copy string characters into dest as NUL-terminated string.
+        //  Forces conversion of std::sub_match to string form
+        //
+        //  \return the location one-past the end of dest, which is used
+        //      for the next destination
+        static inline char* stringCopy(char *dest, const std::string& str);
+
+        //- Copy the input list of strings.
+        //  \return number of arguments (argc)
+        template<class ListType>
+        int resetContent(const ListType& input);
+
 
         //- Disallow default bitwise copy construct
         CStringList(const CStringList&) = delete;
@@ -96,11 +116,15 @@ public:
         //- Construct empty, adding content later (via reset).
         inline CStringList();
 
-
-        //- Construct from a list of strings
+        //- Copy construct from a list of strings
         //  Copies the input characters.
         template<class StringType>
-        CStringList(const UList<StringType>& input);
+        inline explicit CStringList(const UList<StringType>& input);
+
+        //- Copy construct from a list of sub-string references
+        //  Copies the input characters.
+        template<class StringType>
+        inline explicit CStringList(const SubStrings<StringType>& input);
 
 
     //- Destructor
@@ -109,8 +133,8 @@ public:
 
     // Public Members
 
-        //- Count the number of parameters until the first NULL pointer.
-        //  Return 0 if argv is NULL.
+        //- Count the number of parameters until the first nullptr
+        //  Return 0 if argv is nullptr.
         static inline int count(const char * const argv[]);
 
 
@@ -120,16 +144,20 @@ public:
         inline int size() const;
 
         //- Return the list of C-strings (ie, argv)
-        //  The position at argc is a NULL pointer
+        //  The position at argc is a nullptr
         inline char** strings() const;
+
+        //- Return the sublist of C-strings (ie, argv) starting at the
+        //- specified offset.
+        //  \param start the offset, must be less than argc
+        inline char** strings(int start) const;
 
 
         //- Overall length of the flattened character (data) content
         inline size_t length() const;
 
         //- The flattened character content, with interspersed nul-chars
-        inline char* data() const;
-
+        inline const char* data() const;
 
     // Edit
 
@@ -137,8 +165,14 @@ public:
         inline void clear();
 
         //- Copy the input list of strings.
+        //  \return number of arguments (argc)
         template<class StringType>
-        void reset(const UList<StringType>& input);
+        inline int reset(const UList<StringType>& input);
+
+        //- Copy the input list of strings.
+        //  \return number of arguments (argc)
+        template<class StringType>
+        inline int reset(const SubStrings<StringType>& input);
 
 
     // Other
@@ -148,10 +182,21 @@ public:
         template<class StringType>
         static List<StringType> asList(int argc, const char * const argv[]);
 
-        //- Create a list from a NULL-terminated list of argv parameters.
-        //  A null pointer for argv is permissible.
+        //- Create a list from a nullptr-terminated list of argv parameters.
+        //  Using a nullptr for argv is permissible.
         template<class StringType>
         static inline List<StringType> asList(const char * const argv[]);
+
+
+    // Member operators
+
+        //- Return element at the given index. No bounds checking.
+        inline const char* operator[](int i) const;
+
+
+    // IOstream Operators
+
+        friend Ostream& operator<<(Ostream& os, const CStringList& list);
 
 };
 

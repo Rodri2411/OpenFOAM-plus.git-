@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2015-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -26,7 +26,7 @@ License
 #include "polyMeshGeometry.H"
 #include "polyMeshTetDecomposition.H"
 #include "pyramidPointFaceRef.H"
-#include "tetrahedron.H"
+#include "tetPointRef.H"
 #include "syncTools.H"
 #include "unitConversion.H"
 #include "primitiveMeshTools.H"
@@ -125,8 +125,7 @@ void Foam::polyMeshGeometry::updateCellCentresAndVols
         {
             const point& fc = faceCentres_[cFaces[cFaceI]];
             cEst += fc;
-            bb.max() = max(bb.max(), fc);
-            bb.min() = min(bb.min(), fc);
+            bb.add(fc);
         }
         cEst /= cFaces.size();
 

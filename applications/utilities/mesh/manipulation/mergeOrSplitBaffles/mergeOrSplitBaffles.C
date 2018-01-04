@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2016-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -35,11 +35,8 @@ Usage
     \b mergeOrSplitBaffles [OPTION]
 
     Options:
-      - \par -detect
+      - \par -detectOnly
         Detect baffles and write to faceSet duplicateFaces.
-
-      - \par -merge
-        Detect baffles and convert to internal faces.
 
       - \par -split
         Detect baffles and duplicate the points (used so the two sides
@@ -177,7 +174,7 @@ void insertDuplicateMerge
 label patchSize(const polyMesh& mesh, const labelList& patchIDs)
 {
     const polyBoundaryMesh& patches = mesh.boundaryMesh();
-   
+
     label sz = 0;
     forAll(patchIDs, i)
     {
@@ -191,7 +188,7 @@ label patchSize(const polyMesh& mesh, const labelList& patchIDs)
 labelList patchFaces(const polyMesh& mesh, const labelList& patchIDs)
 {
     const polyBoundaryMesh& patches = mesh.boundaryMesh();
-   
+
     labelList faceIDs(patchSize(mesh, patchIDs));
     label sz = 0;
     forAll(patchIDs, i)

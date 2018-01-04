@@ -39,10 +39,10 @@ void Foam::RBD::rigidBodyModelState::write(dictionary& dict) const
 
 void Foam::RBD::rigidBodyModelState::write(Ostream& os) const
 {
-    os.writeKeyword("q") << q_ << token::END_STATEMENT << nl;
-    os.writeKeyword("qDot") << qDot_ << token::END_STATEMENT << nl;
-    os.writeKeyword("qDdot") << qDdot_ << token::END_STATEMENT << nl;
-    os.writeKeyword("deltaT") << deltaT_ << token::END_STATEMENT << nl;
+    os.writeEntry("q", q_);
+    os.writeEntry("qDot", qDot_);
+    os.writeEntry("qDdot", qDdot_);
+    os.writeEntry("deltaT", deltaT_);
 }
 
 
@@ -59,13 +59,7 @@ Foam::Istream& Foam::RBD::operator>>
         >> state.qDdot_
         >> state.deltaT_;
 
-    // Check state of Istream
-    is.check
-    (
-        "Foam::Istream& Foam::operator>>"
-        "(Foam::Istream&, Foam::RBD::rigidBodyModelState&)"
-    );
-
+    is.check(FUNCTION_NAME);
     return is;
 }
 
@@ -81,13 +75,7 @@ Foam::Ostream& Foam::RBD::operator<<
         << token::SPACE << state.qDdot_
         << token::SPACE << state.deltaT_;
 
-    // Check state of Ostream
-    os.check
-    (
-        "Foam::Ostream& Foam::operator<<(Foam::Ostream&, "
-        "const Foam::RBD::rigidBodyModelState&)"
-    );
-
+    os.check(FUNCTION_NAME);
     return os;
 }
 

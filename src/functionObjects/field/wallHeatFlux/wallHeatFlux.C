@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2016-2017 OpenFOAM Foundation
      \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
@@ -24,6 +24,8 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "wallHeatFlux.H"
+#include "turbulentFluidThermoModel.H"
+#include "solidThermo.H"
 #include "surfaceInterpolate.H"
 #include "fvcSnGrad.H"
 #include "wallPolyPatch.H"
@@ -75,15 +77,15 @@ void Foam::functionObjects::wallHeatFlux::calcHeatFlux
         wallHeatFluxBf[patchi] = heatFluxBf[patchi];
     }
 
-    if (foundObject<volScalarField>("Qr"))
+    if (foundObject<volScalarField>(qrName_))
     {
-        const volScalarField& Qr = lookupObject<volScalarField>("Qr");
+        const volScalarField& qr = lookupObject<volScalarField>(qrName_);
 
-        const volScalarField::Boundary& radHeatFluxBf = Qr.boundaryField();
+        const volScalarField::Boundary& radHeatFluxBf = qr.boundaryField();
 
         forAll(wallHeatFluxBf, patchi)
         {
-            wallHeatFluxBf[patchi] += radHeatFluxBf[patchi];
+            wallHeatFluxBf[patchi] -= radHeatFluxBf[patchi];
         }
     }
 }
@@ -100,7 +102,8 @@ Foam::functionObjects::wallHeatFlux::wallHeatFlux
 :
     fvMeshFunctionObject(name, runTime, dict),
     writeFile(obr_, name, typeName, dict),
-    patchSet_()
+    patchSet_(),
+    qrName_("qr")
 {
     volScalarField* wallHeatFluxPtr
     (
@@ -122,6 +125,8 @@ Foam::functionObjects::wallHeatFlux::wallHeatFlux
     mesh_.objectRegistry::store(wallHeatFluxPtr);
 
     read(dict);
+
+    writeFileHeader(file());
 }
 
 
@@ -145,6 +150,8 @@ bool Foam::functionObjects::wallHeatFlux::read(const dictionary& dict)
         (
             wordReList(dict.lookupOrDefault("patches", wordReList()))
         );
+
+    dict.readIfPresent("qr", qrName_);
 
     Info<< type() << " " << name() << ":" << nl;
 
@@ -191,10 +198,7 @@ bool Foam::functionObjects::wallHeatFlux::read(const dictionary& dict)
 
 bool Foam::functionObjects::wallHeatFlux::execute()
 {
-    volScalarField& wallHeatFlux = const_cast<volScalarField&>
-    (
-        lookupObject<volScalarField>(type())
-    );
+    volScalarField& wallHeatFlux = lookupObjectRef<volScalarField>(type());
 
     if
     (
@@ -228,6 +232,13 @@ bool Foam::functionObjects::wallHeatFlux::execute()
             thermo.he(),
             wallHeatFlux
         );
+    }
+    else if (foundObject<solidThermo>(solidThermo::dictName))
+    {
+        const solidThermo& thermo =
+            lookupObject<solidThermo>(solidThermo::dictName);
+
+        calcHeatFlux(thermo.alpha(), thermo.he(), wallHeatFlux);
     }
     else
     {
@@ -267,8 +278,9 @@ bool Foam::functionObjects::wallHeatFlux::write()
 
         if (Pstream::master())
         {
+            writeTime(file());
+
             file()
-                << mesh_.time().value()
                 << token::TAB << pp.name()
                 << token::TAB << minHfp
                 << token::TAB << maxHfp
@@ -276,7 +288,7 @@ bool Foam::functionObjects::wallHeatFlux::write()
                 << endl;
         }
 
-        Log << "    min/max(" << pp.name() << ") = "
+        Log << "    min/max/integ(" << pp.name() << ") = "
             << minHfp << ", " << maxHfp << ", " << integralHfp << endl;
     }
 

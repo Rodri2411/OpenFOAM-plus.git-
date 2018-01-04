@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2016 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2016-2017 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -22,10 +22,10 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    foamVtkAsciiFormatter
+    Foam::vtk::asciiFormatter
 
 Description
-    Inline ASCII binary output.
+    Inline ASCII output.
     Adds spaces between entries and a newline every 6 items
     (for consistency with what VTK itself outputs).
 
@@ -43,18 +43,21 @@ SourceFiles
 
 namespace Foam
 {
+namespace vtk
+{
 
 /*---------------------------------------------------------------------------*\
-                    Class foamVtkAsciiFormatter Declaration
+                       Class asciiFormatter Declaration
 \*---------------------------------------------------------------------------*/
 
-class foamVtkAsciiFormatter
+class asciiFormatter
 :
-    public foamVtkFormatter
+    public formatter
 {
     // Private Data Members
 
         static const char* name_;
+        static const outputOptions opts_;
 
         //- Track the current output position
         unsigned short pos_;
@@ -62,15 +65,18 @@ class foamVtkAsciiFormatter
 
     // Private Member Functions
 
-        //- Advance to next position, adding space or newline as required
+        //- Advance to next position, adding space or newline as needed
         inline void next();
+
+        //- Finish an output line, adding newline as needed
+        inline void done();
 
 
         //- Disallow default bitwise copy construct
-        foamVtkAsciiFormatter(const foamVtkAsciiFormatter&) = delete;
+        asciiFormatter(const asciiFormatter&) = delete;
 
         //- Disallow default bitwise assignment
-        void operator=(const foamVtkAsciiFormatter&) = delete;
+        void operator=(const asciiFormatter&) = delete;
 
 
 public:
@@ -78,39 +84,48 @@ public:
     // Constructors
 
         //- Construct and attach to an output stream, use default precision
-        foamVtkAsciiFormatter(std::ostream&);
+        asciiFormatter(std::ostream& os);
 
         //- Construct and attach to an output stream, use specified precision
-        foamVtkAsciiFormatter(std::ostream&, unsigned precision);
+        asciiFormatter(std::ostream& os, unsigned precision);
 
 
     //- Destructor
-    virtual ~foamVtkAsciiFormatter();
+    virtual ~asciiFormatter();
 
 
     // Member Functions
 
+        //- The output is INLINE_ASCII.
+        virtual const outputOptions& opts() const;
+
         //- Name for the XML output type ("ascii")
-        //  The legacy output type is an uppercase version of this.
         virtual const char* name() const;
 
         //- Name for the XML append encoding - unused.
-        //  Currently simply "ASCII", but this should not be relied upon.
+        //  Currently identical to name(), but do not rely on this.
         virtual const char* encoding() const;
 
 
         //- Write leading size - this is a no-op for ascii output
-        virtual void writeSize(const uint64_t);
+        virtual void writeSize(const uint64_t ignored);
 
-        virtual void write(const uint8_t);
-        virtual void write(const label);
-        virtual void write(const float);
-        virtual void write(const double);
+        virtual void write(const uint8_t val);
+        virtual void write(const label val);
+        virtual void write(const float val);
+        virtual void write(const double val);
+
+        //- Write a newline if needed to finish a line of output.
         virtual void flush();
+
+        //- The encoded length for ascii output is not applicable.
+        virtual std::size_t encodedLength(std::size_t ignored) const;
+
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace vtk
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

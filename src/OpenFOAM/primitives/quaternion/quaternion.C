@@ -25,7 +25,7 @@ License
 
 #include "quaternion.H"
 #include "IOstreams.H"
-#include "OStringStream.H"
+#include "StringStream.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -159,9 +159,7 @@ Foam::Istream& Foam::operator>>(Istream& is, quaternion& q)
     // Read end of quaternion
     is.readEnd("quaternion");
 
-    // Check state of Istream
-    is.check("operator>>(Istream&, quaternion&)");
-
+    is.check(FUNCTION_NAME);
     return is;
 }
 

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2016 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2016-2017 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -28,17 +28,15 @@ License
 #include "emptyPolyPatch.H"
 #include "symmetryPolyPatch.H"
 #include "wallPolyPatch.H"
-#include "SortableList.H"
-#include "IFstream.H"
-#include "OFstream.H"
+#include "Fstream.H"
 #include "IOdictionary.H"
 
 #include "ccmBoundaryInfo.H"
 #include "PackedList.H"
 #include "uindirectPrimitivePatch.H"
 #include "SortableList.H"
-#include "mergePoints1.H"
-#include "ListOps1.H"
+#include "mergePoints.H"
+#include "ListOps.H"
 
 #include "ccmInternal.H" // include last to avoid any strange interactions
 
@@ -479,8 +477,8 @@ void Foam::ccm::reader::readCells
         info.setPatchName(ccmReadOptstr("Label", nodeId));
 
         // Lookup the name, type from boundary region info:
-        Map<dictionary>::iterator dictIter = boundaryRegion_.find(info.ccmIndex);
-        if (dictIter != boundaryRegion_.end())
+        auto dictIter = boundaryRegion_.find(info.ccmIndex);
+        if (dictIter.found())
         {
             word patchName(dictIter()["Label"]);
             word patchType(dictIter()["BoundaryType"]);
@@ -517,51 +515,6 @@ void Foam::ccm::reader::readCells
     origBndId_  = -1;
     nPatches = 0;
 
-    HashTable<label, std::string> hashedNames;
-    if (option().combineBoundaries())
-    {
-        // Ensure all the interfaces are orderd up-front:
-        forAll(interfaceDefinitions_, interI)
-        {
-            const interfaceEntry& ifentry = interfaceDefinitions_[interI];
-
-            label info0Index = -1;
-            label info1Index = -1;
-
-            forAll(bndInfo, infoI)
-            {
-                if (bndInfo[infoI].ccmIndex == ifentry.bnd0)
-                {
-                    info0Index = infoI;
-                }
-                else if (bndInfo[infoI].ccmIndex == ifentry.bnd1)
-                {
-                    info1Index = infoI;
-                }
-            }
-
-            if (info0Index == info1Index || info0Index < 0 || info1Index < 0)
-            {
-                // this should never be able to happen
-                continue;
-            }
-
-            ccmBoundaryInfo& info0 = bndInfo[info0Index];
-            ccmBoundaryInfo& info1 = bndInfo[info1Index];
-
-            // Preserve interface order
-            info0.patchId = nPatches++;
-            info1.patchId = nPatches++;
-
-            // full safety:
-            info0.patchName = ifentry.canonicalName0();
-            info1.patchName = ifentry.canonicalName1();
-
-            hashedNames.insert(info0.patchName, info0Index);
-            hashedNames.insert(info1.patchName, info1Index);
-        }
-    }
-
     forAll(bndInfo, infoI)
     {
         ccmBoundaryInfo& info = bndInfo[infoI];
@@ -573,27 +526,8 @@ void Foam::ccm::reader::readCells
         }
         else
         {
-            if (option().combineBoundaries())
-            {
-                // Check if patch name was already seen
-                HashTable<label, std::string>::const_iterator citer = hashedNames.find(info.patchName);
-                if (citer != hashedNames.end())
-                {
-                    info.patchId = bndInfo[citer()].patchId;
-                }
-                else
-                {
-                    hashedNames.insert(info.patchName, infoI);
-
-                    info.patchId = nPatches++;
-                    origBndId_[info.patchId] = info.ccmIndex;
-                }
-            }
-            else
-            {
-                info.patchId = nPatches++;
-                origBndId_[info.patchId] = info.ccmIndex;
-            }
+            info.patchId = nPatches++;
+            origBndId_[info.patchId] = info.ccmIndex;
         }
 
         patchSizes_[info.patchId] += info.size;
@@ -620,20 +554,6 @@ void Foam::ccm::reader::readCells
         }
 
         ccmLookupOrder.resetAddressing(addr.xfer());
-    }
-
-    if (option().combineBoundaries())
-    {
-        Info<<"patches combined by name: ";
-        if (nPatches == bndInfo.size())
-        {
-            Info<<"none" << endl;
-        }
-        else
-        {
-            Info<< bndInfo.size() << " into " << nPatches << endl;
-        }
-        // Info<< ccmLookupOrder << endl;
     }
 
 
@@ -775,7 +695,11 @@ void Foam::ccm::reader::readCells
                 kCCMIOStart,
                 kCCMIOEnd
             );
-            assertNoError("Error reading boundary face cells - index " + ::Foam::name(info.ccmIndex));
+            assertNoError
+            (
+                "Error reading boundary face cells - index "
+              + ::Foam::name(info.ccmIndex)
+            );
 
             // Copy into Foam list
             // ccmFaces are organized as [nVert vrt1 .. vrtN]
@@ -797,7 +721,11 @@ void Foam::ccm::reader::readCells
         }
         else
         {
-            assertNoError("Error reading boundary faces - index " + ::Foam::name(info.ccmIndex));
+            assertNoError
+            (
+                "Error reading boundary faces - index "
+              + ::Foam::name(info.ccmIndex)
+            );
         }
     }
 
@@ -1106,11 +1034,10 @@ void Foam::ccm::reader::readMonitoring
                 << "ccmRegionId: " << ccmRegionId << endl;
 #endif
 
-            Map<dictionary>::const_iterator
-                iter = boundaryRegion_.find(ccmRegionId);
+            auto iter = boundaryRegion_.cfind(ccmRegionId);
 
             word zoneName;
-            if (iter != boundaryRegion_.end())
+            if (iter.found())
             {
                 iter().lookup("Label") >> zoneName;
             }
@@ -1125,7 +1052,11 @@ void Foam::ccm::reader::readMonitoring
             //
             //- simulate ReadFaceCells with kCCMIOBoundaryFaces
             // CCMIOGetNode(nullptr, childNode, "Cells", &subNode);
-            // CCMIORead1i(nullptr, subNode, faceCells.begin(), kCCMIOStart, kCCMIOEnd);
+            // CCMIORead1i
+            // (
+            //     nullptr, subNode, faceCells.begin(),
+            //     kCCMIOStart, kCCMIOEnd
+            // );
             //
             // Info << "cells: " << faceCells << endl;
         }
@@ -1189,7 +1120,7 @@ void Foam::ccm::reader::juggleSolids()
 
 
     // The corresponding Foam patch
-    const label patchIndex  = findIndex(origBndId_, defaultBoundaryRegion);
+    const label patchIndex  = origBndId_.find(defaultBoundaryRegion);
     const label nPatchFaces = patchSizes_[patchIndex];
 
     labelList patchStarts(patchStartList(nInternalFaces_));
@@ -1231,7 +1162,8 @@ void Foam::ccm::reader::juggleSolids()
     // Adjust start and sizes
     patchSizes_[patchIndex] -= adjustPatch;
     patchSizes_[patchIndex+1] = adjustPatch;
-    patchStarts[patchIndex+1] = patchStarts[patchIndex] + patchSizes_[patchIndex];
+    patchStarts[patchIndex+1] =
+        patchStarts[patchIndex] + patchSizes_[patchIndex];
 
     origBndId_[patchIndex+1] = boundaryRegion_.append
     (
@@ -1314,7 +1246,7 @@ void Foam::ccm::reader::removeUnwanted()
         {
             Map<word> keepMap;
 
-            forAllConstIter(Map<dictionary>, cellTable_, iter)
+            forAllConstIters(cellTable_, iter)
             {
                 const label tableId = iter.key();
                 if (!removeMap.found(tableId))
@@ -1326,17 +1258,19 @@ void Foam::ccm::reader::removeUnwanted()
             Info<<"remove "<< nRemove << " cells in "
                 << removeMap.size() << " unwanted cellZone(s)" << nl;
 
-            forAllConstIter(Map<word>, removeMap, iter)
+            forAllConstIters(removeMap, iter)
             {
-                Info<< "    zone " << iter.key() << " : "<< iter() << nl;
+                Info<< "    zone "
+                    << iter.key() << " : " << iter.object() << nl;
             }
 
             Info<<"retain "<< (nCells_ - nRemove) << " cells in "
                 << keepMap.size() << " cellZone(s)" << nl;
 
-            forAllConstIter(Map<word>, keepMap, iter)
+            forAllConstIters(keepMap, iter)
             {
-                Info<< "    zone " << iter.key() << " : "<< iter() << nl;
+                Info<< "    zone "
+                    << iter.key() << " : " << iter.object() << nl;
             }
         }
     }
@@ -1512,7 +1446,7 @@ void Foam::ccm::reader::validateInterface
 
 void Foam::ccm::reader::renumberInterfaces
 (
-    const labelList& oldToNew
+    const labelUList& oldToNew
 )
 {
     forAll(domInterfaces_, elemI)
@@ -1544,8 +1478,8 @@ void Foam::ccm::reader::cleanupInterfaces()
 
     if (bafInterfaces_.size() <= 0 && domInterfaces_.size() <= 0)
     {
-        Info<<"0 baffle interface pairs" << endl;
-        Info<<"0 domain interface pairs" << endl;
+        Info<<"0 baffle interface pairs" << nl
+            <<"0 domain interface pairs" << endl;
         return;
     }
 
@@ -1559,8 +1493,8 @@ void Foam::ccm::reader::cleanupInterfaces()
 
     forAll(domInterfaces_, elemI)
     {
-        label face0 = domInterfaces_[elemI][0];
-        label face1 = domInterfaces_[elemI][1];
+        const label face0 = domInterfaces_[elemI][0];
+        const label face1 = domInterfaces_[elemI][1];
 
         Info<< "interface [" << elemI << "] = "
             << face0 << " - " << face1 << " own/neigh = "
@@ -1756,8 +1690,9 @@ void Foam::ccm::reader::cleanupInterfaces()
                         oldToNew[face0] = pos + nsorted;
                         oldToNew[face1] = pos + nsorted + nsizeby2;
 
-                        // Mark destination of the faces, but cannot renumber yet
-                        // use negative to potential overlap with other patch regions
+                        // Mark destination of the faces, but cannot renumber
+                        // yet. Use negative to potential overlap with other
+                        // patch regions
                         bafInterfaces_[elemI][0] = -oldToNew[face0];
                         bafInterfaces_[elemI][1] = -oldToNew[face1];
 
@@ -1813,15 +1748,7 @@ void Foam::ccm::reader::cleanupInterfaces()
             oldToNew[face1] = oldToNew[face0];
         }
 
-//         Info<< "nInternalFaces " << nInternalFaces_ << nl
-//             << "oldToNew (internal) "
-//             << SubList<label>(oldToNew, nInternalFaces_)
-//             << nl
-//             << "oldToNew (extern) "
-//             << SubList<label>(oldToNew, nFaces_ - nInternalFaces_, nInternalFaces_)
-//             << endl;
-
-        forAllIter(HashTable<labelList>, monitoringSets_, iter)
+        forAllIters(monitoringSets_, iter)
         {
             inplaceRenumber(oldToNew, iter());
         }
@@ -1893,20 +1820,27 @@ void Foam::ccm::reader::mergeInplaceInterfaces()
     // List of patch pairs that are interfaces
     DynamicList<labelPair> interfacePatches(interfaceDefinitions_.size());
 
-    forAll(interfaceDefinitions_, interI)
+    label nWarn = 0;
+
+    forAllConstIters(interfaceDefinitions_, iter)
     {
-        const interfaceEntry& ifentry = interfaceDefinitions_[interI];
+        const interfaceEntry& ifentry = iter.object();
 
         labelPair patchPair
         (
-            findIndex(origBndId_, ifentry.bnd0),
-            findIndex(origBndId_, ifentry.bnd1)
+            origBndId_.find(ifentry.bnd0),
+            origBndId_.find(ifentry.bnd1)
         );
 
-        if (patchPair[0] == patchPair[1] || patchPair[0] < 0 || patchPair[1] < 0)
+        if
+        (
+            patchPair[0] == patchPair[1]
+         || patchPair[0] < 0
+         || patchPair[1] < 0
+        )
         {
             // This should not happen
-            Info<<"Warning : bad interface " << interI << " " << ifentry
+            Info<<"Warning : bad interface " << ifentry.id << " " << ifentry
                 <<" on patches " << patchPair << endl;
         }
         else if
@@ -1916,11 +1850,18 @@ void Foam::ccm::reader::mergeInplaceInterfaces()
          || patchSizes_[patchPair[1]] == 0
         )
         {
-            Info<<"Warning : skip interface " << interI << " " << ifentry
-                <<" on patches " << patchPair << nl
-                <<"   has zero or different number of faces: ("
-                << patchSizes_[patchPair[0]]  << " " << patchSizes_[patchPair[1]] << ")"
-                << endl;
+            if (!nWarn++)
+            {
+                Info<<"Warning: skip interface with zero or different"
+                    << " number of faces" << nl;
+            }
+
+            Info<<"  Interface:" << ifentry.id << " " << ifentry
+                <<" patches " << patchPair
+                <<" sizes ("
+                << patchSizes_[patchPair[0]]
+                << " " << patchSizes_[patchPair[1]] << ")"
+                << nl;
         }
         else
         {
@@ -1947,7 +1888,8 @@ void Foam::ccm::reader::mergeInplaceInterfaces()
     // Markup points to merge
     PackedBoolList whichPoints(points_.size());
 
-    Info<< "interface merge points (tol=" << option().mergeTol() << "):" << endl;
+    Info<< "interface merge points (tol="
+        << option().mergeTol() << "):" << endl;
 
     DynamicList<label> interfacesToMerge(interfacePatches.size());
     forAll(interfacePatches, interI)
@@ -1985,12 +1927,11 @@ void Foam::ccm::reader::mergeInplaceInterfaces()
 
         const UIndirectList<point> pointsToMerge(points_, addr);
 
-        Info<< "    patch "  << patch0 << ", " << patch1 << ": ("
+        Info<< "    patch "  << patch0 << "," << patch1 << ": ("
             << nPatch0Faces << " and " << nPatch1Faces << " faces) " << flush;
 
-        label nMerged = mergePoints
+        const label nMerged = mergePoints
         (
-            true,
             pointsToMerge,
             option().mergeTol(),
             false,
@@ -2003,9 +1944,9 @@ void Foam::ccm::reader::mergeInplaceInterfaces()
         if (nMerged)
         {
             // Transcribe local to global addressing
-            forAll(mergedPointMap, lookupI)
+            forAll(mergedPointMap, i)
             {
-                oldToNew[addr[lookupI]] = addr[mergedPointMap[lookupI]];
+                oldToNew[addr[i]] = addr[mergedPointMap[i]];
             }
 
             interfacesToMerge.append(interI);
@@ -2175,11 +2116,11 @@ void Foam::ccm::reader::mergeInplaceInterfaces()
             // Note which one were successful
             labelHashSet done(failed0.size());
 
-            forAllConstIter(labelHashSet, failed0, iter0)
+            forAllConstIters(failed0, iter0)
             {
                 const label face0I = iter0.key();
 
-                forAllConstIter(labelHashSet, failed1, iter1)
+                forAllConstIters(failed1, iter1)
                 {
                     const label face1I = iter1.key();
 
@@ -2421,10 +2362,10 @@ void Foam::ccm::reader::reorderMesh()
     inplaceReorder(oldToNew, faceNeighbour_);
     inplaceReorder(oldToNew, origFaceId_);
 
-    forAllIter(HashTable<labelList>, monitoringSets_, iter)
+    forAllIters(monitoringSets_, iter)
     {
-        inplaceRenumber(oldToNew, iter());
-        labelList &lst = iter();
+        labelList& lst = iter.object();
+        inplaceRenumber(oldToNew, lst);
 
         // disallow monitoring on boundaries
         label nElem = 0;
@@ -2436,7 +2377,7 @@ void Foam::ccm::reader::reorderMesh()
                 {
                     lst[nElem] = lst[i];
                 }
-                nElem++;
+                ++nElem;
             }
         }
 
@@ -2478,10 +2419,9 @@ void Foam::ccm::reader::addPatches
         word patchName;
         word patchType;
 
-        Map<dictionary>::const_iterator
-            citer = boundaryRegion_.find(origBndId_[patchI]);
+        auto citer = boundaryRegion_.cfind(origBndId_[patchI]);
 
-        if (citer != boundaryRegion_.end())
+        if (citer.found())
         {
             citer().lookup("Label") >> patchName;
             citer().lookup("BoundaryType") >> patchType;
@@ -2593,7 +2533,7 @@ void Foam::ccm::reader::addFaceZones
     }
 
     nZone = 0;
-    forAllConstIter(HashTable<labelList>, monitoringSets_, iter)
+    forAllConstIters(monitoringSets_, iter)
     {
         Info<< "faceZone " << nZone
             << " (size: " << iter().size() << ") name: "
@@ -2606,13 +2546,13 @@ void Foam::ccm::reader::addFaceZones
             (
                 iter.key(),
                 iter(),
-                boolList(iter().size(), false),
+                false, // none are flipped
                 nZone,
                 mesh.faceZones()
             )
         );
 
-        nZone++;
+        ++nZone;
     }
 
     mesh.faceZones().writeOpt() = IOobject::AUTO_WRITE;

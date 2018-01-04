@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2014 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2016-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -28,23 +28,27 @@ License
 #include "token.H"
 #include "contiguous.H"
 
-// * * * * * * * * * * * * * * * Ostream Operator *  * * * * * * * * * * * * //
+// * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
 
 template<class T>
-Foam::Ostream& Foam::operator<<
+Foam::Ostream& Foam::UIndirectList<T>::writeList
 (
-    Foam::Ostream& os,
-    const Foam::UIndirectList<T>& L
-)
+    Ostream& os,
+    const label shortListLen
+) const
 {
+    const UIndirectList<T>& L = *this;
+
+    const label sz = L.size();
+
     // Write list contents depending on data format
     if (os.format() == IOstream::ASCII || !contiguous<T>())
     {
         // Can the contents be considered 'uniform' (ie, identical)?
-        bool uniform = (L.size() > 1 && contiguous<T>());
+        bool uniform = (sz > 1 && contiguous<T>());
         if (uniform)
         {
-            forAll(L, i)
+            for (label i=1; i < sz; ++i)
             {
                 if (L[i] != L[0])
                 {
@@ -56,68 +60,90 @@ Foam::Ostream& Foam::operator<<
 
         if (uniform)
         {
-            // Write size and start delimiter
-            os << L.size() << token::BEGIN_BLOCK;
+            // Size and start delimiter
+            os << sz << token::BEGIN_BLOCK;
 
-            // Write contents
+            // Contents
             os << L[0];
 
-            // Write end delimiter
+            // End delimiter
             os << token::END_BLOCK;
         }
-        else if (L.size() <= 1 || (L.size() < 11 && contiguous<T>()))
+        else if
+        (
+            sz <= 1 || !shortListLen
+         || (sz <= shortListLen && contiguous<T>())
+        )
         {
-            // Write size and start delimiter
-            os << L.size() << token::BEGIN_LIST;
+            // Size and start delimiter
+            os << sz << token::BEGIN_LIST;
 
-            // Write contents
-            forAll(L, i)
+            // Contents
+            for (label i=0; i < sz; ++i)
             {
                 if (i) os << token::SPACE;
                 os << L[i];
             }
 
-            // Write end delimiter
+            // End delimiter
             os << token::END_LIST;
         }
         else
         {
-            // Write size and start delimiter
-            os << nl << L.size() << nl << token::BEGIN_LIST;
+            // Size and start delimiter
+            os << nl << sz << nl << token::BEGIN_LIST << nl;
 
-            // Write contents
-            forAll(L, i)
+            // Contents
+            for (label i=0; i < sz; ++i)
             {
-                os << nl << L[i];
+                os << L[i] << nl;
             }
 
-            // Write end delimiter
-            os << nl << token::END_LIST << nl;
+            // End delimiter
+            os << token::END_LIST << nl;
         }
     }
     else
     {
         // Contents are binary and contiguous
-        os << nl << L.size() << nl;
+        os << nl << sz << nl;
 
-        if (L.size())
+        if (sz)
         {
-            // This is annoying, and wasteful, but currently no alternative
-            List<T> lst = L();
+            // The TOTAL number of bytes to be written.
+            // - possibly add start delimiter
+            os.beginRaw(sz*sizeof(T));
 
-            // write(...) includes surrounding start/end delimiters
-            os.write
-            (
-                reinterpret_cast<const char*>(lst.cdata()),
-                lst.byteSize()
-            );
+            // Contents
+            for (label i=0; i < sz; ++i)
+            {
+                os.writeRaw
+                (
+                    reinterpret_cast<const char*>(&(L[i])),
+                    sizeof(T)
+                );
+            }
+
+            // End delimiter and/or cleanup.
+            os.endRaw();
         }
     }
 
-    // Check state of IOstream
-    os.check("Ostream& operator<<(Ostream&, const UIndirectList&)");
-
+    os.check(FUNCTION_NAME);
     return os;
+}
+
+
+// * * * * * * * * * * * * * * * Ostream Operator *  * * * * * * * * * * * * //
+
+template<class T>
+Foam::Ostream& Foam::operator<<
+(
+    Foam::Ostream& os,
+    const Foam::UIndirectList<T>& lst
+)
+{
+    return lst.writeList(os, 10);
 }
 
 

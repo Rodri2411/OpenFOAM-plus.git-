@@ -25,7 +25,7 @@ License
 
 #include "Istream.H"
 #include "cell.H"
-#include "cellModeller.H"
+#include "cellModel.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -37,13 +37,13 @@ inline Foam::cellShape::cellShape()
 
 inline Foam::cellShape::cellShape
 (
-    const cellModel& M,
-    const labelList& l,
+    const cellModel& model,
+    const labelUList& labels,
     const bool doCollapse
 )
 :
-    labelList(l),
-    m(&M)
+    labelList(labels),
+    m(&model)
 {
     if (doCollapse)
     {
@@ -54,13 +54,13 @@ inline Foam::cellShape::cellShape
 
 inline Foam::cellShape::cellShape
 (
-    const word& model,
-    const labelList& l,
+    const word& modelName,
+    const labelUList& labels,
     const bool doCollapse
 )
 :
-    labelList(l),
-    m(cellModeller::lookup(model))
+    labelList(labels),
+    m(cellModel::ptr(modelName))
 {
     if (doCollapse)
     {
@@ -85,7 +85,7 @@ inline Foam::autoPtr<Foam::cellShape> Foam::cellShape::clone() const
 
 inline Foam::pointField Foam::cellShape::points
 (
-    const pointField& meshPoints
+    const UList<point>& meshPoints
 ) const
 {
     // There are as many points as there labels for them
@@ -256,13 +256,13 @@ inline Foam::label Foam::cellShape::nPoints() const
 }
 
 
-inline Foam::point Foam::cellShape::centre(const pointField& points) const
+inline Foam::point Foam::cellShape::centre(const UList<point>& points) const
 {
     return m->centre(*this, points);
 }
 
 
-inline Foam::scalar Foam::cellShape::mag(const pointField& points) const
+inline Foam::scalar Foam::cellShape::mag(const UList<point>& points) const
 {
     return m->mag(*this, points);
 }

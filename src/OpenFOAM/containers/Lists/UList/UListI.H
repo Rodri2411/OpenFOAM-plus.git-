@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2015-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -33,7 +33,7 @@ template<class T>
 inline Foam::UList<T>::UList()
 :
     size_(0),
-    v_(0)
+    v_(nullptr)
 {}
 
 
@@ -62,6 +62,20 @@ inline Foam::label Foam::UList<T>::fcIndex(const label i) const
 
 
 template<class T>
+inline const T& Foam::UList<T>::fcValue(const label i) const
+{
+    return this->operator[](this->fcIndex(i));
+}
+
+
+template<class T>
+inline T& Foam::UList<T>::fcValue(const label i)
+{
+    return this->operator[](this->fcIndex(i));
+}
+
+
+template<class T>
 inline Foam::label Foam::UList<T>::rcIndex(const label i) const
 {
     return (i ? i-1 : size()-1);
@@ -69,9 +83,23 @@ inline Foam::label Foam::UList<T>::rcIndex(const label i) const
 
 
 template<class T>
+inline const T& Foam::UList<T>::rcValue(const label i) const
+{
+    return this->operator[](this->rcIndex(i));
+}
+
+
+template<class T>
+inline T& Foam::UList<T>::rcValue(const label i)
+{
+    return this->operator[](this->rcIndex(i));
+}
+
+
+template<class T>
 inline void Foam::UList<T>::checkStart(const label start) const
 {
-    if (start<0 || (start && start>=size_))
+    if (start < 0 || (start && start >= size_))
     {
         FatalErrorInFunction
             << "start " << start << " out of range 0 ... " << max(size_-1, 0)
@@ -83,7 +111,7 @@ inline void Foam::UList<T>::checkStart(const label start) const
 template<class T>
 inline void Foam::UList<T>::checkSize(const label size) const
 {
-    if (size<0 || size>size_)
+    if (size < 0 || size > size_)
     {
         FatalErrorInFunction
             << "size " << size << " out of range 0 ... " << size_
@@ -153,6 +181,13 @@ inline T* Foam::UList<T>::data()
 
 
 template<class T>
+inline bool Foam::UList<T>::found(const T& val, const label start) const
+{
+    return (this->find(val, start) >= 0);
+}
+
+
+template<class T>
 inline void Foam::UList<T>::shallowCopy(const UList<T>& a)
 {
     size_ = a.size_;
@@ -162,7 +197,6 @@ inline void Foam::UList<T>::shallowCopy(const UList<T>& a)
 
 // * * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * //
 
-
 template<class T>
 inline T& Foam::UList<T>::operator[](const label i)
 {
@@ -171,7 +205,6 @@ inline T& Foam::UList<T>::operator[](const label i)
     #endif
     return v_[i];
 }
-
 
 namespace Foam
 {
@@ -190,7 +223,6 @@ namespace Foam
         }
     }
 }
-
 
 template<class T>
 inline const T& Foam::UList<T>::operator[](const label i) const
@@ -254,46 +286,54 @@ Foam::UList<T>::cend() const
 }
 
 template<class T>
-inline typename Foam::UList<T>::iterator
+inline typename Foam::UList<T>::reverse_iterator
 Foam::UList<T>::rbegin()
 {
-    return &v_[size_-1];
+    return reverse_iterator(&v_[size_-1]);
 }
 
 template<class T>
-inline typename Foam::UList<T>::const_iterator
+inline typename Foam::UList<T>::const_reverse_iterator
 Foam::UList<T>::rbegin() const
 {
-    return &v_[size_-1];
+    return const_reverse_iterator(&v_[size_-1]);
 }
 
 template<class T>
-inline typename Foam::UList<T>::const_iterator
+inline typename Foam::UList<T>::const_reverse_iterator
 Foam::UList<T>::crbegin() const
 {
-    return &v_[size_-1];
+    return const_reverse_iterator(&v_[size_-1]);
 }
 
 template<class T>
-inline typename Foam::UList<T>::iterator
+inline typename Foam::UList<T>::reverse_iterator
 Foam::UList<T>::rend()
 {
-    return &v_[-1];
+    return reverse_iterator(&v_[-1]);
 }
 
 template<class T>
-inline typename Foam::UList<T>::const_iterator
+inline typename Foam::UList<T>::const_reverse_iterator
 Foam::UList<T>::rend() const
 {
-    return &v_[-1];
+    return const_reverse_iterator(&v_[-1]);
 }
 
 template<class T>
-inline typename Foam::UList<T>::const_iterator
+inline typename Foam::UList<T>::const_reverse_iterator
 Foam::UList<T>::crend() const
 {
-    return &v_[-1];
+    return const_reverse_iterator(&v_[-1]);
 }
+
+
+template<class T>
+inline void Foam::UList<T>::size(const label n)
+{
+    size_ = n;
+}
+
 
 template<class T>
 inline Foam::label Foam::UList<T>::size() const
@@ -316,21 +356,37 @@ inline bool Foam::UList<T>::empty() const
 }
 
 
+template<class T>
+inline void Foam::UList<T>::swap(UList<T>& lst)
+{
+    Foam::Swap(size_, lst.size_);
+    Foam::Swap(v_, lst.v_);
+}
+
+
 // * * * * * * * * * * * * * * * Global Functions  * * * * * * * * * * * * * //
 
 template<class T>
-inline void Foam::reverse(UList<T>& ul, const label n)
+inline void Foam::reverse(UList<T>& lst, const label n)
 {
-    for (int i=0; i<n/2; i++)
+    for (int i=0; i<n/2; ++i)
     {
-        Swap(ul[i], ul[n-1-i]);
+        Foam::Swap(lst[i], lst[n-1-i]);
     }
 }
 
+
 template<class T>
-inline void Foam::reverse(UList<T>& ul)
+inline void Foam::reverse(UList<T>& lst)
 {
-    reverse(ul, ul.size());
+    reverse(lst, lst.size());
+}
+
+
+template<class T>
+inline void Foam::Swap(UList<T>& a, UList<T>& b)
+{
+    a.swap(b);
 }
 
 

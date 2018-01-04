@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -33,12 +33,7 @@ License
 #include "fvcSnGrad.H"
 #include "fvcDiv.H"
 #include "fvcFlux.H"
-
-// * * * * * * * * * * * * * * * Static Member Data  * * * * * * * * * * * * //
-
-const Foam::scalar Foam::multiphaseMixture::convertToRad =
-    Foam::constant::mathematical::pi/180.0;
-
+#include "unitConversion.H"
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
@@ -128,6 +123,8 @@ Foam::multiphaseMixture::multiphaseMixture
         1e-8/pow(average(mesh_.V()), 1.0/3.0)
     )
 {
+    rhoPhi_.setOriented();
+
     calcAlphas();
     alphas_.write();
 }
@@ -273,6 +270,7 @@ Foam::multiphaseMixture::surfaceTensionForce() const
     );
 
     surfaceScalarField& stf = tstf.ref();
+    stf.setOriented();
 
     forAllConstIter(PtrDictionary<phase>, phases_, iter1)
     {
@@ -453,7 +451,7 @@ void Foam::multiphaseMixture::correctContactAngle
 
             bool matched = (tp.key().first() == alpha1.name());
 
-            scalar theta0 = convertToRad*tp().theta0(matched);
+            const scalar theta0 = degToRad(tp().theta0(matched));
             scalarField theta(boundary[patchi].size(), theta0);
 
             scalar uTheta = tp().uTheta();
@@ -461,8 +459,8 @@ void Foam::multiphaseMixture::correctContactAngle
             // Calculate the dynamic contact angle if required
             if (uTheta > SMALL)
             {
-                scalar thetaA = convertToRad*tp().thetaA(matched);
-                scalar thetaR = convertToRad*tp().thetaR(matched);
+                const scalar thetaA = degToRad(tp().thetaA(matched));
+                const scalar thetaR = degToRad(tp().thetaR(matched));
 
                 // Calculated the component of the velocity parallel to the wall
                 vectorField Uwall
@@ -550,7 +548,8 @@ Foam::multiphaseMixture::nearInterface() const
 
     forAllConstIter(PtrDictionary<phase>, phases_, iter)
     {
-        tnearInt.ref() = max(tnearInt(), pos(iter() - 0.01)*pos(0.99 - iter()));
+        tnearInt.ref() =
+            max(tnearInt(), pos0(iter() - 0.01)*pos0(0.99 - iter()));
     }
 
     return tnearInt;
@@ -680,6 +679,14 @@ void Foam::multiphaseMixture::solveAlphas
         << ' ' << min(sumAlpha).value()
         << ' ' << max(sumAlpha).value()
         << endl;
+
+    // Correct the sum of the phase-fractions to avoid 'drift'
+    volScalarField sumCorr(1.0 - sumAlpha);
+    forAllIter(PtrDictionary<phase>, phases_, iter)
+    {
+        phase& alpha = iter();
+        alpha += alpha*sumCorr;
+    }
 
     calcAlphas();
 }

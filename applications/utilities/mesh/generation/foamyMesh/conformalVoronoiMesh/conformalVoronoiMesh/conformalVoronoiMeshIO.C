@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2012-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2012-2017 OpenFOAM Foundation
      \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
@@ -32,7 +32,6 @@ License
 #include "polyMeshFilter.H"
 #include "polyTopoChange.H"
 #include "PrintTable.H"
-#include "pointMesh.H"
 #include "indexedVertexOps.H"
 #include "DelaunayMeshTools.H"
 #include "syncTools.H"
@@ -199,7 +198,7 @@ void Foam::conformalVoronoiMesh::writeMesh(const fileName& instance)
 
         Info<< nl << "Writing " << "tetDualMesh" << endl;
 
-        DistributedDelaunayMesh<Delaunay>::labelTolabelPairHashTable vertexMap;
+        labelPairLookup vertexMap;
         labelList cellMap;
         autoPtr<polyMesh> tetMesh =
             createMesh("tetDualMesh", vertexMap, cellMap);
@@ -300,14 +299,14 @@ void Foam::conformalVoronoiMesh::writeMesh(const fileName& instance)
 //                IOobject::AUTO_WRITE,
 //                false
 //            ),
-//            UIndirectList<label>
+//            labelUIndList
 //            (
 //                vertexToDualAddressing,
 //                pointToDelaunayVertex
 //            )()
 //        );
 //
-//        label pointi = findIndex(pointDualAddressing, -1);
+//        label pointi = pointDualAddressing.find(-1);
 //        if (pointi != -1)
 //        {
 //            WarningInFunction
@@ -641,7 +640,7 @@ void Foam::conformalVoronoiMesh::reorderProcessorPatches
     labelList rotation(faces.size(), label(0));
     labelList faceMap(faces.size(), label(-1));
 
-    PstreamBuffers pBufs(Pstream::nonBlocking);
+    PstreamBuffers pBufs(Pstream::commsTypes::nonBlocking);
 
     // Send ordering
     forAll(sortMesh.boundaryMesh(), patchi)
@@ -900,10 +899,8 @@ void Foam::conformalVoronoiMesh::writeMesh
     mesh.addFvPatches(patches);
 
 
-
     // Add zones to the mesh
     addZones(mesh, cellCentres);
-
 
 
     Info<< indent << "Add pointZones" << endl;
@@ -914,6 +911,9 @@ void Foam::conformalVoronoiMesh::writeMesh
 
         forAll(dualMeshPointTypeNames_, typeI)
         {
+            const word& znName =
+                dualMeshPointTypeNames_[dualMeshPointType(typeI)];
+
             forAll(boundaryPts, ptI)
             {
                 const label& bPtType = boundaryPts[ptI];
@@ -928,14 +928,14 @@ void Foam::conformalVoronoiMesh::writeMesh
 
             Info<< incrIndent << indent
                 << "Adding " << bPts.size()
-                << " points of type " << dualMeshPointTypeNames_.words()[typeI]
+                << " points of type " << znName
                 << decrIndent << endl;
 
             mesh.pointZones().append
             (
                 new pointZone
                 (
-                    dualMeshPointTypeNames_.words()[typeI],
+                    znName,
                     bPts,
                     sz + typeI,
                     mesh.pointZones()

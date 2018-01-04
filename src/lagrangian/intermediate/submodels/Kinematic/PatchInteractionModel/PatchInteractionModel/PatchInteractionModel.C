@@ -32,12 +32,10 @@ License
 
 template<class CloudType>
 Foam::wordList Foam::PatchInteractionModel<CloudType>::interactionTypeNames_
-(
-    IStringStream
-    (
-        "(rebound stick escape)"
-    )()
-);
+{
+    "rebound", "stick", "escape"
+};
+
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
@@ -51,6 +49,11 @@ Foam::word Foam::PatchInteractionModel<CloudType>::interactionTypeToWord
 
     switch (itEnum)
     {
+        case itNone:
+        {
+            it = "none";
+            break;
+        }
         case itRebound:
         {
             it = "rebound";
@@ -82,6 +85,10 @@ Foam::PatchInteractionModel<CloudType>::wordToInteractionType
     const word& itWord
 )
 {
+    if (itWord == "none")
+    {
+        return itNone;
+    }
     if (itWord == "rebound")
     {
         return itRebound;

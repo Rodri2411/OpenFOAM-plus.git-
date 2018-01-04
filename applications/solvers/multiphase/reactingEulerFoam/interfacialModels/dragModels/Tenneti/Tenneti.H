@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2016-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -32,10 +32,10 @@ Description
     Reference:
     \verbatim
         Tenneti, S., Garg, R., & Subramaniam, S. (2011).
-        Drag law for monodisperse gas–solid systems using particle-resolved
+        Drag law for monodisperse gas-solid systems using particle-resolved
         direct numerical simulation of flow past fixed assemblies of spheres.
-        International Journal of Multiphase Flow, 37(9), 1072–1092.
-    \verbatim
+        International Journal of Multiphase Flow, 37(9), 1072-1092.
+    \endverbatim
 
 SourceFiles
     Tenneti.C
@@ -68,9 +68,6 @@ class Tenneti
     public dragModel
 {
     // Private data
-
-        //- SchillerNaumann drag model
-        autoPtr<SchillerNaumann> SchillerNaumann_;
 
         //- Residual Reynolds Number
         const dimensionedScalar residualRe_;

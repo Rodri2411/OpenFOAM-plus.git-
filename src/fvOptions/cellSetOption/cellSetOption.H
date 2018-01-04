@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -31,15 +31,12 @@ Description
         type            scalarExplicitSource    // Source type
         active          on;                     // on/off switch
 
-        scalarExplicitSourceCoeffs
-        {
-            timeStart       0.0;        // Start time
-            duration        1000.0;     // Duration
-            selectionMode   cellSet;    // cellSet, points, cellZone
-            .
-            .
-            .
-        }
+        timeStart       0.0;        // Start time
+        duration        1000.0;     // Duration
+        selectionMode   cellSet;    // cellSet, points, cellZone
+        .
+        .
+        .
     \endverbatim
 
 Note
@@ -87,9 +84,8 @@ public:
             smAll
         };
 
-        //- Word list of selection mode type names
-        static const NamedEnum<selectionModeType, 4>
-            selectionModeTypeNames_;
+        //- List of selection mode type names
+        static const Enum<selectionModeType> selectionModeTypeNames_;
 
 
 protected:
@@ -125,6 +121,9 @@ protected:
 
         //- Set the cell set based on the user input selection mode
         void setCellSet();
+
+        //- Recalculate the volume
+        void setVol();
 
 
 public:

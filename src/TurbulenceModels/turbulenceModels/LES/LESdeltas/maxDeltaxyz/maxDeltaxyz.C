@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
@@ -64,14 +64,14 @@ void Foam::LESModels::maxDeltaxyz::calcDelta()
             const point& fc = faceC[facei];
             const vector& n = faceN[facei];
 
-            scalar tmp = magSqr(n*(n & (fc - cc)));
+            scalar tmp = mag(n & (fc - cc));
             if (tmp > deltaMaxTmp)
             {
                 deltaMaxTmp = tmp;
             }
         }
 
-        hmax[celli] = deltaCoeff_*Foam::sqrt(deltaMaxTmp);
+        hmax[celli] = deltaCoeff_*deltaMaxTmp;
     }
 
     if (nD == 3)
@@ -110,7 +110,11 @@ Foam::LESModels::maxDeltaxyz::maxDeltaxyz
     LESdelta(name, turbulence),
     deltaCoeff_
     (
-        dict.subDict(type() + "Coeffs").lookupOrDefault<scalar>("deltaCoeff", 1)
+        dict.optionalSubDict(type() + "Coeffs").lookupOrDefault<scalar>
+        (
+            "deltaCoeff",
+            2
+        )
     )
 {
     calcDelta();
@@ -121,7 +125,7 @@ Foam::LESModels::maxDeltaxyz::maxDeltaxyz
 
 void Foam::LESModels::maxDeltaxyz::read(const dictionary& dict)
 {
-    const dictionary& coeffsDict(dict.subDict(type() + "Coeffs"));
+    const dictionary& coeffsDict(dict.optionalSubDict(type() + "Coeffs"));
 
     coeffsDict.readIfPresent<scalar>("deltaCoeff", deltaCoeff_);
 

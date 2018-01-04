@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
@@ -35,7 +35,7 @@ Description
     Fields are entered as a list of sub-dictionaries, which indicate the type of
     averages to perform, and can be updated during the calculation.  The current
     options include:
-    - \c mean: arithmetic mean:
+    - \c mean: arithmetic mean
         \f[
             \overline{x} = \frac{1}{N}\displaystyle\sum\limits_{i=0}^N x_i
         \f]
@@ -44,14 +44,14 @@ Description
             \overline{x'}^2 = \frac{1}{N}\displaystyle\sum\limits_{i=0}^N
             (x_i - \overline{x})^2
         \f]
-    - base: average over 'time', or 'iteration' (\f$N\f$ in the above)
-    - window: optional averaging window, specified in 'base' units
+    - \c base: average over 'time', or 'iteration' (\f$N\f$ in the above)
+    - \c window: optional averaging window, specified in 'base' units
 
     Average field names are constructed by concatenating the base field with
     the averaging type, e.g. when averaging field 'U', the resultant fields
     are:
-    - arithmetic mean field, UMean
-    - prime-squared field, UPrime2Mean
+    - arithmetic mean field, \c UMean
+    - prime-squared field, \c UPrime2Mean
 
     Information regarding the number of averaging steps, and total averaging
     time are written on a per-field basis to the
@@ -86,6 +86,7 @@ Usage
                 mean            on;
                 prime2Mean      on;
                 base            time;
+                windowType      exact;
                 window          10.0;
                 windowName      w1;
             }
@@ -101,12 +102,12 @@ Usage
 
     Where the entries comprise:
     \table
-        Property          | Description           | Required    | Default value
-        type              | type name: fieldAverage | yes |
-        restartOnRestart  | Restart the averaging on restart | no | no
-        restartOnOutput   | Restart the averaging on output | no | no
-        periodicRestart   | Periodically restart the averaging | no | no
-        restartPeriod     | Periodic restart period | conditional |
+        Property          | Description               | Required | Default
+        type              | type name: fieldAverage              | yes |
+        restartOnRestart  | Restart the averaging on restart     | no  | no
+        restartOnOutput   | Restart the averaging on output      | no  | no
+        periodicRestart   | Periodically restart the averaging   | no  | no
+        restartPeriod     | Periodic restart period              | conditional |
         restartTime       | One-shot reset of the averaging | no | great
         fields            | list of fields and averaging options | yes |
         subRegion         | name of a sub-region such as a surface name | no |
@@ -131,6 +132,7 @@ SourceFiles
 #define functionObjects_fieldAverage_H
 
 #include "fvMeshFunctionObject.H"
+#include "FIFOStack.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -195,10 +197,6 @@ protected:
 
         // Initialisation routines
 
-            //- Checkout fields (causes deletion) from the database
-            //  and reset lists
-            void resetFields();
-
             //- Reset lists (clear existing values) and initialize averaging.
             //  Check requested field averages are valid, populate field lists
             void initialize();
@@ -208,19 +206,19 @@ protected:
 
             //- Add mean average field to database
             template<class Type>
-            void addMeanFieldType(const label fieldi);
+            void addMeanFieldType(fieldAverageItem& item);
 
             //- Add mean average field to database
             template<class Type>
-            void addMeanField(const label fieldi);
+            void addMeanField(fieldAverageItem& item);
 
             //- Add prime-squared average field to database
             template<class Type1, class Type2>
-            void addPrime2MeanFieldType(const label fieldi);
+            void addPrime2MeanFieldType(fieldAverageItem& item);
 
             //- Add prime-squared average field to database
             template<class Type1, class Type2>
-            void addPrime2MeanField(const label fieldi);
+            void addPrime2MeanField(fieldAverageItem& item);
 
 
         // Calculation functions
@@ -230,15 +228,7 @@ protected:
 
             //- Calculate mean average fields
             template<class Type>
-            void calculateMeanFieldType(const label fieldi) const;
-
-            //- Calculate mean average fields
-            template<class Type>
             void calculateMeanFields() const;
-
-            //- Calculate prime-squared average fields
-            template<class Type1, class Type2>
-            void calculatePrime2MeanFieldType(const label fieldi) const;
 
             //- Calculate prime-squared average fields
             template<class Type1, class Type2>
@@ -246,12 +236,23 @@ protected:
 
             //- Add mean-squared field value to prime-squared mean field
             template<class Type1, class Type2>
-            void addMeanSqrToPrime2MeanType(const label fieldi) const;
+            void addMeanSqrToPrime2MeanType(const fieldAverageItem& item) const;
 
             //- Add mean-squared field value to prime-squared mean field
             template<class Type1, class Type2>
             void addMeanSqrToPrime2Mean() const;
 
+            template<class Type>
+            void storeWindowFieldType(fieldAverageItem& item);
+
+            template<class Type>
+            void storeWindowFields();
+
+            template<class Type>
+            void restoreWindowFieldsType(const fieldAverageItem& item);
+
+            template<class Type>
+            void restoreWindowFields(const fieldAverageItem& item);
 
         // I-O
 

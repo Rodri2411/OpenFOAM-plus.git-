@@ -41,7 +41,7 @@ SourceFiles
 #include "regionCoupledBaseFvPatch.H"
 #include "LduInterfaceField.H"
 #include "fvPatchField.H"
-#include "NamedEnum.H"
+#include "Enum.H"
 #include "basicThermo.H"
 #include "coupledFvPatchField.H"
 
@@ -77,16 +77,16 @@ private:
         //- Local reference to region couple patch
         const regionCoupledBaseFvPatch& regionCoupledPatch_;
 
-        //- Methof to extract kappa
-        static const NamedEnum<kappaMethodType, 3> methodTypeNames_;
+        //- Method to extract kappa
+        static const Enum<kappaMethodType> methodTypeNames_;
 
         //- How to get K
         mutable kappaMethodType method_;
 
-        //- AutoPtr to nbr thermo
+        //- An autoPtr to nbr thermo
         mutable const basicThermo* nbrThermoPtr_;
 
-        //- AutoPtr to my thermo
+        //- An autoPtr to my thermo
         mutable const basicThermo* thermoPtr_;
 
 
@@ -221,6 +221,7 @@ public:
             virtual void updateInterfaceMatrix
             (
                 Field<scalar>& result,
+                const bool add,
                 const scalarField& psiInternal,
                 const scalarField& coeffs,
                 const direction cmpt,
@@ -231,6 +232,7 @@ public:
             virtual void updateInterfaceMatrix
             (
                 Field<scalar>&,
+                const bool,
                 const Field<scalar>&,
                 const scalarField&,
                 const Pstream::commsTypes commsType

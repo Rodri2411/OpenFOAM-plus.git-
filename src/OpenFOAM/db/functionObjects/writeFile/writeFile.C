@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2012-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2012-2017 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2015-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -73,6 +73,9 @@ Foam::fileName Foam::functionObjects::writeFile::baseFileDir() const
         }
     }
 
+    // Remove any ".."
+    baseDir.clean();
+
     return baseDir;
 }
 
@@ -92,8 +95,9 @@ Foam::autoPtr<Foam::OFstream> Foam::functionObjects::writeFile::createFile
 
     if (Pstream::master() && writeToFile_)
     {
-        const word startTimeName =
-            fileObr_.time().timeName(fileObr_.time().startTime().value());
+        const scalar startTime = fileObr_.time().startTime().value();
+        const scalar userStartTime = fileObr_.time().timeToUserTime(startTime);
+        const word startTimeName = Time::timeName(userStartTime);
 
         fileName outputDir(baseFileDir()/prefix_/startTimeName);
 
@@ -105,10 +109,10 @@ Foam::autoPtr<Foam::OFstream> Foam::functionObjects::writeFile::createFile
         IFstream is(outputDir/(fName + ".dat"));
         if (is.good())
         {
-            fName = fName + "_" + fileObr_.time().timeName();
+            fName = fName + "_" + startTimeName;
         }
 
-        osPtr.set(new OFstream(outputDir/(fName + ".dat")));
+        osPtr.reset(new OFstream(outputDir/(fName + ".dat")));
 
         initStream(osPtr());
     }
@@ -146,7 +150,8 @@ Foam::functionObjects::writeFile::writeFile
     fileName_("undefined"),
     filePtr_(),
     writePrecision_(IOstream::defaultPrecision()),
-    writeToFile_(true)
+    writeToFile_(true),
+    writtenHeader_(false)
 {}
 
 
@@ -163,7 +168,8 @@ Foam::functionObjects::writeFile::writeFile
     fileName_(fileName),
     filePtr_(),
     writePrecision_(IOstream::defaultPrecision()),
-    writeToFile_(true)
+    writeToFile_(true),
+    writtenHeader_(false)
 {
     read(dict);
 
@@ -230,8 +236,13 @@ void Foam::functionObjects::writeFile::writeCommented
     const string& str
 ) const
 {
-    os  << setw(1) << "#" << setw(1) << ' '
-        << setf(ios_base::left) << setw(charWidth() - 2) << str.c_str();
+    os  << setw(1) << "#";
+
+    if (str.size())
+    {
+        os  << setw(1) << ' '
+            << setf(ios_base::left) << setw(charWidth() - 2) << str.c_str();
+    }
 }
 
 
@@ -251,14 +262,21 @@ void Foam::functionObjects::writeFile::writeHeader
     const string& str
 ) const
 {
-    os  << setw(1) << "#" << setw(1) << ' '
-        << setf(ios_base::left) << setw(charWidth() - 2) << str.c_str() << nl;
+    writeCommented(os, str);
+    os  << nl;
 }
 
 
 void Foam::functionObjects::writeFile::writeTime(Ostream& os) const
 {
-    os  << setw(charWidth()) << fileObr_.time().timeName();
+    const scalar timeNow = fileObr_.time().timeOutputValue();
+    os  << setw(charWidth()) << Time::timeName(timeNow);
+}
+
+
+void Foam::functionObjects::writeFile::writeBreak(Ostream& os) const
+{
+    writeHeader(os, "===");
 }
 
 

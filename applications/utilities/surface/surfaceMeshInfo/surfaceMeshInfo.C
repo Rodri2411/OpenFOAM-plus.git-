@@ -62,6 +62,7 @@ Note
 \*---------------------------------------------------------------------------*/
 
 #include "argList.H"
+#include "profiling.H"
 #include "Time.H"
 
 #include "UnsortedMeshedSurfaces.H"
@@ -80,13 +81,13 @@ int main(int argc, char *argv[])
 
     argList::noBanner();
     argList::noParallel();
-    argList::validArgs.append("surfaceFile");
+    argList::addArgument("surfaceFile");
 
     argList::addOption
     (
         "scale",
         "factor",
-        "geometry scaling factor - default is 1"
+        "input geometry scaling factor"
     );
     argList::addBoolOption
     (
@@ -98,6 +99,7 @@ int main(int argc, char *argv[])
         "xml",
         "write output in XML format"
     );
+    profiling::disable(); // Disable profiling (and its output)
 
     argList args(argc, argv);
     Time runTime(args.rootPath(), args.caseName());
@@ -117,10 +119,10 @@ int main(int argc, char *argv[])
     // use UnsortedMeshedSurface, not MeshedSurface to maintain ordering
     UnsortedMeshedSurface<face> surf(importName);
 
-    scalar scaling = 0;
-    if (args.optionReadIfPresent("scale", scaling) && scaling > 0)
+    const scalar scaling = args.optionLookupOrDefault<scalar>("scale", -1);
+    if (scaling > 0)
     {
-        Info<< " -scale " << scaling << endl;
+        Info<< " -scale " << scaling << nl;
         surf.scalePoints(scaling);
     }
 

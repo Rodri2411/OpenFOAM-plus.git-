@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2012 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -26,28 +26,29 @@ License
 #include "surfaceFormatsCore.H"
 
 #include "Time.H"
-#include "IFstream.H"
-#include "OFstream.H"
-#include "SortableList.H"
+#include "ListOps.H"
+#include "Fstream.H"
 #include "surfMesh.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 Foam::word Foam::fileFormats::surfaceFormatsCore::nativeExt("ofs");
 
+
 // * * * * * * * * * * * * * Static Member Functions * * * * * * * * * * * * //
 
 Foam::string Foam::fileFormats::surfaceFormatsCore::getLineNoComment
 (
-    IFstream& is
+    ISstream& is,
+    const char comment
 )
 {
-    string line;
+    Foam::string line;
     do
     {
         is.getLine(line);
     }
-    while ((line.empty() || line[0] == '#') && is.good());
+    while ((line.empty() || line[0] == comment) && is.good());
 
     return line;
 }
@@ -167,34 +168,14 @@ bool Foam::fileFormats::surfaceFormatsCore::checkSupport
     }
     else if (verbose)
     {
-        wordList toc = available.toc();
-        SortableList<word> known(toc.xfer());
-
         Info<<"Unknown file extension for " << functionName
             << " : " << ext << nl
-            <<"Valid types: (";
-        // compact output:
-        forAll(known, i)
-        {
-            Info<<" " << known[i];
-        }
-        Info<<" )" << endl;
+            << "Valid types: " << flatOutput(available.sortedToc()) << nl
+            << endl;
     }
 
     return false;
 }
-
-
-// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
-
-Foam::fileFormats::surfaceFormatsCore::surfaceFormatsCore()
-{}
-
-
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-Foam::fileFormats::surfaceFormatsCore::~surfaceFormatsCore()
-{}
 
 
 // ************************************************************************* //

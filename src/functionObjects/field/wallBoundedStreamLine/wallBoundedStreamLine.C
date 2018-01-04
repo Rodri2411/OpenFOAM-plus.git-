@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2015-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -62,10 +62,8 @@ Foam::tetIndices Foam::functionObjects::wallBoundedStreamLine::findNearestTet
     label minTetPti = -1;
     scalar minDistSqr = sqr(GREAT);
 
-    forAll(cFaces, cFacei)
+    for (label facei : cFaces)
     {
-        label facei = cFaces[cFacei];
-
         if (isWallPatch[facei])
         {
             const face& f = mesh_.faces()[facei];
@@ -98,8 +96,7 @@ Foam::tetIndices Foam::functionObjects::wallBoundedStreamLine::findNearestTet
     (
         celli,
         minFacei,
-        minTetPti,
-        mesh_
+        minTetPti
     );
 }
 
@@ -134,44 +131,47 @@ void Foam::functionObjects::wallBoundedStreamLine::track()
         // Get the seed points
         // ~~~~~~~~~~~~~~~~~~~
 
-        const sampledSet& seedPoints = sampledSetPtr_();
-
+        const sampledSet& seedPoints = sampledSetPoints();
 
         forAll(seedPoints, i)
         {
-            const point& seedPt = seedPoints[i];
-            label celli = seedPoints.cells()[i];
+            const label celli = seedPoints.cells()[i];
 
-            tetIndices ids(findNearestTet(isWallPatch, seedPt, celli));
-
-            if (ids.face() != -1 && isWallPatch[ids.face()])
+            if (celli != -1)
             {
-                //Pout<< "Seeding particle :" << nl
-                //    << "     seedPt:" << seedPt << nl
-                //    << "     face  :" << ids.face() << nl
-                //    << "     at    :" << mesh_.faceCentres()[ids.face()] << nl
-                //    << "     cell  :" << mesh_.cellCentres()[ids.cell()] << nl
-                //    << endl;
+                const point& seedPt = seedPoints[i];
+                tetIndices ids(findNearestTet(isWallPatch, seedPt, celli));
 
-                particles.addParticle
-                (
-                    new wallBoundedStreamLineParticle
+                if (ids.face() != -1 && isWallPatch[ids.face()])
+                {
+                    //Pout<< "Seeding particle :" << nl
+                    //    << "     seedPt:" << seedPt << nl
+                    //    << "     face  :" << ids.face() << nl
+                    //    << "     at    :" << mesh_.faceCentres()[ids.face()]
+                    //    << nl
+                    //    << "     cell  :" << mesh_.cellCentres()[ids.cell()]
+                    //    << nl << endl;
+
+                    particles.addParticle
                     (
-                        mesh_,
-                        ids.faceTri(mesh_).centre(),
-                        ids.cell(),
-                        ids.face(),     // tetFace
-                        ids.tetPt(),
-                        -1,             // not on a mesh edge
-                        -1,             // not on a diagonal edge
-                        lifeTime_       // lifetime
-                    )
-                );
-            }
-            else
-            {
-                Pout<< type() << " : ignoring seed " << seedPt
-                    << " since not in wall cell." << endl;
+                        new wallBoundedStreamLineParticle
+                        (
+                            mesh_,
+                            ids.faceTri(mesh_).centre(),
+                            ids.cell(),
+                            ids.face(),     // tetFace
+                            ids.tetPt(),
+                            -1,             // not on a mesh edge
+                            -1,             // not on a diagonal edge
+                            lifeTime_       // lifetime
+                        )
+                    );
+                }
+                else
+                {
+                    Pout<< type() << " : ignoring seed " << seedPt
+                        << " since not in wall cell." << endl;
+                }
             }
         }
     }
@@ -222,7 +222,7 @@ void Foam::functionObjects::wallBoundedStreamLine::track()
     const scalar trackTime = Foam::sqrt(GREAT);
 
     // Track
-    particles.move(td, trackTime);
+    particles.move(particles, td, trackTime);
 }
 
 
@@ -261,6 +261,7 @@ bool Foam::functionObjects::wallBoundedStreamLine::read(const dictionary& dict)
         {
             // 1. Positive volume decomposition tets
             faceSet faces(mesh_, "lowQualityTetFaces", mesh_.nFaces()/100+1);
+
             if
             (
                 polyMeshTetDecomposition::checkFaceTets
@@ -283,21 +284,18 @@ bool Foam::functionObjects::wallBoundedStreamLine::read(const dictionary& dict)
 
             // 2. All edges on a cell having two faces
             EdgeMap<label> numFacesPerEdge;
-            forAll(mesh_.cells(), celli)
+            for (const cell& cFaces : mesh_.cells())
             {
-                const cell& cFaces = mesh_.cells()[celli];
-
                 numFacesPerEdge.clear();
 
-                forAll(cFaces, cFacei)
+                for (const label facei : cFaces)
                 {
-                    label facei = cFaces[cFacei];
                     const face& f = mesh_.faces()[facei];
                     forAll(f, fp)
                     {
                         const edge e(f[fp], f.nextLabel(fp));
-                        EdgeMap<label>::iterator eFnd =
-                            numFacesPerEdge.find(e);
+                        EdgeMap<label>::iterator eFnd = numFacesPerEdge.find(e);
+
                         if (eFnd != numFacesPerEdge.end())
                         {
                             eFnd()++;
@@ -309,12 +307,12 @@ bool Foam::functionObjects::wallBoundedStreamLine::read(const dictionary& dict)
                     }
                 }
 
-                forAllConstIter(EdgeMap<label>, numFacesPerEdge, iter)
+                forAllConstIters(numFacesPerEdge, iter)
                 {
                     if (iter() != 2)
                     {
                         FatalErrorInFunction
-                            << "problem cell:" << celli
+                            << "problem cell:" << cFaces
                             << abort(FatalError);
                     }
                 }

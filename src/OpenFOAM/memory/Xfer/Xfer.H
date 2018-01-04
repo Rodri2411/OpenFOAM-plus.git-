@@ -93,20 +93,23 @@ class Xfer
 
 public:
 
+    typedef T Type;
+
+
     // Constructors
 
         //- Store object pointer and manage its deletion
         //  Can also be used later to transfer by assignment
-        inline explicit Xfer(T* = 0);
+        inline explicit Xfer(T* p = nullptr);
 
         //- Construct by copying or by transferring the parameter contents
-        inline explicit Xfer(T&, bool allowTransfer=false);
+        inline explicit Xfer(T& t, bool allowTransfer=false);
 
         //- Construct by copying the parameter contents
-        inline explicit Xfer(const T&);
+        inline explicit Xfer(const T& t);
 
         //- Construct by transferring the contents
-        inline Xfer(const Xfer<T>&);
+        inline Xfer(const Xfer<T>& t);
 
 
     //- Destructor
@@ -122,10 +125,10 @@ public:
     // Member Operators
 
         //- Transfer the contents into the object
-        inline void operator=(T&);
+        inline void operator=(T& t);
 
         //- Transfer the contents into the object
-        inline void operator=(const Xfer<T>&);
+        inline void operator=(const Xfer<T>& t);
 
         //- Reference to the underlying datatype
         inline T& operator()() const;
@@ -141,20 +144,20 @@ public:
 //
 //  \sa xferCopyTo, xferMove, xferMoveTo, xferTmp and Foam::Xfer
 template<class T>
-inline Xfer<T> xferCopy(const T&);
+inline Xfer<T> xferCopy(const T& t);
 
 //- Construct by transferring the contents of the \a arg
 //
 //  \sa xferCopy, xferCopyTo, xferMoveTo, xferTmp and Foam::Xfer
 template<class T>
-inline Xfer<T> xferMove(T&);
+inline Xfer<T> xferMove(T& t);
 
 
 //- Construct by transferring the contents of the \a arg
 //
 //  \sa xferCopy, xferCopyTo, xferMove, xferMoveTo and Foam::Xfer
 template<class T>
-inline Xfer<T> xferTmp(Foam::tmp<T>&);
+inline Xfer<T> xferTmp(Foam::tmp<T>& tt);
 
 
 //- Construct by copying the contents of the \a arg
@@ -162,7 +165,7 @@ inline Xfer<T> xferTmp(Foam::tmp<T>&);
 //
 //  \sa xferCopy, xferMove, xferMoveTo, xferTmp and Foam::Xfer
 template<class To, class From>
-inline Xfer<To> xferCopyTo(const From&);
+inline Xfer<To> xferCopyTo(const From& t);
 
 
 //- Construct by transferring the contents of the \a arg
@@ -177,7 +180,7 @@ inline Xfer<To> xferCopyTo(const From&);
 //
 //  \sa xferCopy, xferCopyTo, xferMove, xferTmp and Foam::Xfer
 template<class To, class From>
-inline Xfer<To> xferMoveTo(From&);
+inline Xfer<To> xferMoveTo(From& t);
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

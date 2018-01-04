@@ -362,29 +362,11 @@ void Foam::fvPatchField<Type>::manipulateMatrix
 template<class Type>
 void Foam::fvPatchField<Type>::write(Ostream& os) const
 {
-    os.writeKeyword("type") << type() << token::END_STATEMENT << nl;
+    os.writeEntry("type", type());
 
     if (patchType_.size())
     {
-        os.writeKeyword("patchType") << patchType_
-            << token::END_STATEMENT << nl;
-    }
-}
-
-
-template<class Type>
-template<class EntryType>
-void Foam::fvPatchField<Type>::writeEntryIfDifferent
-(
-    Ostream& os,
-    const word& entryName,
-    const EntryType& value1,
-    const EntryType& value2
-) const
-{
-    if (value1 != value2)
-    {
-        os.writeKeyword(entryName) << value2 << token::END_STATEMENT << nl;
+        os.writeEntry("patchType", patchType_);
     }
 }
 
@@ -594,7 +576,7 @@ Foam::Ostream& Foam::operator<<(Ostream& os, const fvPatchField<Type>& ptf)
 {
     ptf.write(os);
 
-    os.check("Ostream& operator<<(Ostream&, const fvPatchField<Type>&");
+    os.check(FUNCTION_NAME);
 
     return os;
 }

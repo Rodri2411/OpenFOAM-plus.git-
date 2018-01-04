@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2016-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -35,6 +35,18 @@ License
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
+const Foam::Enum
+<
+    Foam::sampledTriSurfaceMesh::samplingSource
+>
+Foam::sampledTriSurfaceMesh::samplingSourceNames_
+{
+    { samplingSource::cells, "cells" },
+    { samplingSource::insideCells, "insideCells" },
+    { samplingSource::boundaryFaces, "boundaryFaces" },
+};
+
+
 namespace Foam
 {
     defineTypeNameAndDebug(sampledTriSurfaceMesh, 0);
@@ -44,18 +56,6 @@ namespace Foam
         sampledTriSurfaceMesh,
         word
     );
-
-    template<>
-    const char* NamedEnum<sampledTriSurfaceMesh::samplingSource, 3>::names[] =
-    {
-        "cells",
-        "insideCells",
-        "boundaryFaces"
-    };
-
-    const NamedEnum<sampledTriSurfaceMesh::samplingSource, 3>
-    sampledTriSurfaceMesh::samplingSourceNames_;
-
 
     //- Private class for finding nearest
     //  Comprising:
@@ -437,7 +437,7 @@ bool Foam::sampledTriSurfaceMesh::update(const meshSearch& meshSearcher)
     }
 
     // Subset cellOrFaceLabels (for compact faces)
-    cellOrFaceLabels = UIndirectList<label>(cellOrFaceLabels, faceMap)();
+    cellOrFaceLabels = labelUIndList(cellOrFaceLabels, faceMap)();
 
     // Store any face per point (without using pointFaces())
     labelList pointToFace(pointMap.size());
@@ -683,9 +683,10 @@ Foam::sampledTriSurfaceMesh::sampledTriSurfaceMesh
             IOobject::MUST_READ,
             IOobject::NO_WRITE,
             false
-        )
+        ),
+        dict
     ),
-    sampleSource_(samplingSourceNames_[dict.lookup("source")]),
+    sampleSource_(samplingSourceNames_.lookup("source", dict)),
     needsUpdate_(true),
     keepIds_(dict.lookupOrDefault<Switch>("keepIds", false)),
     originalIds_(),
@@ -778,16 +779,35 @@ bool Foam::sampledTriSurfaceMesh::update()
         surface_.triSurface::points(),
         surface_.triSurface::meshPoints()
     );
-    bb.min() = max(bb.min(), mesh().bounds().min());
-    bb.max() = min(bb.max(), mesh().bounds().max());
 
-    // Extend a bit
-    const vector span(bb.span());
+    // Check for overlap with (global!) mesh bb
+    const bool intersect = bb.intersect(mesh().bounds());
 
-    bb.min() -= 0.5*span;
-    bb.max() += 0.5*span;
+    if (!intersect)
+    {
+        // Surface and mesh do not overlap at all. Guarantee a valid
+        // bounding box so we don't get any 'invalid bounding box' errors.
 
-    bb.inflate(1e-6);
+        WarningInFunction
+            << "Surface " << surface_.searchableSurface::name()
+            << " does not overlap bounding box of mesh " << mesh().bounds()
+            << endl;
+
+        bb = treeBoundBox(mesh().bounds());
+        const vector span(bb.span());
+
+        bb.min() += (0.5-1e-6)*span;
+        bb.max() -= (0.5-1e-6)*span;
+    }
+    else
+    {
+        // Extend a bit
+        const vector span(bb.span());
+        bb.min() -= 0.5*span;
+        bb.max() += 0.5*span;
+
+        bb.inflate(1e-6);
+    }
 
     // Mesh search engine, no triangulation of faces.
     meshSearch meshSearcher(mesh(), bb, polyMesh::FACE_PLANES);

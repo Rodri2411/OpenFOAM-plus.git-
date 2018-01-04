@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -31,7 +31,7 @@ License
 Foam::vector Foam::cellModel::centre
 (
     const labelList& pointLabels,
-    const pointField& points
+    const UList<point>& points
 ) const
 {
     // Estimate centre of cell
@@ -88,7 +88,7 @@ Foam::vector Foam::cellModel::centre
 Foam::scalar Foam::cellModel::mag
 (
     const labelList& pointLabels,
-    const pointField& points
+    const UList<point>& points
 ) const
 {
     // Estimate centre of cell
@@ -136,5 +136,6 @@ Foam::scalar Foam::cellModel::mag
 
     return v;
 }
+
 
 // ************************************************************************* //

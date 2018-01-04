@@ -40,10 +40,9 @@ Foam::autoPtr<Foam::porosityModel> Foam::porosityModel::New
     Info<< "Porosity region " << name << ":" << nl
         << "    selecting model: " << modelType << endl;
 
-    meshConstructorTable::iterator cstrIter =
-        meshConstructorTablePtr_->find(modelType);
+    auto cstrIter = meshConstructorTablePtr_->cfind(modelType);
 
-    if (cstrIter == meshConstructorTablePtr_->end())
+    if (!cstrIter.found())
     {
         FatalErrorInFunction
             << "Unknown " << typeName << " type " << modelType << nl << nl

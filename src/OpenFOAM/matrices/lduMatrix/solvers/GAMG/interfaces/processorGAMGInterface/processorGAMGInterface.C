@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -25,8 +25,7 @@ License
 
 #include "processorGAMGInterface.H"
 #include "addToRunTimeSelectionTable.H"
-#include "HashTable.H"
-#include "labelPair.H"
+#include "labelPairHashes.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -84,10 +83,7 @@ Foam::processorGAMGInterface::processorGAMGInterface
     );
 
     // From coarse cell pair to coarse face
-    HashTable<label, labelPair, labelPair::Hash<>> cellsToCoarseFace
-    (
-        2*localRestrictAddressing.size()
-    );
+    labelPairLookup cellsToCoarseFace(2*localRestrictAddressing.size());
 
     forAll(localRestrictAddressing, ffi)
     {
@@ -114,8 +110,7 @@ Foam::processorGAMGInterface::processorGAMGInterface
             );
         }
 
-        HashTable<label, labelPair, labelPair::Hash<>>::const_iterator fnd =
-            cellsToCoarseFace.find(cellPair);
+        labelPairLookup::const_iterator fnd = cellsToCoarseFace.find(cellPair);
 
         if (fnd == cellsToCoarseFace.end())
         {
@@ -195,12 +190,7 @@ void Foam::processorGAMGInterface::initInternalFieldTransfer
     const labelUList& iF
 ) const
 {
-    label oldWarn = UPstream::warnComm;
-    UPstream::warnComm = comm();
-
     send(commsType, interfaceInternalField(iF)());
-
-    UPstream::warnComm = oldWarn;
 }
 
 
@@ -210,12 +200,7 @@ Foam::tmp<Foam::labelField> Foam::processorGAMGInterface::internalFieldTransfer
     const labelUList& iF
 ) const
 {
-    label oldWarn = UPstream::warnComm;
-    UPstream::warnComm = comm();
-
     tmp<Field<label>> tfld(receive<label>(commsType, this->size()));
-
-    UPstream::warnComm = oldWarn;
 
     return tfld;
 }

@@ -27,7 +27,7 @@ License
 #include "IOstreams.H"
 #include "ISstream.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 namespace Foam
 {
@@ -47,7 +47,7 @@ namespace Foam
 }
 
 
-// * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
+// * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * //
 
 Foam::token Foam::functionEntry::readLine(const word& key, Istream& is)
 {
@@ -84,11 +84,7 @@ bool Foam::functionEntry::execute
     Istream& is
 )
 {
-    is.fatalCheck
-    (
-        "functionEntry::execute"
-        "(const word& functionName, dictionary& parentDict, Istream&)"
-    );
+    is.fatalCheck(FUNCTION_NAME);
 
     if (!executedictionaryIstreamMemberFunctionTablePtr_)
     {
@@ -101,17 +97,17 @@ bool Foam::functionEntry::execute
         return true;
     }
 
-    executedictionaryIstreamMemberFunctionTable::iterator mfIter =
-        executedictionaryIstreamMemberFunctionTablePtr_->find(functionName);
+    auto mfIter =
+        executedictionaryIstreamMemberFunctionTablePtr_->cfind(functionName);
 
-    if (mfIter == executedictionaryIstreamMemberFunctionTablePtr_->end())
+    if (!mfIter.found())
     {
         FatalErrorInFunction
             << "Unknown functionEntry '" << functionName
             << "' in " << is.name() << " near line " << is.lineNumber()
             << nl << nl
-            << "Valid functionEntries are :" << endl
-            << executedictionaryIstreamMemberFunctionTablePtr_->toc()
+            << "Valid functionEntries :" << endl
+            << executedictionaryIstreamMemberFunctionTablePtr_->sortedToc()
             << exit(FatalError);
     }
 
@@ -127,11 +123,7 @@ bool Foam::functionEntry::execute
     Istream& is
 )
 {
-    is.fatalCheck
-    (
-        "functionEntry::execute"
-        "(const word&, const dictionary&, primitiveEntry&, Istream&)"
-    );
+    is.fatalCheck(FUNCTION_NAME);
 
     if (!executeprimitiveEntryIstreamMemberFunctionTablePtr_)
     {
@@ -144,17 +136,20 @@ bool Foam::functionEntry::execute
         return true;
     }
 
-    executeprimitiveEntryIstreamMemberFunctionTable::iterator mfIter =
-        executeprimitiveEntryIstreamMemberFunctionTablePtr_->find(functionName);
+    auto mfIter =
+        executeprimitiveEntryIstreamMemberFunctionTablePtr_->cfind
+        (
+            functionName
+        );
 
-    if (mfIter == executeprimitiveEntryIstreamMemberFunctionTablePtr_->end())
+    if (!mfIter.found())
     {
         FatalErrorInFunction
             << "Unknown functionEntry '" << functionName
             << "' in " << is.name() << " near line " << is.lineNumber()
             << nl << nl
-            << "Valid functionEntries are :" << endl
-            << executeprimitiveEntryIstreamMemberFunctionTablePtr_->toc()
+            << "Valid functionEntries :" << endl
+            << executeprimitiveEntryIstreamMemberFunctionTablePtr_->sortedToc()
             << exit(FatalError);
     }
 
@@ -165,13 +160,16 @@ bool Foam::functionEntry::execute
 void Foam::functionEntry::write(Ostream& os) const
 {
     // Contents should be single string token
-    const token& t = operator[](0);
-    const string& s = t.stringToken();
+    const token& tok = operator[](0);
+    const string& s = tok.stringToken();
 
-    for (size_t i = 0; i < s.size(); i++)
+    // Write character-wise for literal output
+    for (size_t i = 0; i < s.size(); ++i)
     {
         os.write(s[i]);
     }
+
+    os << nl;
 }
 
 

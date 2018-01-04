@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2013-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) YEAR AUTHOR,AFFILIATION
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -36,14 +36,14 @@ Description
         const label fieldi
     )
 
-    setValue
+    constrain
     (
-         fvMatrix<Type}>& eqn,
+        fvMatrix<Type>& eqn,
         const label fieldi
     )
 
     where :
-        fld is the field in fieldNames
+        fieldi is the index in the fields entry
         eqn is the fvMatrix
 
     energySource
@@ -55,7 +55,7 @@ Description
 
         scalarCodedSourceCoeffs
         {
-            fieldNames      (h);
+            fields  (h);
             name    sourceTime;
 
             codeInclude
@@ -172,7 +172,7 @@ public:
             );
 
             //- Set value
-            virtual void setValue
+            virtual void constrain
             (
                 fvMatrix<${TemplateType}>& eqn,
                 const label fieldi

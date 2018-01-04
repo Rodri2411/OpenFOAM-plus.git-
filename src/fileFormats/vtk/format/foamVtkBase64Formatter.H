@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2016 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2016-2017 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    foamVtkBase64Formatter
+    Foam::vtk::base64Formatter
 
 Description
     Inline base-64 encoded binary output.
@@ -34,42 +34,36 @@ Description
 #define foamVtkBase64Formatter_H
 
 #include "foamVtkFormatter.H"
-#include "base64Layer.H"
+#include "foamVtkBase64Layer.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
+namespace vtk
+{
 
 /*---------------------------------------------------------------------------*\
-                   Class foamVtkBase64Formatter Declaration
+                       Class base64Formatter Declaration
 \*---------------------------------------------------------------------------*/
 
-class foamVtkBase64Formatter
+class base64Formatter
 :
-    public foamVtkFormatter,
-    private base64Layer
+    public foamVtkBase64Layer
 {
     // Private Data Members
 
         static const char* name_;
-        static const char* encoding_;
+        static const outputOptions opts_;
 
 
     // Private Member Functions
 
         //- Disallow default bitwise copy construct
-        foamVtkBase64Formatter(const foamVtkBase64Formatter&) = delete;
+        base64Formatter(const base64Formatter&) = delete;
 
         //- Disallow default bitwise assignment
-        void operator=(const foamVtkBase64Formatter&) = delete;
-
-protected:
-
-    // Protected Member Functions
-
-        //- Write
-        void write(const char* s, std::streamsize n);
+        void operator=(const base64Formatter&) = delete;
 
 
 public:
@@ -77,36 +71,31 @@ public:
     // Constructors
 
         //- Construct and attach to an output stream
-        foamVtkBase64Formatter(std::ostream&);
+        base64Formatter(std::ostream& os);
 
 
     //- Destructor
-    virtual ~foamVtkBase64Formatter();
+    virtual ~base64Formatter();
 
 
     // Member Functions
 
+        //- The output is INLINE_BASE64.
+        virtual const outputOptions& opts() const;
+
         //- Name for the XML output type ("binary")
-        //  The lowercase version of the Legacy output type.
         virtual const char* name() const;
 
-        //- Name for the XML append encoding.
-        virtual const char* encoding() const;
 
-
-        //- Write leading size for binary output
-        virtual void writeSize(const uint64_t);
-
-        virtual void write(const uint8_t);
-        virtual void write(const label);
-        virtual void write(const float);
-        virtual void write(const double);
+        //- End the encoding sequence (padding the final characters with '=')
+        //  and write a newline to the output if any encoding was done.
         virtual void flush();
 
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace vtk
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

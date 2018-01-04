@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -39,6 +39,7 @@ SourceFiles
 #define ParticleTracks_H
 
 #include "CloudFunctionObject.H"
+#include "labelPairHashes.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -61,9 +62,6 @@ class ParticleTracks
             //- Convenience typedef for parcel type
             typedef typename CloudType::parcelType parcelType;
 
-            //- Convenience typedef for hash hit-table
-            typedef HashTable<label, labelPair, typename labelPair::Hash<>>
-                hitTableType;
 
         //- Number of face-hit intervals between storing parcel data
         label trackInterval_;
@@ -75,7 +73,7 @@ class ParticleTracks
         Switch resetOnWrite_;
 
         //- Table of number of times a particle has hit a face
-        hitTableType faceHitCounter_;
+        labelPairLookup faceHitCounter_;
 
         //- Pointer to the cloud storage
         autoPtr<Cloud<parcelType>> cloudPtr_;
@@ -135,8 +133,8 @@ public:
             //- Return const access to the reset on write flag
             inline const Switch& resetOnWrite() const;
 
-            //- Rerurn the table of number of times a particle has hit a face
-            inline const hitTableType& faceHitCounter() const;
+            //- Return the table of number of times a particle has hit a face
+            inline const labelPairLookup& faceHitCounter() const;
 
             //- Return const access to the cloud
             inline const Cloud<parcelType>& cloud() const;
@@ -148,12 +146,7 @@ public:
             virtual void preEvolve();
 
             //- Post-face hook
-            virtual void postFace
-            (
-                const parcelType& p,
-                const label facei,
-                bool& keepParticle
-            );
+            virtual void postFace(const parcelType& p, bool& keepParticle);
 };
 
 

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
@@ -50,13 +50,13 @@ Foam::ReactingParcel<ParcelType>::ReactingParcel
 (
     const polyMesh& mesh,
     Istream& is,
-    bool readFields
+    bool readFields,
+    bool newFormat
 )
 :
-    ParcelType(mesh, is, readFields),
+    ParcelType(mesh, is, readFields, newFormat),
     mass0_(0.0),
-    Y_(0),
-    pc_(0.0)
+    Y_(0)
 {
     if (readFields)
     {
@@ -75,16 +75,7 @@ Foam::ReactingParcel<ParcelType>::ReactingParcel
         Y_.transfer(Ymix);
     }
 
-    // Check state of Istream
-    is.check
-    (
-        "ReactingParcel<ParcelType>::ReactingParcel"
-        "("
-            "const polyMesh&, "
-            "Istream&, "
-            "bool"
-        ")"
-    );
+    is.check(FUNCTION_NAME);
 }
 
 
@@ -92,11 +83,6 @@ template<class ParcelType>
 template<class CloudType>
 void Foam::ReactingParcel<ParcelType>::readFields(CloudType& c)
 {
-    if (!c.size())
-    {
-        return;
-    }
-
     ParcelType::readFields(c);
 }
 
@@ -109,14 +95,15 @@ void Foam::ReactingParcel<ParcelType>::readFields
     const CompositionType& compModel
 )
 {
-    if (!c.size())
-    {
-        return;
-    }
+    bool valid = c.size();
 
     ParcelType::readFields(c);
 
-    IOField<scalar> mass0(c.fieldIOobject("mass0", IOobject::MUST_READ));
+    IOField<scalar> mass0
+    (
+        c.fieldIOobject("mass0", IOobject::MUST_READ),
+        valid
+    );
     c.checkFieldIOobject(c, mass0);
 
     label i = 0;
@@ -152,7 +139,8 @@ void Foam::ReactingParcel<ParcelType>::readFields
             (
                 "Y" + phaseTypes[j] + stateLabels[j],
                  IOobject::MUST_READ
-            )
+            ),
+            valid
         );
 
         label i = 0;
@@ -185,7 +173,6 @@ void Foam::ReactingParcel<ParcelType>::writeFields
 
     const label np = c.size();
 
-    if (np > 0)
     {
         IOField<scalar> mass0(c.fieldIOobject("mass0", IOobject::NO_READ), np);
 
@@ -195,7 +182,7 @@ void Foam::ReactingParcel<ParcelType>::writeFields
             const ReactingParcel<ParcelType>& p = iter();
             mass0[i++] = p.mass0_;
         }
-        mass0.write();
+        mass0.write(np > 0);
 
         // Write the composition fractions
         const wordList& phaseTypes = compModel.phaseTypes();
@@ -228,7 +215,7 @@ void Foam::ReactingParcel<ParcelType>::writeFields
                 Y[i++] = p.Y()[j];
             }
 
-            Y.write();
+            Y.write(np > 0);
         }
     }
 }
@@ -328,12 +315,7 @@ Foam::Ostream& Foam::operator<<
         os  << p.Y();
     }
 
-    // Check state of Ostream
-    os.check
-    (
-        "Ostream& operator<<(Ostream&, const ReactingParcel<ParcelType>&)"
-    );
-
+    os.check(FUNCTION_NAME);
     return os;
 }
 

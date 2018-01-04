@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
@@ -84,7 +84,7 @@ void Foam::globalMeshData::initProcAddr()
 
     if (Pstream::parRun())
     {
-        PstreamBuffers pBufs(Pstream::nonBlocking);
+        PstreamBuffers pBufs(Pstream::commsTypes::nonBlocking);
 
         // Send indices of my processor patches to my neighbours
         forAll(processorPatches_, i)
@@ -401,7 +401,7 @@ void Foam::globalMeshData::calcSharedEdges() const
             )
             {
                 // Receive the edges using shared points from the slave.
-                IPstream fromSlave(Pstream::blocking, slave);
+                IPstream fromSlave(Pstream::commsTypes::blocking, slave);
                 EdgeMap<labelList> procSharedEdges(fromSlave);
 
                 if (debug)
@@ -450,7 +450,7 @@ void Foam::globalMeshData::calcSharedEdges() const
             )
             {
                 // Receive the edges using shared points from the slave.
-                OPstream toSlave(Pstream::blocking, slave);
+                OPstream toSlave(Pstream::commsTypes::blocking, slave);
                 toSlave << globalShared;
             }
         }
@@ -459,14 +459,20 @@ void Foam::globalMeshData::calcSharedEdges() const
     {
         // Send local edges to master
         {
-            OPstream toMaster(Pstream::blocking, Pstream::masterNo());
-
+            OPstream toMaster
+            (
+                Pstream::commsTypes::blocking,
+                Pstream::masterNo()
+            );
             toMaster << localShared;
         }
         // Receive merged edges from master.
         {
-            IPstream fromMaster(Pstream::blocking, Pstream::masterNo());
-
+            IPstream fromMaster
+            (
+                Pstream::commsTypes::blocking,
+                Pstream::masterNo()
+            );
             fromMaster >> globalShared;
         }
     }
@@ -1389,10 +1395,9 @@ void Foam::globalMeshData::calcGlobalPointBoundaryFaces() const
                 // Add all slaveBFaces. Note that need to check for
                 // uniqueness only in case of cyclics.
 
-                forAll(slaveBFaces, j)
+                for (const label slave : slaveBFaces)
                 {
-                    label slave = slaveBFaces[j];
-                    if (findIndex(SubList<label>(myBFaces, sz), slave) == -1)
+                    if (!SubList<label>(myBFaces, sz).found(slave))
                     {
                         myBFaces[n++] = slave;
                     }
@@ -1428,11 +1433,10 @@ void Foam::globalMeshData::calcGlobalPointBoundaryFaces() const
                 const labelList& slaveBFaces =
                     globalPointBoundaryFaces[transformedSlaves[i]];
 
-                forAll(slaveBFaces, j)
+                for (const label slave : slaveBFaces)
                 {
-                    label slave = slaveBFaces[j];
                     // Check that same face not already present untransformed
-                    if (findIndex(untrafoFaces, slave)== -1)
+                    if (!untrafoFaces.found(slave))
                     {
                         label proci = globalIndices.whichProcID(slave);
                         label facei = globalIndices.toLocal(proci, slave);
@@ -1618,10 +1622,9 @@ void Foam::globalMeshData::calcGlobalPointBoundaryCells() const
                 // Add all slaveBCells. Note that need to check for
                 // uniqueness only in case of cyclics.
 
-                forAll(slaveBCells, j)
+                for (const label slave : slaveBCells)
                 {
-                    label slave = slaveBCells[j];
-                    if (findIndex(SubList<label>(myBCells, sz), slave) == -1)
+                    if (!SubList<label>(myBCells, sz).found(slave))
                     {
                         myBCells[n++] = slave;
                     }
@@ -1657,12 +1660,10 @@ void Foam::globalMeshData::calcGlobalPointBoundaryCells() const
                 const labelList& slaveBCells =
                     globalPointBoundaryCells[transformedSlaves[i]];
 
-                forAll(slaveBCells, j)
+                for (const label slave : slaveBCells)
                 {
-                    label slave = slaveBCells[j];
-
                     // Check that same cell not already present untransformed
-                    if (findIndex(untrafoCells, slave)== -1)
+                    if (!untrafoCells.found(slave))
                     {
                         label proci = globalIndices.whichProcID(slave);
                         label celli = globalIndices.toLocal(proci, slave);
@@ -1920,7 +1921,7 @@ Foam::pointField Foam::globalMeshData::sharedPoints() const
             slave++
         )
         {
-            IPstream fromSlave(Pstream::blocking, slave);
+            IPstream fromSlave(Pstream::commsTypes::blocking, slave);
 
             labelList nbrSharedPointAddr;
             pointField nbrSharedPoints;
@@ -1944,7 +1945,7 @@ Foam::pointField Foam::globalMeshData::sharedPoints() const
         {
             OPstream toSlave
             (
-                Pstream::blocking,
+                Pstream::commsTypes::blocking,
                 slave,
                 sharedPoints.size()*sizeof(Zero)
             );
@@ -1956,8 +1957,11 @@ Foam::pointField Foam::globalMeshData::sharedPoints() const
         // Slave:
         // send points
         {
-            OPstream toMaster(Pstream::blocking, Pstream::masterNo());
-
+            OPstream toMaster
+            (
+                Pstream::commsTypes::blocking,
+                Pstream::masterNo()
+            );
             toMaster
                 << pointAddr
                 << UIndirectList<point>(mesh_.points(), pointLabels)();
@@ -1965,7 +1969,11 @@ Foam::pointField Foam::globalMeshData::sharedPoints() const
 
         // Receive sharedPoints
         {
-            IPstream fromMaster(Pstream::blocking, Pstream::masterNo());
+            IPstream fromMaster
+            (
+                Pstream::commsTypes::blocking,
+                Pstream::masterNo()
+            );
             fromMaster >> sharedPoints;
         }
     }

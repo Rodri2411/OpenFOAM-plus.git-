@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2015-2016 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2015-2017 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -29,47 +29,53 @@ Group
 
 Description
     This functionObject provides a simple interface for explicit coupling with
-    an external application. The coupling is through plain text files
-    where OpenFOAM boundary data is read/written as one line per face
-    (data from all processors collated):
+    an external application.
 
+    The coupling is through plain text files where OpenFOAM boundary data
+    is read/written as one line per face (data from all processors collated):
+    \verbatim
         # Patch: <patch name>
         <fld1> <fld2> .. <fldn>             //face0
         <fld1> <fld2> .. <fldn>             //face1
         ..
         <fld1> <fld2> .. <fldn>             //faceN
+    \endverbatim
 
     where the actual entries depend on the bc type:
     - mixed: value, snGrad, refValue, refGrad, valueFraction
-    - externalCoupledMixed: output of writeData
+    - externalCoupledMixed: output of writeDataMaster
     - other: value, snGrad
 
     These text files are located in a user specified communications directory
     which gets read/written on the master processor only. In the
     communications directory the structure will be
-
+    \verbatim
         <regionsName>/<patchGroup>/<fieldName>.[in|out]
+    \endverbatim
 
     (where regionsName is either the name of a single region or a composite
     of multiple region names)
 
     At start-up, the boundary creates a lock file, i.e..
-
+    \verbatim
         OpenFOAM.lock
+    \endverbatim
 
     ... to signal the external source to wait. During the functionObject
     execution the boundary values are written to files (one per region,
     per patch(group), per field), e.g.
-
+    \verbatim
         <regionsName>/<patchGroup>/<fieldName>.out
+    \endverbatim
 
     The lock file is then removed, instructing the external source to take
     control of the program execution. When ready, the external program
     should create the return values, e.g. to files
-
+    \verbatim
         <regionsName>/<patchGroup>/<fieldName>.in
+    \endverbatim
 
-    ... and then re-instate the lock file. The functionObject will then
+    ... and then reinstate the lock file. The functionObject will then
     read these values, apply them to the boundary conditions and pass
     program execution back to OpenFOAM.
 
@@ -98,20 +104,38 @@ Usage
     }
     \endverbatim
 
-    This reads/writes (on the master processor) the directory:
 
+    This reads/writes (on the master processor) the directory:
+    \verbatim
         comms/region0_region1/TPatchGroup/
+    \endverbatim
 
     with contents:
+    \verbatim
         patchPoints     (collected points)
         patchFaces      (collected faces)
         p.in            (input file of p, written by external application)
         T.out           (output file of T, written by OpenFOAM)
+    \endverbatim
 
     The patchPoints/patchFaces files denote the (collated) geometry
     which will be written if it does not exist yet or can be written as
     a preprocessing step using the createExternalCoupledPatchGeometry
     application.
+
+    The entries comprise:
+    \table
+        Property     | Description             | Required | Default value
+        type         | type name: externalCoupled | yes |
+        commsDir     | communication directory | yes |
+        waitInterval | wait interval in (s)    | no | 1
+        timeOut      | timeout in (s)          | no | 100*waitInterval
+        stateEnd     | Lockfile treatment on termination | no | done
+        initByExternal | initialization values supplied by external app | yes
+        calcFrequency | calculation frequency  | no | 1
+        regions  | the regions to couple | yes
+    \endtable
+
 
 SourceFiles
     externalCoupled.C
@@ -123,10 +147,11 @@ SourceFiles
 #define functionObjects_externalCoupled_H
 
 #include "functionObject.H"
+#include "externalFileCoupler.H"
 #include "DynamicList.H"
 #include "wordReList.H"
 #include "scalarField.H"
-#include "NamedEnum.H"
+#include "Enum.H"
 #include "Switch.H"
 #include "UPtrList.H"
 
@@ -143,12 +168,13 @@ namespace functionObjects
 {
 
 /*---------------------------------------------------------------------------*\
-                      Class externalCoupled Declaration
+              Class functionObjects::externalCoupled Declaration
 \*---------------------------------------------------------------------------*/
 
 class externalCoupled
 :
-    public functionObject
+    public functionObject,
+    public externalFileCoupler
 {
 public:
 
@@ -164,32 +190,19 @@ public:
 
 private:
 
-        //- State end names
-        static const NamedEnum<stateEnd, 2> stateEndNames_;
-
+        //- State end names (NB, only selectable values itemized)
+        static const Enum<stateEnd> stateEndNames_;
 
     // Private data
 
         //- Reference to the time database
         const Time& time_;
 
-        //- Path to communications directory
-        fileName commsDir_;
-
-        //- Interval time between checking for return data [s]
-        label waitInterval_;
-
-        //- Time out time [s]
-        label timeOut_;
-
         //- Calculation frequency
         label calcFrequency_;
 
-        //- Flag to indicate values are initialised by external application
-        bool initByExternal_;
-
-        //- Lockfile state on termination
-        stateEnd stateEnd_;
+        //- The last timeIndex when coupling was triggered
+        label lastTrigger_;
 
         //- Names of (composite) regions
         DynamicList<word> regionGroupNames_;
@@ -209,8 +222,8 @@ private:
         // Per group the names of the fields to write
         DynamicList<wordList> groupWriteFields_;
 
-        //- Initialised flag
-        bool initialised_;
+        //- Initialised coupling
+        bool initialisedCoupling_;
 
 
     // Private Member Functions
@@ -223,33 +236,6 @@ private:
             const wordRe& groupName
         );
 
-        //- Return the file path to the base communications directory
-        fileName baseDir() const;
-
-        //- Return the file path to the lock file
-        fileName lockFile() const;
-
-
-        //- Create lock file to indicate that OpenFOAM is in charge
-        void useMaster() const;
-
-        //- Remove lock file to indicate that the external program is in charge
-        void useSlave() const;
-
-        //- Remove lock file or status=done in lock.
-        void cleanup() const;
-
-        //- Remove files written by OpenFOAM
-        void removeWriteFiles() const;
-
-        //- Remove files written by external code
-        void removeReadFiles() const;
-
-        //- Wait for indication that the external program has supplied input
-        //  (ie, for the lock file to reappear).
-        void waitForSlave() const;
-
-
         //- Read data for a single region, single field
         template<class Type>
         bool readData
@@ -258,8 +244,6 @@ private:
             const wordRe& groupName,
             const word& fieldName
         );
-        //- Read data for all regions, all fields
-        void readData();
 
         //- Write data for a single region, single field
         template<class Type>
@@ -270,10 +254,7 @@ private:
             const word& fieldName
         ) const;
 
-        //- Write data for all regions, all fields
-        void writeData() const;
-
-        void initialise();
+        void initCoupling();
 
         //- Read (and distribute) scalar columns from stream. Every processor
         //  gets nRows (= patch size) of these. Note: could make its argument
@@ -302,7 +283,10 @@ private:
         template<class Type>
         static tmp<Field<Type>> gatherAndCombine(const Field<Type>& fld);
 
-        static void checkOrder(const wordList&);
+        static void checkOrder(const wordList& regionNames);
+
+        //- Perform the coupling with necessary initialization etc.
+        void performCoupling();
 
         //- Disallow default bitwise copy constructor
         externalCoupled(const externalCoupled&) = delete;
@@ -316,11 +300,11 @@ public:
     //- Runtime type information
     TypeName("externalCoupled");
 
-    //- Name of lock file (normally 'OpenFOAM.lock')
-    static word lockName;
-
     //- Name of patch key, e.g. '// Patch:' when looking for start of patch data
     static string patchKey;
+
+    //- Inherited variable for logging
+    using functionObject::log;
 
 
     // Constructors
@@ -335,39 +319,57 @@ public:
 
 
     //- Destructor
-    virtual ~externalCoupled();
+    virtual ~externalCoupled() = default;
 
 
     // Member Functions
 
-        // Function object control
+      // Function object control
 
-            //- Called at each ++ or += of the time-loop
-            virtual bool execute();
+        //- Called at each ++ or += of the time-loop
+        virtual bool execute();
 
-            //- Called when Time::run() determines that the time-loop exits
-            virtual bool end();
+        //- Manual execute (sub-loop or when converged)
+        virtual bool execute(const label subIndex);
 
-            //- Read and set the function object if its data have changed
-            virtual bool read(const dictionary&);
+        //- Called when Time::run() determines that the time-loop exits
+        virtual bool end();
 
-            //- Write
-            virtual bool write();
+        //- Read and set the function object if its data have changed
+        virtual bool read(const dictionary& dict);
+
+        //- Write, currently a no-op
+        virtual bool write();
 
 
-        // Other
+      // File creation, removal
 
-            //- Create single name by appending words (in sorted order),
-            //  separated by '_'
-            static word compositeName(const wordList&);
+        //- Write data files (all regions, all fields) from master (OpenFOAM)
+        virtual void writeDataMaster() const;
 
-            //- Write geometry for the group as region/patch
-            static void writeGeometry
-            (
-                const UPtrList<const fvMesh>& meshes,
-                const fileName& commsDir,
-                const wordRe& groupName
-            );
+        //- Read data files (all regions, all fields) on master (OpenFOAM)
+        virtual void readDataMaster();
+
+        //- Remove data files written by master (OpenFOAM)
+        virtual void removeDataMaster() const;
+
+        //- Remove data files written by slave (external code)
+        virtual void removeDataSlave() const;
+
+
+      // Other
+
+        //- Create single name by appending words (in sorted order),
+        //  separated by '_'
+        static word compositeName(const wordList&);
+
+        //- Write geometry for the group as region/patch
+        static void writeGeometry
+        (
+            const UPtrList<const fvMesh>& meshes,
+            const fileName& commsDir,
+            const wordRe& groupName
+        );
 };
 
 

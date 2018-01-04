@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2012-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2012-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -118,7 +118,7 @@ timeVaryingMappedFixedValuePointPatchField
         //       of the pointPatchField::updated_ flag. This is
         //       so if first use is in the next time step it retriggers
         //       a new update.
-        pointPatchField<Type>::evaluate(Pstream::blocking);
+        pointPatchField<Type>::evaluate(Pstream::commsTypes::blocking);
     }
 }
 
@@ -596,23 +596,20 @@ void Foam::timeVaryingMappedFixedValuePointPatchField<Type>::write
 {
     fixedValuePointPatchField<Type>::write(os);
 
-    this->writeEntryIfDifferent(os, "setAverage", Switch(false), setAverage_);
+    os.writeEntryIfDifferent("setAverage", Switch(false), setAverage_);
+    os.writeEntryIfDifferent<scalar>("perturb", 1e-5, perturb_);
 
-    this->writeEntryIfDifferent(os, "perturb", scalar(1e-5), perturb_);
-
-    this->writeEntryIfDifferent
+    os.writeEntryIfDifferent
     (
-        os,
         "fieldTable",
         this->internalField().name(),
         fieldTableName_
     );
 
-    this->writeEntryIfDifferent
+    os.writeEntryIfDifferent<word>
     (
-        os,
         "mapMethod",
-        word("planarInterpolation"),
+        "planarInterpolation",
         mapMethod_
     );
 

@@ -113,6 +113,9 @@ int main(int argc, char *argv[])
             phiv_pos -= mesh.phi();
             phiv_neg -= mesh.phi();
         }
+        // Note: extracted out the orientation so becomes unoriented
+        phiv_pos.setOriented(false);
+        phiv_neg.setOriented(false);
 
         volScalarField c("c", sqrt(thermo.Cp()/thermo.Cv()*rPsi));
         surfaceScalarField cSf_pos
@@ -165,11 +168,12 @@ int main(int argc, char *argv[])
 
         phi = aphiv_pos*rho_pos + aphiv_neg*rho_neg;
 
-        surfaceVectorField phiUp
-        (
-            (aphiv_pos*rhoU_pos + aphiv_neg*rhoU_neg)
-          + (a_pos*p_pos + a_neg*p_neg)*mesh.Sf()
-        );
+        surfaceVectorField phiU(aphiv_pos*rhoU_pos + aphiv_neg*rhoU_neg);
+        // Note: reassembled orientation from the pos and neg parts so becomes
+        // oriented
+        phiU.setOriented(true);
+
+        surfaceVectorField phiUp(phiU + (a_pos*p_pos + a_neg*p_neg)*mesh.Sf());
 
         surfaceScalarField phiEp
         (
@@ -182,7 +186,10 @@ int main(int argc, char *argv[])
         // Make flux for pressure-work absolute
         if (mesh.moving())
         {
-            phiEp += mesh.phi()*(a_pos*p_pos + a_neg*p_neg);
+            surfaceScalarField phia(a_pos*p_pos + a_neg*p_neg);
+            phia.setOriented(true);
+
+            phiEp += mesh.phi()*phia;
         }
 
         volScalarField muEff("muEff", turbulence->muEff());
@@ -219,7 +226,7 @@ int main(int argc, char *argv[])
                 fvc::interpolate(muEff)*mesh.magSf()*fvc::snGrad(U)
               + fvc::dotInterpolate(mesh.Sf(), tauMC)
             )
-            & (a_pos*U_pos + a_neg*U_neg)
+          & (a_pos*U_pos + a_neg*U_neg)
         );
 
         solve
@@ -268,5 +275,6 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+
 
 // ************************************************************************* //

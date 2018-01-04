@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -57,7 +57,7 @@ class dictionary;
 // Forward declaration of friend functions and operators
 
 class entry;
-Ostream& operator<<(Ostream&, const entry&);
+Ostream& operator<<(Ostream& os, const entry& e);
 
 /*---------------------------------------------------------------------------*\
                            Class entry Declaration
@@ -67,6 +67,24 @@ class entry
 :
     public IDLList<entry>::link
 {
+public:
+
+    // Enums/Typedefs
+
+        //- The input mode options
+        enum class inputMode
+        {
+            MERGE,      //!< Merge sub-dictionaries when possible
+            OVERWRITE,  //!< Keep last entry. Silently remove previous ones
+            PROTECT,    //!< Keep initial entry. Silently ignore subsequent ones
+            WARN,       //!< Keep initial entry. Warn about subsequent ones.
+            ERROR,      //!< FatalError for duplicate entries
+            GLOBAL      //!< Use global value from #globalInputMode variable
+        };
+
+
+private:
+
     // Private data
 
         //- Keyword of entry
@@ -75,25 +93,38 @@ class entry
 
     // Private Member Functions
 
-        //- Get the next valid keyword. Return true if is valid keyType.
-        static bool getKeyword(keyType&, token&, Istream&);
+        //- Get the next valid keyword.
+        //  \return True if it is a valid keyType.
+        static bool getKeyword
+        (
+            keyType& keyword,
+            token& keyToken,
+            Istream& is
+        );
 
-        //- Get the next valid keyword otherwise return false
-        static bool getKeyword(keyType&, Istream&);
+        //- Get the next valid keyword.
+        //  Warn when an invalid token is encountered that is not EOF or
+        //  end-of-block
+        //  \return True if it is a valid keyType.
+        static bool getKeyword(keyType& keyword, Istream& is);
 
 
 public:
 
+    //- Enable or disable use of function entries and variable expansions.
     static int disableFunctionEntries;
+
+    //- The current global input-mode.
+    static inputMode globalInputMode;
 
 
     // Constructors
 
         //- Construct from keyword
-        entry(const keyType&);
+        entry(const keyType& keyword);
 
         //- Construct as copy
-        entry(const entry&);
+        entry(const entry& e);
 
         //- Construct on freestore as copy with reference to the
         //  dictionary the copy belongs to
@@ -107,10 +138,18 @@ public:
         virtual autoPtr<entry> clone() const;
 
         //- Construct from Istream and insert into dictionary
-        static bool New(dictionary& parentDict, Istream&);
+        static bool New
+        (
+            dictionary& parentDict,
+            Istream& is,
+            const inputMode inMode = inputMode::GLOBAL
+        );
 
         //- Construct on freestore from Istream and return
         static autoPtr<entry> New(Istream& is);
+
+        //- Reset the #globalInputMode to %merge
+        static void resetInputMode();
 
 
     //- Destructor
@@ -144,42 +183,59 @@ public:
         //- Return line number of last token in dictionary
         virtual label endLineNumber() const = 0;
 
+
         //- Return true if this entry is a stream
         virtual bool isStream() const
         {
             return false;
         }
 
-        //- Return token stream if this entry is a primitive entry
+        //- Return token stream, if entry is a primitive entry
         virtual ITstream& stream() const = 0;
+
 
         //- Return true if this entry is a dictionary
         virtual bool isDict() const
         {
-            return false;
+            return this->dictPtr();
         }
 
-        //- Return dictionary if this entry is a dictionary
+        //- Return pointer to dictionary, if entry is a dictionary.
+        //  Return nullptr if the entry is not a dictionary.
+        virtual const dictionary* dictPtr() const
+        {
+            return nullptr;
+        }
+
+        //- Return non-const pointer to dictionary, if entry is a dictionary
+        //  Return nullptr if the entry is not a dictionary.
+        virtual dictionary* dictPtr()
+        {
+            return nullptr;
+        }
+
+        //- Return dictionary, if entry is a dictionary
         virtual const dictionary& dict() const = 0;
 
-        //- Return non-const access to dictionary if this entry is a dictionary
+        //- Return non-const access to dictionary, if entry is a dictionary
         virtual dictionary& dict() = 0;
 
+
         //- Write
-        virtual void write(Ostream&) const = 0;
+        virtual void write(Ostream& os) const = 0;
 
 
     // Member operators
 
-        void operator=(const entry&);
+        void operator=(const entry& e);
 
-        bool operator==(const entry&) const;
-        bool operator!=(const entry&) const;
+        bool operator==(const entry& e) const;
+        bool operator!=(const entry& e) const;
 
 
     // Ostream operator
 
-        friend Ostream& operator<<(Ostream&, const entry&);
+        friend Ostream& operator<<(Ostream& os, const entry& e);
 };
 
 

@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -76,6 +76,7 @@ pressureInletOutletParSlipVelocityFvPatchVectorField
     phiName_(dict.lookupOrDefault<word>("phi", "phi")),
     rhoName_(dict.lookupOrDefault<word>("rho", "rho"))
 {
+    patchType() = dict.lookupOrDefault<word>("patchType", word::null);
     fvPatchVectorField::operator=(vectorField("value", dict, p.size()));
     refValue() = *this;
     refGrad() = Zero;
@@ -151,7 +152,7 @@ void Foam::pressureInletOutletParSlipVelocityFvPatchVectorField::updateCoeffs()
             << exit(FatalError);
     }
 
-    valueFraction() = 1.0 - pos(phip);
+    valueFraction() = 1.0 - pos0(phip);
 
     mixedFvPatchVectorField::updateCoeffs();
 }
@@ -163,8 +164,8 @@ void Foam::pressureInletOutletParSlipVelocityFvPatchVectorField::write
 ) const
 {
     fvPatchVectorField::write(os);
-    writeEntryIfDifferent<word>(os, "phi", "phi", phiName_);
-    writeEntryIfDifferent<word>(os, "rho", "rho", rhoName_);
+    os.writeEntryIfDifferent<word>("phi", "phi", phiName_);
+    os.writeEntryIfDifferent<word>("rho", "rho", rhoName_);
     writeEntry("value", os);
 }
 

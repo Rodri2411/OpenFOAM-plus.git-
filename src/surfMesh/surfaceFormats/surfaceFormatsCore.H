@@ -55,15 +55,19 @@ namespace fileFormats
 {
 
 /*---------------------------------------------------------------------------*\
-                     Class surfaceFormatsCore Declaration
+               Class fileFormats::surfaceFormatsCore Declaration
 \*---------------------------------------------------------------------------*/
 
 class surfaceFormatsCore
 {
 protected:
 
-        //- Return a list with a single entry,
-        //  the size corresponds to that of the container
+        //- Read non-empty and non-comment line
+        static string getLineNoComment(ISstream& is, const char comment='#');
+
+
+        //- Return a surfZone list with a single entry, the size of which
+        //- corresponds to that of the container
         template<class Container>
         static List<surfZone> oneZone
         (
@@ -73,10 +77,6 @@ protected:
         {
             return List<surfZone>(1, surfZone(name, container.size(), 0, 0));
         }
-
-        //- Read non-comment line
-        static string getLineNoComment(IFstream&);
-
 
 public:
 
@@ -89,6 +89,7 @@ public:
 
     // Static Member Functions
 
+        //- Helper function when checking if a file extension is supported.
         static bool checkSupport
         (
             const wordHashSet& available,
@@ -124,11 +125,11 @@ public:
     // Constructors
 
         //- Construct null
-        surfaceFormatsCore();
+        surfaceFormatsCore() = default;
 
 
     //- Destructor
-    virtual ~surfaceFormatsCore();
+    virtual ~surfaceFormatsCore() = default;
 
 };
 

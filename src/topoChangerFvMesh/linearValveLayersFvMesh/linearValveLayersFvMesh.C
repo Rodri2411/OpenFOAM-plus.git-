@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -76,15 +76,8 @@ void Foam::linearValveLayersFvMesh::addZonesAndModifiers()
     List<cellZone*> cz(0);
 
 
-    // Add an empty zone for cut points
-
-    pz[0] = new pointZone
-    (
-        "cutPointZone",
-        labelList(0),
-        0,
-        pointZones()
-    );
+    // An empty zone for cut points
+    pz[0] = new pointZone("cutPointZone", 0, pointZones());
 
 
     // Do face zones for slider
@@ -104,7 +97,7 @@ void Foam::linearValveLayersFvMesh::addZonesAndModifiers()
     (
         "insideSliderZone",
         isf,
-        boolList(innerSlider.size(), false),
+        false, // none are flipped
         0,
         faceZones()
     );
@@ -124,20 +117,13 @@ void Foam::linearValveLayersFvMesh::addZonesAndModifiers()
     (
         "outsideSliderZone",
         osf,
-        boolList(outerSlider.size(), false),
+        false, // none are flipped
         1,
         faceZones()
     );
 
-    // Add empty zone for cut faces
-    fz[2] = new faceZone
-    (
-        "cutFaceZone",
-        labelList(0),
-        boolList(0, false),
-        2,
-        faceZones()
-    );
+    // An empty zone for cut faces
+    fz[2] = new faceZone("cutFaceZone", 2, faceZones());
 
     // Add face zone for layer addition
     const word layerPatchName
@@ -158,7 +144,7 @@ void Foam::linearValveLayersFvMesh::addZonesAndModifiers()
     (
         "valveLayerZone",
         lpf,
-        boolList(layerPatch.size(), true),
+        true, // all are flipped
         0,
         faceZones()
     );
@@ -356,7 +342,7 @@ Foam::linearValveLayersFvMesh::linearValveLayersFvMesh(const IOobject& io)
                 IOobject::NO_WRITE,
                 false
             )
-        ).subDict(typeName + "Coeffs")
+        ).optionalSubDict(typeName + "Coeffs")
     )
 {
     addZonesAndModifiers();

@@ -28,7 +28,6 @@ License
 #include "dictionary.H"
 #include "contiguous.H"
 #include "mapDistributeBase.H"
-#include "flipOp.H"
 
 // * * * * * * * * * * * * * * * Static Members  * * * * * * * * * * * * * * //
 
@@ -745,16 +744,15 @@ void Foam::Field<Type>::writeEntry(const word& keyword, Ostream& os) const
 
     if (uniform)
     {
-        os << "uniform " << this->operator[](0) << token::END_STATEMENT;
+        os << "uniform " << this->operator[](0);
     }
     else
     {
         os << "nonuniform ";
         List<Type>::writeEntry(os);
-        os << token::END_STATEMENT;
     }
 
-    os << endl;
+    os << token::END_STATEMENT << nl;
 }
 
 

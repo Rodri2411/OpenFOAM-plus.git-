@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2015-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -25,6 +25,7 @@ License
 
 #include "objectRegistry.H"
 #include "Time.H"
+#include "predicates.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -54,7 +55,7 @@ Foam::objectRegistry::objectRegistry
     (
         IOobject
         (
-            string::validate<word>(t.caseName()),
+            word::validate(t.caseName()),
             t.path(),
             t,
             IOobject::NO_READ,
@@ -103,7 +104,7 @@ Foam::objectRegistry::~objectRegistry()
         }
     }
 
-    for (label i=0; i < nMyObjects; i++)
+    for (label i=0; i < nMyObjects; ++i)
     {
         checkOut(*myObjects[i]);
     }
@@ -111,6 +112,26 @@ Foam::objectRegistry::~objectRegistry()
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+
+Foam::HashTable<Foam::wordHashSet> Foam::objectRegistry::classes() const
+{
+    return classesImpl(*this, predicates::always());
+}
+
+
+Foam::HashTable<Foam::wordHashSet>
+Foam::objectRegistry::classes(const wordRe& matcher) const
+{
+    return classesImpl(*this, matcher);
+}
+
+
+Foam::HashTable<Foam::wordHashSet>
+Foam::objectRegistry::classes(const wordRes& matcher) const
+{
+    return classesImpl(*this, matcher);
+}
+
 
 Foam::wordList Foam::objectRegistry::names() const
 {
@@ -124,31 +145,31 @@ Foam::wordList Foam::objectRegistry::sortedNames() const
 }
 
 
-Foam::wordList Foam::objectRegistry::names(const word& ClassName) const
+Foam::wordList Foam::objectRegistry::names(const word& clsName) const
 {
-    wordList objectNames(size());
+    wordList objNames(size());
 
     label count=0;
     for (const_iterator iter = cbegin(); iter != cend(); ++iter)
     {
-        if (iter()->type() == ClassName)
+        if (iter()->type() == clsName)
         {
-            objectNames[count++] = iter.key();
+            objNames[count++] = iter.key();
         }
     }
 
-    objectNames.setSize(count);
+    objNames.setSize(count);
 
-    return objectNames;
+    return objNames;
 }
 
 
-Foam::wordList Foam::objectRegistry::sortedNames(const word& ClassName) const
+Foam::wordList Foam::objectRegistry::sortedNames(const word& clsName) const
 {
-    wordList sortedLst = names(ClassName);
-    sort(sortedLst);
+    wordList objNames = names(clsName);
+    Foam::sort(objNames);
 
-    return sortedLst;
+    return objNames;
 }
 
 
@@ -224,7 +245,7 @@ bool Foam::objectRegistry::checkOut(regIOobject& io) const
 {
     iterator iter = const_cast<objectRegistry&>(*this).find(io.name());
 
-    if (iter != end())
+    if (iter.found())
     {
         if (objectRegistry::debug)
         {
@@ -333,7 +354,8 @@ bool Foam::objectRegistry::writeObject
 (
     IOstream::streamFormat fmt,
     IOstream::versionNumber ver,
-    IOstream::compressionType cmp
+    IOstream::compressionType cmp,
+    const bool valid
 ) const
 {
     bool ok = true;
@@ -353,7 +375,7 @@ bool Foam::objectRegistry::writeObject
 
         if (iter()->writeOpt() != NO_WRITE)
         {
-            ok = iter()->writeObject(fmt, ver, cmp) && ok;
+            ok = iter()->writeObject(fmt, ver, cmp, valid) && ok;
         }
     }
 

@@ -24,7 +24,7 @@ License
 \*----------------------------------------------------------------------------*/
 
 #include "ccmWriter.H"
-#include "cellModeller.H"
+#include "cellModel.H"
 #include "demandDrivenData.H"
 #include "ccmInternal.H" // include last to avoid any strange interactions
 
@@ -95,7 +95,7 @@ void Foam::ccm::writer::writeBoundaryRegion
     // Create dictionary lookup for constant/boundaryRegion
     dictionary typeDict;
 
-    forAllConstIter(Map<dictionary>, boundaryRegion_, iter)
+    forAllConstIters(boundaryRegion_, iter)
     {
         const dictionary& dict = iter();
         if
@@ -207,7 +207,7 @@ void Foam::ccm::writer::writeCellTable
 
     ccmID nodeId;
 
-    forAllConstIter(Map<dictionary>, cellTable_, iter)
+    forAllConstIters(cellTable_, iter)
     {
         label intVal = iter.key();
         const dictionary& dict = iter();
@@ -292,7 +292,6 @@ void Foam::ccm::writer::writeProblem
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-// Construct for writing geometry
 Foam::ccm::writer::writer
 (
     const fileName& file,
@@ -305,12 +304,12 @@ Foam::ccm::writer::writer
     mesh_(mesh),
     // Mapping between OpenFOAM and PROSTAR primitives
     prostarShapeLookup_
-    ({
-        { cellModeller::lookup("hex")->index(),   STARCDCore::starcdHex },
-        { cellModeller::lookup("prism")->index(), STARCDCore::starcdPrism },
-        { cellModeller::lookup("tet")->index(),   STARCDCore::starcdTet },
-        { cellModeller::lookup("pyr")->index(),   STARCDCore::starcdPyr }
-    }),
+    {
+        { cellModel::ref(cellModel::HEX).index(), STARCDCore::starcdHex },
+        { cellModel::ref(cellModel::PRISM).index(), STARCDCore::starcdPrism },
+        { cellModel::ref(cellModel::TET).index(), STARCDCore::starcdTet },
+        { cellModel::ref(cellModel::PYR).index(), STARCDCore::starcdPyr }
+    },
     boundaryRegion_(mesh),
     cellTable_(mesh)
 {

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2015-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2015-2017 OpenFOAM Foundation
      \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
@@ -29,8 +29,8 @@ License
 
 namespace Foam
 {
-defineTypeNameAndDebug(decompositionConstraint, 1);
-defineRunTimeSelectionTable(decompositionConstraint, dictionary);
+    defineTypeNameAndDebug(decompositionConstraint, 1);
+    defineRunTimeSelectionTable(decompositionConstraint, dictionary);
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
@@ -41,7 +41,6 @@ Foam::decompositionConstraint::decompositionConstraint
     const word& type
 )
 :
-    //coeffDict_(constraintsDict.subOrEmptyDict(type + "Coeffs"))
     coeffDict_(constraintsDict)
 {}
 
@@ -57,15 +56,14 @@ Foam::decompositionConstraint::New
 {
     Info<< "Selecting decompositionConstraint " << modelType << endl;
 
-    dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(modelType);
+    auto cstrIter = dictionaryConstructorTablePtr_->cfind(modelType);
 
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    if (!cstrIter.found())
     {
         FatalIOErrorInFunction(dict)
             << "Unknown decompositionConstraint type "
             << modelType << nl << nl
-            << "Valid decompositionConstraint types:" << endl
+            << "Valid decompositionConstraint types :" << endl
             << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalIOError);
     }

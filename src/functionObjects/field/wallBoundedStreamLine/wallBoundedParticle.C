@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -48,7 +48,7 @@ Foam::edge Foam::wallBoundedParticle::currentEdge() const
             << abort(FatalError);
     }
 
-    const Foam::face& f = mesh_.faces()[tetFace()];
+    const Foam::face& f = mesh().faces()[tetFace()];
 
     if (meshEdgeStart_ != -1)
     {
@@ -56,8 +56,20 @@ Foam::edge Foam::wallBoundedParticle::currentEdge() const
     }
     else
     {
-        label faceBasePti = mesh_.tetBasePtIs()[tetFace()];
-        label diagPti = (faceBasePti+diagEdge_)%f.size();
+        label faceBasePti = mesh().tetBasePtIs()[tetFace()];
+        if (faceBasePti == -1)
+        {
+            //FatalErrorInFunction
+            //WarningInFunction
+            //    << "No base point for face " << tetFace() << ", " << f
+            //    << ", produces a decomposition that has a minimum "
+            //    << "volume greater than tolerance."
+            //    //<< abort(FatalError);
+            //    << endl;
+            faceBasePti = 0;
+        }
+
+        label diagPti = (faceBasePti + diagEdge_)%f.size();
 
         return edge(f[faceBasePti], f[diagPti]);
     }
@@ -66,18 +78,123 @@ Foam::edge Foam::wallBoundedParticle::currentEdge() const
 
 void Foam::wallBoundedParticle::crossEdgeConnectedFace
 (
-    const edge& meshEdge
+    const label& celli,
+    label& tetFacei,
+    label& tetPti,
+    const edge& e
 )
 {
+    const faceList& pFaces = mesh().faces();
+    const cellList& pCells = mesh().cells();
+
+    const Foam::face& f = pFaces[tetFacei];
+
+    const Foam::cell& thisCell = pCells[celli];
+
+    for (const label facei : thisCell)
+    {
+        // Loop over all other faces of this cell and
+        // find the one that shares this edge
+
+        if (tetFacei == facei)
+        {
+            continue;
+        }
+
+        const Foam::face& otherFace = pFaces[facei];
+
+        label edDir = otherFace.edgeDirection(e);
+
+        if (edDir == 0)
+        {
+            continue;
+        }
+        else if (f == pFaces[facei])
+        {
+            // This is a necessary condition if using duplicate baffles
+            // (so coincident faces). We need to make sure we don't cross into
+            // the face with the same vertices since we might enter a tracking
+            // loop where it never exits. This test should be cheap
+            // for most meshes so can be left in for 'normal' meshes.
+            continue;
+        }
+        else
+        {
+            //Found edge on other face
+            tetFacei = facei;
+
+            label eIndex = -1;
+
+            if (edDir == 1)
+            {
+                // Edge is in the forward circulation of this face, so
+                // work with the start point of the edge
+                eIndex = otherFace.find(e.start());
+            }
+            else
+            {
+                // edDir == -1, so the edge is in the reverse
+                // circulation of this face, so work with the end
+                // point of the edge
+                eIndex = otherFace.find(e.end());
+            }
+
+            label tetBasePtI = mesh().tetBasePtIs()[facei];
+
+            if (tetBasePtI == -1)
+            {
+                //FatalErrorInFunction
+                //WarningInFunction
+                //    << "No base point for face " << fI << ", " << f
+                //    << ", produces a decomposition that has a minimum "
+                //    << "volume greater than tolerance."
+                //    //<< abort(FatalError);
+                //    << endl;
+                tetBasePtI = 0;
+            }
+
+            // Find eIndex relative to the base point on new face
+            eIndex -= tetBasePtI;
+
+            if (neg(eIndex))
+            {
+                eIndex = (eIndex + otherFace.size()) % otherFace.size();
+            }
+
+            if (eIndex == 0)
+            {
+                // The point is the base point, so this is first tet
+                // in the face circulation
+                tetPti = 1;
+            }
+            else if (eIndex == otherFace.size() - 1)
+            {
+                // The point is the last before the base point, so
+                // this is the last tet in the face circulation
+                tetPti = otherFace.size() - 2;
+            }
+            else
+            {
+                tetPti = eIndex;
+            }
+
+            break;
+        }
+    }
+}
+
+
+void Foam::wallBoundedParticle::crossEdgeConnectedFace(const edge& meshEdge)
+{
     // Update tetFace, tetPt
-    particle::crossEdgeConnectedFace(cell(), tetFace(), tetPt(), meshEdge);
+    crossEdgeConnectedFace(cell(), tetFace(), tetPt(), meshEdge);
 
     // Update face to be same as tracking one
     face() = tetFace();
 
     // And adapt meshEdgeStart_.
-    const Foam::face& f = mesh_.faces()[tetFace()];
-    label fp = findIndex(f, meshEdge[0]);
+    const Foam::face& f = mesh().faces()[tetFace()];
+    label fp = f.find(meshEdge[0]);
 
     if (f.nextLabel(fp) == meshEdge[1])
     {
@@ -133,7 +250,7 @@ void Foam::wallBoundedParticle::crossDiagonalEdge()
             << "meshEdgeStart_:" << meshEdgeStart_ << abort(FatalError);
     }
 
-    const Foam::face& f = mesh_.faces()[tetFace()];
+    const Foam::face& f = mesh().faces()[tetFace()];
 
     // tetPti starts from 1, goes up to f.size()-2
 
@@ -164,14 +281,13 @@ void Foam::wallBoundedParticle::crossDiagonalEdge()
 
 Foam::scalar Foam::wallBoundedParticle::trackFaceTri
 (
+    const vector& n,
     const vector& endPosition,
     label& minEdgei
 )
 {
     // Track p from position to endPosition
-    const triFace tri(currentTetIndices().faceTriIs(mesh_));
-    vector n = tri.normal(mesh_.points());
-    n /= mag(n)+VSMALL;
+    const triFace tri(currentTetIndices().faceTriIs(mesh(), false));
 
     // Check which edge intersects the trajectory.
     // Project trajectory onto triangle
@@ -189,8 +305,8 @@ Foam::scalar Foam::wallBoundedParticle::trackFaceTri
     {
         label j = tri.fcIndex(i);
 
-        const point& pt0 = mesh_.points()[tri[i]];
-        const point& pt1 = mesh_.points()[tri[j]];
+        const point& pt0 = mesh().points()[tri[i]];
+        const point& pt1 = mesh().points()[tri[j]];
 
         if (edge(tri[i], tri[j]) == currentE)
         {
@@ -199,20 +315,20 @@ Foam::scalar Foam::wallBoundedParticle::trackFaceTri
         }
 
         // Outwards pointing normal
-        vector edgeNormal = (pt1-pt0)^n;
+        vector edgeNormal = (pt1 - pt0)^n;
 
-        edgeNormal /= mag(edgeNormal)+VSMALL;
+        edgeNormal /= mag(edgeNormal) + VSMALL;
 
         // Determine whether position and end point on either side of edge.
-        scalar sEnd = (endPosition-pt0)&edgeNormal;
+        scalar sEnd = (endPosition - pt0)&edgeNormal;
         if (sEnd >= 0)
         {
-            // endPos is outside triangle. position() should always be
+            // endPos is outside triangle. localPosition_ should always be
             // inside.
-            scalar sStart = (position()-pt0)&edgeNormal;
-            if (mag(sEnd-sStart) > VSMALL)
+            scalar sStart = (localPosition_ - pt0)&edgeNormal;
+            if (mag(sEnd - sStart) > VSMALL)
             {
-                scalar s = sStart/(sStart-sEnd);
+                scalar s = sStart/(sStart - sEnd);
 
                 if (s >= 0 && s < minS)
                 {
@@ -225,19 +341,19 @@ Foam::scalar Foam::wallBoundedParticle::trackFaceTri
 
     if (minEdgei != -1)
     {
-        position() += minS*(endPosition-position());
+        localPosition_ += minS*(endPosition - localPosition_);
     }
     else
     {
         // Did not hit any edge so tracked to the end position. Set position
         // without any calculation to avoid truncation errors.
-        position() = endPosition;
+        localPosition_ = endPosition;
         minS = 1.0;
     }
 
-    // Project position() back onto plane of triangle
-    const point& triPt = mesh_.points()[tri[0]];
-    position() -= ((position()-triPt)&n)*n;
+    // Project localPosition_ back onto plane of triangle
+    const point& triPt = mesh().points()[tri[0]];
+    localPosition_ -= ((localPosition_ - triPt)&n)*n;
 
     return minS;
 }
@@ -245,17 +361,18 @@ Foam::scalar Foam::wallBoundedParticle::trackFaceTri
 
 bool Foam::wallBoundedParticle::isTriAlongTrack
 (
+    const vector& n,
     const point& endPosition
 ) const
 {
-    const triFace triVerts(currentTetIndices().faceTriIs(mesh_));
+    const triFace triVerts(currentTetIndices().faceTriIs(mesh(), false));
     const edge currentE = currentEdge();
 
     if
     (
         currentE[0] == currentE[1]
-     || findIndex(triVerts, currentE[0]) == -1
-     || findIndex(triVerts, currentE[1]) == -1
+     || !triVerts.found(currentE[0])
+     || !triVerts.found(currentE[1])
     )
     {
         FatalErrorInFunction
@@ -265,17 +382,13 @@ bool Foam::wallBoundedParticle::isTriAlongTrack
     }
 
 
-    const vector dir = endPosition-position();
-
-    // Get normal of currentE
-    vector n = triVerts.normal(mesh_.points());
-    n /= mag(n);
+    const vector dir = endPosition - localPosition_;
 
     forAll(triVerts, i)
     {
         label j = triVerts.fcIndex(i);
-        const point& pt0 = mesh_.points()[triVerts[i]];
-        const point& pt1 = mesh_.points()[triVerts[j]];
+        const point& pt0 = mesh().points()[triVerts[i]];
+        const point& pt1 = mesh().points()[triVerts[j]];
 
         if (edge(triVerts[i], triVerts[j]) == currentE)
         {
@@ -296,7 +409,7 @@ bool Foam::wallBoundedParticle::isTriAlongTrack
 Foam::wallBoundedParticle::wallBoundedParticle
 (
     const polyMesh& mesh,
-    const vector& position,
+    const point& position,
     const label celli,
     const label tetFacei,
     const label tetPti,
@@ -304,7 +417,9 @@ Foam::wallBoundedParticle::wallBoundedParticle
     const label diagEdge
 )
 :
-    particle(mesh, position, celli, tetFacei, tetPti),
+//    particle(mesh, barycentric(1, 0, 0, 0), celli, tetFacei, tetPti),
+    particle(mesh, position, celli, tetFacei, tetPti, false),
+    localPosition_(position),
     meshEdgeStart_(meshEdgeStart),
     diagEdge_(diagEdge)
 {}
@@ -314,29 +429,25 @@ Foam::wallBoundedParticle::wallBoundedParticle
 (
     const polyMesh& mesh,
     Istream& is,
-    bool readFields
+    bool readFields,
+    bool newFormat
 )
 :
-    particle(mesh, is, readFields)
+    particle(mesh, is, readFields, newFormat)
 {
     if (readFields)
     {
         if (is.format() == IOstream::ASCII)
         {
-            is  >> meshEdgeStart_ >> diagEdge_;
+            is  >> localPosition_ >> meshEdgeStart_ >> diagEdge_;
         }
         else
         {
-            is.read(reinterpret_cast<char*>(&meshEdgeStart_), sizeofFields_);
+            is.read(reinterpret_cast<char*>(&localPosition_), sizeofFields_);
         }
     }
 
-    // Check state of Istream
-    is.check
-    (
-        "wallBoundedParticle::wallBoundedParticle"
-        "(const Cloud<wallBoundedParticle>&, Istream&, bool)"
-    );
+    is.check(FUNCTION_NAME);
 }
 
 
@@ -346,6 +457,7 @@ Foam::wallBoundedParticle::wallBoundedParticle
 )
 :
     particle(p),
+    localPosition_(p.localPosition_),
     meshEdgeStart_(p.meshEdgeStart_),
     diagEdge_(p.diagEdge_)
 {}
@@ -362,15 +474,16 @@ Foam::Ostream& Foam::operator<<
     if (os.format() == IOstream::ASCII)
     {
         os  << static_cast<const particle&>(p)
-            << token::SPACE << p.meshEdgeStart_
-            << token::SPACE << p.diagEdge_;
+        << token::SPACE << p.localPosition_
+        << token::SPACE << p.meshEdgeStart_
+        << token::SPACE << p.diagEdge_;
     }
     else
     {
         os  << static_cast<const particle&>(p);
         os.write
         (
-            reinterpret_cast<const char*>(&p.meshEdgeStart_),
+            reinterpret_cast<const char*>(&p.localPosition_),
             wallBoundedParticle::sizeofFields_
         );
     }
@@ -387,7 +500,7 @@ Foam::Ostream& Foam::operator<<
 {
     const wallBoundedParticle& p = ip.t_;
 
-    tetPointRef tpr(p.currentTet());
+    tetPointRef tpr(p.currentTetIndices().tet(p.mesh()));
 
     os  << "    " << static_cast<const particle&>(p) << nl
         << "    tet:" << nl;
@@ -406,7 +519,7 @@ Foam::Ostream& Foam::operator<<
         << "    l 2 4" << nl
         << "    l 3 4" << nl;
     os  << "    ";
-    meshTools::writeOBJ(os, p.position());
+    meshTools::writeOBJ(os, p.localPosition_);
 
     return os;
 }

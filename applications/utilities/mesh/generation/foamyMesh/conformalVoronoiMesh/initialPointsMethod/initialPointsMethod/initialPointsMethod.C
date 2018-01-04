@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2012-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2012-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -26,20 +26,17 @@ License
 #include "initialPointsMethod.H"
 #include "addToRunTimeSelectionTable.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 namespace Foam
 {
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
 defineTypeNameAndDebug(initialPointsMethod, 0);
 defineRunTimeSelectionTable(initialPointsMethod, dictionary);
-
+}
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-initialPointsMethod::initialPointsMethod
+Foam::initialPointsMethod::initialPointsMethod
 (
     const word& type,
     const dictionary& initialPointsDict,
@@ -56,7 +53,7 @@ initialPointsMethod::initialPointsMethod
     geometryToConformTo_(geometryToConformTo),
     cellShapeControls_(cellShapeControls),
     decomposition_(decomposition),
-    detailsDict_(subDict(type + "Coeffs")),
+    detailsDict_(optionalSubDict(type + "Coeffs")),
     minimumSurfaceDistanceCoeffSqr_
     (
         sqr
@@ -73,7 +70,7 @@ initialPointsMethod::initialPointsMethod
 
 // * * * * * * * * * * * * * * * * * Selectors * * * * * * * * * * * * * * * //
 
-autoPtr<initialPointsMethod> initialPointsMethod::New
+Foam::autoPtr<Foam::initialPointsMethod> Foam::initialPointsMethod::New
 (
     const dictionary& initialPointsDict,
     const Time& runTime,
@@ -83,25 +80,20 @@ autoPtr<initialPointsMethod> initialPointsMethod::New
     const autoPtr<backgroundMeshDecomposition>& decomposition
 )
 {
-    word initialPointsMethodTypeName
-    (
-        initialPointsDict.lookup("initialPointsMethod")
-    );
+    const word methodName(initialPointsDict.lookup("initialPointsMethod"));
 
     Info<< nl << "Selecting initialPointsMethod "
-        << initialPointsMethodTypeName << endl;
+        << methodName << endl;
 
-    dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(initialPointsMethodTypeName);
+    auto cstrIter = dictionaryConstructorTablePtr_->cfind(methodName);
 
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    if (!cstrIter.found())
     {
         FatalErrorInFunction
             << "Unknown initialPointsMethod type "
-            << initialPointsMethodTypeName
-            << endl << endl
-            << "Valid initialPointsMethod types are :" << endl
-            << dictionaryConstructorTablePtr_->toc()
+            << methodName << nl << nl
+            << "Valid initialPointsMethod types :" << endl
+            << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
 
@@ -123,12 +115,8 @@ autoPtr<initialPointsMethod> initialPointsMethod::New
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-initialPointsMethod::~initialPointsMethod()
+Foam::initialPointsMethod::~initialPointsMethod()
 {}
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
@@ -56,10 +56,8 @@ bool Foam::fvMeshSubset::checkCellSubset() const
 
         return false;
     }
-    else
-    {
-        return true;
-    }
+
+    return true;
 }
 
 
@@ -69,10 +67,10 @@ void Foam::fvMeshSubset::markPoints
     Map<label>& pointMap
 )
 {
-    forAll(curPoints, pointi)
+    for (const label pointi : curPoints)
     {
         // Note: insert will only insert if not yet there.
-        pointMap.insert(curPoints[pointi], 0);
+        pointMap.insert(pointi, 0);
     }
 }
 
@@ -83,9 +81,9 @@ void Foam::fvMeshSubset::markPoints
     labelList& pointMap
 )
 {
-    forAll(curPoints, pointi)
+    for (const label pointi : curPoints)
     {
-        pointMap[curPoints[pointi]] = 0;
+        pointMap[pointi] = 0;
     }
 }
 
@@ -105,7 +103,7 @@ void Foam::fvMeshSubset::doCoupledPatches
 
     if (syncPar && Pstream::parRun())
     {
-        PstreamBuffers pBufs(Pstream::nonBlocking);
+        PstreamBuffers pBufs(Pstream::commsTypes::nonBlocking);
 
         // Send face usage across processor patches
         forAll(oldPatches, oldPatchi)
@@ -1386,6 +1384,23 @@ void Foam::fvMeshSubset::setLargeCellSubset
 
 void Foam::fvMeshSubset::setLargeCellSubset
 (
+    const labelUList& globalCellMap,
+    const label patchID,
+    const bool syncPar
+)
+{
+    labelList region(baseMesh().nCells(), 0);
+
+    for (const label cellId : globalCellMap)
+    {
+        region[cellId] = 1;
+    }
+    setLargeCellSubset(region, 1, patchID, syncPar);
+}
+
+
+void Foam::fvMeshSubset::setLargeCellSubset
+(
     const labelHashSet& globalCellMap,
     const label patchID,
     const bool syncPar
@@ -1393,9 +1408,9 @@ void Foam::fvMeshSubset::setLargeCellSubset
 {
     labelList region(baseMesh().nCells(), 0);
 
-    forAllConstIter(labelHashSet, globalCellMap, iter)
+    for (const label cellId : globalCellMap)
     {
-        region[iter.key()] = 1;
+        region[cellId] = 1;
     }
     setLargeCellSubset(region, 1, patchID, syncPar);
 }

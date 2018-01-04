@@ -23,7 +23,6 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "keyType.H"
 #include "dictionaryEntry.H"
 #include "IOstreams.H"
 
@@ -38,11 +37,7 @@ Foam::dictionaryEntry::dictionaryEntry
     entry(keyType(is)),
     dictionary(parentDict, is)
 {
-    is.fatalCheck
-    (
-        "dictionaryEntry::dictionaryEntry"
-        "(const dictionary& parentDict, Istream&)"
-    );
+    is.fatalCheck(FUNCTION_NAME);
 }
 
 
@@ -56,11 +51,7 @@ Foam::dictionaryEntry::dictionaryEntry
     entry(key),
     dictionary(key, parentDict, is)
 {
-    is.fatalCheck
-    (
-        "dictionaryEntry::dictionaryEntry"
-        "(const keyType&, const dictionary& parentDict, Istream&)"
-    );
+    is.fatalCheck(FUNCTION_NAME);
 }
 
 
@@ -74,9 +65,9 @@ void Foam::dictionaryEntry::write(Ostream& os) const
 
 // * * * * * * * * * * * * * * Ostream operator  * * * * * * * * * * * * * * //
 
-Foam::Ostream& Foam::operator<<(Ostream& os, const dictionaryEntry& de)
+Foam::Ostream& Foam::operator<<(Ostream& os, const dictionaryEntry& e)
 {
-    de.write(os);
+    e.write(os);
     return os;
 }
 

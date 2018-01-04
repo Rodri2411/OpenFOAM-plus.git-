@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2016 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2016-2017 OpenCFD Ltd.
      \\/     M anipulation  | Copyright (C) 2015 IH-Cantabria
 -------------------------------------------------------------------------------
 License
@@ -48,6 +48,26 @@ namespace waveModels
 
 // * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * * //
 
+Foam::scalar Foam::waveModels::StokesI::eta
+(
+    const scalar H,
+    const scalar Kx,
+    const scalar x,
+    const scalar Ky,
+    const scalar y,
+    const scalar omega,
+    const scalar t,
+    const scalar phase
+) const
+{
+    scalar phaseTot = Kx*x + Ky*y - omega*t + phase;
+
+    return H*0.5*cos(phaseTot);
+}
+
+
+// * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * * //
+
 Foam::scalar Foam::waveModels::StokesI::waveLength
 (
     const scalar h,
@@ -66,24 +86,7 @@ Foam::scalar Foam::waveModels::StokesI::waveLength
 }
 
 
-Foam::scalar Foam::waveModels::StokesI::eta
-(
-    const scalar H,
-    const scalar Kx,
-    const scalar x,
-    const scalar Ky,
-    const scalar y,
-    const scalar omega,
-    const scalar t,
-    const scalar phase
-) const
-{
-    scalar phaseTot = Kx*x + Ky*y - omega*t + phase;
-
-    return H*0.5*cos(phaseTot);
-}
-
-Foam::vector Foam::waveModels::StokesI::U
+Foam::vector Foam::waveModels::StokesI::UfBase
 (
     const scalar H,
     const scalar h,
@@ -125,7 +128,7 @@ void Foam::waveModels::StokesI::setLevel
     {
         const scalar eta =
             this->eta
-	        (
+            (
                 waveHeight_,
                 waveKx,
                 xPaddle_[paddlei],
@@ -138,46 +141,6 @@ void Foam::waveModels::StokesI::setLevel
 
         level[paddlei] = waterDepthRef_ + tCoeff*eta;
     }
-}
-
-
-// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
-
-Foam::waveModels::StokesI::StokesI
-(
-    const dictionary& dict,
-    const fvMesh& mesh,
-    const polyPatch& patch,
-    const bool readFields
-)
-:
-    regularWaveModel(dict, mesh, patch, false)
-{
-    if (readFields)
-    {
-        read(dict);
-    }
-}
-
-
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-Foam::waveModels::StokesI::~StokesI()
-{}
-
-
-// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
-
-bool Foam::waveModels::StokesI::read(const dictionary& overrideDict)
-{
-    if (regularWaveModel::read(overrideDict))
-    {
-		waveLength_ = waveLength(waterDepthRef_, wavePeriod_);
-
-        return true;
-    }
-
-    return false;
 }
 
 
@@ -207,8 +170,8 @@ void Foam::waveModels::StokesI::setVelocity
         {
             const label paddlei = faceToPaddle_[facei];
 
-            const vector Uf = U
-	        (
+            const vector Uf = UfBase
+            (
                 waveHeight_,
                 waterDepthRef_,
                 waveKx,
@@ -224,6 +187,46 @@ void Foam::waveModels::StokesI::setVelocity
             U_[facei] = fraction*Uf*tCoeff;
         }
     }
+}
+
+
+// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
+
+Foam::waveModels::StokesI::StokesI
+(
+    const dictionary& dict,
+    const fvMesh& mesh,
+    const polyPatch& patch,
+    const bool readFields
+)
+:
+    regularWaveModel(dict, mesh, patch, false)
+{
+    if (readFields)
+    {
+        readDict(dict);
+    }
+}
+
+
+// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
+
+Foam::waveModels::StokesI::~StokesI()
+{}
+
+
+// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+
+bool Foam::waveModels::StokesI::readDict(const dictionary& overrideDict)
+{
+    if (regularWaveModel::readDict(overrideDict))
+    {
+        waveLength_ = waveLength(waterDepthRef_, wavePeriod_);
+
+        return true;
+    }
+
+    return false;
 }
 
 

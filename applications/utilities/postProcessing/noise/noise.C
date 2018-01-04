@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2016-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -64,7 +64,8 @@ Usage
         // Surface writer
         writer      ensight;
 
-        // Collate times for ensight output - ensures geometry is only written once
+        // Collate times for ensight output
+        // - ensures geometry is only written once
         writeOptions
         {
             ensight
@@ -73,8 +74,7 @@ Usage
             }
         }
 
-        // Number of samples in sampling window
-        // Must be a power of 2, default = 2^16 (=65536)
+        // Number of samples in sampling window, default = 2^16 (=65536)
         N               4096;
 
         // Write interval for FFT data, default = 1
@@ -102,25 +102,18 @@ using namespace Foam;
 
 int main(int argc, char *argv[])
 {
+    argList::noCheckProcessorDirectories();
+
     #include "addDictOption.H"
     #include "setRootCase.H"
     #include "createTime.H"
 
-    fileName dictName(runTime.system()/"noiseDict");
-    if (args.optionFound("dict"))
-    {
-        dictName = args["dict"];
-    }
+    const word dictName("noiseDict");
+    #include "setSystemRunTimeDictionaryIO.H"
 
-    IOdictionary dict
-    (
-        IOobject
-        (
-            dictName.expand(),
-            runTime,
-            IOobject::MUST_READ
-        )
-    );
+    Info<< "Reading " << dictName << "\n" << endl;
+
+    IOdictionary dict(dictIO);
 
     autoPtr<noiseModel> model(noiseModel::New(dict));
     model->calculate();

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -230,44 +230,44 @@ Foam::radiation::fvDOM::fvDOM(const volScalarField& T)
         mesh_,
         dimensionedScalar("G", dimMass/pow3(dimTime), 0.0)
     ),
-    Qr_
+    qr_
     (
         IOobject
         (
-            "Qr",
+            "qr",
             mesh_.time().timeName(),
             mesh_,
             IOobject::READ_IF_PRESENT,
             IOobject::AUTO_WRITE
         ),
         mesh_,
-        dimensionedScalar("Qr", dimMass/pow3(dimTime), 0.0)
+        dimensionedScalar("qr", dimMass/pow3(dimTime), 0.0)
     ),
-    Qem_
+    qem_
     (
         IOobject
         (
-            "Qem",
+            "qem",
             mesh_.time().timeName(),
             mesh_,
             IOobject::NO_READ,
             IOobject::NO_WRITE
         ),
         mesh_,
-        dimensionedScalar("Qem", dimMass/pow3(dimTime), 0.0)
+        dimensionedScalar("qem", dimMass/pow3(dimTime), 0.0)
     ),
-    Qin_
+    qin_
     (
         IOobject
         (
-            "Qin",
+            "qin",
             mesh_.time().timeName(),
             mesh_,
             IOobject::READ_IF_PRESENT,
             IOobject::AUTO_WRITE
         ),
         mesh_,
-        dimensionedScalar("Qin", dimMass/pow3(dimTime), 0.0)
+        dimensionedScalar("qin", dimMass/pow3(dimTime), 0.0)
     ),
     a_
     (
@@ -323,44 +323,44 @@ Foam::radiation::fvDOM::fvDOM
         mesh_,
         dimensionedScalar("G", dimMass/pow3(dimTime), 0.0)
     ),
-    Qr_
+    qr_
     (
         IOobject
         (
-            "Qr",
+            "qr",
             mesh_.time().timeName(),
             mesh_,
             IOobject::READ_IF_PRESENT,
             IOobject::AUTO_WRITE
         ),
         mesh_,
-        dimensionedScalar("Qr", dimMass/pow3(dimTime), 0.0)
+        dimensionedScalar("qr", dimMass/pow3(dimTime), 0.0)
     ),
-    Qem_
+    qem_
     (
         IOobject
         (
-            "Qem",
+            "qem",
             mesh_.time().timeName(),
             mesh_,
             IOobject::NO_READ,
             IOobject::NO_WRITE
         ),
         mesh_,
-        dimensionedScalar("Qem", dimMass/pow3(dimTime), 0.0)
+        dimensionedScalar("qem", dimMass/pow3(dimTime), 0.0)
     ),
-    Qin_
+    qin_
     (
         IOobject
         (
-            "Qin",
+            "qin",
             mesh_.time().timeName(),
             mesh_,
             IOobject::READ_IF_PRESENT,
             IOobject::AUTO_WRITE
         ),
         mesh_,
-        dimensionedScalar("Qin", dimMass/pow3(dimTime), 0.0)
+        dimensionedScalar("qin", dimMass/pow3(dimTime), 0.0)
     ),
     a_
     (
@@ -508,17 +508,17 @@ void Foam::radiation::fvDOM::updateBlackBodyEmission()
 void Foam::radiation::fvDOM::updateG()
 {
     G_ = dimensionedScalar("zero",dimMass/pow3(dimTime), 0.0);
-    Qr_ = dimensionedScalar("zero",dimMass/pow3(dimTime), 0.0);
-    Qem_ = dimensionedScalar("zero", dimMass/pow3(dimTime), 0.0);
-    Qin_ = dimensionedScalar("zero", dimMass/pow3(dimTime), 0.0);
+    qr_ = dimensionedScalar("zero",dimMass/pow3(dimTime), 0.0);
+    qem_ = dimensionedScalar("zero", dimMass/pow3(dimTime), 0.0);
+    qin_ = dimensionedScalar("zero", dimMass/pow3(dimTime), 0.0);
 
     forAll(IRay_, rayI)
     {
         IRay_[rayI].addIntensity();
         G_ += IRay_[rayI].I()*IRay_[rayI].omega();
-        Qr_.boundaryFieldRef() += IRay_[rayI].Qr().boundaryField();
-        Qem_.boundaryFieldRef() += IRay_[rayI].Qem().boundaryField();
-        Qin_.boundaryFieldRef() += IRay_[rayI].Qin().boundaryField();
+        qr_.boundaryFieldRef() += IRay_[rayI].qr().boundaryField();
+        qem_.boundaryFieldRef() += IRay_[rayI].qem().boundaryField();
+        qin_.boundaryFieldRef() += IRay_[rayI].qin().boundaryField();
     }
 }
 
@@ -530,12 +530,12 @@ void Foam::radiation::fvDOM::setRayIdLambdaId
     label& lambdaId
 ) const
 {
-    // assuming name is in the form: CHARS_rayId_lambdaId
-    size_type i1 = name.find_first_of("_");
-    size_type i2 = name.find_last_of("_");
+    // Assuming name is in the form: CHARS_rayId_lambdaId
+    const auto i1 = name.find('_');
+    const auto i2 = name.find('_', i1+1);
 
-    rayId = readLabel(IStringStream(name.substr(i1+1, i2-1))());
-    lambdaId = readLabel(IStringStream(name.substr(i2+1, name.size()-1))());
+    rayId    = readLabel(name.substr(i1+1, i2-i1-1));
+    lambdaId = readLabel(name.substr(i2+1));
 }
 
 

@@ -45,6 +45,8 @@ Foam::fileStat::fileStat
     const bool followLink,
     const unsigned int maxTime
 )
+:
+    isValid_(false)
 {
     // Work on volatile
     volatile bool locIsValid = false;
@@ -75,6 +77,12 @@ Foam::fileStat::fileStat(Istream& is)
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+
+Foam::label Foam::fileStat::size() const
+{
+    return isValid_ ? label(status_.st_size) : 0;
+}
+
 
 bool Foam::fileStat::sameDevice(const fileStat& stat2) const
 {
@@ -123,9 +131,7 @@ Foam::Istream& Foam::operator>>(Istream& is, fileStat& fStat)
     fStat.status_.st_mtime = stat[11];
     fStat.status_.st_ctime = stat[12];
 
-    // Check state of Istream
-    is.check("Istream& operator>>(Istream&, fileStat&)");
-
+    is.check(FUNCTION_NAME);
     return is;
 }
 

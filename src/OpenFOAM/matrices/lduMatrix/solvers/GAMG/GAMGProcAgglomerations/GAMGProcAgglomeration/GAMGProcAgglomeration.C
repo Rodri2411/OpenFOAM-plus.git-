@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2013-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2013-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -150,7 +150,7 @@ Foam::labelListList Foam::GAMGProcAgglomeration::globalCellCells
             {
                 interfaces[inti].initInternalFieldTransfer
                 (
-                    Pstream::nonBlocking,
+                    Pstream::commsTypes::nonBlocking,
                     globalIndices
                 );
             }
@@ -172,7 +172,7 @@ Foam::labelListList Foam::GAMGProcAgglomeration::globalCellCells
                     (
                         interfaces[inti].internalFieldTransfer
                         (
-                            Pstream::nonBlocking,
+                            Pstream::commsTypes::nonBlocking,
                             globalIndices
                         )
                     )
@@ -361,15 +361,14 @@ Foam::autoPtr<Foam::GAMGProcAgglomeration> Foam::GAMGProcAgglomeration::New
         InfoInFunction << "Constructing GAMGProcAgglomeration" << endl;
     }
 
-    GAMGAgglomerationConstructorTable::iterator cstrIter =
-        GAMGAgglomerationConstructorTablePtr_->find(type);
+    auto cstrIter = GAMGAgglomerationConstructorTablePtr_->cfind(type);
 
-    if (cstrIter == GAMGAgglomerationConstructorTablePtr_->end())
+    if (!cstrIter.found())
     {
         FatalErrorInFunction
             << "Unknown GAMGProcAgglomeration type "
             << type << " for GAMGAgglomeration " << agglom.type() << nl << nl
-            << "Valid GAMGProcAgglomeration types are :" << endl
+            << "Valid GAMGProcAgglomeration types :" << endl
             << GAMGAgglomerationConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }

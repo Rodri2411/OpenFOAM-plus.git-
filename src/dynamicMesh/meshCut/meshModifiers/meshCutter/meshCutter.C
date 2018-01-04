@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -33,6 +33,7 @@ License
 #include "polyAddPoint.H"
 #include "polyAddFace.H"
 #include "polyAddCell.H"
+#include "syncTools.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -48,7 +49,7 @@ bool Foam::meshCutter::uses(const labelList& elems1, const labelList& elems2)
 {
     forAll(elems1, elemI)
     {
-        if (findIndex(elems2, elems1[elemI]) != -1)
+        if (elems2.found(elems1[elemI]))
         {
             return true;
         }
@@ -63,7 +64,7 @@ bool Foam::meshCutter::isIn
     const labelList& cuts
 )
 {
-    label index = findIndex(cuts, twoCuts[0]);
+    label index = cuts.find(twoCuts[0]);
 
     if (index == -1)
     {
@@ -379,7 +380,7 @@ void Foam::meshCutter::splitFace
 ) const
 {
     // Check if we find any new vertex which is part of the splitEdge.
-    label startFp = findIndex(f, v0);
+    label startFp = f.find(v0);
 
     if (startFp == -1)
     {
@@ -389,7 +390,7 @@ void Foam::meshCutter::splitFace
             << abort(FatalError);
     }
 
-    label endFp = findIndex(f, v1);
+    label endFp = f.find(v1);
 
     if (endFp == -1)
     {
@@ -424,13 +425,13 @@ Foam::face Foam::meshCutter::addEdgeCutsToFace(const label facei) const
         // Check if edge has been cut.
         label fp1 = f.fcIndex(fp);
 
-        HashTable<label, edge, Hash<edge>>::const_iterator fnd =
+        EdgeMap<label>::const_iterator fnd =
             addedPoints_.find(edge(f[fp], f[fp1]));
 
-        if (fnd != addedPoints_.end())
+        if (fnd.found())
         {
             // edge has been cut. Introduce new vertex.
-            newFace[newFp++] = fnd();
+            newFace[newFp++] = fnd.object();
         }
     }
 
@@ -483,12 +484,12 @@ Foam::face Foam::meshCutter::loopToFace
                 if (edgeI != -1)
                 {
                     // Existing edge. Insert split-edge point if any.
-                    HashTable<label, edge, Hash<edge>>::const_iterator fnd =
+                    EdgeMap<label>::const_iterator fnd =
                         addedPoints_.find(mesh().edges()[edgeI]);
 
-                    if (fnd != addedPoints_.end())
+                    if (fnd.found())
                     {
-                        newFace[newFacei++] = fnd();
+                        newFace[newFacei++] = fnd.object();
                     }
                 }
             }
@@ -536,13 +537,47 @@ void Foam::meshCutter::setRefinement
     addedPoints_.clear();
     addedPoints_.resize(cuts.nLoops());
 
-    if (cuts.nLoops() == 0)
+    if (returnReduce(cuts.nLoops(), sumOp<label>()) == 0)
     {
         return;
     }
 
     const labelListList& anchorPts = cuts.cellAnchorPoints();
     const labelListList& cellLoops = cuts.cellLoops();
+
+    if (debug)
+    {
+        // Check that any edge is cut only if any cell using it is cut
+        boolList edgeOnCutCell(mesh().nEdges(), false);
+        forAll(cuts.cellLoops(), celli)
+        {
+            if (cuts.cellLoops()[celli].size())
+            {
+                const labelList& cEdges = mesh().cellEdges(celli);
+                forAll(cEdges, i)
+                {
+                    edgeOnCutCell[cEdges[i]] = true;
+                }
+            }
+        }
+        syncTools::syncEdgeList(mesh(), edgeOnCutCell, orEqOp<bool>(), false);
+
+        forAll(cuts.edgeIsCut(), edgeI)
+        {
+            if (cuts.edgeIsCut()[edgeI] && !edgeOnCutCell[edgeI])
+            {
+                const edge& e = mesh().edges()[edgeI];
+
+                WarningInFunction
+                    << "Problem: cut edge but none of the cells using"
+                    << " it is cut\n"
+                    << "edge:" << edgeI << " verts:" << e
+                    << " at:" << e.line(mesh().points())
+                    << endl;    //abort(FatalError);
+            }
+        }
+    }
+
 
     //
     // Add new points along cut edges.
@@ -553,15 +588,6 @@ void Foam::meshCutter::setRefinement
         if (cuts.edgeIsCut()[edgeI])
         {
             const edge& e = mesh().edges()[edgeI];
-
-            // Check if there is any cell using this edge.
-            if (debug && findCutCell(cuts, mesh().edgeCells()[edgeI]) == -1)
-            {
-                FatalErrorInFunction
-                    << "Problem: cut edge but none of the cells using it is\n"
-                    << "edge:" << edgeI << " verts:" << e
-                    << abort(FatalError);
-            }
 
             // One of the edge end points should be master point of nbCelli.
             label masterPointi = e.start();
@@ -1043,23 +1069,16 @@ void Foam::meshCutter::updateMesh(const mapPolyMesh& morphMap)
     }
 
     {
-        HashTable<label, edge, Hash<edge>> newAddedPoints(addedPoints_.size());
+        EdgeMap<label> newAddedPoints(addedPoints_.size());
 
-        for
-        (
-            HashTable<label, edge, Hash<edge>>::const_iterator iter =
-                addedPoints_.begin();
-            iter != addedPoints_.end();
-            ++iter
-        )
+        forAllConstIters(addedPoints_, iter)
         {
             const edge& e = iter.key();
+            const label addedPointi = iter.object();
 
             label newStart = morphMap.reversePointMap()[e.start()];
 
             label newEnd = morphMap.reversePointMap()[e.end()];
-
-            label addedPointi = iter();
 
             label newAddedPointi = morphMap.reversePointMap()[addedPointi];
 

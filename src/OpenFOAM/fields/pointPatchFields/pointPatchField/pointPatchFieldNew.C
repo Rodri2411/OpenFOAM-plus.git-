@@ -39,15 +39,14 @@ Foam::autoPtr<Foam::pointPatchField<Type>> Foam::pointPatchField<Type>::New
         InfoInFunction << "Constructing pointPatchField<Type>" << endl;
     }
 
-    typename pointPatchConstructorTable::iterator cstrIter =
-        pointPatchConstructorTablePtr_->find(patchFieldType);
+    auto cstrIter = pointPatchConstructorTablePtr_->cfind(patchFieldType);
 
-    if (cstrIter == pointPatchConstructorTablePtr_->end())
+    if (!cstrIter.found())
     {
         FatalErrorInFunction
             << "Unknown patchFieldType type "
             << patchFieldType << nl << nl
-            << "Valid patchField types are :" << endl
+            << "Valid patchField types :" << endl
             << pointPatchConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
@@ -63,10 +62,10 @@ Foam::autoPtr<Foam::pointPatchField<Type>> Foam::pointPatchField<Type>::New
         if (pfPtr().constraintType() != p.constraintType())
         {
             // Use default constraint type
-            typename pointPatchConstructorTable::iterator patchTypeCstrIter =
-                pointPatchConstructorTablePtr_->find(p.type());
+            auto patchTypeCstrIter =
+                pointPatchConstructorTablePtr_->cfind(p.type());
 
-            if (patchTypeCstrIter == pointPatchConstructorTablePtr_->end())
+            if (!patchTypeCstrIter.found())
             {
                 FatalErrorInFunction
                     << "inconsistent patch and patchField types for \n"
@@ -117,24 +116,23 @@ Foam::autoPtr<Foam::pointPatchField<Type>> Foam::pointPatchField<Type>::New
 
     word patchFieldType(dict.lookup("type"));
 
-    typename dictionaryConstructorTable::iterator cstrIter
-        = dictionaryConstructorTablePtr_->find(patchFieldType);
+    auto cstrIter = dictionaryConstructorTablePtr_->cfind(patchFieldType);
 
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    if (!cstrIter.found())
     {
         if (!disallowGenericPointPatchField)
         {
-            cstrIter = dictionaryConstructorTablePtr_->find("generic");
+            cstrIter = dictionaryConstructorTablePtr_->cfind("generic");
         }
 
-        if (cstrIter == dictionaryConstructorTablePtr_->end())
+        if (!cstrIter.found())
         {
             FatalIOErrorInFunction
             (
                 dict
             )   << "Unknown patchField type " << patchFieldType
                 << " for patch type " << p.type() << nl << nl
-                << "Valid patchField types are :" << endl
+                << "Valid patchField types :" << endl
                 << dictionaryConstructorTablePtr_->sortedToc()
                 << exit(FatalIOError);
         }
@@ -157,10 +155,10 @@ Foam::autoPtr<Foam::pointPatchField<Type>> Foam::pointPatchField<Type>::New
         else
         {
             // Use default constraint type
-            typename dictionaryConstructorTable::iterator patchTypeCstrIter
-                = dictionaryConstructorTablePtr_->find(p.type());
+            auto patchTypeCstrIter
+                = dictionaryConstructorTablePtr_->cfind(p.type());
 
-            if (patchTypeCstrIter == dictionaryConstructorTablePtr_->end())
+            if (!patchTypeCstrIter.found())
             {
                 FatalIOErrorInFunction
                 (
@@ -193,15 +191,14 @@ Foam::autoPtr<Foam::pointPatchField<Type>> Foam::pointPatchField<Type>::New
         InfoInFunction << "Constructing pointPatchField<Type>" << endl;
     }
 
-    typename patchMapperConstructorTable::iterator cstrIter =
-        patchMapperConstructorTablePtr_->find(ptf.type());
+    auto cstrIter = patchMapperConstructorTablePtr_->cfind(ptf.type());
 
-    if (cstrIter == patchMapperConstructorTablePtr_->end())
+    if (!cstrIter.found())
     {
         FatalErrorInFunction
             << "Unknown patchField type "
             << ptf.type() << nl << nl
-            << "Valid patchField types are :" << endl
+            << "Valid patchField types :" << endl
             << patchMapperConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }

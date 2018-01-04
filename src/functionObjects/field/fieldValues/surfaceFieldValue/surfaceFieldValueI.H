@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -23,17 +23,9 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "surfaceFieldValue.H"
 #include "Time.H"
 
-// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
-
-inline const Foam::functionObjects::fieldValues::surfaceFieldValue::regionTypes&
-Foam::functionObjects::fieldValues::surfaceFieldValue::regionType() const
-{
-    return regionType_;
-}
-
+// * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * //
 
 inline const Foam::labelList&
 Foam::functionObjects::fieldValues::surfaceFieldValue::faceId() const
@@ -49,10 +41,35 @@ Foam::functionObjects::fieldValues::surfaceFieldValue::facePatch() const
 }
 
 
-inline const Foam::labelList&
-Foam::functionObjects::fieldValues::surfaceFieldValue::faceSign() const
+inline const Foam::boolList&
+Foam::functionObjects::fieldValues::surfaceFieldValue::faceFlip() const
 {
-    return faceSign_;
+    return faceFlip_;
+}
+
+
+// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+
+inline bool
+Foam::functionObjects::fieldValues::surfaceFieldValue::usesMag() const
+{
+    // Operation specifically tagged to use mag
+    return (operation_ & typeAbsolute);
+}
+
+
+inline bool
+Foam::functionObjects::fieldValues::surfaceFieldValue::usesWeight() const
+{
+    // Operation specifically tagged to require a weight field
+    return (operation_ & typeWeighted);
+}
+
+
+inline const Foam::functionObjects::fieldValues::surfaceFieldValue::regionTypes&
+Foam::functionObjects::fieldValues::surfaceFieldValue::regionType() const
+{
+    return regionType_;
 }
 
 

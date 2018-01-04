@@ -31,80 +31,6 @@ License
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
-Foam::word Foam::fileFormats::FIREMeshReader::validateWord
-(
-    const std::string& str
-)
-{
-    std::string::size_type ngood = 0;
-    bool prefix = false;
-    bool first  = true;
-
-    for
-    (
-        std::string::const_iterator iter = str.begin();
-        iter != str.end();
-        ++iter
-    )
-    {
-        if (word::valid(*iter))
-        {
-            ++ngood;
-            if (first)
-            {
-                first = false;
-
-                // start with a digit? need to prefix with '_'
-                if (isdigit(*iter))
-                {
-                    prefix = true;
-                }
-            }
-        }
-    }
-
-    if (prefix)
-    {
-        ++ngood;
-    }
-    else if (ngood == str.size())
-    {
-        return str;
-    }
-
-    Foam::word out;
-    out.resize(ngood);
-    ngood = 0;
-
-    Foam::word::iterator iter2 = out.begin();
-    for
-    (
-        std::string::const_iterator iter1 = str.begin();
-        iter1 != str.end();
-        ++iter1
-    )
-    {
-        register char c = *iter1;
-
-        if (Foam::word::valid(c))
-        {
-            if (prefix)
-            {
-                prefix = false;
-                *(iter2++) = '_';
-                ++ngood;
-            }
-            *(iter2++) = c;
-            ++ngood;
-        }
-    }
-
-    out.resize(ngood);
-
-    return out;
-}
-
-
 void Foam::fileFormats::FIREMeshReader::readPoints
 (
     ISstream& is,
@@ -229,7 +155,7 @@ void Foam::fileFormats::FIREMeshReader::readSelections(ISstream& is)
             // index starting at 1
             const label selId = ++nCellSelections;
 
-            cellTable_.setName(selId, validateWord(name));
+            cellTable_.setName(selId, word::validate(name, true));
             cellTable_.setMaterial(selId, "fluid");
 
             for (label i = 0; i < count; ++i)
@@ -244,7 +170,7 @@ void Foam::fileFormats::FIREMeshReader::readSelections(ISstream& is)
             // index starting at 0
             const label selId = nFaceSelections++;
 
-            faceNames.append(validateWord(name));
+            faceNames.append(word::validate(name, true));
 
             for (label i = 0; i < count; ++i)
             {
@@ -315,7 +241,8 @@ void Foam::fileFormats::FIREMeshReader::reorganize()
     inplaceReorder(oldToNew, neigh_);
     inplaceReorder(oldToNew, faceZoneId_);
 
-    // determine the patch sizes - faceNames_ already has extra place for missed faces
+    // Determine the patch sizes
+    // - faceNames_ already has extra place for missed faces
     const label zoneMissed = faceNames_.size() - 1;
     patchSizes_.setSize(faceNames_.size());
     patchSizes_ = 0;
@@ -366,7 +293,8 @@ void Foam::fileFormats::FIREMeshReader::reorganize()
         label patchI = faceZoneId_[faceI];
         if (patchI == -1)
         {
-            oldToNew[faceI] = patchStarts_[zoneMissed] + patchSizes_[zoneMissed];
+            oldToNew[faceI] =
+                patchStarts_[zoneMissed] + patchSizes_[zoneMissed];
             ++patchSizes_[zoneMissed];
         }
         else

@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -45,13 +45,20 @@ inline Foam::face::face()
 {}
 
 
-inline Foam::face::face(label s)
+inline Foam::face::face(const label sz)
 :
-    labelList(s, -1)
+    labelList(sz, -1)
 {}
 
 
 inline Foam::face::face(const labelUList& lst)
+:
+    labelList(lst)
+{}
+
+
+template<unsigned Size>
+inline Foam::face::face(const FixedList<label, Size>& lst)
 :
     labelList(lst)
 {}
@@ -69,6 +76,12 @@ inline Foam::face::face(const Xfer<labelList>& lst)
 {}
 
 
+inline Foam::face::face(labelList&& lst)
+:
+    labelList(std::move(lst))
+{}
+
+
 inline Foam::face::face(Istream& is)
 {
     is >> *this;
@@ -77,16 +90,20 @@ inline Foam::face::face(Istream& is)
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-inline Foam::pointField Foam::face::points(const pointField& meshPoints) const
+inline Foam::pointField Foam::face::points
+(
+    const UList<point>& meshPoints
+) const
 {
     // There are as many points as there are labels for them
     pointField p(size());
 
     // For each point in list, set it to the point in 'pnts' addressed
     // by 'labs'
-    forAll(p, i)
+    label i = 0;
+    for (const label pointi : *this)
     {
-        p[i] = meshPoints[operator[](i)];
+        p[i++] = meshPoints[pointi];
     }
 
     // Return list
@@ -94,7 +111,7 @@ inline Foam::pointField Foam::face::points(const pointField& meshPoints) const
 }
 
 
-inline Foam::scalar Foam::face::mag(const pointField& p) const
+inline Foam::scalar Foam::face::mag(const UList<point>& p) const
 {
     return ::Foam::mag(normal(p));
 }
@@ -113,32 +130,36 @@ inline Foam::edge Foam::face::faceEdge(const label n) const
 }
 
 
-// Next vertex on face
+inline bool Foam::face::found(const label globalIndex) const
+{
+    return which(globalIndex) != -1;
+}
+
+
 inline Foam::label Foam::face::nextLabel(const label i) const
 {
-    return operator[](fcIndex(i));
+    return this->fcValue(i);
 }
 
 
-// Previous vertex on face
 inline Foam::label Foam::face::prevLabel(const label i) const
 {
-    return operator[](rcIndex(i));
+    return this->rcValue(i);
 }
 
-// Number of triangles directly known from number of vertices
+
 inline Foam::label Foam::face::nTriangles() const
 {
     return size() - 2;
 }
 
-// * * * * * * * * * * * * * * * Friend Operators  * * * * * * * * * * * * * //
+
+// * * * * * * * * * * * * * * * Global Operators   * * * * * * * * * * * * * //
 
 inline bool Foam::operator==(const face& a, const face& b)
 {
     return face::compare(a,b) != 0;
 }
-
 
 inline bool Foam::operator!=(const face& a, const face& b)
 {
@@ -169,9 +190,7 @@ inline Foam::Istream& Foam::operator>>(Istream& is, face& f)
         is >> static_cast<labelList&>(f);
     }
 
-    // Check state of Ostream
-    is.check("Istream& operator>>(Istream&, face&)");
-
+    is.check(FUNCTION_NAME);
     return is;
 }
 

@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -48,6 +48,15 @@ void Foam::fanFvPatchField<Foam::scalar>::calcFanJump()
         {
             scalar area = gSum(patch().magSf());
             Un = gSum(Un*patch().magSf())/area;
+
+            if (nonDimensional_)
+            {
+                // Create an adimensional volumetric flow rate
+                Un =
+                    120.0*Un/pow3(constant::mathematical::pi)
+                  * patch().magSf()
+                  / pow3(dm_)/rpm_;
+            }
         }
 
         if (phi.dimensions() == dimDensity*dimVelocity*dimArea)
@@ -55,7 +64,22 @@ void Foam::fanFvPatchField<Foam::scalar>::calcFanJump()
             Un /= patch().lookupPatchField<volScalarField, scalar>(rhoName_);
         }
 
-        this->jump_ = max(this->jumpTable_->value(Un), scalar(0));
+        if (nonDimensional_)
+        {
+            scalarField deltap(this->jumpTable_->value(Un));
+
+            // Convert adimensional deltap from curve into deltaP
+            scalarField pdFan
+            (
+                deltap*pow4(constant::mathematical::pi)*sqr(dm_*rpm_)/1800.0
+            );
+
+            this->jump_ = max(pdFan, scalar(0));
+        }
+        else
+        {
+            this->jump_ = max(this->jumpTable_->value(Un), scalar(0));
+        }
     }
 }
 
@@ -73,45 +97,14 @@ Foam::fanFvPatchField<Foam::scalar>::fanFvPatchField
     uniformJumpFvPatchField<scalar>(p, iF),
     phiName_(dict.lookupOrDefault<word>("phi", "phi")),
     rhoName_(dict.lookupOrDefault<word>("rho", "rho")),
-    uniformJump_(dict.lookupOrDefault<bool>("uniformJump", false))
+    uniformJump_(dict.lookupOrDefault<bool>("uniformJump", false)),
+    nonDimensional_(dict.lookupOrDefault<Switch>("nonDimensional", false)),
+    rpm_(dict.lookupOrDefault<scalar>("rpm", 0.0)),
+    dm_(dict.lookupOrDefault<scalar>("dm", 0.0))
 {
     if (this->cyclicPatch().owner())
     {
-        if (dict.found("f"))
-        {
-            // Backwards compatibility
-            Istream& is = dict.lookup("f");
-            is.format(IOstream::ASCII);
-            scalarList f(is);
-
-            label nPows = 0;
-            forAll(f, powI)
-            {
-                if (mag(f[powI]) > VSMALL)
-                {
-                    nPows++;
-                }
-            }
-            List<Tuple2<scalar, scalar>> coeffs(nPows);
-            nPows = 0;
-            forAll(f, powI)
-            {
-                if (mag(f[powI]) > VSMALL)
-                {
-                    coeffs[nPows++] = Tuple2<scalar, scalar>(f[powI], powI);
-                }
-            }
-
-            this->jumpTable_.reset
-            (
-                new Function1Types::Polynomial<scalar>("jumpTable", coeffs)
-            );
-        }
-        else
-        {
-            // Generic input constructed from dictionary
-            this->jumpTable_ = Function1<scalar>::New("jumpTable", dict);
-        }
+        this->jumpTable_ = Function1<scalar>::New("jumpTable", dict);
     }
 
     if (dict.found("value"))
@@ -123,7 +116,7 @@ Foam::fanFvPatchField<Foam::scalar>::fanFvPatchField
     }
     else
     {
-        this->evaluate(Pstream::blocking);
+        this->evaluate(Pstream::commsTypes::blocking);
     }
 }
 

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2015-2016 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2015-2017 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -58,7 +58,7 @@ void surfaceNoise::initialise(const fileName& fName)
 
         // Find the index of the pressure data
         const List<word> fieldNames(readerPtr_->fieldNames(0));
-        pIndex_ = findIndex(fieldNames, pName_);
+        pIndex_ = fieldNames.find(pName_);
         if (pIndex_ == -1)
         {
             FatalErrorInFunction
@@ -126,7 +126,7 @@ void surfaceNoise::readSurfaceData
 
     if (Pstream::parRun())
     {
-        PstreamBuffers pBufs(Pstream::nonBlocking);
+        PstreamBuffers pBufs(Pstream::commsTypes::nonBlocking);
 
         // Procedure:
         // 1. Master processor reads pressure data for all faces for all times
@@ -142,9 +142,9 @@ void surfaceNoise::readSurfaceData
         // Complete pressure time history data for subset of faces
         pData.setSize(nLocalFace);
         const label nTimes = times_.size();
-        forAll(pData, faceI)
+        for (scalarField& pf : pData)
         {
-            pData[faceI].setSize(nTimes);
+            pf.setSize(nTimes);
         }
 
         // Read and send data
@@ -165,7 +165,7 @@ void surfaceNoise::readSurfaceData
                 p *= rhoRef_;
 
                 // Send subset of faces to each processor
-                for (label procI = 0; procI < Pstream::nProcs(); procI++)
+                for (label procI = 0; procI < Pstream::nProcs(); ++procI)
                 {
                     label face0 = procFaceOffset[procI];
                     label nLocalFace =
@@ -194,12 +194,9 @@ void surfaceNoise::readSurfaceData
         const label nLocalFace = procFaceOffset[0];
 
         pData.setSize(nLocalFace);
-        forAll(times_, timeI)
+        for (scalarField& pf : pData)
         {
-            forAll(pData, faceI)
-            {
-                pData[faceI].setSize(times_.size());
-            }
+            pf.setSize(times_.size());
         }
 
         forAll(times_, i)
@@ -226,26 +223,24 @@ void surfaceNoise::readSurfaceData
 
 Foam::scalar surfaceNoise::writeSurfaceData
 (
+    const fileName& outDirBase,
     const word& fName,
-    const word& groupName,
     const word& title,
     const scalar freq,
     const scalarField& data,
-    const labelList& procFaceOffset
+    const labelList& procFaceOffset,
+    const bool writeSurface
 ) const
 {
     Info<< "    processing " << title << " for frequency " << freq << endl;
 
-    fileName outDir
-    (
-        fileName("postProcessing")/"noise"/groupName/Foam::name(freq)
-    );
+    const fileName outDir(outDirBase/Foam::name(freq));
 
     if (Pstream::parRun())
     {
         // Collect the surface data so that we can output the surfaces
 
-        PstreamBuffers pBufs(Pstream::nonBlocking);
+        PstreamBuffers pBufs(Pstream::commsTypes::nonBlocking);
 
         if (!Pstream::master())
         {
@@ -268,7 +263,7 @@ Foam::scalar surfaceNoise::writeSurfaceData
                 allData[faceI] = data[faceI];
             }
 
-            for (label procI = 1; procI < Pstream::nProcs(); procI++)
+            for (label procI = 1; procI < Pstream::nProcs(); ++procI)
             {
                 UIPstream fromProc(procI, pBufs);
                 scalarList dataSlice(fromProc);
@@ -279,20 +274,23 @@ Foam::scalar surfaceNoise::writeSurfaceData
                 }
             }
 
-            // could also have meshedSurface implement meshedSurf
-            fileName outFileName = writerPtr_->write
-            (
-                outDir,
-                fName,
-                meshedSurfRef
+            // Could also have meshedSurface implement meshedSurf
+            if (writeSurface)
+            {
+                fileName outFileName = writerPtr_->write
                 (
-                    surf.points(),
-                    surf.surfFaces()
-                ),
-                title,
-                allData,
-                false
-            );
+                    outDir,
+                    fName,
+                    meshedSurfRef
+                    (
+                        surf.points(),
+                        surf.surfFaces()
+                    ),
+                    title,
+                    allData,
+                    false
+                );
+            }
 
             // TO BE VERIFIED: area-averaged values
             // areaAverage = sum(allData*surf.magSf())/sum(surf.magSf());
@@ -306,20 +304,23 @@ Foam::scalar surfaceNoise::writeSurfaceData
     {
         const meshedSurface& surf = readerPtr_->geometry();
 
-        // could also have meshedSurface implement meshedSurf
-        writerPtr_->write
-        (
-            outDir,
-            fName,
-            meshedSurfRef
+        // Could also have meshedSurface implement meshedSurf
+        if (writeSurface)
+        {
+            writerPtr_->write
             (
-                surf.points(),
-                surf.surfFaces()
-            ),
-            title,
-            data,
-            false
-        );
+                outDir,
+                fName,
+                meshedSurfRef
+                (
+                    surf.points(),
+                    surf.surfFaces()
+                ),
+                title,
+                data,
+                false
+            );
+        }
 
         // TO BE VERIFIED: area-averaged values
         // return sum(data*surf.magSf())/sum(surf.magSf());
@@ -338,7 +339,7 @@ Foam::scalar surfaceNoise::surfaceAverage
     {
         // Collect the surface data so that we can output the surfaces
 
-        PstreamBuffers pBufs(Pstream::nonBlocking);
+        PstreamBuffers pBufs(Pstream::commsTypes::nonBlocking);
 
         if (!Pstream::master())
         {
@@ -427,14 +428,14 @@ bool surfaceNoise::read(const dictionary& dict)
 {
     if (noiseModel::read(dict))
     {
-        if (dict.found("inputFile"))
+        if (dict.found("file"))
         {
             inputFileNames_.setSize(1);
-            dict.lookup("inputFile") >> inputFileNames_[0];
+            dict.lookup("file") >> inputFileNames_[0];
         }
         else
         {
-            dict.lookup("inputFiles") >> inputFileNames_;
+            dict.lookup("files") >> inputFileNames_;
         }
 
         dict.readIfPresent("fftWriteInterval", fftWriteInterval_);
@@ -459,9 +460,15 @@ bool surfaceNoise::read(const dictionary& dict)
 
 void surfaceNoise::calculate()
 {
-    forAll(inputFileNames_, i)
+    forAll(inputFileNames_, filei)
     {
-        fileName fName = inputFileNames_[i];
+        fileName fName = inputFileNames_[filei];
+        fName.expand();
+
+        if (!fName.isAbsolute())
+        {
+            fName = "$FOAM_CASE"/fName;
+        }
 
         initialise(fName.expand());
 
@@ -476,7 +483,7 @@ void surfaceNoise::calculate()
             const label nFacePerProc = floor(nFace_/nProcs) + 1;
 
             procFaceOffset.setSize(nProcs + 1, 0);
-            for (label i = 1; i < procFaceOffset.size(); i++)
+            for (label i = 1; i < procFaceOffset.size(); ++i)
             {
                 procFaceOffset[i] = min(i*nFacePerProc, nFace_);
             }
@@ -494,10 +501,16 @@ void surfaceNoise::calculate()
 
         Info<< "Creating noise FFTs" << endl;
 
+        const scalarField freq1(noiseFFT::frequencies(nSamples_, deltaT_));
+
+        // Reset desired frequency range if outside actual frequency range
+        fLower_ = min(fLower_, max(freq1));
+        fUpper_ = min(fUpper_, max(freq1));
+
         // Storage for FFT data
         const label nLocalFace = pData.size();
-        const scalarField freq1(noiseFFT::frequencies(nSamples_, deltaT_));
-        const label nFFT = freq1.size()/fftWriteInterval_;
+        const label nFFT = ceil(freq1.size()/scalar(fftWriteInterval_));
+
         List<scalarField> surfPrmsf(nFFT);
         List<scalarField> surfPSDf(nFFT);
         forAll(surfPrmsf, freqI)
@@ -523,8 +536,8 @@ void surfaceNoise::calculate()
         if (octave13BandIDs.empty())
         {
             WarningInFunction
-                << "Ocatve band calculation failed (zero sized). "
-                << "please check your input data"
+                << "Octave band calculation failed (zero sized). "
+                << "Please check your input data"
                 << endl;
         }
         else
@@ -542,93 +555,128 @@ void surfaceNoise::calculate()
 
         const windowModel& win = windowModelPtr_();
 
-        forAll(pData, faceI)
         {
-            const scalarField& p = pData[faceI];
+            noiseFFT nfft(deltaT_, win.nSamples());
 
-            noiseFFT nfft(deltaT_, p);
-            graph Prmsf(nfft.RMSmeanPf(win));
-            graph PSDf(nfft.PSDf(win));
-
-            // Store the frequency results in slot for face of surface
-            forAll(surfPrmsf, i)
+            forAll(pData, faceI)
             {
-                label freqI = (i + 1)*fftWriteInterval_ - 1;
-                surfPrmsf[i][faceI] = Prmsf.y()[freqI];
-                surfPSDf[i][faceI] = PSDf.y()[freqI];
-            }
+                // Note: passes storage from pData to noiseFFT
+                nfft.setData(pData[faceI]);
 
-            // PSD [Pa^2/Hz]
-            graph PSD13f(nfft.octaves(PSDf, octave13BandIDs, false));
+                // Generate the FFT-based data
+                graph Prmsf(nfft.RMSmeanPf(win));
+                graph PSDf(nfft.PSDf(win));
 
-            // Integrated PSD = P(rms)^2 [Pa^2]
-            graph Prms13f2(nfft.octaves(PSDf, octave13BandIDs, true));
+                // Store the frequency results in slot for face of surface
+                forAll(surfPrmsf, i)
+                {
+                    label freqI = i*fftWriteInterval_;
+                    surfPrmsf[i][faceI] = Prmsf.y()[freqI];
+                    surfPSDf[i][faceI] = PSDf.y()[freqI];
+                }
 
-            // Store the 1/3 octave results in slot for face of surface
-            forAll(surfPSD13f, freqI)
-            {
-                surfPSD13f[freqI][faceI] = PSD13f.y()[freqI];
-                surfPrms13f2[freqI][faceI] = Prms13f2.y()[freqI];
+                // PSD [Pa^2/Hz]
+                graph PSD13f(nfft.octaves(PSDf, octave13BandIDs, false));
+
+                // Integrated PSD = P(rms)^2 [Pa^2]
+                graph Prms13f2(nfft.octaves(PSDf, octave13BandIDs, true));
+
+                // Store the 1/3 octave results in slot for face of surface
+                forAll(surfPSD13f, freqI)
+                {
+                    surfPSD13f[freqI][faceI] = PSD13f.y()[freqI];
+                    surfPrms13f2[freqI][faceI] = Prms13f2.y()[freqI];
+                }
             }
         }
 
-        const word& fNameBase = fName.name(true);
+        const word fNameBase = fName.nameLessExt();
 
         // Output directory for graphs
-        fileName outDir
-        (
-            fileName("postProcessing")/"noise"/typeName/fNameBase
-        );
+        fileName outDirBase(baseFileDir(filei)/fNameBase);
 
         const scalar deltaf = 1.0/(deltaT_*win.nSamples());
-        Info<< "Writing fft surface data" << endl;
+        Info<< "Writing fft surface data";
+        if (fftWriteInterval_ == 1)
         {
-            scalarField PrmsfAve(surfPrmsf.size(), 0);
-            scalarField PSDfAve(surfPrmsf.size(), 0);
-            scalarField fOut(surfPrmsf.size(), 0);
+            Info<< endl;
+        }
+        else
+        {
+            Info<< " at every " << fftWriteInterval_ << " frequency points"
+                << endl;
+        }
 
-            forAll(surfPrmsf, i)
+        {
+            fileName outDir(outDirBase/"fft");
+
+            // Determine frequency range of interest
+            // Note: frequencies have fixed interval, and are in the range
+            //       0 to fftWriteInterval_*(n-1)*deltaf
+            label f0 = ceil(fLower_/deltaf/scalar(fftWriteInterval_));
+            label f1 = floor(fUpper_/deltaf/scalar(fftWriteInterval_));
+            label nFreq = f1 - f0;
+
+            scalarField PrmsfAve(nFreq, 0);
+            scalarField PSDfAve(nFreq, 0);
+            scalarField fOut(nFreq, 0);
+
+            if (nFreq == 0)
             {
-                label freqI = (i + 1)*fftWriteInterval_ - 1;
-                fOut[i] = freq1[freqI];
-                const word gName = "fft";
-                PrmsfAve[i] = writeSurfaceData
-                (
-                    fNameBase,
-                    gName,
-                    "Prmsf",
-                    freq1[freqI],
-                    surfPrmsf[i],
-                    procFaceOffset
-                );
+                WarningInFunction
+                    << "No surface data available using a fftWriteInterval of "
+                    << fftWriteInterval_ << endl;
+            }
+            else
+            {
+                forAll(fOut, i)
+                {
+                    label freqI = (i + f0)*fftWriteInterval_;
+                    fOut[i] = freq1[freqI];
 
-                PSDfAve[i] = writeSurfaceData
-                (
-                    fNameBase,
-                    gName,
-                    "PSDf",
-                    freq1[freqI],
-                    surfPSDf[i],
-                    procFaceOffset
-                );
-                writeSurfaceData
-                (
-                    fNameBase,
-                    gName,
-                    "PSD",
-                    freq1[freqI],
-                    noiseFFT::PSD(surfPSDf[i]),
-                    procFaceOffset
-                );
-                writeSurfaceData
-                (
-                    fNameBase,
-                    gName,
-                    "SPL",
-                    freq1[freqI],
-                    noiseFFT::SPL(surfPSDf[i]*deltaf),
-                    procFaceOffset
-                );
+
+                    PrmsfAve[i] = writeSurfaceData
+                    (
+                        outDir,
+                        fNameBase,
+                        "Prmsf",
+                        freq1[freqI],
+                        surfPrmsf[i + f0],
+                        procFaceOffset,
+                        writePrmsf_
+                    );
+
+                    PSDfAve[i] = writeSurfaceData
+                    (
+                        outDir,
+                        fNameBase,
+                        "PSDf",
+                        freq1[freqI],
+                        surfPSDf[i + f0],
+                        procFaceOffset,
+                        writePSDf_
+                    );
+                    writeSurfaceData
+                    (
+                        outDir,
+                        fNameBase,
+                        "PSD",
+                        freq1[freqI],
+                        noiseFFT::PSD(surfPSDf[i + f0]),
+                        procFaceOffset,
+                        writePSD_
+                    );
+                    writeSurfaceData
+                    (
+                        outDir,
+                        fNameBase,
+                        "SPL",
+                        freq1[freqI],
+                        noiseFFT::SPL(surfPSDf[i + f0]*deltaf),
+                        procFaceOffset,
+                        writeSPL_
+                    );
+                }
             }
 
             graph Prmsfg
@@ -675,38 +723,42 @@ void surfaceNoise::calculate()
 
         Info<< "Writing one-third octave surface data" << endl;
         {
+            fileName outDir(outDirBase/"oneThirdOctave");
+
             scalarField PSDfAve(surfPSD13f.size(), 0);
             scalarField Prms13f2Ave(surfPSD13f.size(), 0);
 
             forAll(surfPSD13f, i)
             {
-                const word gName = "oneThirdOctave";
                 PSDfAve[i] = writeSurfaceData
                 (
+                    outDir,
                     fNameBase,
-                    gName,
                     "PSD13f",
                     octave13FreqCentre[i],
                     surfPSD13f[i],
-                    procFaceOffset
+                    procFaceOffset,
+                    writeOctaves_
                 );
                 writeSurfaceData
                 (
+                    outDir,
                     fNameBase,
-                    gName,
                     "PSD13",
                     octave13FreqCentre[i],
                     noiseFFT::PSD(surfPSD13f[i]),
-                    procFaceOffset
+                    procFaceOffset,
+                    writeOctaves_
                 );
                 writeSurfaceData
                 (
+                    outDir,
                     fNameBase,
-                    gName,
                     "SPL13",
                     octave13FreqCentre[i],
                     noiseFFT::SPL(surfPrms13f2[i]),
-                    procFaceOffset
+                    procFaceOffset,
+                    writeOctaves_
                 );
 
                 Prms13f2Ave[i] =

@@ -28,9 +28,10 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "uLabel.H"
+#include "boolList.H"
 #include "IOstreams.H"
 #include "PackedBoolList.H"
-#include "IStringStream.H"
+#include "StringStream.H"
 
 using namespace Foam;
 
@@ -143,19 +144,18 @@ int main(int argc, char *argv[])
     Info<< "\ntest Istream constructor\n";
 
     list4.printInfo(Info, true);
-    Info<< list4 << " indices: " << list4.used()() <<endl;
+    Info<< list4 << " indices: " << list4.used()() << nl;
 
     Info<< "\nassign from labelList\n";
-    list4 = labelList
-    (
-        IStringStream
-        (
-            "(0 1 2 3 12 13 14 19 20 21)"
-        )()
-    );
+    list4 = labelList{0, 1, 2, 3, 12, 13, 14, 19, 20, 21};
 
     list4.printInfo(Info, true);
-    Info<< list4 << " indices: " << list4.used()() <<endl;
+    Info<< list4 << " indices: " << list4.used()() << nl;
+
+    // Not yet:
+    // PackedBoolList list5{0, 1, 2, 3, 12, 13, 14, 19, 20, 21};
+    // list5.printInfo(Info, true);
+    // Info<< list5 << " indices: " << list5.used()() << nl;
 
     Info<< "\nassign from indices\n";
     list4.read
@@ -168,16 +168,15 @@ int main(int argc, char *argv[])
 
 
     list4.printInfo(Info, true);
-    Info<< list4 << " indices: " << list4.used()() <<endl;
+    Info<< list4 << " indices: " << list4.used()() << nl;
 
-    List<bool> boolLst(list4.size());
+    boolList bools(list4.size());
     forAll(list4, i)
     {
-        boolLst[i] = list4[i];
+        bools[i] = list4[i];
     }
 
-    Info<< "List<bool>: " << boolLst <<endl;
-
+    Info<< "boolList: " << bools << nl;
 
     // check roundabout assignments
     PackedList<2> pl2
@@ -188,7 +187,7 @@ int main(int argc, char *argv[])
         )()
     );
 
-    Info<< "roundabout assignment: " << pl2 << endl;
+    Info<< "roundabout assignment: " << pl2 << nl;
 
     list4.clear();
     forAll(pl2, i)
@@ -196,7 +195,7 @@ int main(int argc, char *argv[])
         list4[i] = pl2[i];
     }
 
-    list4.write(Info, true) << endl;
+    list4.writeList(Info, -1) << nl; // indexed output
 
     list4.writeEntry("PackedBoolList", Info);
 

@@ -24,8 +24,8 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "OBJstream.H"
-//#include "token.H"
 #include "primitivePatch.H"
+#include "treeBoundBox.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -48,9 +48,10 @@ void Foam::OBJstream::writeAndCheck(const char c)
         startOfLine_ = false;
         if (c == 'v')
         {
-            nVertices_++;
+            ++nVertices_;
         }
     }
+
     OFstream::write(c);
 }
 
@@ -71,12 +72,6 @@ Foam::OBJstream::OBJstream
 {}
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-Foam::OBJstream::~OBJstream()
-{}
-
-
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 Foam::Ostream& Foam::OBJstream::write(const char c)
@@ -88,9 +83,9 @@ Foam::Ostream& Foam::OBJstream::write(const char c)
 
 Foam::Ostream& Foam::OBJstream::write(const char* str)
 {
-    for (const char* p = str; *p != '\0'; ++p)
+    for (const char* iter = str; *iter; ++iter)
     {
-        writeAndCheck(*p);
+        writeAndCheck(*iter);
     }
     return *this;
 }
@@ -98,51 +93,13 @@ Foam::Ostream& Foam::OBJstream::write(const char* str)
 
 Foam::Ostream& Foam::OBJstream::write(const word& str)
 {
-    write(str.c_str());
-    return *this;
+    return writeQuoted(str, false);
 }
 
 
 Foam::Ostream& Foam::OBJstream::write(const string& str)
 {
-    OFstream::write(token::BEGIN_STRING);
-
-    int backslash = 0;
-    for (string::const_iterator iter = str.begin(); iter != str.end(); ++iter)
-    {
-        char c = *iter;
-
-        if (c == '\\')
-        {
-            backslash++;
-            // suppress output until we know if other characters follow
-            continue;
-        }
-        else if (c == token::NL)
-        {
-            lineNumber_++;
-            backslash++;    // backslash escape for newline
-        }
-        else if (c == token::END_STRING)
-        {
-            backslash++;    // backslash escape for quote
-        }
-
-        // output pending backslashes
-        while (backslash)
-        {
-            OFstream::write('\\');
-            backslash--;
-        }
-
-        writeAndCheck(c);
-    }
-
-    // silently drop any trailing backslashes
-    // they would otherwise appear like an escaped end-quote
-
-    OFstream::write(token::END_STRING);
-    return *this;
+    return writeQuoted(str, true);
 }
 
 
@@ -152,55 +109,52 @@ Foam::Ostream& Foam::OBJstream::writeQuoted
     const bool quoted
 )
 {
-    if (quoted)
+    if (!quoted)
     {
-        OFstream::write(token::BEGIN_STRING);
-
-        int backslash = 0;
-        for
-        (
-            string::const_iterator iter = str.begin();
-            iter != str.end();
-            ++iter
-        )
+        // Output unquoted, only advance line number on newline
+        for (auto iter = str.cbegin(); iter != str.cend(); ++iter)
         {
-            char c = *iter;
+            writeAndCheck(*iter);
+        }
+        return *this;
+    }
 
-            if (c == '\\')
-            {
-                backslash++;
-                // suppress output until we know if other characters follow
-                continue;
-            }
-            else if (c == token::NL)
-            {
-                lineNumber_++;
-                backslash++;    // backslash escape for newline
-            }
-            else if (c == token::END_STRING)
-            {
-                backslash++;    // backslash escape for quote
-            }
 
-            // output pending backslashes
-            while (backslash)
-            {
-                OFstream::write('\\');
-                backslash--;
-            }
+    OFstream::write(token::BEGIN_STRING);
 
-            writeAndCheck(c);
+    unsigned backslash = 0;
+    for (auto iter = str.cbegin(); iter != str.cend(); ++iter)
+    {
+        const char c = *iter;
+
+        if (c == '\\')
+        {
+            ++backslash;
+            continue; // only output after escaped character is known
+        }
+        else if (c == token::NL)
+        {
+            ++lineNumber_;
+            ++backslash;    // backslash escape for newline
+        }
+        else if (c == token::END_STRING)
+        {
+            ++backslash;    // backslash escape for quote
         }
 
-        // silently drop any trailing backslashes
-        // they would otherwise appear like an escaped end-quote
-        OFstream::write(token::END_STRING);
+        // output all pending backslashes
+        while (backslash)
+        {
+            OFstream::write('\\');
+            --backslash;
+        }
+
+        writeAndCheck(c);
     }
-    else
-    {
-        // output unquoted string, only advance line number on newline
-        write(str.c_str());
-    }
+
+    // silently drop any trailing backslashes
+    // they would otherwise appear like an escaped end-quote
+    OFstream::write(token::END_STRING);
 
     return *this;
 }
@@ -208,8 +162,7 @@ Foam::Ostream& Foam::OBJstream::writeQuoted
 
 Foam::Ostream& Foam::OBJstream::write(const point& pt)
 {
-    write("v ") << pt.x() << ' ' << pt.y() << ' ' << pt.z()
-        << nl;
+    write("v ") << pt.x() << ' ' << pt.y() << ' ' << pt.z() << nl;
     return *this;
 }
 
@@ -217,8 +170,7 @@ Foam::Ostream& Foam::OBJstream::write(const point& pt)
 Foam::Ostream& Foam::OBJstream::write(const point& pt, const vector& n)
 {
     write(pt);
-    OFstream::write("vn ") << n.x() << ' ' << n.y()
-        << ' ' << n.z() << nl;
+    OFstream::write("vn ") << n.x() << ' ' << n.y() << ' ' << n.z() << nl;
     return *this;
 }
 
@@ -261,7 +213,7 @@ Foam::Ostream& Foam::OBJstream::write
     const bool lines
 )
 {
-    label start = nVertices_;
+    const label start = nVertices_+1;  // 1-offset for obj included here
     write(f.a());
     write(f.b());
     write(f.c());
@@ -270,16 +222,16 @@ Foam::Ostream& Foam::OBJstream::write
         write('l');
         for (int i = 0; i < 3; i++)
         {
-            write(' ') << start+1+i;
+            write(' ') << i+start;
         }
-        write(' ') << start+1 << '\n';
+        write(' ') << start << '\n';
     }
     else
     {
         write('f');
         for (int i = 0; i < 3; i++)
         {
-            write(' ') << start+1+i;
+            write(' ') << i+start;
         }
         write('\n');
     }
@@ -294,7 +246,7 @@ Foam::Ostream& Foam::OBJstream::write
     const bool lines
 )
 {
-    label start = nVertices_;
+    const label start = nVertices_+1;  // 1-offset for obj included here
     forAll(f, i)
     {
         write(points[f[i]]);
@@ -304,16 +256,16 @@ Foam::Ostream& Foam::OBJstream::write
         write('l');
         forAll(f, i)
         {
-            write(' ') << start+1+i;
+            write(' ') << i+start;
         }
-        write(' ') << start+1 << '\n';
+        write(' ') << start << '\n';
     }
     else
     {
         write('f');
         forAll(f, i)
         {
-            write(' ') << start+1+i;
+            write(' ') << i+start;
         }
         write('\n');
     }
@@ -323,19 +275,19 @@ Foam::Ostream& Foam::OBJstream::write
 
 Foam::Ostream& Foam::OBJstream::write
 (
-    const faceList& fcs,
+    const UList<face>& faces,
     const pointField& points,
     const bool lines
 )
 {
-    SubList<face> allFcs(fcs, fcs.size());
+    SubList<face> allFcs(faces, faces.size());
 
     primitivePatch pp(allFcs, points);
 
     const pointField& localPoints = pp.localPoints();
     const faceList& localFaces = pp.localFaces();
 
-    label start = nVertices_;
+    const label start = nVertices_+1;  // 1-offset for obj included here
 
     forAll(localPoints, i)
     {
@@ -349,7 +301,7 @@ Foam::Ostream& Foam::OBJstream::write
         {
             const edge& e = edges[edgeI];
 
-            write("l ") << start+e[0]+1 << ' ' << start+e[1]+1 << nl;
+            write("l ") << e[0]+start << ' ' << e[1]+start << nl;
         }
     }
     else
@@ -360,11 +312,115 @@ Foam::Ostream& Foam::OBJstream::write
             write('f');
             forAll(f, i)
             {
-                write(' ') << start+f[i]+1;
+                write(' ') << f[i]+start;
             }
             write('\n');
         }
     }
+    return *this;
+}
+
+
+Foam::Ostream& Foam::OBJstream::write
+(
+    const UList<edge>& edges,
+    const UList<point>& points,
+    const bool compact
+)
+{
+    if (compact)
+    {
+        // Code similar to PrimitivePatch::calcMeshData()
+        // Unsorted version
+
+        label objPointId = nVertices_+1;  // 1-offset for obj included here
+
+        Map<label> markedPoints(2*edges.size());
+        forAll(edges, edgei)
+        {
+            const edge& e = edges[edgei];
+
+            if (markedPoints.insert(e[0], objPointId))
+            {
+                write(points[e[0]]);
+                ++objPointId;
+            }
+            if (markedPoints.insert(e[1], objPointId))
+            {
+                write(points[e[1]]);
+                ++objPointId;
+            }
+        }
+
+        forAll(edges, edgei)
+        {
+            const edge& e = edges[edgei];
+
+            write("l ")
+                << markedPoints[e[0]] << ' '
+                << markedPoints[e[1]] << nl;
+        }
+    }
+    else
+    {
+        const label start = nVertices_+1;  // 1-offset for obj included here
+
+        forAll(points, i)
+        {
+            write(points[i]);
+        }
+
+        forAll(edges, edgei)
+        {
+            const edge& e = edges[edgei];
+
+            write("l ")
+                << e[0]+start << ' ' << e[1]+start << nl;
+        }
+    }
+
+    return *this;
+}
+
+
+Foam::Ostream& Foam::OBJstream::write
+(
+    const treeBoundBox& bb,
+    const bool lines
+)
+{
+    const label start = nVertices_+1;  // 1-offset for obj included here
+
+    pointField points(bb.points());
+    forAll(points, i)
+    {
+        write(points[i]);
+    }
+
+    if (lines)
+    {
+        forAll(treeBoundBox::edges, edgei)
+        {
+            const edge& e = treeBoundBox::edges[edgei];
+
+            write("l ") << e[0]+start << ' ' << e[1]+start << nl;
+        }
+    }
+    else
+    {
+        forAll(treeBoundBox::faces, facei)
+        {
+            const face& f = treeBoundBox::faces[facei];
+
+            write('f');
+            forAll(f, i)
+            {
+                write(' ') << f[i]+start;
+            }
+            write('\n');
+        }
+    }
+
     return *this;
 }
 

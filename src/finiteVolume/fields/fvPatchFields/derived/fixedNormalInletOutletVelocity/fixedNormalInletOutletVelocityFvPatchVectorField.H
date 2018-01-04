@@ -25,7 +25,7 @@ Class
     Foam::fixedNormalInletOutletVelocityFvPatchVectorField
 
 Group
-    grpInletletBoundaryConditions grpOutletBoundaryConditions
+    grpInletBoundaryConditions grpOutletBoundaryConditions
 
 Description
     This velocity inlet/outlet boundary condition combines a fixed normal
@@ -104,7 +104,9 @@ class fixedNormalInletOutletVelocityFvPatchVectorField
 :
     public directionMixedFvPatchVectorField
 {
-    // Private data
+protected:
+
+    // Protected data
 
         //- Flux field name
         word phiName_;

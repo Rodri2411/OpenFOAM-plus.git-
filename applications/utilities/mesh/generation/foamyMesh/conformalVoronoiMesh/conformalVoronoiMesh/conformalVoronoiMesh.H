@@ -105,7 +105,7 @@ public:
     typedef Delaunay::Facet            Facet;
     typedef Delaunay::Point            Point;
 
-    typedef List<DynamicList<Pair<labelPair>>> labelPairPairDynListList;
+    typedef List<DynamicList<labelPairPair>>     labelPairPairDynListList;
 
     typedef Tuple2<pointIndexHit, label>         pointIndexHitAndFeature;
     typedef List<pointIndexHitAndFeature>        pointIndexHitAndFeatureList;
@@ -122,7 +122,7 @@ public:
             constrained  = 4
         };
 
-        static const NamedEnum<dualMeshPointType, 5> dualMeshPointTypeNames_;
+        static const Enum<dualMeshPointType> dualMeshPointTypeNames_;
 
 
 private:
@@ -706,7 +706,7 @@ private:
         (
             labelList& owner,
             labelList& neighbour,
-            const HashSet<labelPair, labelPair::Hash<>>& deferredCollapseFaces
+            const labelPairHashSet& deferredCollapseFaces
         ) const;
 
         //- Check whether the cell sizes are fine enough. Creates a polyMesh.

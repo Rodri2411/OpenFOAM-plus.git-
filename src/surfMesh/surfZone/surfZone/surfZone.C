@@ -112,14 +112,13 @@ void Foam::surfZone::write(Ostream& os) const
 
 void Foam::surfZone::writeDict(Ostream& os) const
 {
-    os  << indent << name() << nl
-        << indent << token::BEGIN_BLOCK << incrIndent << nl;
+    os.beginBlock(name());
 
     surfZoneIdentifier::write(os);
-    os.writeKeyword("nFaces")    << size()  << token::END_STATEMENT << nl;
-    os.writeKeyword("startFace") << start() << token::END_STATEMENT << nl;
+    os.writeEntry("nFaces", size());
+    os.writeEntry("startFace", start());
 
-    os  << decrIndent << indent << token::END_BLOCK << endl;
+    os.endBlock();
 }
 
 
@@ -148,7 +147,7 @@ Foam::Istream& Foam::operator>>(Istream& is, surfZone& zone)
 {
     zone = surfZone(is, 0);
 
-    is.check("Istream& operator>>(Istream&, surfZone&)");
+    is.check(FUNCTION_NAME);
     return is;
 }
 
@@ -156,7 +155,7 @@ Foam::Istream& Foam::operator>>(Istream& is, surfZone& zone)
 Foam::Ostream& Foam::operator<<(Ostream& os, const surfZone& zone)
 {
     zone.write(os);
-    os.check("Ostream& operator<<(Ostream&, const surfZone&");
+    os.check(FUNCTION_NAME);
     return os;
 }
 

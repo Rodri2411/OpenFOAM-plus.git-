@@ -42,24 +42,6 @@ namespace Foam
             dictionary
         );
     }
-
-    //- Plus op for FixedList<scalar>
-    template<class T, unsigned Size>
-    class ListPlusEqOp
-    {
-        public:
-        void operator()
-        (
-            FixedList<T, Size>& x,
-            const FixedList<T, Size>& y
-        ) const
-        {
-            forAll(x, i)
-            {
-                x[i] += y[i];
-            }
-        }
-    };
 }
 
 
@@ -878,7 +860,7 @@ bool Foam::functionObjects::regionSizeDistribution::write()
             forAll(selected, i)
             {
                 const word& fldName = scalarNames[selected[i]];
-            Log << "    Scalar field " << fldName << endl;
+                Log << "    Scalar field " << fldName << endl;
 
                 const scalarField& fld = obr_.lookupObject
                 <

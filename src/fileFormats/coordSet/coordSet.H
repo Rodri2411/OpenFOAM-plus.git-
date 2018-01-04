@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2012 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -37,6 +37,7 @@ SourceFiles
 
 #include "pointField.H"
 #include "word.H"
+#include "Enum.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -44,7 +45,7 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                           Class coordSet Declaration
+                          Class coordSet Declaration
 \*---------------------------------------------------------------------------*/
 
 class coordSet
@@ -57,7 +58,7 @@ public:
     // Public data types
 
         //- Enumeration defining the output format for coordinates
-        enum coordFormat
+        enum class coordFormat
         {
             XYZ,
             X,
@@ -70,7 +71,10 @@ public:
 private:
 
         //- String representation of coordFormat enums
-        static const NamedEnum<coordFormat, 5> coordFormatNames_;
+        static const Enum<coordFormat> coordFormatNames_;
+
+        //- Check for consistent dimensions of points and curve distance
+        void checkDimensions() const;
 
 
 protected:
@@ -90,11 +94,8 @@ public:
     // Constructors
 
         //- Construct from components
-        coordSet
-        (
-            const word& name,
-            const word& axis
-        );
+        //  Note: curveDist will be empty
+        coordSet(const word& name, const word& axis);
 
 
         //- Construct from components
@@ -125,6 +126,13 @@ public:
             return curveDist_;
         }
 
+        //- Set cumulative distance
+        void setCurveDist(const scalarList& curveDist)
+        {
+            curveDist_ = curveDist;
+            checkDimensions();
+        }
+
         //- Is axis specification a vector
         bool hasVectorAxis() const;
 
@@ -135,6 +143,7 @@ public:
         //- Get point according to axis="xyz" specification
         vector vectorCoord(const label index) const;
 
+        //- Write to stream
         Ostream& write(Ostream& os) const;
 };
 

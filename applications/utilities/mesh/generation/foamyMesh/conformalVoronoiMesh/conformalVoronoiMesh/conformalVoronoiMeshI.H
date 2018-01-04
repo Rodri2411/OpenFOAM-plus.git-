@@ -293,9 +293,9 @@ inline Foam::point Foam::conformalVoronoiMesh::perturbPoint
 
     scalar pert = 1e-12*defaultCellSize();
 
-    perturbedPt.x() += pert*(rndGen_.scalar01() - 0.5);
-    perturbedPt.y() += pert*(rndGen_.scalar01() - 0.5);
-    perturbedPt.z() += pert*(rndGen_.scalar01() - 0.5);
+    perturbedPt.x() += pert*(rndGen_.sample01<scalar>() - 0.5);
+    perturbedPt.y() += pert*(rndGen_.sample01<scalar>() - 0.5);
+    perturbedPt.z() += pert*(rndGen_.sample01<scalar>() - 0.5);
 
     return perturbedPt;
 }
@@ -465,12 +465,12 @@ inline Foam::List<Foam::label> Foam::conformalVoronoiMesh::processorsAttached
 
     forAll(c1Procs, aPI)
     {
-        if (findIndex(procsAttached, c1Procs[aPI] == -1))
+        if (!procsAttached.found(c1Procs[aPI]))
         {
             procsAttached.append(c1Procs[aPI]);
         }
 
-        if (findIndex(procsAttached, c2Procs[aPI] == -1))
+        if (!procsAttached.found(c2Procs[aPI]))
         {
             procsAttached.append(c2Procs[aPI]);
         }

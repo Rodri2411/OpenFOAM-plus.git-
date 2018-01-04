@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2012-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2012-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -78,7 +78,7 @@ Foam::fixedJumpAMIFvPatchField<Type>::fixedJumpAMIFvPatchField
     }
     else
     {
-        this->evaluate(Pstream::blocking);
+        this->evaluate(Pstream::commsTypes::blocking);
     }
 }
 
@@ -169,8 +169,7 @@ template<class Type>
 void Foam::fixedJumpAMIFvPatchField<Type>::write(Ostream& os) const
 {
     fvPatchField<Type>::write(os);
-    os.writeKeyword("patchType") << this->interfaceFieldType()
-        << token::END_STATEMENT << nl;
+    os.writeEntry("patchType", this->interfaceFieldType());
 
     if (this->cyclicAMIPatch().owner())
     {

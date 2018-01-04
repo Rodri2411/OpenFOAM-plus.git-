@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2012-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2012-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -32,9 +32,10 @@ namespace Foam
 {
     defineTypeNameAndDebug(cellSizeFunction, 0);
     defineRunTimeSelectionTable(cellSizeFunction, dictionary);
-
-    scalar cellSizeFunction::snapToSurfaceTol_ = 1e-10;
 }
+
+Foam::scalar Foam::cellSizeFunction::snapToSurfaceTol_ = 1e-10;
+
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -58,7 +59,7 @@ Foam::cellSizeFunction::cellSizeFunction
             defaultCellSize
         )
     ),
-    coeffsDict_(subDict(type + "Coeffs")),
+    coeffsDict_(optionalSubDict(type + "Coeffs")),
     defaultCellSize_(defaultCellSize),
     regionIndices_(regionIndices),
     sideMode_(),
@@ -122,25 +123,23 @@ Foam::autoPtr<Foam::cellSizeFunction> Foam::cellSizeFunction::New
     const labelList regionIndices
 )
 {
-    word cellSizeFunctionTypeName
+    const word functionName
     (
         cellSizeFunctionDict.lookup("cellSizeFunction")
     );
 
-    Info<< indent << "Selecting cellSizeFunction " << cellSizeFunctionTypeName
-        << endl;
+    Info<< indent << "Selecting cellSizeFunction "
+        << functionName << endl;
 
-    dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(cellSizeFunctionTypeName);
+    auto cstrIter = dictionaryConstructorTablePtr_->cfind(functionName);
 
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    if (!cstrIter.found())
     {
         FatalErrorInFunction
             << "Unknown cellSizeFunction type "
-            << cellSizeFunctionTypeName
-            << endl << endl
-            << "Valid cellSizeFunction types are :" << endl
-            << dictionaryConstructorTablePtr_->toc()
+            << functionName << nl << nl
+            << "Valid cellSizeFunction types :" << endl
+            << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
 

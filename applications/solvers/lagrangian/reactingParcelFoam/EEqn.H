@@ -19,8 +19,9 @@
      ==
         rho*(U&g)
       + parcels.Sh(he)
-      + radiation->Sh(thermo)
-      + combustion->Sh()
+      + surfaceFilm.Sh()
+      + radiation->Sh(thermo, he)
+      + Qdot
       + fvOptions(rho, he)
     );
 

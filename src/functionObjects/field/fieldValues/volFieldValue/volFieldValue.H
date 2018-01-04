@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -80,17 +80,19 @@ Usage
 
     The \c operation is one of:
     \plaintable
-       none               | No operation
-       sum                | Sum
-       sumMag             | Sum of component magnitudes
-       average            | Ensemble average
-       weightedAverage    | Weighted average
-       volAverage         | Volume weighted average
-       weightedVolAverage | Weighted volume average
-       volIntegrate       | Volume integral
-       min                | Minimum
-       max                | Maximum
-       CoV                | Coefficient of variation: standard deviation/mean
+       none                 | No operation
+       min                  | Minimum
+       max                  | Maximum
+       sum                  | Sum
+       sumMag               | Sum of component magnitudes
+       average              | Ensemble average
+       volAverage           | Volume weighted average
+       volIntegrate         | Volume integral
+       CoV                  | Coefficient of variation: standard deviation/mean
+       weightedSum          | Weighted sum
+       weightedAverage      | Weighted average
+       weightedVolAverage   | Weighted volume average
+       weightedVolIntegrate | Weighted volume integral
     \endplaintable
 
 See also
@@ -132,24 +134,45 @@ public:
 
     // Public data types
 
+        //- Bitmask values for operation variants
+        enum operationVariant
+        {
+            typeBase = 0,         //!< Base operation
+            typeWeighted = 0x100, //!< Operation using weighting
+        };
+
         //- Operation type enumeration
         enum operationType
         {
-            opNone,
-            opSum,
-            opSumMag,
-            opAverage,
-            opWeightedAverage,
-            opVolAverage,
-            opWeightedVolAverage,
-            opVolIntegrate,
-            opMin,
-            opMax,
-            opCoV
+            // Normal operations
+
+            opNone = 0,             //!< No operation
+            opMin,                  //!< Minimum
+            opMax,                  //!< Maximum
+            opSum,                  //!< Sum
+            opSumMag,               //!< Magnitude of sum
+            opAverage,              //!< Average
+            opVolAverage,           //!< Volume average
+            opVolIntegrate,         //!< Volume integral
+            opCoV,                  //!< Coefficient of variation
+
+            // Weighted variants
+
+            //! Weighted sum
+            opWeightedSum = (opSum | typeWeighted),
+
+            //! Weighted average
+            opWeightedAverage = (opAverage | typeWeighted),
+
+            //! Weighted volume average
+            opWeightedVolAverage = (opVolAverage | typeWeighted),
+
+            //! Weighted volume integral
+            opWeightedVolIntegrate = (opVolIntegrate | typeWeighted),
         };
 
         //- Operation type names
-        static const NamedEnum<operationType, 11> operationTypeNames_;
+        static const Enum<operationType> operationTypeNames_;
 
 
 protected:
@@ -159,11 +182,21 @@ protected:
         //- Operation to apply to values
         operationType operation_;
 
-        //- Weight field name - only used for opWeightedAverage mode
+        //- Weight field name - only used for weighted modes
         word weightFieldName_;
 
 
     // Protected Member Functions
+
+        //- True if the operation needs the cell-volume
+        bool usesVol() const;
+
+        //- True if the operation variant uses a weight-field
+        bool usesWeight() const;
+
+        //- True if operation variant uses a weight-field that is available.
+        //  Checks for availability on any processor.
+        inline bool canWeight(const scalarField& weightField) const;
 
         //- Initialise, e.g. cell addressing
         void initialise(const dictionary& dict);
@@ -189,9 +222,29 @@ protected:
             const scalarField& weightField
         ) const;
 
+        //- Helper function to output field values
+        label writeAll
+        (
+            const scalarField& V,
+            const scalarField& weightField
+        );
+
+        //- Templated helper function to output field values
+        template<class Type>
+        bool writeValues
+        (
+            const word& fieldName,
+            const scalarField& V,
+            const scalarField& weightField
+        );
+
+        //- Filter a field according to cellIds
+        template<class Type>
+        tmp<Field<Type>> filterField(const Field<Type>& field) const;
+
+
         //- Output file header information
         virtual void writeFileHeader(Ostream& os) const;
-
 
 public:
 
@@ -224,16 +277,8 @@ public:
 
     // Public Member Functions
 
-        //- Templated helper function to output field values
-        template<class Type>
-        bool writeValues(const word& fieldName, const scalarField& weightField);
-
-        //- Filter a field according to cellIds
-        template<class Type>
-        tmp<Field<Type>> filterField(const Field<Type>& field) const;
-
         //- Read from dictionary
-        virtual bool read(const dictionary&);
+        virtual bool read(const dictionary& dict);
 
         //- Calculate and write
         virtual bool write();

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -284,7 +284,7 @@ Foam::interpolationLookUpTable<Type>::interpolationLookUpTable
 )
 :
     List<scalarField>(),
-    fileName_(fileName(dict.lookup("fileName")).expand()),
+    fileName_(fileName(dict.lookup("file")).expand()),
     dim_(0),
     min_(0.0),
     delta_(0.0),
@@ -354,19 +354,15 @@ void Foam::interpolationLookUpTable<Type>::write
 
     control.writeHeader(os);
 
-    os.writeKeyword("fields")
-        << entries_ << token::END_STATEMENT << nl;
-
-    os.writeKeyword("output")
-        << output_ << token::END_STATEMENT << nl;
+    os.writeEntry("fields", entries_);
+    os.writeEntry("output", output_);
 
     if (this->size() == 0)
     {
         FatalErrorInFunction
             << "table is empty" << nl << exit(FatalError);
     }
-    os.writeKeyword("values")
-        << *this << token::END_STATEMENT << nl;
+    os.writeEntry("values", *this);
 }
 
 

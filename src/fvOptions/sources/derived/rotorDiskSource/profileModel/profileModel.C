@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -51,7 +51,7 @@ Foam::profileModel::profileModel(const dictionary& dict, const word& name)
     name_(name),
     fName_(fileName::null)
 {
-    dict.readIfPresent("fileName", fName_);
+    dict.readIfPresent("file", fName_);
 }
 
 // * * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * //
@@ -73,21 +73,20 @@ Foam::autoPtr<Foam::profileModel> Foam::profileModel::New
     const dictionary& dict
 )
 {
-    const word& modelName(dict.dictName());
+    const word& modelName = dict.dictName();
 
     const word modelType(dict.lookup("type"));
 
     Info<< "    - creating " << modelType << " profile " << modelName << endl;
 
-    dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(modelType);
+    auto cstrIter = dictionaryConstructorTablePtr_->cfind(modelType);
 
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    if (!cstrIter.found())
     {
         FatalErrorInFunction
-            << "Unknown profile model type " << modelType
-            << nl << nl
-            << "Valid model types are :" << nl
+            << "Unknown profile model type "
+            << modelType << nl << nl
+            << "Valid model types :" << nl
             << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }

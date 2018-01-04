@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -25,9 +25,11 @@ Class
     Foam::Function1Types::CSV
 
 Description
-    Templated CSV container data entry.  Reference column is always a scalar,
-    e.g. time
+    Templated CSV function.
 
+    Reference column is always a scalar, e.g. time.
+
+    Usage:
     \verbatim
         <entryName> csvFile;
         <entryName>Coeffs
@@ -37,7 +39,7 @@ Description
             componentColumns    (1 2 3);    // component column indices
             separator           ",";        // optional (defaults to ",")
             mergeSeparators     no;         // merge multiple separators
-            fileName            "fileXYZ";  // name of csv data file
+            file                "fileXYZ";  // name of csv data file
             outOfBounds         clamp;      // optional out-of-bounds handling
             interpolationScheme linear;     // optional interpolation scheme
         }
@@ -75,9 +77,6 @@ class CSV
 {
     // Private data
 
-        //- Coefficients dictionary (for convenience on reading)
-        dictionary coeffs_;
-
         //- Number header lines
         label nHeaderLine_;
 
@@ -106,7 +105,7 @@ class CSV
         Type readValue(const List<string>&);
 
         //- Disallow default bitwise assignment
-        void operator=(const CSV<Type>&);
+        void operator=(const CSV<Type>&) = delete;
 
 
 public:
@@ -122,12 +121,11 @@ public:
         (
             const word& entryName,
             const dictionary& dict,
-            const word& ext = "Coeffs",
             const fileName& fName = fileName::null
         );
 
         //- Copy constructor
-        CSV(const CSV<Type>& tbl);
+        explicit CSV(const CSV<Type>& csv);
 
         //- Construct and return a clone
         virtual tmp<Function1<Type>> clone() const

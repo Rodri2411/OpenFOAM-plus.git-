@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -53,8 +53,7 @@ Foam::MaxwellianThermal<CloudType>::~MaxwellianThermal()
 template<class CloudType>
 void Foam::MaxwellianThermal<CloudType>::correct
 (
-    typename CloudType::parcelType& p,
-    const wallPolyPatch& wpp
+    typename CloudType::parcelType& p
 )
 {
     vector& U = p.U();
@@ -63,7 +62,9 @@ void Foam::MaxwellianThermal<CloudType>::correct
 
     label typeId = p.typeId();
 
-    label wppIndex = wpp.index();
+    const label wppIndex = p.patch();
+
+    const polyPatch& wpp = p.mesh().boundaryMesh()[wppIndex];
 
     label wppLocalFace = wpp.whichFace(p.face());
 
@@ -78,19 +79,18 @@ void Foam::MaxwellianThermal<CloudType>::correct
 
     CloudType& cloud(this->owner());
 
-    Random& rndGen(cloud.rndGen());
+    Random& rndGen = cloud.rndGen();
 
     while (mag(Ut) < SMALL)
     {
         // If the incident velocity is parallel to the face normal, no
         // tangential direction can be chosen.  Add a perturbation to the
         // incoming velocity and recalculate.
-
         U = vector
         (
-            U.x()*(0.8 + 0.2*rndGen.scalar01()),
-            U.y()*(0.8 + 0.2*rndGen.scalar01()),
-            U.z()*(0.8 + 0.2*rndGen.scalar01())
+            U.x()*(0.8 + 0.2*rndGen.sample01<scalar>()),
+            U.y()*(0.8 + 0.2*rndGen.sample01<scalar>()),
+            U.z()*(0.8 + 0.2*rndGen.sample01<scalar>())
         );
 
         U_dot_nw = U & nw;
@@ -113,9 +113,9 @@ void Foam::MaxwellianThermal<CloudType>::correct
     U =
         sqrt(physicoChemical::k.value()*T/mass)
        *(
-            rndGen.GaussNormal()*tw1
-          + rndGen.GaussNormal()*tw2
-          - sqrt(-2.0*log(max(1 - rndGen.scalar01(), VSMALL)))*nw
+            rndGen.GaussNormal<scalar>()*tw1
+          + rndGen.GaussNormal<scalar>()*tw2
+          - sqrt(-2.0*log(max(1 - rndGen.sample01<scalar>(), VSMALL)))*nw
         );
 
     U += cloud.boundaryU().boundaryField()[wppIndex][wppLocalFace];

@@ -83,7 +83,7 @@ Description
 #include "edgeIntersections.H"
 #include "meshTools.H"
 #include "DynamicField.H"
-
+#include "Enum.H"
 
 #ifndef NO_CGAL
 
@@ -99,7 +99,7 @@ typedef CGAL::AABB_face_graph_triangle_primitive
 typedef CGAL::AABB_traits<K, Primitive> Traits;
 typedef CGAL::AABB_tree<Traits> Tree;
 
-typedef boost::optional<Tree::Intersection_and_primitive_id<Segment>::Type >
+typedef boost::optional<Tree::Intersection_and_primitive_id<Segment>::Type>
 Segment_intersection;
 
 #endif // NO_CGAL
@@ -416,7 +416,7 @@ void visitPointRegion
 
 
 
-        label index = findIndex(s.pointFaces()[pointI], nextFaceI);
+        label index = s.pointFaces()[pointI].find(nextFaceI);
 
         if (pFacesZone[index] == -1)
         {
@@ -476,7 +476,6 @@ label dupNonManifoldPoints(triSurface& s, labelList& pointMap)
     DynamicList<label> newPointMap(identity(newPoints.size()));
     List<labelledTri> newFaces(s);
     label nNonManifold = 0;
-
 
     forAll(pf, pointI)
     {
@@ -589,7 +588,7 @@ label dupNonManifoldPoints(triSurface& s, labelList& pointMap)
 
         //s.transfer(dupSurf);
         s = dupSurf;
-        pointMap = UIndirectList<label>(pointMap, dupPointMap)();
+        pointMap = labelUIndList(pointMap, dupPointMap)();
     }
 
     return nNonManifold;
@@ -783,7 +782,7 @@ labelPair edgeIntersectionsAndShuffleCGAL
                     const edge& e = edges[edgeI];
                     forAll(e, eI)
                     {
-                        vector d = rndGen.vector01()-p05;
+                        vector d = rndGen.sample01<vector>() - p05;
                         surf1Points[mp[e[eI]]] += surf1PointTol[e[eI]]*d;
                     }
                 }
@@ -1257,10 +1256,10 @@ autoPtr<extendedFeatureEdgeMesh> createEdgeMesh
     const triSurface& s1 = surf1;
     const triSurface& s2 = surf2;
 
-    forAllConstIter(labelPairLookup, inter.facePairToEdge(), iter)
+    forAllConstIters(inter.facePairToEdgeId(), iter)
     {
-        const label& cutEdgeI = iter();
         const labelPair& facePair = iter.key();
+        const label cutEdgeI = iter.object();
 
         const edge& fE = inter.cutEdges()[cutEdgeI];
 
@@ -1514,10 +1513,16 @@ autoPtr<extendedFeatureEdgeMesh> createEdgeMesh
 int main(int argc, char *argv[])
 {
     argList::noParallel();
-    argList::validArgs.append("action");
-    argList::validArgs.append("surface file");
-    argList::validArgs.append("surface file");
+    argList::addArgument("action");
+    argList::addArgument("surfaceFile1");
+    argList::addArgument("surfaceFile2");
 
+    argList::addOption
+    (
+        "scale",
+        "factor",
+        "Geometry scaling factor (both surfaces)"
+    );
     argList::addBoolOption
     (
         "surf1Baffle",
@@ -1554,24 +1559,30 @@ int main(int argc, char *argv[])
         " 'mixed' (keep all)"
     );
 
+    argList::addNote
+    (
+        "Valid actions: \"intersection\", \"union\", \"difference\""
+    );
+
 
     #include "setRootCase.H"
     #include "createTime.H"
 
     const word action(args[1]);
 
-    const HashTable<booleanSurface::booleanOpType> validActions
+    const Enum<booleanSurface::booleanOpType> validActions
     {
-        {"intersection", booleanSurface::INTERSECTION},
-        {"union", booleanSurface::UNION},
-        {"difference", booleanSurface::DIFFERENCE}
+        { booleanSurface::INTERSECTION, "intersection" },
+        { booleanSurface::UNION, "union" },
+        { booleanSurface::DIFFERENCE, "difference" }
     };
 
     if (!validActions.found(action))
     {
         FatalErrorInFunction
             << "Unsupported action " << action << endl
-            << "Supported actions:" << validActions.toc() << abort(FatalError);
+            << "Supported actions:" << validActions << nl
+            << abort(FatalError);
     }
 
 
@@ -1581,6 +1592,10 @@ int main(int argc, char *argv[])
         Info<< "Trimming edges with " << surfaceAndSide << endl;
     }
 
+
+    // Scale factor for both surfaces:
+    const scalar scaleFactor
+        = args.optionLookupOrDefault<scalar>("scale", -1);
 
     const word surf1Name(args[2]);
     Info<< "Reading surface " << surf1Name << endl;
@@ -1594,6 +1609,11 @@ int main(int argc, char *argv[])
             runTime
         )
     );
+    if (scaleFactor > 0)
+    {
+        Info<< "Scaling  : " << scaleFactor << nl;
+        surf1.scalePoints(scaleFactor);
+    }
 
     Info<< surf1Name << " statistics:" << endl;
     surf1.writeStats(Info);
@@ -1611,6 +1631,11 @@ int main(int argc, char *argv[])
             runTime
         )
     );
+    if (scaleFactor > 0)
+    {
+        Info<< "Scaling  : " << scaleFactor << nl;
+        surf2.scalePoints(scaleFactor);
+    }
 
     Info<< surf2Name << " statistics:" << endl;
     surf2.writeStats(Info);
@@ -1622,7 +1647,7 @@ int main(int argc, char *argv[])
     edgeIntersections edgeCuts1;
     edgeIntersections edgeCuts2;
 
-    bool invertedSpace = args.optionFound("invertedSpace");
+    const bool invertedSpace = args.optionFound("invertedSpace");
 
     if (invertedSpace && validActions[action] == booleanSurface::DIFFERENCE)
     {
@@ -1657,9 +1682,9 @@ int main(int argc, char *argv[])
 
     const fileName sFeatFileName
     (
-        fileName(surf1Name).lessExt().name()
+        fileName(surf1Name).nameLessExt()
       + "_"
-      + fileName(surf2Name).lessExt().name()
+      + fileName(surf2Name).nameLessExt()
       + "_"
       + action
     );
@@ -1731,9 +1756,7 @@ int main(int argc, char *argv[])
     const extendedFeatureEdgeMesh& feMesh = feMeshPtr();
 
     feMesh.writeStats(Info);
-
     feMesh.write();
-
     feMesh.writeObj(feMesh.path()/sFeatFileName);
 
     {

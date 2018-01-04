@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2016-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -25,7 +25,8 @@ Class
     Foam::fileFormats::VTKsurfaceFormat
 
 Description
-    Provide a means of reading/writing VTK legacy format.
+    Read/write VTK legacy format (ASCII) for surfaces.
+
     The output is never sorted by zone.
 
 SourceFiles
@@ -49,7 +50,7 @@ namespace fileFormats
 {
 
 /*---------------------------------------------------------------------------*\
-                     Class VTKsurfaceFormat Declaration
+                Class fileFormats::VTKsurfaceFormat Declaration
 \*---------------------------------------------------------------------------*/
 
 template<class Face>
@@ -60,8 +61,13 @@ class VTKsurfaceFormat
 {
     // Private Member Functions
 
-        //- Write header information about number of polygon points
-        static void writeHeaderPolygons(Ostream&, const UList<Face>&);
+        //- Write polygons
+        static void writePolys
+        (
+            vtk::formatter& format,
+            const UList<Face>& faces
+        );
+
 
         //- Disallow default bitwise copy construct
         VTKsurfaceFormat(const VTKsurfaceFormat<Face>&) = delete;
@@ -75,51 +81,45 @@ public:
     // Constructors
 
         //- Construct from file name
-        VTKsurfaceFormat(const fileName&);
-
-
-    // Selectors
-
-        //- Read file and return surface
-        static autoPtr<MeshedSurface<Face>> New(const fileName& name)
-        {
-            return autoPtr<MeshedSurface<Face>>
-            (
-                new VTKsurfaceFormat<Face>(name)
-            );
-        }
+        VTKsurfaceFormat(const fileName& filename);
 
 
     //- Destructor
-    virtual ~VTKsurfaceFormat()
-    {}
+    virtual ~VTKsurfaceFormat() = default;
 
 
-    // Member Functions
-
-        // Write
+    // Static Member Functions
 
         //- Write surface mesh components by proxy
         static void write
         (
-            const fileName&,
-            const MeshedSurfaceProxy<Face>&
+            const fileName& filename,
+            const MeshedSurfaceProxy<Face>& surf,
+            const dictionary& options = dictionary::null
         );
 
         //- Write UnsortedMeshedSurface, the output remains unsorted
         static void write
         (
-            const fileName&,
-            const UnsortedMeshedSurface<Face>&
+            const fileName& fileName,
+            const UnsortedMeshedSurface<Face>& surf,
+            const dictionary& options = dictionary::null
         );
 
+
+    // Member Functions
+
         //- Read from file
-        virtual bool read(const fileName&);
+        virtual bool read(const fileName& filename);
 
         //- Write object file
-        virtual void write(const fileName& name) const
+        virtual void write
+        (
+            const fileName& name,
+            const dictionary& options = dictionary::null
+        ) const
         {
-            write(name, MeshedSurfaceProxy<Face>(*this));
+            write(name, MeshedSurfaceProxy<Face>(*this), options);
         }
 };
 

@@ -35,7 +35,7 @@ template<class T>
 template<class INew>
 void Foam::PtrList<T>::read(Istream& is, const INew& inewt)
 {
-    is.fatalCheck("PtrList<T>::read(Istream&, const INew&)");
+    is.fatalCheck(FUNCTION_NAME);
 
     token firstToken(is);
 
@@ -48,18 +48,19 @@ void Foam::PtrList<T>::read(Istream& is, const INew& inewt)
     if (firstToken.isLabel())
     {
         // Read size of list
-        label s = firstToken.labelToken();
+        const label sz = firstToken.labelToken();
 
-        setSize(s);
+        // Set list length to that read
+        setSize(sz);
 
         // Read beginning of contents
-        char delimiter = is.readBeginList("PtrList");
+        const char delimiter = is.readBeginList("PtrList");
 
-        if (s)
+        if (sz)
         {
             if (delimiter == token::BEGIN_LIST)
             {
-                forAll(*this, i)
+                for (label i=0; i<sz; ++i)
                 {
                     set(i, inewt(is));
 
@@ -81,7 +82,7 @@ void Foam::PtrList<T>::read(Istream& is, const INew& inewt)
                     "reading the single entry"
                 );
 
-                for (label i=1; i<s; i++)
+                for (label i=1; i<sz; ++i)
                 {
                     set(i, tPtr->clone());
                 }

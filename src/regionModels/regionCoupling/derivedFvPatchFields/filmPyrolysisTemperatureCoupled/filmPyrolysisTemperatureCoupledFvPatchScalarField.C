@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -27,7 +27,7 @@ License
 #include "addToRunTimeSelectionTable.H"
 #include "surfaceFields.H"
 #include "pyrolysisModel.H"
-#include "surfaceFilmModel.H"
+#include "surfaceFilmRegionModel.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -123,7 +123,9 @@ void Foam::filmPyrolysisTemperatureCoupledFvPatchScalarField::updateCoeffs()
         return;
     }
 
-    typedef regionModels::surfaceFilmModels::surfaceFilmModel filmModelType;
+    typedef regionModels::surfaceFilmModels::surfaceFilmRegionModel
+        filmModelType;
+
     typedef regionModels::pyrolysisModels::pyrolysisModel pyrModelType;
 
     // Since we're inside initEvaluate/evaluate there might be processor
@@ -138,7 +140,7 @@ void Foam::filmPyrolysisTemperatureCoupledFvPatchScalarField::updateCoeffs()
 
     if (!filmOk || !pyrOk)
     {
-        // do nothing on construction - film model doesn't exist yet
+        // Do nothing on construction - film model doesn't exist yet
         return;
     }
 
@@ -184,22 +186,20 @@ void Foam::filmPyrolysisTemperatureCoupledFvPatchScalarField::write
 ) const
 {
     fvPatchScalarField::write(os);
-    writeEntryIfDifferent<word>
+    os.writeEntryIfDifferent<word>
     (
-        os,
         "filmRegion",
         "surfaceFilmProperties",
         filmRegionName_
     );
-    writeEntryIfDifferent<word>
+    os.writeEntryIfDifferent<word>
     (
-        os,
         "pyrolysisRegion",
         "pyrolysisProperties",
         pyrolysisRegionName_
     );
-    writeEntryIfDifferent<word>(os, "phi", "phi", phiName_);
-    writeEntryIfDifferent<word>(os, "rho", "rho", rhoName_);
+    os.writeEntryIfDifferent<word>("phi", "phi", phiName_);
+    os.writeEntryIfDifferent<word>("rho", "rho", rhoName_);
     writeEntry("value", os);
 }
 

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -29,17 +29,6 @@ License
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 template<class Thermo>
-Foam::constTransport<Thermo>::constTransport(Istream& is)
-:
-    Thermo(is),
-    mu_(readScalar(is)),
-    rPr_(1.0/readScalar(is))
-{
-    is.check("constTransport::constTransport(Istream& is)");
-}
-
-
-template<class Thermo>
 Foam::constTransport<Thermo>::constTransport(const dictionary& dict)
 :
     Thermo(dict),
@@ -53,17 +42,19 @@ Foam::constTransport<Thermo>::constTransport(const dictionary& dict)
 template<class Thermo>
 void Foam::constTransport<Thermo>::constTransport::write(Ostream& os) const
 {
-    os  << this->name() << endl;
-    os  << token::BEGIN_BLOCK  << incrIndent << nl;
+    os.beginBlock(this->name());
 
     Thermo::write(os);
 
-    dictionary dict("transport");
-    dict.add("mu", mu_);
-    dict.add("Pr", 1.0/rPr_);
-    os  << indent << dict.dictName() << dict;
+    // Entries in dictionary format
+    {
+        os.beginBlock("transport");
+        os.writeEntry("mu", mu_);
+        os.writeEntry("Pr", scalar(1.0/rPr_));
+        os.endBlock();
+    }
 
-    os  << decrIndent << token::END_BLOCK << nl;
+    os.endBlock();
 }
 
 
@@ -72,11 +63,7 @@ void Foam::constTransport<Thermo>::constTransport::write(Ostream& os) const
 template<class Thermo>
 Foam::Ostream& Foam::operator<<(Ostream& os, const constTransport<Thermo>& ct)
 {
-    operator<<(os, static_cast<const Thermo&>(ct));
-    os << tab << ct.mu_ << tab << 1.0/ct.rPr_;
-
-    os.check("Ostream& operator<<(Ostream&, const constTransport&)");
-
+    ct.write(os);
     return os;
 }
 

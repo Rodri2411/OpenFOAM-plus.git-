@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -270,6 +270,9 @@ public:
         //- Construct from Istream given field to solve for
         fvMatrix(const GeometricField<Type, fvPatchField, volMesh>&, Istream&);
 
+        //- Clone
+        tmp<fvMatrix<Type>> clone() const;
+
 
     //- Destructor
     virtual ~fvMatrix();
@@ -301,9 +304,23 @@ public:
 
             //- fvBoundary scalar field containing pseudo-matrix coeffs
             //  for internal cells
+            const FieldField<Field, Type>& internalCoeffs() const
+            {
+                return internalCoeffs_;
+            }
+
+            //- fvBoundary scalar field containing pseudo-matrix coeffs
+            //  for internal cells
             FieldField<Field, Type>& internalCoeffs()
             {
                 return internalCoeffs_;
+            }
+
+            //- fvBoundary scalar field containing pseudo-matrix coeffs
+            //  for boundary cells
+            const FieldField<Field, Type>& boundaryCoeffs() const
+            {
+                return boundaryCoeffs_;
             }
 
             //- fvBoundary scalar field containing pseudo-matrix coeffs
@@ -351,6 +368,14 @@ public:
                 const bool forceReference = false
             );
 
+            //- Set references level for solution
+            void setReferences
+            (
+                const labelList& cells,
+                const UList<Type>& values,
+                const bool forceReference = false
+            );
+
             //- Set reference level for a component of the solution
             //  on a given patch face
             void setComponentReference
@@ -389,7 +414,7 @@ public:
 
             //- Solve segregated or coupled returning the solution statistics.
             //  Use the given solver controls
-            SolverPerformance<Type> solve(const dictionary&);
+            SolverPerformance<Type> solveSegregatedOrCoupled(const dictionary&);
 
             //- Solve segregated returning the solution statistics.
             //  Use the given solver controls
@@ -398,6 +423,10 @@ public:
             //- Solve coupled returning the solution statistics.
             //  Use the given solver controls
             SolverPerformance<Type> solveCoupled(const dictionary&);
+
+            //- Solve returning the solution statistics.
+            //  Use the given solver controls
+            SolverPerformance<Type> solve(const dictionary&);
 
             //- Solve returning the solution statistics.
             //  Solver controls read from fvSolution
@@ -424,6 +453,9 @@ public:
             //- Return the face-flux field from the matrix
             tmp<GeometricField<Type, fvsPatchField, surfaceMesh>>
                 flux() const;
+
+            //- Return the solver dictionary taking into account finalIteration
+            const dictionary& solverDict() const;
 
 
     // Member operators

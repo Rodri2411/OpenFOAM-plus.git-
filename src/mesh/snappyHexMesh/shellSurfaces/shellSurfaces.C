@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2015-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -35,24 +35,16 @@ License
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
-
-namespace Foam
+const Foam::Enum
+<
+    Foam::shellSurfaces::refineMode
+>
+Foam::shellSurfaces::refineModeNames_
 {
-
-template<>
-const char*
-NamedEnum<shellSurfaces::refineMode, 3>::
-names[] =
-{
-    "inside",
-    "outside",
-    "distance"
+    { refineMode::INSIDE, "inside" },
+    { refineMode::OUTSIDE, "outside" },
+    { refineMode::DISTANCE, "distance" },
 };
-
-const NamedEnum<shellSurfaces::refineMode, 3> shellSurfaces::refineModeNames_;
-
-} // End namespace Foam
-
 
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
@@ -199,21 +191,9 @@ void Foam::shellSurfaces::orient()
 
             if (shell.triSurface::size())
             {
-                const pointField& points = shell.points();
-
                 hasSurface = true;
-
-                boundBox shellBb(points[0], points[0]);
                 // Assume surface is compact!
-                forAll(points, i)
-                {
-                    const point& pt = points[i];
-                    shellBb.min() = min(shellBb.min(), pt);
-                    shellBb.max() = max(shellBb.max(), pt);
-                }
-
-                overallBb.min() = min(overallBb.min(), shellBb.min());
-                overallBb.max() = max(overallBb.max(), shellBb.max());
+                overallBb.add(shell.points());
             }
         }
     }
@@ -629,7 +609,7 @@ Foam::shellSurfaces::shellSurfaces
             unmatchedKeys.erase(ePtr->keyword());
 
             shells_[shellI] = geomI;
-            modes_[shellI] = refineModeNames_.read(dict.lookup("mode"));
+            modes_[shellI] = refineModeNames_.lookup("mode", dict);
 
             // Read pairs of distance+level
             setAndCheckLevels(shellI, dict.lookup("levels"));

@@ -25,7 +25,7 @@ License
 
 #include "septernion.H"
 #include "IOstreams.H"
-#include "OStringStream.H"
+#include "StringStream.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -111,9 +111,7 @@ Foam::Istream& Foam::operator>>(Istream& is, septernion& s)
     // Read end of septernion
     is.readEnd("septernion");
 
-    // Check state of Istream
-    is.check("operator>>(Istream&, septernion&)");
-
+    is.check(FUNCTION_NAME);
     return is;
 }
 

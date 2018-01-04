@@ -8,11 +8,12 @@
         fvc::flux(HbyA)
       + fvc::interpolate(rho*rAU)*fvc::ddtCorr(U, Uf)
     );
+    MRF.makeRelative(phiHbyA);
 
     surfaceScalarField phig
     (
         (
-            interface.surfaceTensionForce()
+            mixture.surfaceTensionForce()
           - ghf*fvc::snGrad(rho)
         )*rAUf*mesh.magSf()
     );
@@ -20,7 +21,7 @@
     phiHbyA += phig;
 
     // Update the pressure BCs to ensure flux consistency
-    constrainPressure(p_rgh, U, phiHbyA, rAUf);
+    constrainPressure(p_rgh, U, phiHbyA, rAUf, MRF);
 
     // Make the fluxes relative to the mesh motion
     fvc::makeRelative(phiHbyA, U);
@@ -55,7 +56,7 @@
     }
     else
     {
-        p_rghEqnComp1 =
+         p_rghEqnComp1 =
             fvc::ddt(rho1) + psi1*correction(fvm::ddt(p_rgh))
           + fvc::div(phi, rho1) - fvc::Sp(fvc::div(phi), rho1);
 
@@ -87,11 +88,21 @@
 
         if (pimple.finalNonOrthogonalIter())
         {
+            p = max(p_rgh + (alpha1*rho1 + alpha2*rho2)*gh, pMin);
+            p_rgh = p - (alpha1*rho1 + alpha2*rho2)*gh;
+
+            dgdt =
+            (
+                pos(alpha2)*(p_rghEqnComp2 & p_rgh)/rho2
+              - pos(alpha1)*(p_rghEqnComp1 & p_rgh)/rho1
+            );
+
             phi = phiHbyA + p_rghEqnIncomp.flux();
 
             U = HbyA
               + rAU*fvc::reconstruct((phig + p_rghEqnIncomp.flux())/rAUf);
             U.correctBoundaryConditions();
+            fvOptions.correct(U);
         }
     }
 
@@ -102,23 +113,17 @@
     }
 
     // Update densities from change in p_rgh
-    rho1 += psi1*(p_rgh - p_rgh_0);
-    rho2 += psi2*(p_rgh - p_rgh_0);
+    mixture.thermo1().correctRho(psi1*(p_rgh - p_rgh_0));
+    mixture.thermo2().correctRho(psi2*(p_rgh - p_rgh_0));
 
     rho = alpha1*rho1 + alpha2*rho2;
 
+    // Correct p_rgh for consistency with p and the updated densities
     p = max(p_rgh + rho*gh, pMin);
     p_rgh = p - rho*gh;
     p_rgh.correctBoundaryConditions();
 
-    dgdt =
-    (
-        pos(alpha2)*(p_rghEqnComp2 & p_rgh)/rho2
-      - pos(alpha1)*(p_rghEqnComp1 & p_rgh)/rho1
-    );
+
 
     K = 0.5*magSqr(U);
-
-    Info<< "max(U) " << max(mag(U)).value() << endl;
-    Info<< "min(p_rgh) " << min(p_rgh).value() << endl;
 }

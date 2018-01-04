@@ -166,77 +166,6 @@ std::string Foam::ccm::reader::ccmReadOptstr
 }
 
 
-Foam::word Foam::ccm::reader::validateWord
-(
-    const std::string& str
-)
-{
-    std::string::size_type ngood = 0;
-    bool prefix = false;
-    bool first  = true;
-
-    for
-    (
-        std::string::const_iterator iter = str.begin();
-        iter != str.end();
-        ++iter
-    )
-    {
-        if (word::valid(*iter))
-        {
-            ++ngood;
-            if (first)
-            {
-                first = false;
-
-                // Start with a digit? need to prefix with '_'
-                if (isdigit(*iter))
-                {
-                    prefix = true;
-                    ++ngood;
-                }
-            }
-        }
-    }
-
-    if (ngood == str.size() && !prefix)
-    {
-        return str;
-    }
-
-    Foam::word out;
-    out.resize(ngood);
-    ngood = 0;
-
-    Foam::word::iterator iter2 = out.begin();
-    for
-    (
-        std::string::const_iterator iter1 = str.begin();
-        iter1 != str.end();
-        ++iter1
-    )
-    {
-        register char c = *iter1;
-
-        if (Foam::word::valid(c))
-        {
-            if (prefix)
-            {
-                prefix = false;
-                *(iter2++) = '_';
-                ++ngood;
-            }
-            *(iter2++) = c;
-            ++ngood;
-        }
-    }
-
-    out.resize(ngood);
-
-    return out;
-}
-
-
 // Read map data and check error
 void Foam::ccm::reader::readMap
 (
@@ -282,7 +211,8 @@ void Foam::ccm::reader::readProblemDescription
 
 
 // readInterfaceDefinitions:
-// - get /InterfaceDefinitions. used by STARCCM to define in-place interfaces, etc
+// - get /InterfaceDefinitions.
+//   used by STARCCM to define in-place interfaces, etc
 // - only handle in-place one here
 void Foam::ccm::reader::readInterfaceDefinitions()
 {
@@ -435,7 +365,7 @@ void Foam::ccm::reader::readProblemDescription_boundaryRegion
             }
             else
             {
-                dict.add(opt, validateWord(str));
+                dict.add(opt, word::validate(str, true));
             }
         }
 
@@ -459,7 +389,8 @@ void Foam::ccm::reader::readProblemDescription_boundaryRegion
             )
             {
 #ifdef DEBUG_CCMIOREAD
-                Info<< "boundary is on an interface: remap name for  " << Id << endl;
+                Info<< "boundary is on an interface: remap name for  "
+                    << Id << endl;
 #endif
                 // Substitute immediately with interface name
                 str = interfaceDefinitions_.interfaceName(Id);
@@ -476,7 +407,7 @@ void Foam::ccm::reader::readProblemDescription_boundaryRegion
 
             if (!str.empty())
             {
-                dict.add(opt, validateWord(str));
+                dict.add(opt, word::validate(str, true));
             }
         }
 
@@ -541,7 +472,7 @@ void Foam::ccm::reader::readProblemDescription_cellTable
                 str = "zone_" + ::Foam::name(Id);
             }
 
-            dict.add(opt, validateWord(str));
+            dict.add(opt, word::validate(str, true));
         }
 
 
@@ -553,7 +484,7 @@ void Foam::ccm::reader::readProblemDescription_cellTable
 
             if (!str.empty())
             {
-                dict.add(opt, validateWord(str));
+                dict.add(opt, word::validate(str, true));
             }
         }
 
@@ -656,7 +587,8 @@ void Foam::ccm::reader::writeMesh
     (
         fmt,
         IOstream::currentVersion,
-        IOstream::UNCOMPRESSED
+        IOstream::UNCOMPRESSED,
+        true
     );
     writeAux(mesh);
 }

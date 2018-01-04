@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -25,12 +25,13 @@ Class
     Foam::word
 
 Description
-    A class for handling words, derived from string.
+    A class for handling words, derived from Foam::string.
 
     A word is a string of characters without whitespace, quotes, slashes,
     semicolons or brace brackets. Words are delimited by whitespace.
 
 SourceFiles
+    wordI.H
     word.C
     wordIO.C
 
@@ -48,9 +49,8 @@ namespace Foam
 
 // Forward declaration of friend functions and operators
 class word;
-inline word operator&(const word&, const word&);
-Istream& operator>>(Istream&, word&);
-Ostream& operator<<(Ostream&, const word&);
+Istream& operator>>(Istream& is, word& w);
+Ostream& operator<<(Ostream& os, const word& w);
 
 
 /*---------------------------------------------------------------------------*\
@@ -64,6 +64,7 @@ class word
     // Private Member Functions
 
         //- Strip invalid characters from this word
+        //  Trips an abort on invalid characters for debug 2 or greater
         inline void stripInvalid();
 
 
@@ -83,57 +84,114 @@ public:
         //- Construct null
         inline word();
 
-        //- Construct as copy
-        inline word(const word&);
+        //- Copy construct
+        inline word(const word& w);
 
         //- Construct as copy of character array
-        inline word(const char*, const bool doStripInvalid=true);
+        inline word(const char* s, const bool doStripInvalid=true);
 
         //- Construct as copy with a maximum number of characters
         inline word
         (
-            const char*,
-            const size_type,
+            const char* s,
+            const size_type len,
             const bool doStripInvalid
         );
 
-        //- Construct as copy of string
-        inline word(const string&, const bool doStripInvalid=true);
+        //- Construct as copy of Foam::string
+        inline word(const string& s, const bool doStripInvalid=true);
 
         //- Construct as copy of std::string
-        inline word(const std::string&, const bool doStripInvalid=true);
+        inline word(const std::string& s, const bool doStripInvalid=true);
+
+        //- Move construct
+        inline word(word&& w);
+
+        //- Move construct from Foam::string
+        inline word(string&& s, const bool doStripInvalid=true);
+
+        //- Move construct from std::string
+        inline word(std::string&& s, const bool doStripInvalid=true);
 
         //- Construct from Istream
-        word(Istream&);
+        word(Istream& is);
 
 
     // Member functions
 
-        //- Is this character valid for a word
-        inline static bool valid(char);
+        //- Is this character valid for a word?
+        inline static bool valid(char c);
+
+        //- Construct validated word (no invalid characters).
+        //  Optionally prefix any leading digit with '_' to have words
+        //  that work nicely as dictionary keywords.
+        static word validate(const std::string& s, const bool prefix=false);
+
+
+      // File-like functions
+
+        //- Return word without extension (part before last .)
+        word lessExt() const;
+
+        //- Return file name extension (part after last .)
+        word ext() const;
+
+        //- Append a '.' and the ending, and return the object.
+        //  The '.' and ending will not be added when the ending is empty,
+        //  or when the file name is empty or ended with a '/'.
+        word& ext(const word& ending);
+
+        //- Return true if it has an extension or simply ends with a '.'
+        inline bool hasExt() const;
+
+        //- Return true if the extension is the same as the given ending.
+        bool hasExt(const word& ending) const;
+
+        //- Return true if the extension matches the given ending.
+        bool hasExt(const wordRe& ending) const;
+
+        //- Remove extension, returning true if string changed.
+        inline bool removeExt();
 
 
     // Member operators
 
-        // Assignment
+      // Assignment
 
-            inline void operator=(const word&);
-            inline void operator=(const string&);
-            inline void operator=(const std::string&);
-            inline void operator=(const char*);
+        //- Copy assignment, no character validation required
+        inline void operator=(const word& w);
 
+        //- Copy assignment from Foam::string, stripping invalid characters
+        inline void operator=(const string& s);
 
-    // Friend Operators
+        //- Copy assignment from std::string, stripping invalid characters
+        inline void operator=(const std::string& s);
 
-        //- Join word a and bm capitalising first letter of b
-        friend word operator&(const word& a, const word& b);
+        //- Copy, stripping invalid characters
+        inline void operator=(const char* s);
+
+        //- Move assignment
+        inline void operator=(word&& w);
+
+        //- Move assignment from Foam::string, stripping invalid characters
+        inline void operator=(string&& s);
+
+        //- Move assignment from std::string, stripping invalid characters
+        inline void operator=(std::string&& s);
 
 
     // IOstream operators
 
-        friend Istream& operator>>(Istream&, word&);
-        friend Ostream& operator<<(Ostream&, const word&);
+        friend Istream& operator>>(Istream& is, word& w);
+        friend Ostream& operator<<(Ostream& os, const word& w);
 };
+
+
+// Global Operators
+
+//- Join words as camelCase, capitalizing the first letter of b.
+//  No effect if either argument is empty.
+word operator&(const word& a, const word& b);
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

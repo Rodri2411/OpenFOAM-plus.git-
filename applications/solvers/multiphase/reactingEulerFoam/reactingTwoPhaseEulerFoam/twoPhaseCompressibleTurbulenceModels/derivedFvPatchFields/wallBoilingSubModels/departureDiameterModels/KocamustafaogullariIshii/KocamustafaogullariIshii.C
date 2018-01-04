@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2016-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -80,7 +80,9 @@ KocamustafaogullariIshii::dDeparture
     const phaseModel& liquid,
     const phaseModel& vapor,
     const label patchi,
-    const scalarField& Tsub
+    const scalarField& Tl,
+    const scalarField& Tsatw,
+    const scalarField& L
 ) const
 {
     // Gravitational acceleration
@@ -112,7 +114,7 @@ void Foam::wallBoilingModels::departureDiameterModels::
 KocamustafaogullariIshii::write(Ostream& os) const
 {
     departureDiameterModel::write(os);
-    os.writeKeyword("phi") << phi_ << token::END_STATEMENT << nl;
+    os.writeEntry("phi", phi_);
 }
 
 

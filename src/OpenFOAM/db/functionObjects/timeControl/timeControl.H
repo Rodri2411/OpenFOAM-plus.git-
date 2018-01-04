@@ -77,7 +77,7 @@ private:
         const word prefix_;
 
         //- String representation of timeControls enums
-        static const NamedEnum<timeControls, 9> timeControlNames_;
+        static const Enum<timeControls> timeControlNames_;
 
         //- Type of time control
         timeControls timeControl_;
@@ -120,6 +120,10 @@ public:
 
 
     // Member Functions
+
+        //- Helper function to identify if a timeControl object is present
+        //  in the dictionary
+        static bool entriesPresent(const dictionary& dict, const word& prefix);
 
         //- Read from dictionary
         void read(const dictionary&);

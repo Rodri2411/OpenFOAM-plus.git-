@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2012 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -78,6 +78,7 @@ Foam::variableHeightFlowRateFvPatchScalarField
     lowerBound_(readScalar(dict.lookup("lowerBound"))),
     upperBound_(readScalar(dict.lookup("upperBound")))
 {
+    patchType() = dict.lookupOrDefault<word>("patchType", word::null);
     this->refValue() = 0.0;
 
     if (dict.found("value"))
@@ -172,12 +173,9 @@ void Foam::variableHeightFlowRateFvPatchScalarField::updateCoeffs()
 void Foam::variableHeightFlowRateFvPatchScalarField::write(Ostream& os) const
 {
     fvPatchScalarField::write(os);
-    if (phiName_ != "phi")
-    {
-        os.writeKeyword("phi") << phiName_ << token::END_STATEMENT << nl;
-    }
-    os.writeKeyword("lowerBound") << lowerBound_ << token::END_STATEMENT << nl;
-    os.writeKeyword("upperBound") << upperBound_ << token::END_STATEMENT << nl;
+    os.writeEntryIfDifferent<word>("phi", "phi", phiName_);
+    os.writeEntry("lowerBound", lowerBound_);
+    os.writeEntry("upperBound", upperBound_);
     this->writeEntry("value", os);
 }
 

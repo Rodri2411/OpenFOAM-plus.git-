@@ -35,22 +35,34 @@ volVectorField U
 
 #include "compressibleCreatePhi.H"
 
-#include "setAlphaEff.H"
+autoPtr<compressible::turbulenceModel> turbulence;
 
-Info<< "Creating field dpdt\n" << endl;
-volScalarField dpdt
+IOobject turbulencePropertiesHeader
 (
-    IOobject
-    (
-        "dpdt",
-        runTime.timeName(),
-        mesh
-    ),
+    "turbulenceProperties",
+    runTime.constant(),
     mesh,
-    dimensionedScalar("dpdt", p.dimensions()/dimTime, 0)
+    IOobject::MUST_READ_IF_MODIFIED,
+    IOobject::NO_WRITE,
+    false
 );
 
-Info<< "Creating field kinetic energy K\n" << endl;
-volScalarField K("K", 0.5*magSqr(U));
+if (turbulencePropertiesHeader.typeHeaderOk<IOdictionary>(false))
+{
+    Info<< "Creating turbulence model\n" << endl;
+
+    turbulence =
+        compressible::turbulenceModel::New
+        (
+            rho,
+            U,
+            phi,
+            thermo
+        );
+}
+
+#include "createDpdt.H"
+
+#include "createK.H"
 
 #include "createRadiationModel.H"

@@ -4,93 +4,73 @@
 # \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
 #  \\    /   O peration     |
 #   \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-#    \\/     M anipulation  |
+#    \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 #------------------------------------------------------------------------------
 # License
-#     This file is part of OpenFOAM.
-#
-#     OpenFOAM is free software: you can redistribute it and/or modify it
-#     under the terms of the GNU General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
-#     (at your option) any later version.
-#
-#     OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
-#     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-#     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-#     for more details.
-#
-#     You should have received a copy of the GNU General Public License
-#     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
+#     This file is part of OpenFOAM, licensed under GNU General Public License
+#     <http://www.gnu.org/licenses/>.
 #
 # Script
 #     Allrun
 #
 # Description
+#     Run tutorial cases and summarize the outcome as 'testLoopReport'
 #
 #------------------------------------------------------------------------------
 cd ${0%/*} || exit 1    # Run from this directory
 
-# Source tutorial run functions
-. $WM_PROJECT_DIR/bin/tools/RunFunctions
-
-# logReport <logfile>
-# Extracts useful info from log file.
-logReport()
+usage()
 {
-    caseName=`dirname $1 | sed s/"\(.*\)\.\/"/""/g`
-    app=`echo $1 | sed s/"\(.*\)log\."/""/g`
-    appAndCase="Application $app - case $caseName"
+    exec 1>&2
+    while [ "$#" -ge 1 ]; do echo "$1"; shift; done
+    cat<<USAGE
 
-    fatalError=`grep "FOAM FATAL" $1`
-    UxSS=`grep -E "Ux[:| ]*solution singularity" $1`
-    UySS=`grep -E "Uy[:| ]*solution singularity" $1`
-    UzSS=`grep -E "Uz[:| ]*solution singularity" $1`
-    completed=`grep -E "^[\t ]*[eE]nd" $1`
+usage: ${0##*/} [OPTION]
 
-    if [ "$fatalError" ]
-    then
-        echo "$appAndCase: ** FOAM FATAL ERROR **"
-    elif [ "$UxSS" -a "$UySS" -a "$UzSS" ]
-    then
-        echo "$appAndCase: ** Solution singularity **"
-    elif [ "$completed" ]
-    then
-        completionTime=`tail -10 $log | grep Execution | cut -d= -f2 | sed 's/^[ \t]*//'`
-        if [ "$completionTime" ]
-        then
-            completionTime="in $completionTime"
-        fi
-        echo "$appAndCase: completed $completionTime"
-    else
-        echo "$appAndCase: unconfirmed completion"
-    fi
+options:
+  -collect          Collect logs only. Can be useful for aborted runs.
+  -help             print the usage
+
+Run tutorial cases and summarize the outcome as 'testLoopReport'
+
+USAGE
+    exit 1
 }
 
+#------------------------------------------------------------------------------
+unset optCollect
 
-# Recursively run all tutorials
-foamRunTutorials -test -skipFirst
-
-
-# Analyse all log files
-rm testLoopReport > /dev/null 2>&1 &
-touch testLoopReport
-
-for appDir in *
+# Parse options
+while [ "$#" -gt 0 ]
 do
-(
-    [ -d $appDir ] && cd $appDir || exit
-
-    logs=`find . -name "log.*"`
-    [ -n "$logs" ] || exit
-
-    for log in `echo $logs | xargs ls -rt`
-    do
-        logReport $log >> ../testLoopReport
-    done
-    echo "" >> ../testLoopReport
-)
+    case "$1" in
+    -h | -help*)
+        usage
+        ;;
+    -collect)
+        optCollect=true
+        ;;
+    -test)   # Known options to pass through
+        break
+        ;;
+    -*)
+        usage "unknown option: $1"
+        ;;
+    *)
+        break
+        ;;
+    esac
+    shift
 done
 
-find . -name "log.*" -exec cat {} \; >> logs
+#------------------------------------------------------------------------------
+. $WM_PROJECT_DIR/bin/tools/LogFunctions    # Tutorial log-file functions
+
+if [ -z "$optCollect" ]
+then
+    foamRunTutorials -skipFirst $*          # Run tutorials recursively
+fi
+
+collectLogs
 
 #------------------------------------------------------------------------------

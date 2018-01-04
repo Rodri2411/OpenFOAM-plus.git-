@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -42,20 +42,14 @@ Foam::vector Foam::wallBoundedStreamLineParticle::interpolateFields
             << "Cell:" << celli << abort(FatalError);
     }
 
-    const tetIndices ti = currentTetIndices();
-
-    const vector U = td.vvInterp_[td.UIndex_].interpolate
-    (
-        position,
-        ti,     //celli,
-        facei
-    );
+    const vector U =
+        td.vvInterp_[td.UIndex_].interpolate(position, celli, facei);
 
     // Check if at different position
     if
     (
        !sampledPositions_.size()
-     || magSqr(sampledPositions_.last()-position) > Foam::sqr(SMALL)
+     || magSqr(sampledPositions_.last() - position) > Foam::sqr(SMALL)
     )
     {
         // Store the location
@@ -67,12 +61,7 @@ Foam::vector Foam::wallBoundedStreamLineParticle::interpolateFields
         {
             sampledScalars_[scalari].append
             (
-                td.vsInterp_[scalari].interpolate
-                (
-                    position,
-                    ti,     //celli,
-                    facei
-                )
+                td.vsInterp_[scalari].interpolate(position, celli, facei)
             );
         }
 
@@ -87,12 +76,8 @@ Foam::vector Foam::wallBoundedStreamLineParticle::interpolateFields
             }
             else
             {
-                positionU = td.vvInterp_[vectori].interpolate
-                (
-                    position,
-                    ti,     //celli,
-                    facei
-                );
+                positionU =
+                    td.vvInterp_[vectori].interpolate(position, celli, facei);
             }
             sampledVectors_[vectori].append(positionU);
         }
@@ -107,7 +92,7 @@ Foam::vector Foam::wallBoundedStreamLineParticle::sample
     trackingData& td
 )
 {
-    vector U = interpolateFields(td, position(), cell(), tetFace());
+    vector U = interpolateFields(td, localPosition_, cell(), face());
 
     if (!td.trackForward_)
     {
@@ -120,11 +105,12 @@ Foam::vector Foam::wallBoundedStreamLineParticle::sample
     {
         // Stagnant particle. Might as well stop
         lifeTime_ = 0;
+        return vector::zero;
     }
-
-    U /= magU;
-
-    return U;
+    else
+    {
+        return U/magU;
+    }
 }
 
 
@@ -133,7 +119,7 @@ Foam::vector Foam::wallBoundedStreamLineParticle::sample
 Foam::wallBoundedStreamLineParticle::wallBoundedStreamLineParticle
 (
     const polyMesh& mesh,
-    const vector& position,
+    const point& position,
     const label celli,
     const label tetFacei,
     const label tetPti,
@@ -160,10 +146,11 @@ Foam::wallBoundedStreamLineParticle::wallBoundedStreamLineParticle
 (
     const polyMesh& mesh,
     Istream& is,
-    bool readFields
+    bool readFields,
+    bool newFormat
 )
 :
-    wallBoundedParticle(mesh, is, readFields)
+    wallBoundedParticle(mesh, is, readFields, newFormat)
 {
     if (readFields)
     {
@@ -185,12 +172,7 @@ Foam::wallBoundedStreamLineParticle::wallBoundedStreamLineParticle
         }
     }
 
-    // Check state of Istream
-    is.check
-    (
-        "wallBoundedStreamLineParticle::wallBoundedStreamLineParticle"
-        "(const Cloud<wallBoundedStreamLineParticle>&, Istream&, bool)"
-    );
+    is.check(FUNCTION_NAME);
 }
 
 
@@ -208,138 +190,6 @@ Foam::wallBoundedStreamLineParticle::wallBoundedStreamLineParticle
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
-
-bool Foam::wallBoundedStreamLineParticle::move
-(
-    trackingData& td,
-    const scalar trackTime
-)
-{
-    wallBoundedStreamLineParticle& p = static_cast
-    <
-        wallBoundedStreamLineParticle&
-    >(*this);
-
-
-    // Check position is inside tet
-    //checkInside();
-
-    td.switchProcessor = false;
-    td.keepParticle = true;
-
-    scalar tEnd = (1.0 - stepFraction())*trackTime;
-    scalar maxDt = mesh_.bounds().mag();
-
-    while
-    (
-        td.keepParticle
-    && !td.switchProcessor
-    && lifeTime_ > 0
-    )
-    {
-        // set the lagrangian time-step
-        scalar dt = maxDt;
-
-        --lifeTime_;
-
-        // Get sampled velocity and fields. Store if position changed.
-        vector U = sample(td);
-
-        // !user parameter!
-        if (dt < SMALL)
-        {
-            // Force removal
-            lifeTime_ = 0;
-            break;
-        }
-
-
-        if (td.trackLength_ < GREAT)
-        {
-            dt = td.trackLength_;
-        }
-
-
-        scalar fraction = trackToEdge(td, position() + dt*U);
-        dt *= fraction;
-
-        tEnd -= dt;
-        stepFraction() = 1.0 - tEnd/trackTime;
-
-
-        if (tEnd <= ROOTVSMALL)
-        {
-            // Force removal
-            lifeTime_ = 0;
-        }
-
-        if
-        (
-            !td.keepParticle
-        ||  td.switchProcessor
-        ||  lifeTime_ == 0
-        )
-        {
-            break;
-        }
-    }
-
-
-    if (!td.keepParticle || lifeTime_ == 0)
-    {
-        if (lifeTime_ == 0)
-        {
-            if (debug)
-            {
-                Pout<< "wallBoundedStreamLineParticle :"
-                    << " Removing stagnant particle:"
-                    << p.position()
-                    << " sampled positions:" << sampledPositions_.size()
-                    << endl;
-            }
-            td.keepParticle = false;
-        }
-        else
-        {
-            // Normal exit. Store last position and fields
-            sample(td);
-
-            if (debug)
-            {
-                Pout<< "wallBoundedStreamLineParticle : Removing particle:"
-                    << p.position()
-                    << " sampled positions:" << sampledPositions_.size()
-                    << endl;
-            }
-        }
-
-        // Transfer particle data into trackingData.
-        {
-            //td.allPositions_.append(sampledPositions_);
-            td.allPositions_.append(vectorList());
-            vectorList& top = td.allPositions_.last();
-            top.transfer(sampledPositions_);
-        }
-
-        forAll(sampledScalars_, i)
-        {
-            //td.allScalars_[i].append(sampledScalars_[i]);
-            td.allScalars_[i].append(scalarList());
-            scalarList& top = td.allScalars_[i].last();
-            top.transfer(sampledScalars_[i]);
-        }
-        forAll(sampledVectors_, i)
-        {
-            //td.allVectors_[i].append(sampledVectors_[i]);
-            td.allVectors_[i].append(vectorList());
-            vectorList& top = td.allVectors_[i].last();
-            top.transfer(sampledVectors_[i]);
-        }
-    }
-
-    return td.keepParticle;
-}
-
 
 void Foam::wallBoundedStreamLineParticle::readFields
 (
@@ -422,12 +272,7 @@ Foam::Ostream& Foam::operator<<
         << token::SPACE << p.sampledScalars_
         << token::SPACE << p.sampledVectors_;
 
-    // Check state of Ostream
-    os.check
-    (
-        "Ostream& operator<<(Ostream&, const wallBoundedStreamLineParticle&)"
-    );
-
+    os.check(FUNCTION_NAME);
     return os;
 }
 

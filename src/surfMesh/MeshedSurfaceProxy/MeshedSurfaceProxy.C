@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2016-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -26,9 +26,10 @@ License
 #include "MeshedSurfaceProxy.H"
 
 #include "Time.H"
+#include "ListOps.H"
 #include "surfMesh.H"
 #include "OFstream.H"
-#include "ListOps.H"
+#include "faceTraits.H"
 
 // * * * * * * * * * * * * * Static Member Functions * * * * * * * * * * * * //
 
@@ -57,7 +58,21 @@ template<class Face>
 void Foam::MeshedSurfaceProxy<Face>::write
 (
     const fileName& name,
-    const MeshedSurfaceProxy& surf
+    const MeshedSurfaceProxy& surf,
+    const dictionary& options
+)
+{
+    write(name, name.ext(), surf, options);
+}
+
+
+template<class Face>
+void Foam::MeshedSurfaceProxy<Face>::write
+(
+    const fileName& name,
+    const word& ext,
+    const MeshedSurfaceProxy& surf,
+    const dictionary& options
 )
 {
     if (debug)
@@ -65,21 +80,18 @@ void Foam::MeshedSurfaceProxy<Face>::write
         InfoInFunction << "Writing to " << name << endl;
     }
 
-    word ext = name.ext();
+    auto mfIter = writefileExtensionMemberFunctionTablePtr_->cfind(ext);
 
-    typename writefileExtensionMemberFunctionTable::iterator mfIter =
-        writefileExtensionMemberFunctionTablePtr_->find(ext);
-
-    if (mfIter == writefileExtensionMemberFunctionTablePtr_->end())
+    if (!mfIter.found())
     {
         FatalErrorInFunction
             << "Unknown file extension " << ext << nl << nl
-            << "Valid types are :" << endl
-            << writeTypes()
+            << "Valid types:" << nl
+            << flatOutput(writeTypes().sortedToc()) << nl
             << exit(FatalError);
     }
 
-    mfIter()(name, surf);
+    mfIter()(name, surf, options);
 }
 
 
@@ -91,7 +103,7 @@ void Foam::MeshedSurfaceProxy<Face>::write
 ) const
 {
     // the surface name to be used
-    word name(surfName.size() ? surfName : surfaceRegistry::defaultName);
+    const word name(surfName.size() ? surfName : surfaceRegistry::defaultName);
 
     if (debug)
     {
@@ -170,8 +182,7 @@ void Foam::MeshedSurfaceProxy<Face>::write
 
         if (this->useFaceMap())
         {
-            // this is really a bit annoying (and wasteful) but no other way
-            os  << reorder(this->faceMap(), this->surfFaces());
+            os  << UIndirectList<Face>(this->surfFaces(), this->faceMap());
         }
         else
         {
@@ -216,9 +227,9 @@ template<class Face>
 Foam::MeshedSurfaceProxy<Face>::MeshedSurfaceProxy
 (
     const pointField& pointLst,
-    const List<Face>& faceLst,
-    const List<surfZone>& zoneLst,
-    const List<label>& faceMap
+    const UList<Face>& faceLst,
+    const UList<surfZone>& zoneLst,
+    const labelUList& faceMap
 )
 :
     points_(pointLst),
@@ -228,44 +239,20 @@ Foam::MeshedSurfaceProxy<Face>::MeshedSurfaceProxy
 {}
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-template<class Face>
-Foam::MeshedSurfaceProxy<Face>::~MeshedSurfaceProxy()
-{}
-
-
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
-
-
-namespace Foam
-{
-
-// Number of triangles for a triFace surface
-template<>
-inline label MeshedSurfaceProxy<triFace>::nTriangles() const
-{
-    return this->size();
-}
-
-// Number of triangles for a labelledTri surface
-template<>
-inline label MeshedSurfaceProxy<labelledTri>::nTriangles() const
-{
-    return this->size();
-}
-
-}
-
 
 template<class Face>
 inline Foam::label Foam::MeshedSurfaceProxy<Face>::nTriangles() const
 {
-    label nTri = 0;
-    const List<Face>& faceLst = this->surfFaces();
-    forAll(faceLst, facei)
+    if (faceTraits<Face>::isTri())
     {
-        nTri += faceLst[facei].nTriangles();
+        return this->size();
+    }
+
+    label nTri = 0;
+    for (const Face& f : this->surfFaces())
+    {
+        nTri += f.nTriangles();
     }
 
     return nTri;

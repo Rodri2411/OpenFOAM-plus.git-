@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2016 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2016-2017 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -24,91 +24,51 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "foamVtkBase64Formatter.H"
+#include "foamVtkOutputOptions.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
-const char* Foam::foamVtkBase64Formatter::name_     = "binary";
-const char* Foam::foamVtkBase64Formatter::encoding_ = "base64";
+const char* Foam::vtk::base64Formatter::name_ = "binary";
 
-
-// * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * //
-
-void Foam::foamVtkBase64Formatter::write
-(
-    const char* s,
-    std::streamsize n
-)
-{
-    base64Layer::write(s, n);
-}
+const Foam::vtk::outputOptions
+Foam::vtk::base64Formatter::opts_(formatType::INLINE_BASE64);
 
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-Foam::foamVtkBase64Formatter::foamVtkBase64Formatter(std::ostream& os)
+Foam::vtk::base64Formatter::base64Formatter(std::ostream& os)
 :
-    foamVtkFormatter(os),
-    base64Layer(os)
+    foamVtkBase64Layer(os)
 {}
 
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-Foam::foamVtkBase64Formatter::~foamVtkBase64Formatter()
+Foam::vtk::base64Formatter::~base64Formatter()
 {
-    flush();
+    if (base64Layer::close())
+    {
+        os().put('\n');
+    }
 }
 
 
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
 
-const char* Foam::foamVtkBase64Formatter::name() const
+const Foam::vtk::outputOptions&
+Foam::vtk::base64Formatter::opts() const
+{
+    return opts_;
+}
+
+
+const char* Foam::vtk::base64Formatter::name() const
 {
     return name_;
 }
 
 
-const char* Foam::foamVtkBase64Formatter::encoding() const
-{
-    return encoding_;
-}
-
-
-void Foam::foamVtkBase64Formatter::writeSize(const uint64_t val)
-{
-    write(reinterpret_cast<const char*>(&val), sizeof(uint64_t));
-}
-
-
-void Foam::foamVtkBase64Formatter::write(const uint8_t val)
-{
-    base64Layer::add(val);
-}
-
-
-void Foam::foamVtkBase64Formatter::write(const label val)
-{
-    // std::cerr<<"label is:" << sizeof(val) << '\n';
-    write(reinterpret_cast<const char*>(&val), sizeof(label));
-}
-
-
-void Foam::foamVtkBase64Formatter::write(const float val)
-{
-    // std::cerr<<"float is:" << sizeof(val) << '\n';
-    write(reinterpret_cast<const char*>(&val), sizeof(float));
-}
-
-
-void Foam::foamVtkBase64Formatter::write(const double val)
-{
-    // std::cerr<<"write double as float:" << val << '\n';
-    float copy(val);
-    write(copy);
-}
-
-
-void Foam::foamVtkBase64Formatter::flush()
+void Foam::vtk::base64Formatter::flush()
 {
     if (base64Layer::close())
     {

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2015-2016 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2015-2017 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -33,8 +33,7 @@ Description
     // Pressure reference
     pRef            0;
 
-    // Number of samples in sampling window
-    // Must be a power of 2, default = 2^16 (=65536)
+    // Number of samples in sampling window, default = 2^16 (=65536)
     N               4096;
 
     // Lower frequency bounds
@@ -53,7 +52,8 @@ Description
     }
 
     // Input file
-    inputFiles  ("postProcessing/faceSource1/surface/patch/patch.case");
+    file            "postProcessing/faceSource1/surface/patch/patch.case";
+    //files           ("postProcessing/faceSource1/surface/patch/patch.case");
 
     // Write interval for FFT data, default = 1
     fftWriteInterval 100;
@@ -71,7 +71,23 @@ Description
         {
             collateTimes true;
         }
+
+        // Write Prmsf; default = yes
+        writePrmsf  no;
+
+        // Write SPL; default = yes
+        writeSPL    yes;
+
+        // Write PSD; default = yes
+        writePSD    yes;
+
+        // Write PSDf; default = yes
+        writePSDf   no;
+
+        // Write writeOctaves; default = yes
+        writeOctaves yes;
     }
+
     \endverbatim
 
 SourceFiles
@@ -167,12 +183,13 @@ protected:
         //  Returns the area average value
         scalar writeSurfaceData
         (
+            const fileName& outDirBase,
             const word& fName,
-            const word& groupName,
             const word& title,
             const scalar freq,
             const scalarField& data,
-            const labelList& procFaceOffset
+            const labelList& procFaceOffset,
+            const bool writeSurface
         ) const;
 
         //- Calculate the area average value

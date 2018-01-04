@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2016-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -26,9 +26,9 @@ License
 #include "MeshedSurface.H"
 #include "UnsortedMeshedSurface.H"
 #include "MeshedSurfaceProxy.H"
-#include "IFstream.H"
-#include "OFstream.H"
+#include "Fstream.H"
 #include "Time.H"
+#include "ListOps.H"
 #include "polyBoundaryMesh.H"
 #include "polyMesh.H"
 
@@ -102,7 +102,21 @@ template<class Face>
 void Foam::UnsortedMeshedSurface<Face>::write
 (
     const fileName& name,
-    const UnsortedMeshedSurface<Face>& surf
+    const UnsortedMeshedSurface<Face>& surf,
+    const dictionary& options
+)
+{
+    write(name, name.ext(), surf, options);
+}
+
+
+template<class Face>
+void Foam::UnsortedMeshedSurface<Face>::write
+(
+    const fileName& name,
+    const word& ext,
+    const UnsortedMeshedSurface<Face>& surf,
+    const dictionary& options
 )
 {
     if (debug)
@@ -110,32 +124,29 @@ void Foam::UnsortedMeshedSurface<Face>::write
         InfoInFunction << "Writing to " << name << endl;
     }
 
-    const word ext = name.ext();
+    auto mfIter = writefileExtensionMemberFunctionTablePtr_->cfind(ext);
 
-    typename writefileExtensionMemberFunctionTable::iterator mfIter =
-        writefileExtensionMemberFunctionTablePtr_->find(ext);
-
-    if (mfIter == writefileExtensionMemberFunctionTablePtr_->end())
+    if (!mfIter.found())
     {
-        // no direct writer, delegate to proxy if possible
-        wordHashSet supported = ProxyType::writeTypes();
+        // No direct writer, delegate to proxy if possible
+        const wordHashSet& delegate = ProxyType::writeTypes();
 
-        if (supported.found(ext))
+        if (delegate.found(ext))
         {
-            MeshedSurfaceProxy<Face>(surf).write(name);
+            MeshedSurfaceProxy<Face>(surf).write(name, ext, options);
         }
         else
         {
             FatalErrorInFunction
                 << "Unknown file extension " << ext << nl << nl
-                << "Valid types are :" << endl
-                << (supported | writeTypes())
+                << "Valid types:" << nl
+                << flatOutput((delegate | writeTypes()).sortedToc()) << nl
                 << exit(FatalError);
         }
     }
     else
     {
-        mfIter()(name, surf);
+        mfIter()(name, surf, options);
     }
 }
 
@@ -231,7 +242,7 @@ Foam::UnsortedMeshedSurface<Face>::UnsortedMeshedSurface
     const Xfer<UnsortedMeshedSurface<Face>>& surf
 )
 :
-    ParentType()
+    UnsortedMeshedSurface<Face>()
 {
     transfer(surf());
 }
@@ -243,7 +254,7 @@ Foam::UnsortedMeshedSurface<Face>::UnsortedMeshedSurface
     const Xfer<MeshedSurface<Face>>& surf
 )
 :
-    ParentType()
+    UnsortedMeshedSurface<Face>()
 {
     transfer(surf());
 }
@@ -256,7 +267,7 @@ Foam::UnsortedMeshedSurface<Face>::UnsortedMeshedSurface
     const word& ext
 )
 :
-    ParentType()
+    UnsortedMeshedSurface<Face>()
 {
     read(name, ext);
 }
@@ -268,7 +279,7 @@ Foam::UnsortedMeshedSurface<Face>::UnsortedMeshedSurface
     const fileName& name
 )
 :
-    ParentType()
+    UnsortedMeshedSurface<Face>()
 {
     read(name);
 }
@@ -280,9 +291,7 @@ Foam::UnsortedMeshedSurface<Face>::UnsortedMeshedSurface
     Istream& is
 )
 :
-    ParentType(),
-    zoneIds_(),
-    zoneToc_()
+    UnsortedMeshedSurface<Face>()
 {
     read(is);
 }
@@ -295,18 +304,11 @@ Foam::UnsortedMeshedSurface<Face>::UnsortedMeshedSurface
     const word& surfName
 )
 :
-    ParentType()
+    UnsortedMeshedSurface<Face>()
 {
     MeshedSurface<Face> surf(t, surfName);
     transfer(surf);
 }
-
-
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-template<class Face>
-Foam::UnsortedMeshedSurface<Face>::~UnsortedMeshedSurface()
-{}
 
 
 // * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * //
@@ -327,9 +329,8 @@ void Foam::UnsortedMeshedSurface<Face>::setOneZone()
         zoneName = "zone0";
     }
 
-    // set single default zone
-    zoneToc_.setSize(1);
-    zoneToc_[0] = surfZoneIdentifier(zoneName, 0);
+    // Set single default zone
+    zoneToc_ = { surfZoneIdentifier(zoneName, 0) };
 }
 
 
@@ -412,27 +413,28 @@ void Foam::UnsortedMeshedSurface<Face>::remapFaces
 )
 {
     // re-assign the zone Ids
-    if (notNull(faceMap) && faceMap.size())
+    if (isNull(faceMap) || faceMap.empty())
     {
-        if (zoneToc_.empty())
-        {
-            setOneZone();
-        }
-        else if (zoneToc_.size() == 1)
-        {
-            // optimized for single-zone case
-            zoneIds_ = 0;
-        }
-        else
-        {
-            List<label> newZones(faceMap.size());
+        return;
+    }
 
-            forAll(faceMap, facei)
-            {
-                newZones[facei] = zoneIds_[faceMap[facei]];
-            }
-            zoneIds_.transfer(newZones);
+    if (zoneToc_.empty())
+    {
+        setOneZone();
+    }
+    else if (zoneToc_.size() == 1)
+    {
+        zoneIds_ = 0;  // Optimized for single-zone case
+    }
+    else
+    {
+        List<label> newZones(faceMap.size());
+
+        forAll(faceMap, facei)
+        {
+            newZones[facei] = zoneIds_[faceMap[facei]];
         }
+        zoneIds_.transfer(newZones);
     }
 }
 
@@ -446,7 +448,7 @@ Foam::Istream& Foam::UnsortedMeshedSurface<Face>::read(Istream& is)
         >> this->storedPoints()
         >> this->storedFaces();
 
-    is.check("UnsortedMeshedSurface::read(Istream&)");
+    is.check(FUNCTION_NAME);
     return is;
 }
 
@@ -458,7 +460,7 @@ Foam::Ostream& Foam::UnsortedMeshedSurface<Face>::write(Ostream& os) const
         << this->points()
         << this->surfFaces();
 
-    os.check("UnsortedMeshedSurface::write(Ostream&) const");
+    os.check(FUNCTION_NAME);
     return os;
 }
 
@@ -734,16 +736,14 @@ Foam::UnsortedMeshedSurface<Face>::xferZoneIds()
 template<class Face>
 bool Foam::UnsortedMeshedSurface<Face>::read(const fileName& name)
 {
-    word ext = name.ext();
+    const word ext(name.ext());
     if (ext == "gz")
     {
         fileName unzipName = name.lessExt();
         return read(unzipName, unzipName.ext());
     }
-    else
-    {
-        return read(name, ext);
-    }
+
+    return read(name, ext);
 }
 
 

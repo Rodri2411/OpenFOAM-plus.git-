@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2015-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -53,10 +53,6 @@ Description
     - cellZonesFileOnly behaves like -cellZonesOnly but reads the cellZones
     from the specified file. This allows one to explicitly specify the region
     distribution and still have multiple cellZones per region.
-
-    - useCellZonesOnly does not do a walk and uses the cellZones only. Use
-    this if you don't mind having disconnected domains in a single region.
-    This option requires all cells to be in one (and one only) cellZone.
 
     - prefixRegion prefixes all normal patches with region name (interface
     (patches already have region name prefix)
@@ -398,7 +394,7 @@ void getInterfaceSizes
                 slave++
             )
             {
-                IPstream fromSlave(Pstream::blocking, slave);
+                IPstream fromSlave(Pstream::commsTypes::blocking, slave);
 
                 EdgeMap<Map<label>> slaveSizes(fromSlave);
 
@@ -443,7 +439,11 @@ void getInterfaceSizes
         {
             // Send to master
             {
-                OPstream toMaster(Pstream::blocking, Pstream::masterNo());
+                OPstream toMaster
+                (
+                    Pstream::commsTypes::blocking,
+                    Pstream::masterNo()
+                );
                 toMaster << regionsToSize;
             }
         }
@@ -1574,7 +1574,7 @@ int main(int argc, char *argv[])
             << " This requires all"
             << " cells to be in one and only one cellZone." << nl << endl;
 
-        label unzonedCelli = findIndex(zoneID, -1);
+        label unzonedCelli = zoneID.find(-1);
         if (unzonedCelli != -1)
         {
             FatalErrorInFunction
@@ -1599,7 +1599,7 @@ int main(int argc, char *argv[])
     }
     else if (useCellZonesFile)
     {
-        const word zoneFile = args.option("cellZonesFileOnly");
+        const word zoneFile(args["cellZonesFileOnly"]);
         Info<< "Reading split from cellZones file " << zoneFile << endl
             << "This requires all"
             << " cells to be in one and only one cellZone." << nl << endl;
@@ -1623,7 +1623,7 @@ int main(int argc, char *argv[])
         labelList newNeiZoneID(mesh.nFaces()-mesh.nInternalFaces());
         getZoneID(mesh, newCellZones, newZoneID, newNeiZoneID);
 
-        label unzonedCelli = findIndex(newZoneID, -1);
+        label unzonedCelli = newZoneID.find(-1);
         if (unzonedCelli != -1)
         {
             FatalErrorInFunction

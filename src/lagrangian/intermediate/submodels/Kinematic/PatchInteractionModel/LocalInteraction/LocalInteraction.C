@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
@@ -171,9 +171,7 @@ bool Foam::LocalInteraction<CloudType>::correct
 (
     typename CloudType::parcelType& p,
     const polyPatch& pp,
-    bool& keepParticle,
-    const scalar trackFraction,
-    const tetIndices& tetIs
+    bool& keepParticle
 )
 {
     label patchi = patchData_.applyToPatch(pp.index());
@@ -190,6 +188,10 @@ bool Foam::LocalInteraction<CloudType>::correct
 
         switch (it)
         {
+            case PatchInteractionModel<CloudType>::itNone:
+            {
+                return false;
+            }
             case PatchInteractionModel<CloudType>::itEscape:
             {
                 scalar dm = p.mass()*p.nParticle();
@@ -232,7 +234,7 @@ bool Foam::LocalInteraction<CloudType>::correct
                 vector nw;
                 vector Up;
 
-                this->owner().patchData(p, pp, trackFraction, tetIs, nw, Up);
+                this->owner().patchData(p, pp, nw, Up);
 
                 // Calculate motion relative to patch velocity
                 U -= Up;

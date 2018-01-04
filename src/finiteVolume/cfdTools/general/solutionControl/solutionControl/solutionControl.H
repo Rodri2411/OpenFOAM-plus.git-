@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -33,6 +33,7 @@ Description
 #define solutionControl_H
 
 #include "fvMesh.H"
+#include "Pair.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -49,6 +50,7 @@ class solutionControl
 {
 public:
 
+    //- Simple convenient storage of field residuals
     struct fieldData
     {
         wordRe name;
@@ -56,6 +58,20 @@ public:
         scalar relTol;
         scalar initialResidual;
     };
+
+
+    // Static Member Functions
+
+        //- Extract maximum residual for the solver performance entry,
+        //- provided the corresponding volume field is available on the mesh.
+        //
+        //  \return initial residual as first member, the final residual
+        //      as the second (or last) member
+        static Pair<scalar> maxResidual
+        (
+            const fvMesh& fvmesh,
+            const entry& dataDictEntry
+        );
 
 
 protected:
@@ -86,6 +102,10 @@ protected:
             //- Flag to indicate to relax pressure using the
             //  "consistent" approach of SIMPLEC
             bool consistent_;
+
+            //- Flag to indicate that the flow system of equations should not
+            //  be evolved
+            bool frozenFlow_;
 
 
         // Evolution
@@ -122,30 +142,34 @@ protected:
         template<class Type>
         void storePrevIter() const;
 
+        //- Initial and final residual of the specified field-name,
+        //- provided that the corresponding volume field is available
+        //- on the fvMesh.
+        //
+        //  Populate residuals with initial residual as first member and
+        //  the final residual as second (last) member.
         template<class Type>
-        void maxTypeResidual
+        static bool maxTypeResidual
         (
-            const word& fieldName,
-            ITstream& data,
-            scalar& firstRes,
-            scalar& lastRes
-        ) const;
+            const fvMesh& fvmesh,
+            const entry& solverPerfDictEntry,
+            Pair<scalar>& residuals
+        );
 
-        scalar maxResidual
-        (
-            const word& fieldName,
-            ITstream& data,
-            scalar& lastRes
-        ) const;
+        //- Extract the maximum residual for the specified field
+        //
+        //  \return initial residual as first member, the final residual
+        //      as second (last) member
+        Pair<scalar> maxResidual(const entry& solverPerfDictEntry) const;
 
 
 private:
 
         //- Disallow default bitwise copy construct
-        solutionControl(const solutionControl&);
+        solutionControl(const solutionControl&) = delete;
 
         //- Disallow default bitwise assignment
-        void operator=(const solutionControl&);
+        void operator=(const solutionControl&) = delete;
 
 
 public:
@@ -164,7 +188,7 @@ public:
 
 
     //- Destructor
-    virtual ~solutionControl();
+    virtual ~solutionControl() = default;
 
 
     // Member Functions
@@ -198,6 +222,10 @@ public:
             //- Flag to indicate to relax pressure using the
             //  "consistent" approach of SIMPLEC
             inline bool consistent() const;
+
+            //- Flag to indicate that the flow system of equations should not
+            //  be evolved
+            inline bool frozenFlow() const;
 
 
         // Evolution

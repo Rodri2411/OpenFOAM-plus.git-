@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
     );
 
     argList::noParallel();
-    argList::validArgs.append("surfaceFile");
+    argList::addArgument("surfaceFile");
     argList::addBoolOption
     (
         "shellProperties",
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
     vector refPt = Zero;
     bool calcAroundRefPt = args.optionReadIfPresent("referencePoint", refPt);
 
-    triSurface surf(surfFileName);
+    const triSurface surf(surfFileName);
 
     scalar m = 0.0;
     vector cM = Zero;
@@ -125,9 +125,9 @@ int main(int argc, char *argv[])
             << "No eigenValues found, shape may have symmetry, "
             << "perturbing inertia tensor diagonal" << endl;
 
-        J.xx() *= 1.0 + SMALL*rand.scalar01();
-        J.yy() *= 1.0 + SMALL*rand.scalar01();
-        J.zz() *= 1.0 + SMALL*rand.scalar01();
+        J.xx() *= 1.0 + SMALL*rand.sample01<scalar>();
+        J.yy() *= 1.0 + SMALL*rand.sample01<scalar>();
+        J.zz() *= 1.0 + SMALL*rand.sample01<scalar>();
 
         eVal = eigenValues(J);
 

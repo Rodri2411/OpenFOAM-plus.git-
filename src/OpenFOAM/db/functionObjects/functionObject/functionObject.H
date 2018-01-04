@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -154,6 +154,14 @@ class functionObject
         void operator=(const functionObject&) = delete;
 
 
+protected:
+
+    // Protected Member Functions
+
+        //- Return a scoped name, e.g. used to construct local field names
+        word scopedName(const word& name) const;
+
+
 public:
 
     //- Runtime type information
@@ -214,12 +222,18 @@ public:
         const word& name() const;
 
         //- Read and set the function object if its data have changed
-        virtual bool read(const dictionary&);
+        virtual bool read(const dictionary& dict);
 
         //- Called at each ++ or += of the time-loop.
         //  postProcess overrides the usual executeControl behaviour and
         //  forces execution (used in post-processing mode)
         virtual bool execute() = 0;
+
+        //- Execute using the specified subIndex.
+        //  The base implementation is a no-op.
+        //  \param subIndex an execution sub-index corresponding to a
+        //      sub-cycle or something similar.
+        virtual bool execute(const label subIndex);
 
         //- Called at each ++ or += of the time-loop.
         //  postProcess overrides the usual writeControl behaviour and
@@ -233,10 +247,15 @@ public:
         //- Called at the end of Time::adjustDeltaT() if adjustTime is true
         virtual bool adjustTimeStep();
 
+        //- Did any file get changed during execution?
+        virtual bool filesModified() const;
+
         //- Update for changes of mesh
+        //  The base implementation is a no-op.
         virtual void updateMesh(const mapPolyMesh& mpm);
 
         //- Update for changes of mesh
+        //  The base implementation is a no-op.
         virtual void movePoints(const polyMesh& mesh);
 };
 

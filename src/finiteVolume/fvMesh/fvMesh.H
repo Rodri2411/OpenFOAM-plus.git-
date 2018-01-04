@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -62,6 +62,7 @@ SourceFiles
 #include "slicedVolFieldsFwd.H"
 #include "slicedSurfaceFieldsFwd.H"
 #include "className.H"
+#include "SolverPerformance.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -70,6 +71,8 @@ namespace Foam
 
 class fvMeshLduAddressing;
 class volMesh;
+template<class Type>
+class fvMatrix;
 
 
 /*---------------------------------------------------------------------------*\
@@ -265,16 +268,93 @@ public:
                 return polyMesh::comm();
             }
 
-            //- Internal face owner
+
+            // Overlap
+
+                //- Interpolate interpolationCells only
+                virtual void interpolate(volScalarField&) const
+                {}
+
+                //- Interpolate interpolationCells only
+                virtual void interpolate(volVectorField&) const
+                {}
+
+                //- Interpolate interpolationCells only
+                virtual void interpolate(volSphericalTensorField&) const
+                {}
+
+                //- Interpolate interpolationCells only
+                virtual void interpolate(volSymmTensorField&) const
+                {}
+
+                //- Interpolate interpolationCells only
+                virtual void interpolate(volTensorField&) const
+                {}
+
+                //- Interpolate interpolationCells only. No bcs.
+                virtual void interpolate(scalarField&) const
+                {}
+
+                //- Interpolate interpolationCells only. No bcs.
+                virtual void interpolate(vectorField&) const
+                {}
+
+                //- Interpolate interpolationCells only. No bcs.
+                virtual void interpolate(sphericalTensorField&) const
+                {}
+
+                //- Interpolate interpolationCells only. No bcs.
+                virtual void interpolate(symmTensorField&) const
+                {}
+
+                //- Interpolate interpolationCells only. No bcs.
+                virtual void interpolate(tensorField&) const
+                {}
+
+                //- Solve returning the solution statistics given convergence
+                //  tolerance. Use the given solver controls
+                virtual SolverPerformance<scalar> solve
+                (
+                    fvMatrix<scalar>&,
+                    const dictionary&
+                ) const;
+
+                //- Solve returning the solution statistics given convergence
+                //  tolerance. Use the given solver controls
+                virtual SolverPerformance<vector> solve
+                (
+                    fvMatrix<vector>&,
+                    const dictionary&
+                ) const;
+
+                //- Solve returning the solution statistics given convergence
+                //  tolerance. Use the given solver controls
+                virtual SolverPerformance<symmTensor> solve
+                (
+                    fvMatrix<symmTensor>&,
+                    const dictionary&
+                ) const;
+
+                //- Solve returning the solution statistics given convergence
+                //  tolerance. Use the given solver controls
+                virtual SolverPerformance<tensor> solve
+                (
+                    fvMatrix<tensor>&,
+                    const dictionary&
+                ) const;
+
+
+            //- Internal face owner. Note bypassing virtual mechanism so
+            //  e.g. relaxation always gets done using original addressing
             const labelUList& owner() const
             {
-                return lduAddr().lowerAddr();
+                return fvMesh::lduAddr().lowerAddr();
             }
 
             //- Internal face neighbour
             const labelUList& neighbour() const
             {
-                return lduAddr().upperAddr();
+                return fvMesh::lduAddr().upperAddr();
             }
 
             //- Return cell volumes
@@ -349,11 +429,12 @@ public:
             (
                 IOstream::streamFormat fmt,
                 IOstream::versionNumber ver,
-                IOstream::compressionType cmp
+                IOstream::compressionType cmp,
+                const bool valid
             ) const;
 
             //- Write mesh using IO settings from time
-            virtual bool write() const;
+            virtual bool write(const bool valid = true) const;
 
 
     // Member Operators

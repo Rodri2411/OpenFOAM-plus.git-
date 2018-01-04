@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2014-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -68,6 +68,7 @@ fixedNormalInletOutletVelocityFvPatchVectorField
         fvPatchVectorField::New(p, iF, dict.subDict("normalVelocity"))
     )
 {
+    patchType() = dict.lookupOrDefault<word>("patchType", word::null);
     fvPatchVectorField::operator=(vectorField("value", dict, p.size()));
     refValue() = normalVelocity();
     refGrad() = Zero;
@@ -180,13 +181,13 @@ void Foam::fixedNormalInletOutletVelocityFvPatchVectorField::write
 const
 {
     fvPatchVectorField::write(os);
-    writeEntryIfDifferent<word>(os, "phi", "phi", phiName_);
-    os.writeKeyword("fixTangentialInflow")
-        << fixTangentialInflow_ << token::END_STATEMENT << nl;
-    os.writeKeyword("normalVelocity")
-        << nl << indent << token::BEGIN_BLOCK << nl << incrIndent;
+    os.writeEntryIfDifferent<word>("phi", "phi", phiName_);
+    os.writeEntry("fixTangentialInflow", fixTangentialInflow_);
+
+    os.beginBlock("normalVelocity");
     normalVelocity_->write(os);
-    os << decrIndent << indent << token::END_BLOCK << endl;
+    os.endBlock();
+
     writeEntry("value", os);
 }
 

@@ -166,7 +166,7 @@ void Foam::turbulentInletFvPatchField<Type>::updateCoeffs()
 
         forAll(patchField, facei)
         {
-            ranGen_.randomise(randomField[facei]);
+            ranGen_.randomise01<Type>(randomField[facei]);
         }
 
         // Correction-factor to compensate for the loss of RMS fluctuation
@@ -196,10 +196,9 @@ template<class Type>
 void Foam::turbulentInletFvPatchField<Type>::write(Ostream& os) const
 {
     fvPatchField<Type>::write(os);
-    os.writeKeyword("fluctuationScale")
-        << fluctuationScale_ << token::END_STATEMENT << nl;
+    os.writeEntry("fluctuationScale", fluctuationScale_);
     referenceField_.writeEntry("referenceField", os);
-    os.writeKeyword("alpha") << alpha_ << token::END_STATEMENT << nl;
+    os.writeEntry("alpha", alpha_);
     this->writeEntry("value", os);
 }
 

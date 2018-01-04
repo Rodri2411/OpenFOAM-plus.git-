@@ -37,17 +37,14 @@ Foam::autoPtr<Foam::windowModel> Foam::windowModel::New
 
     Info<< "Selecting windowModel " << modelType << endl;
 
-    dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(modelType);
+    auto cstrIter = dictionaryConstructorTablePtr_->cfind(modelType);
 
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    if (!cstrIter.found())
     {
-        FatalErrorIn
-        (
-            "windowModel::New(const dictionary&, const label)"
-        )   << "Unknown windowModel type "
+        FatalErrorInFunction
+            << "Unknown windowModel type "
             << modelType << nl << nl
-            << "Valid windowModel types are:" << nl
+            << "Valid windowModel types :" << nl
             << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }

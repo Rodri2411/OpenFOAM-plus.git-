@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -51,27 +51,39 @@ class PtrMap
 :
     public HashPtrTable<T, label, Hash<label>>
 {
-
 public:
+
+    //- The template instance used for this PtrMap
+    typedef PtrMap<T> this_type;
+
+    //- The template instance used for the parent HashTable
+    typedef HashPtrTable<T, label, Hash<label>> parent_type;
+
 
     // Constructors
 
-        //- Construct given initial map size
-        PtrMap(const label size = 128)
+        //- Construct null with default table capacity
+        PtrMap()
         :
-            HashPtrTable<T, label, Hash<label>>(size)
+            parent_type()
+        {}
+
+        //- Construct with given initial table capacity
+        explicit PtrMap(const label size)
+        :
+            parent_type(size)
         {}
 
         //- Construct from Istream
         PtrMap(Istream& is)
         :
-            HashPtrTable<T, label, Hash<label>>(is)
+            parent_type(is)
         {}
 
         //- Construct as copy
-        PtrMap(const PtrMap<T>& map)
+        PtrMap(const this_type& map)
         :
-            HashPtrTable<T, label, Hash<label>>(map)
+            parent_type(map)
         {}
 };
 

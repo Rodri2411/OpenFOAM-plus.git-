@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2016-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -74,7 +74,7 @@ void Foam::ensightCloud::writePositions
             // Master
             forAllConstIter(Cloud<passiveParticle>, cloudPtr(), elmnt)
             {
-                const point& p = elmnt().position();
+                const point p(elmnt().position());
 
                 os.write(p.x());
                 os.write(p.y());
@@ -84,7 +84,7 @@ void Foam::ensightCloud::writePositions
             // Slaves
             for (int slave=1; slave<Pstream::nProcs(); ++slave)
             {
-                IPstream fromSlave(Pstream::scheduled, slave);
+                IPstream fromSlave(Pstream::commsTypes::scheduled, slave);
                 pointList points(fromSlave);
 
                 forAll(points, pti)
@@ -104,7 +104,7 @@ void Foam::ensightCloud::writePositions
             label parcelId = 0;
             forAllConstIter(Cloud<passiveParticle>, cloudPtr(), elmnt)
             {
-                const point& p = elmnt().position();
+                const point p(elmnt().position());
 
                 os.write(++parcelId, 8); // unusual width
                 os.write(p.x());
@@ -116,7 +116,7 @@ void Foam::ensightCloud::writePositions
             // Slaves
             for (int slave=1; slave<Pstream::nProcs(); ++slave)
             {
-                IPstream fromSlave(Pstream::scheduled, slave);
+                IPstream fromSlave(Pstream::commsTypes::scheduled, slave);
                 pointList points(fromSlave);
 
                 forAll(points, pti)
@@ -140,12 +140,17 @@ void Foam::ensightCloud::writePositions
         label pti = 0;
         forAllConstIter(Cloud<passiveParticle>, cloudPtr(), elmnt)
         {
-            const point& p = elmnt().position();
+            const point p(elmnt().position());
             points[pti++] = p;
         }
 
         {
-            OPstream toMaster(Pstream::scheduled, Pstream::masterNo());
+            OPstream toMaster
+            (
+                Pstream::commsTypes::scheduled,
+                Pstream::masterNo()
+            );
+
             toMaster
                 << points;
         }

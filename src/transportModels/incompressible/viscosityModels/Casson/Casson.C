@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+    \\  /    A nd           | Copyright (C) 2016-2017 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -44,7 +44,7 @@ namespace viscosityModels
 }
 
 
-// * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * * //
+// * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * * //
 
 Foam::tmp<Foam::volScalarField>
 Foam::viscosityModels::Casson::calcNu() const
@@ -83,7 +83,7 @@ Foam::viscosityModels::Casson::Casson
 )
 :
     viscosityModel(name, viscosityProperties, U, phi),
-    CassonCoeffs_(viscosityProperties.subDict(typeName + "Coeffs")),
+    CassonCoeffs_(viscosityProperties.optionalSubDict(typeName + "Coeffs")),
     m_("m", dimViscosity, CassonCoeffs_),
     tau0_("tau0", dimViscosity/dimTime, CassonCoeffs_),
     nuMin_("nuMin", dimViscosity, CassonCoeffs_),
@@ -112,7 +112,7 @@ bool Foam::viscosityModels::Casson::read
 {
     viscosityModel::read(viscosityProperties);
 
-    CassonCoeffs_ = viscosityProperties.subDict(typeName + "Coeffs");
+    CassonCoeffs_ = viscosityProperties.optionalSubDict(typeName + "Coeffs");
 
     CassonCoeffs_.lookup("m") >> m_;
     CassonCoeffs_.lookup("tau0") >> tau0_;

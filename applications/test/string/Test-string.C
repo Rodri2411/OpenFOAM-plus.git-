@@ -62,6 +62,18 @@ int main(int argc, char *argv[])
     dict.add("FOAM_RUN", subDict);
 
 
+    // Test Foam::name with formatting string
+    {
+        word formatted = Foam::name("formatted=<%X>", 0xdeadbeef);
+        Info<<"formatted: " << formatted << nl;
+    }
+
+    Info<<"formatted: "
+        << Foam::name("formatted not checked for validity=<%X>", 0xdeadbeef)
+        << nl
+        << endl
+
+
     Info<< "string:" << test << nl << "hash:"
         << unsigned(string::hash()(test)) << endl;
 
@@ -69,6 +81,83 @@ int main(int argc, char *argv[])
     Info<<"trimRight: " << stringOps::trimRight(test) << endl;
     Info<<"trim: " << stringOps::trim(test) << endl;
 
+    if (false)
+    {
+        Info<<"test move construct - string size:" << test.size() << nl;
+        string test2(std::move(test));
+
+        Info<<"input size:" << test.size() << nl;
+        Info<<"moved size:" << test2.size() << nl;
+
+        Info<<"test move assign - string sizes:"
+            << test.size() << "/" << test2.size() << nl;
+
+        test = std::move(test2);
+
+        Info<<"input size:" << test.size() << nl;
+        Info<<"moved size:" << test2.size() << nl;
+    }
+
+    if (false)
+    {
+        std::string str("some text");
+
+        Info<<"test move construct to string:" << str.size() << nl;
+
+        Foam::string test2(std::move(str));
+
+        Info<<"input/moved sizes:" << str.size() << "/" << test2.size() << nl;
+
+        str = std::move(test2);
+
+        Info<<"test move assign - sizes:"
+            << str.size() << "/" << test2.size() << nl;
+    }
+
+    if (false)
+    {
+        Foam::string str("thisIsAWord");
+
+        Info<<"test move construct to word:" << str.size() << nl;
+
+        word test2(std::move(str));
+
+        Info<<"input/moved sizes:" << str.size() << "/" << test2.size() << nl;
+
+        str = std::move(test2);
+
+        Info<<"test move assign - sizes:"
+            << str.size() << "/" << test2.size() << nl;
+
+        // move back
+        test2.swap(str);
+
+        Info<<"test move assign - sizes:"
+            << str.size() << "/" << test2.size() << nl;
+
+        string str2(std::move(test2));
+        Info<<"input/moved sizes:" << test2.size() << "/" << str2.size() << nl;
+
+    }
+
+    {
+        fileName test1("libFooBar.so");
+
+        Info<< nl;
+        Info<< "trim filename: " << test1 << nl;
+
+        test1.removeStart("lib");
+        Info<<"without leading 'lib': " << test1 << nl;
+    }
+
+    Info<< nl;
+    Info<<"camel-case => " << (word("camel") & "case") << nl;
+    for (const auto& s : { " text with \"spaces'", "08/15 value" })
+    {
+        Info<<"validated \"" << s << "\" => "
+            << word::validate(s, true) << nl;
+    }
+    Info<< nl;
 
     // test sub-strings via iterators
     string::const_iterator iter  = test.end();

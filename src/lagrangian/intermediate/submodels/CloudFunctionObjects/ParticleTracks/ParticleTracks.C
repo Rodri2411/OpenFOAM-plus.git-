@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -109,12 +109,7 @@ void Foam::ParticleTracks<CloudType>::preEvolve()
 
 
 template<class CloudType>
-void Foam::ParticleTracks<CloudType>::postFace
-(
-    const parcelType& p,
-    const label,
-    bool&
-)
+void Foam::ParticleTracks<CloudType>::postFace(const parcelType& p, bool&)
 {
     if
     (
@@ -128,7 +123,7 @@ void Foam::ParticleTracks<CloudType>::postFace
              << "Cloud storage not allocated" << abort(FatalError);
         }
 
-        hitTableType::iterator iter =
+        labelPairLookup::iterator iter =
             faceHitCounter_.find(labelPair(p.origProc(), p.origId()));
 
         label localI = -1;

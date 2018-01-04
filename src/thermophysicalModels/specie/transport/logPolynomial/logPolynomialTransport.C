@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2016-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -31,21 +31,6 @@ License
 template<class Thermo, int PolySize>
 Foam::logPolynomialTransport<Thermo, PolySize>::logPolynomialTransport
 (
-    Istream& is
-)
-:
-    Thermo(is),
-    muCoeffs_("muLogCoeffs<" + Foam::name(PolySize) + '>', is),
-    kappaCoeffs_("kappaLogCoeffs<" + Foam::name(PolySize) + '>', is)
-{
-    muCoeffs_ *= this->W();
-    kappaCoeffs_ *= this->W();
-}
-
-
-template<class Thermo, int PolySize>
-Foam::logPolynomialTransport<Thermo, PolySize>::logPolynomialTransport
-(
     const dictionary& dict
 )
 :
@@ -64,10 +49,7 @@ Foam::logPolynomialTransport<Thermo, PolySize>::logPolynomialTransport
             "kappaLogCoeffs<" + Foam::name(PolySize) + '>'
         )
     )
-{
-    muCoeffs_ *= this->W();
-    kappaCoeffs_ *= this->W();
-}
+{}
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
@@ -75,25 +57,27 @@ Foam::logPolynomialTransport<Thermo, PolySize>::logPolynomialTransport
 template<class Thermo, int PolySize>
 void Foam::logPolynomialTransport<Thermo, PolySize>::write(Ostream& os) const
 {
-    os  << this->name() << endl;
-    os  << token::BEGIN_BLOCK << incrIndent << nl;
+    os.beginBlock(this->name());
 
     Thermo::write(os);
 
-    dictionary dict("transport");
-    dict.add
-    (
-        word("muLogCoeffs<" + Foam::name(PolySize) + '>'),
-        muCoeffs_/this->W()
-    );
-    dict.add
-    (
-        word("kappaLogCoeffs<" + Foam::name(PolySize) + '>'),
-        kappaCoeffs_/this->W()
-    );
-    os  << indent << dict.dictName() << dict;
+    // Entries in dictionary format
+    {
+        os.beginBlock("transport");
+        os.writeEntry
+        (
+            word("muLogCoeffs<" + Foam::name(PolySize) + '>'),
+            muCoeffs_
+        );
+        os.writeEntry
+        (
+            word("kappaLogCoeffs<" + Foam::name(PolySize) + '>'),
+            kappaCoeffs_
+        );
+        os.endBlock();
+    }
 
-    os  << decrIndent << token::END_BLOCK << nl;
+    os.endBlock();
 }
 
 
@@ -106,21 +90,7 @@ Foam::Ostream& Foam::operator<<
     const logPolynomialTransport<Thermo, PolySize>& pt
 )
 {
-    os  << static_cast<const Thermo&>(pt) << tab
-        << "muLogCoeffs<" << Foam::name(PolySize) << '>' << tab
-        << pt.muCoeffs_/pt.W() << tab
-        << "kappaLogCoeffs<" << Foam::name(PolySize) << '>' << tab
-        << pt.kappaCoeffs_/pt.W();
-
-    os.check
-    (
-        "Ostream& operator<<"
-        "("
-            "Ostream&, "
-            "const logPolynomialTransport<Thermo, PolySize>&"
-        ")"
-    );
-
+    pt.write(os);
     return os;
 }
 

@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2016-2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -23,27 +23,13 @@ License
 
 \*---------------------------------------------------------------------------*/
 
+#include <iostream>  // for std::cerr
+
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
-
-inline std::string::size_type Foam::fileName::find_ext() const
-{
-    const size_type i = find_last_of("./");
-
-    if (i == npos || i == 0 || operator[](i) == '/')
-    {
-        return npos;
-    }
-    else
-    {
-        return i;
-    }
-}
-
 
 inline void Foam::fileName::stripInvalid()
 {
-    // skip stripping unless debug is active to avoid
-    // costly operations
+    // Skip stripping unless debug is active (to avoid costly operations)
     if (debug && string::stripInvalid<fileName>(*this))
     {
         std::cerr
@@ -127,6 +113,30 @@ inline bool Foam::fileName::valid(char c)
      && c != '"'   // string quote
      && c != '\''  // string quote
     );
+}
+
+
+inline bool Foam::fileName::isAbsolute(const std::string& str)
+{
+    return !str.empty() && str[0] == '/';
+}
+
+
+inline bool Foam::fileName::isAbsolute() const
+{
+    return !empty() && operator[](0) == '/';
+}
+
+
+inline bool Foam::fileName::hasExt() const
+{
+    return string::hasExt();
+}
+
+
+inline bool Foam::fileName::removeExt()
+{
+    return string::removeExt();
 }
 
 

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2015-2016 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2015-2017 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -26,8 +26,7 @@ License
 #include "externalCoupled.H"
 #include "addToRunTimeSelectionTable.H"
 #include "OSspecific.H"
-#include "IFstream.H"
-#include "OFstream.H"
+#include "Fstream.H"
 #include "volFields.H"
 #include "globalIndex.H"
 #include "fvMesh.H"
@@ -50,27 +49,7 @@ namespace functionObjects
 }
 }
 
-Foam::word Foam::functionObjects::externalCoupled::lockName = "OpenFOAM";
-
 Foam::string Foam::functionObjects::externalCoupled::patchKey = "// Patch:";
-
-template<>
-const char* Foam::NamedEnum
-<
-    Foam::functionObjects::externalCoupled::stateEnd,
-    2
->::names[] =
-{
-    "remove",
-    "done"
-    // The 'IGNORE' enumeration is internal use only and thus has no name
-};
-
-const Foam::NamedEnum
-<
-    Foam::functionObjects::externalCoupled::stateEnd,
-    2
-> Foam::functionObjects::externalCoupled::stateEndNames_;
 
 
 namespace Foam
@@ -86,16 +65,16 @@ static void writeList(Ostream& os, const string& header, const UList<T>& L)
 
     // Write size and start delimiter
     os  << L.size() << nl
-        << token::BEGIN_LIST;
+        << token::BEGIN_LIST << nl;
 
     // Write contents
     forAll(L, i)
     {
-        os << nl << L[i];
+        os << L[i] << nl;
     }
 
     // Write end delimiter
-    os << nl << token::END_LIST << nl << endl;
+    os << token::END_LIST << nl << endl;
 }
 //! \endcond
 
@@ -104,15 +83,6 @@ static void writeList(Ostream& os, const string& header, const UList<T>& L)
 
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
-
-Foam::fileName Foam::functionObjects::externalCoupled::baseDir() const
-{
-    fileName result(commsDir_);
-    result.clean();
-
-    return result;
-}
-
 
 Foam::fileName Foam::functionObjects::externalCoupled::groupDir
 (
@@ -133,184 +103,6 @@ Foam::fileName Foam::functionObjects::externalCoupled::groupDir
 }
 
 
-Foam::fileName Foam::functionObjects::externalCoupled::lockFile() const
-{
-    return fileName(baseDir()/(lockName + ".lock"));
-}
-
-
-void Foam::functionObjects::externalCoupled::useMaster() const
-{
-    if (!Pstream::master())
-    {
-        return;
-    }
-
-    const fileName fName(lockFile());
-    IFstream is(fName);
-
-    // Only create lock file if it doesn't already exist
-    if (!is.good())
-    {
-        Log << type() << ": creating lock file" << endl;
-
-        OFstream os(fName);
-        os  << "status=openfoam\n";
-        os.flush();
-    }
-}
-
-
-void Foam::functionObjects::externalCoupled::useSlave() const
-{
-    if (!Pstream::master())
-    {
-        return;
-    }
-
-    Log << type() << ": removing lock file" << endl;
-
-    Foam::rm(lockFile());
-}
-
-
-void Foam::functionObjects::externalCoupled::cleanup() const
-{
-    if (!Pstream::master())
-    {
-        return;
-    }
-
-    const fileName lck(lockFile());
-    switch (stateEnd_)
-    {
-        case REMOVE:
-            {
-                Log << type() << ": removing lock file" << endl;
-                Foam::rm(lck);
-            }
-            break;
-        case DONE:
-            {
-                Log << type() << ": lock file status=done" << endl;
-                OFstream os(lck);
-                os  << "status=done\n";
-                os.flush();
-            }
-            break;
-        case IGNORE:
-            break;
-    }
-}
-
-
-void Foam::functionObjects::externalCoupled::removeReadFiles() const
-{
-    if (!Pstream::master())
-    {
-        return;
-    }
-
-    Log << type() << ": removing all read files" << endl;
-
-    forAll(regionGroupNames_, regioni)
-    {
-        const word& compName = regionGroupNames_[regioni];
-
-        const labelList& groups = regionToGroups_[compName];
-        forAll(groups, i)
-        {
-            label groupi = groups[i];
-            const wordRe& groupName = groupNames_[groupi];
-
-            forAll(groupReadFields_[groupi], fieldi)
-            {
-                const word& fieldName = groupReadFields_[groupi][fieldi];
-                rm
-                (
-                    groupDir(commsDir_, compName, groupName)
-                  / fieldName + ".in"
-                );
-            }
-        }
-    }
-}
-
-
-void Foam::functionObjects::externalCoupled::removeWriteFiles() const
-{
-    if (!Pstream::master())
-    {
-        return;
-    }
-
-    Log << type() << ": removing all write files" << endl;
-
-    forAll(regionGroupNames_, regioni)
-    {
-        const word& compName = regionGroupNames_[regioni];
-
-        const labelList& groups = regionToGroups_[compName];
-        forAll(groups, i)
-        {
-            label groupi = groups[i];
-            const wordRe& groupName = groupNames_[groupi];
-
-            forAll(groupReadFields_[groupi], fieldi)
-            {
-                const word& fieldName = groupReadFields_[groupi][fieldi];
-                rm
-                (
-                    groupDir(commsDir_, compName, groupName)
-                  / fieldName + ".out"
-                );
-            }
-        }
-    }
-}
-
-
-void Foam::functionObjects::externalCoupled::waitForSlave() const
-{
-    const fileName fName(lockFile());
-    label totalTime = 0;
-    bool found = false;
-
-    Log << type() << ": beginning wait for lock file " << fName << nl;
-
-    while (!found)
-    {
-        if (Pstream::master())
-        {
-            if (totalTime > timeOut_)
-            {
-                FatalErrorInFunction
-                    << "Wait time exceeded timeout of " << timeOut_
-                    << " s" << abort(FatalError);
-            }
-
-            IFstream is(fName);
-            if (is.good())
-            {
-                found = true;
-
-                Log << type() << ": found lock file " << fName << endl;
-            }
-            else
-            {
-                sleep(waitInterval_);
-                totalTime += waitInterval_;
-
-                Log << type() << ": wait time = " << totalTime << endl;
-            }
-        }
-
-        // Prevent other procs from racing ahead
-        reduce(found, orOp<bool>());
-    }
-}
-
-
 void Foam::functionObjects::externalCoupled::readColumns
 (
     const label nRows,
@@ -322,27 +114,27 @@ void Foam::functionObjects::externalCoupled::readColumns
     // Get sizes for all processors
     const globalIndex globalFaces(nRows);
 
-    PstreamBuffers pBufs(Pstream::nonBlocking);
+    PstreamBuffers pBufs(Pstream::commsTypes::nonBlocking);
     if (Pstream::master())
     {
         string line;
 
         // Read data from file and send to destination processor
 
-        for (label proci = 0; proci < Pstream::nProcs(); proci++)
+        for (label proci = 0; proci < Pstream::nProcs(); ++proci)
         {
             // Temporary storage
             List<scalarField> values(nColumns);
 
             // Number of rows to read for processor proci
-            label procNRows = globalFaces.localSize(proci);
+            const label procNRows = globalFaces.localSize(proci);
 
             forAll(values, columni)
             {
                 values[columni].setSize(procNRows);
             }
 
-            for (label rowi = 0; rowi < procNRows; rowi++)
+            for (label rowi = 0; rowi < procNRows; ++rowi)
             {
                 // Get a line
                 do
@@ -358,11 +150,12 @@ void Foam::functionObjects::externalCoupled::readColumns
                     }
 
                     masterFilePtr().getLine(line);
-                } while (line.empty() || line[0] == '#');
+                }
+                while (line.empty() || line[0] == '#');
 
                 IStringStream lineStr(line);
 
-                for (label columni = 0; columni < nColumns; columni++)
+                for (label columni = 0; columni < nColumns; ++columni)
                 {
                     lineStr >> values[columni][rowi];
                 }
@@ -391,7 +184,7 @@ void Foam::functionObjects::externalCoupled::readLines
     // Get sizes for all processors
     const globalIndex globalFaces(nRows);
 
-    PstreamBuffers pBufs(Pstream::nonBlocking);
+    PstreamBuffers pBufs(Pstream::commsTypes::nonBlocking);
 
     if (Pstream::master())
     {
@@ -399,14 +192,14 @@ void Foam::functionObjects::externalCoupled::readLines
 
         // Read line from file and send to destination processor
 
-        for (label proci = 0; proci < Pstream::nProcs(); proci++)
+        for (label proci = 0; proci < Pstream::nProcs(); ++proci)
         {
             // Number of rows to read for processor proci
-            label procNRows = globalFaces.localSize(proci);
+            const label procNRows = globalFaces.localSize(proci);
 
             UOPstream toProc(proci, pBufs);
 
-            for (label rowi = 0; rowi < procNRows; rowi++)
+            for (label rowi = 0; rowi < procNRows; ++rowi)
             {
                 // Get a line
                 do
@@ -422,7 +215,8 @@ void Foam::functionObjects::externalCoupled::readLines
                     }
 
                     masterFilePtr().getLine(line);
-                } while (line.empty() || line[0] == '#');
+                }
+                while (line.empty() || line[0] == '#');
 
                 // Send line to the destination processor
                 toProc << line;
@@ -435,7 +229,7 @@ void Foam::functionObjects::externalCoupled::readLines
 
     // Read lines from PstreamBuffers
     UIPstream str(Pstream::masterNo(), pBufs);
-    for (label rowi = 0; rowi < nRows; rowi++)
+    for (label rowi = 0; rowi < nRows; ++rowi)
     {
         string line(str);
         lines << line.c_str() << nl;
@@ -482,21 +276,19 @@ void Foam::functionObjects::externalCoupled::writeGeometry
 
     labelList pointToGlobal;
     labelList uniquePointIDs;
-    forAll(meshes, meshi)
+    for (const fvMesh& mesh : meshes)
     {
-        const fvMesh& mesh = meshes[meshi];
-
         const labelList patchIDs
         (
             mesh.boundaryMesh().patchSet
             (
-                List<wordRe>(1, groupName)
+                List<wordRe>{groupName}
             ).sortedToc()
         );
 
-        forAll(patchIDs, i)
+        for (const label patchi : patchIDs)
         {
-            const polyPatch& p = mesh.boundaryMesh()[patchIDs[i]];
+            const polyPatch& p = mesh.boundaryMesh()[patchi];
 
             mesh.globalData().mergePoints
             (
@@ -568,8 +360,8 @@ Foam::word Foam::functionObjects::externalCoupled::compositeName
     {
         if (regionNames[0] == polyMesh::defaultRegion)
         {
-            // For compatibility with single region cases suppress single
-            // region name
+            // For compatibility with single region cases
+            // - suppress single region name
             return word::null;
         }
         else
@@ -577,19 +369,17 @@ Foam::word Foam::functionObjects::externalCoupled::compositeName
             return regionNames[0];
         }
     }
-    else
+
+    // Enforce lexical ordering
+    checkOrder(regionNames);
+
+    word composite(regionNames[0]);
+    for (label i = 1; i < regionNames.size(); ++i)
     {
-        // Enforce lexical ordering
-        checkOrder(regionNames);
-
-        word composite(regionNames[0]);
-        for (label i = 1; i < regionNames.size(); i++)
-        {
-            composite += "_" + regionNames[i];
-        }
-
-        return composite;
+        composite += "_" + regionNames[i];
     }
+
+    return composite;
 }
 
 
@@ -609,201 +399,103 @@ void Foam::functionObjects::externalCoupled::checkOrder
 }
 
 
-void Foam::functionObjects::externalCoupled::readData()
+void Foam::functionObjects::externalCoupled::initCoupling()
 {
-    forAll(regionGroupNames_, regioni)
-    {
-        const word& compName = regionGroupNames_[regioni];
-        const wordList& regionNames = regionGroupRegions_[regioni];
-
-        // Get the meshes for the region-group
-        UPtrList<const fvMesh> meshes(regionNames.size());
-        forAll(regionNames, j)
-        {
-            const word& regionName = regionNames[j];
-            meshes.set(j, &time_.lookupObject<fvMesh>(regionName));
-        }
-
-        const labelList& groups = regionToGroups_[compName];
-
-        forAll(groups, i)
-        {
-            label groupi = groups[i];
-            const wordRe& groupName = groupNames_[groupi];
-            const wordList& fieldNames = groupReadFields_[groupi];
-
-            forAll(fieldNames, fieldi)
-            {
-                const word& fieldName = fieldNames[fieldi];
-
-                bool ok = readData<scalar>
-                (
-                    meshes,
-                    groupName,
-                    fieldName
-                );
-                ok = ok || readData<vector>
-                (
-                    meshes,
-                    groupName,
-                    fieldName
-                );
-                ok = ok || readData<sphericalTensor>
-                (
-                    meshes,
-                    groupName,
-                    fieldName
-                );
-                ok = ok || readData<symmTensor>
-                (
-                    meshes,
-                    groupName,
-                    fieldName
-                );
-                ok = ok || readData<tensor>
-                (
-                    meshes,
-                    groupName,
-                    fieldName
-                );
-
-                if (!ok)
-                {
-                    WarningInFunction
-                        << "Field " << fieldName << " in regions " << compName
-                        << " was not found." << endl;
-                }
-            }
-        }
-    }
-}
-
-
-void Foam::functionObjects::externalCoupled::writeData() const
-{
-    forAll(regionGroupNames_, regioni)
-    {
-        const word& compName = regionGroupNames_[regioni];
-        const wordList& regionNames = regionGroupRegions_[regioni];
-
-        // Get the meshes for the region-group
-        UPtrList<const fvMesh> meshes(regionNames.size());
-        forAll(regionNames, j)
-        {
-            const word& regionName = regionNames[j];
-            meshes.set(j, &time_.lookupObject<fvMesh>(regionName));
-        }
-
-        const labelList& groups = regionToGroups_[compName];
-
-        forAll(groups, i)
-        {
-            label groupi = groups[i];
-            const wordRe& groupName = groupNames_[groupi];
-            const wordList& fieldNames = groupWriteFields_[groupi];
-
-            forAll(fieldNames, fieldi)
-            {
-                const word& fieldName = fieldNames[fieldi];
-
-                bool ok = writeData<scalar>
-                (
-                    meshes,
-                    groupName,
-                    fieldName
-                );
-                ok = ok || writeData<vector>
-                (
-                    meshes,
-                    groupName,
-                    fieldName
-                );
-                ok = ok || writeData<sphericalTensor>
-                (
-                    meshes,
-                    groupName,
-                    fieldName
-                );
-                ok = ok || writeData<symmTensor>
-                (
-                    meshes,
-                    groupName,
-                    fieldName
-                );
-                ok = ok || writeData<tensor>
-                (
-                    meshes,
-                    groupName,
-                    fieldName
-                );
-
-                if (!ok)
-                {
-                    WarningInFunction
-                        << "Field " << fieldName << " in regions " << compName
-                        << " was not found." << endl;
-                }
-            }
-        }
-    }
-}
-
-
-void Foam::functionObjects::externalCoupled::initialise()
-{
-    if (initialised_)
+    if (initialisedCoupling_)
     {
         return;
     }
 
     // Write the geometry if not already there
-    forAll(regionGroupRegions_, i)
+    forAll(regionGroupNames_, regioni)
     {
-        const word& compName = regionGroupNames_[i];
-        const wordList& regionNames = regionGroupRegions_[i];
+        const word& compName = regionGroupNames_[regioni];
+        const wordList& regionNames = regionGroupRegions_[regioni];
 
         // Get the meshes for the region-group
         UPtrList<const fvMesh> meshes(regionNames.size());
-        forAll(regionNames, j)
+        forAll(regionNames, regi)
         {
-            const word& regionName = regionNames[j];
-            meshes.set(j, &time_.lookupObject<fvMesh>(regionName));
+            meshes.set(regi, time_.lookupObjectPtr<fvMesh>(regionNames[regi]));
         }
 
         const labelList& groups = regionToGroups_[compName];
 
-        forAll(groups, i)
+        for (const label groupi : groups)
         {
-            label groupi = groups[i];
             const wordRe& groupName = groupNames_[groupi];
 
-            bool exists = false;
+            bool geomExists = false;
             if (Pstream::master())
             {
-                fileName dir(groupDir(commsDir_, compName, groupName));
+                fileName dir(groupDir(commDirectory(), compName, groupName));
 
-                exists =
+                geomExists =
                     isFile(dir/"patchPoints")
                  || isFile(dir/"patchFaces");
             }
 
-            if (!returnReduce(exists, orOp<bool>()))
+            Pstream::scatter(geomExists);
+
+            if (!geomExists)
             {
-                writeGeometry(meshes, commsDir_, groupName);
+                writeGeometry(meshes, commDirectory(), groupName);
             }
         }
     }
 
-    if (initByExternal_)
+    if (slaveFirst())
     {
         // Wait for initial data to be made available
         waitForSlave();
 
         // Read data passed back from external source
-        readData();
+        readDataMaster();
     }
 
-    initialised_ = true;
+    initialisedCoupling_ = true;
+}
+
+
+void Foam::functionObjects::externalCoupled::performCoupling()
+{
+    // Ensure coupling has been initialised
+    initCoupling();
+
+    // Write data for external source
+    writeDataMaster();
+
+    // Signal external source to execute (by removing lock file)
+    // - Wait for slave to provide data
+    useSlave();
+
+    // Wait for response - and catch any abort information sent from slave
+    const auto action = waitForSlave();
+
+    // Remove old data files from OpenFOAM
+    removeDataMaster();
+
+    // Read data passed back from external source
+    readDataMaster();
+
+    // Signal external source to wait (by creating the lock file)
+    useMaster();
+
+    // Update information about last triggering
+    lastTrigger_ = time_.timeIndex();
+
+    // Process any abort information sent from slave
+    if
+    (
+        action != time_.stopAt()
+     && action != Time::stopAtControls::saUnknown
+    )
+    {
+        Info<< type() << ": slave requested action "
+            << Time::stopAtControlNames[action] << endl;
+
+        time_.stopAt(action);
+    }
 }
 
 
@@ -817,29 +509,18 @@ Foam::functionObjects::externalCoupled::externalCoupled
 )
 :
     functionObject(name),
+    externalFileCoupler(),
     time_(runTime),
-    stateEnd_(REMOVE),
-    initialised_(false)
+    calcFrequency_(-1),
+    lastTrigger_(-1),
+    initialisedCoupling_(false)
 {
     read(dict);
 
-    if (Pstream::master())
-    {
-        mkDir(baseDir());
-    }
-
-    if (!initByExternal_)
+    if (!slaveFirst())
     {
         useMaster();
     }
-}
-
-
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-Foam::functionObjects::externalCoupled::~externalCoupled()
-{
-    cleanup();
 }
 
 
@@ -847,36 +528,25 @@ Foam::functionObjects::externalCoupled::~externalCoupled()
 
 bool Foam::functionObjects::externalCoupled::execute()
 {
-    if (!initialised_ || time_.timeIndex() % calcFrequency_ == 0)
+    // Not initialized or overdue
+    if
+    (
+        !initialisedCoupling_
+     || (time_.timeIndex() >= lastTrigger_ + calcFrequency_)
+    )
     {
-        // Initialise the coupling
-        initialise();
-
-        // Write data for external source
-        writeData();
-
-        // Signal external source to execute (by removing lock file)
-        // - Wait for slave to provide data
-        useSlave();
-
-        // Wait for response
-        waitForSlave();
-
-        // Remove old data files from OpenFOAM
-        removeWriteFiles();
-
-        // Read data passed back from external source
-        readData();
-
-        // Signal external source to wait (by creating the lock file)
-        useMaster();
-
-        return true;
+        performCoupling();
     }
-    else
-    {
-        return false;
-    }
+
+    return false;
+}
+
+
+bool Foam::functionObjects::externalCoupled::execute(const label subIndex)
+{
+    performCoupling();
+
+    return true;
 }
 
 
@@ -885,11 +555,9 @@ bool Foam::functionObjects::externalCoupled::end()
     functionObject::end();
 
     // Remove old data files
-    removeReadFiles();
-    removeWriteFiles();
-    cleanup();
-
-    stateEnd_ = IGNORE;   // Avoid running cleanup() again in destructor
+    removeDataMaster();
+    removeDataSlave();
+    shutdown();
 
     return true;
 }
@@ -898,26 +566,17 @@ bool Foam::functionObjects::externalCoupled::end()
 bool Foam::functionObjects::externalCoupled::read(const dictionary& dict)
 {
     functionObject::read(dict);
+    externalFileCoupler::readDict(dict);
 
-    calcFrequency_  = dict.lookupOrDefault("calcFrequency", 1);
+    calcFrequency_ = dict.lookupOrDefault("calcFrequency", 1);
 
-    dict.lookup("commsDir") >> commsDir_;
-    commsDir_.expand();
-    commsDir_.clean();
-
-    waitInterval_   = dict.lookupOrDefault("waitInterval", 1);
-    timeOut_        = dict.lookupOrDefault("timeOut", 100*waitInterval_);
-    initByExternal_ = readBool(dict.lookup("initByExternal"));
-    // initByExternal_ = dict.lookupOrDefault<Switch>("initByExternal", false);
-    stateEnd_       =
-        stateEndNames_[dict.lookupOrDefault<word>("stateEnd", "remove")];
-
+    // Leave trigger intact
 
     // Get names of all fvMeshes (and derived types)
     wordList allRegionNames(time_.lookupClass<fvMesh>().sortedToc());
 
     const dictionary& allRegionsDict = dict.subDict("regions");
-    forAllConstIter(dictionary, allRegionsDict, iter)
+    forAllConstIters(allRegionsDict, iter)
     {
         if (!iter().isDict())
         {
@@ -936,8 +595,7 @@ bool Foam::functionObjects::externalCoupled::read(const dictionary& dict)
         regionGroupNames_.append(compositeName(regionNames));
         regionGroupRegions_.append(regionNames);
 
-
-        forAllConstIter(dictionary, regionDict, regionIter)
+        forAllConstIters(regionDict, regionIter)
         {
             if (!regionIter().isDict())
             {
@@ -948,15 +606,12 @@ bool Foam::functionObjects::externalCoupled::read(const dictionary& dict)
             const wordRe groupName(regionIter().keyword());
             const dictionary& groupDict = regionIter().dict();
 
-            label nGroups = groupNames_.size();
+            const label nGroups = groupNames_.size();
             const wordList readFields(groupDict.lookup("readFields"));
             const wordList writeFields(groupDict.lookup("writeFields"));
 
-            HashTable<labelList>::iterator fnd = regionToGroups_.find
-            (
-                regionGroupNames_.last()
-            );
-            if (fnd != regionToGroups_.end())
+            auto fnd = regionToGroups_.find(regionGroupNames_.last());
+            if (fnd.found())
             {
                 fnd().append(nGroups);
             }
@@ -965,7 +620,7 @@ bool Foam::functionObjects::externalCoupled::read(const dictionary& dict)
                 regionToGroups_.insert
                 (
                     regionGroupNames_.last(),
-                    labelList(1, nGroups)
+                    labelList{nGroups}
                 );
             }
             groupNames_.append(groupName);
@@ -976,27 +631,23 @@ bool Foam::functionObjects::externalCoupled::read(const dictionary& dict)
 
 
     Info<< type() << ": Communicating with regions:" << endl;
-    forAll(regionGroupNames_, rgi)
+    for (const word& compName : regionGroupNames_)
     {
-        //const wordList& regionNames = regionGroupRegions_[rgi];
-        const word& compName = regionGroupNames_[rgi];
-
-        Info<< "Region: " << compName << endl << incrIndent;
+        Info<< "Region: " << compName << nl << incrIndent;
         const labelList& groups = regionToGroups_[compName];
-        forAll(groups, i)
+        for (const label groupi : groups)
         {
-            label groupi = groups[i];
             const wordRe& groupName = groupNames_[groupi];
 
             Info<< indent << "patchGroup: " << groupName << "\t"
-                << endl
+                << nl
                 << incrIndent
                 << indent << "Reading fields: "
                 << groupReadFields_[groupi]
-                << endl
+                << nl
                 << indent << "Writing fields: "
                 << groupWriteFields_[groupi]
-                << endl
+                << nl
                 << decrIndent;
         }
         Info<< decrIndent;
@@ -1008,17 +659,15 @@ bool Foam::functionObjects::externalCoupled::read(const dictionary& dict)
     //       should already be written - but just make sure
     if (Pstream::master())
     {
-        forAll(regionGroupNames_, rgi)
+        for (const word& compName : regionGroupNames_)
         {
-            const word& compName = regionGroupNames_[rgi];
-
             const labelList& groups = regionToGroups_[compName];
-            forAll(groups, i)
+            for (const label groupi : groups)
             {
-                label groupi = groups[i];
                 const wordRe& groupName = groupNames_[groupi];
 
-                fileName dir(groupDir(commsDir_, compName, groupName));
+                fileName dir(groupDir(commDirectory(), compName, groupName));
+
                 if (!isDir(dir))
                 {
                     Log << type() << ": creating communications directory "
@@ -1030,6 +679,154 @@ bool Foam::functionObjects::externalCoupled::read(const dictionary& dict)
     }
 
     return true;
+}
+
+
+void Foam::functionObjects::externalCoupled::readDataMaster()
+{
+    forAll(regionGroupNames_, regioni)
+    {
+        const word& compName = regionGroupNames_[regioni];
+        const wordList& regionNames = regionGroupRegions_[regioni];
+
+        // Get the meshes for the region-group
+        UPtrList<const fvMesh> meshes(regionNames.size());
+        forAll(regionNames, regi)
+        {
+            meshes.set(regi, time_.lookupObjectPtr<fvMesh>(regionNames[regi]));
+        }
+
+        const labelList& groups = regionToGroups_[compName];
+
+        for (const label groupi : groups)
+        {
+            const wordRe& groupName = groupNames_[groupi];
+            const wordList& fieldNames = groupReadFields_[groupi];
+
+            for (const word& fieldName : fieldNames)
+            {
+                const bool ok =
+                (
+                    readData<scalar>(meshes, groupName, fieldName)
+                 || readData<vector>(meshes, groupName, fieldName)
+                 || readData<sphericalTensor>(meshes, groupName, fieldName)
+                 || readData<symmTensor>(meshes, groupName, fieldName)
+                 || readData<tensor>(meshes, groupName, fieldName)
+                );
+
+                if (!ok)
+                {
+                    WarningInFunction
+                        << "Field " << fieldName << " in regions " << compName
+                        << " was not found." << endl;
+                }
+            }
+        }
+    }
+}
+
+
+void Foam::functionObjects::externalCoupled::writeDataMaster() const
+{
+    forAll(regionGroupNames_, regioni)
+    {
+        const word& compName = regionGroupNames_[regioni];
+        const wordList& regionNames = regionGroupRegions_[regioni];
+
+        // Get the meshes for the region-group
+        UPtrList<const fvMesh> meshes(regionNames.size());
+        forAll(regionNames, regi)
+        {
+            meshes.set(regi, time_.lookupObjectPtr<fvMesh>(regionNames[regi]));
+        }
+
+        const labelList& groups = regionToGroups_[compName];
+
+        for (const label groupi : groups)
+        {
+            const wordRe& groupName = groupNames_[groupi];
+            const wordList& fieldNames = groupWriteFields_[groupi];
+
+            for (const word& fieldName : fieldNames)
+            {
+                const bool ok =
+                (
+                    writeData<scalar>(meshes, groupName, fieldName)
+                 || writeData<vector>(meshes, groupName, fieldName)
+                 || writeData<sphericalTensor>(meshes, groupName, fieldName)
+                 || writeData<symmTensor>(meshes, groupName, fieldName)
+                 || writeData<tensor>(meshes, groupName, fieldName)
+                );
+
+                if (!ok)
+                {
+                    WarningInFunction
+                        << "Field " << fieldName << " in regions " << compName
+                        << " was not found." << endl;
+                }
+            }
+        }
+    }
+}
+
+
+void Foam::functionObjects::externalCoupled::removeDataMaster() const
+{
+    if (!Pstream::master())
+    {
+        return;
+    }
+
+    Log << type() << ": removing data files written by master" << nl;
+
+    for (const word& compName : regionGroupNames_)
+    {
+        const labelList& groups = regionToGroups_[compName];
+        for (const label groupi : groups)
+        {
+            const wordRe& groupName = groupNames_[groupi];
+            const wordList& fieldNames = groupReadFields_[groupi];
+
+            for (const word& fieldName : fieldNames)
+            {
+                Foam::rm
+                (
+                    groupDir(commDirectory(), compName, groupName)
+                  / fieldName + ".out"
+                );
+            }
+        }
+    }
+}
+
+
+void Foam::functionObjects::externalCoupled::removeDataSlave() const
+{
+    if (!Pstream::master())
+    {
+        return;
+    }
+
+    Log << type() << ": removing data files written by slave" << nl;
+
+    for (const word& compName : regionGroupNames_)
+    {
+        const labelList& groups = regionToGroups_[compName];
+        for (const label groupi : groups)
+        {
+            const wordRe& groupName = groupNames_[groupi];
+            const wordList& fieldNames = groupReadFields_[groupi];
+
+            for (const word& fieldName : fieldNames)
+            {
+                Foam::rm
+                (
+                    groupDir(commDirectory(), compName, groupName)
+                  / fieldName + ".in"
+                );
+            }
+        }
+    }
 }
 
 

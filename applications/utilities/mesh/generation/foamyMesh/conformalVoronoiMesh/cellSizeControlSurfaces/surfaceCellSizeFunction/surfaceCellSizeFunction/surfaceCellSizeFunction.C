@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2012-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2012-2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -34,6 +34,7 @@ namespace Foam
     defineRunTimeSelectionTable(surfaceCellSizeFunction, dictionary);
 }
 
+
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 Foam::surfaceCellSizeFunction::surfaceCellSizeFunction
@@ -46,7 +47,7 @@ Foam::surfaceCellSizeFunction::surfaceCellSizeFunction
 :
     dictionary(surfaceCellSizeFunctionDict),
     surface_(surface),
-    coeffsDict_(subDict(type + "Coeffs")),
+    coeffsDict_(optionalSubDict(type + "Coeffs")),
     defaultCellSize_(defaultCellSize),
     refinementFactor_
     (
@@ -64,25 +65,23 @@ Foam::autoPtr<Foam::surfaceCellSizeFunction> Foam::surfaceCellSizeFunction::New
     const scalar& defaultCellSize
 )
 {
-    word surfaceCellSizeFunctionTypeName
+    const word functionName
     (
         surfaceCellSizeFunctionDict.lookup("surfaceCellSizeFunction")
     );
 
     Info<< indent << "Selecting surfaceCellSizeFunction "
-        << surfaceCellSizeFunctionTypeName << endl;
+        << functionName << endl;
 
-    dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(surfaceCellSizeFunctionTypeName);
+    auto cstrIter = dictionaryConstructorTablePtr_->cfind(functionName);
 
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    if (!cstrIter.found())
     {
         FatalErrorInFunction
             << "Unknown surfaceCellSizeFunction type "
-            << surfaceCellSizeFunctionTypeName
-            << endl << endl
-            << "Valid surfaceCellSizeFunction types are :" << endl
-            << dictionaryConstructorTablePtr_->toc()
+            << functionName << nl << nl
+            << "Valid surfaceCellSizeFunction types :" << endl
+            << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
 

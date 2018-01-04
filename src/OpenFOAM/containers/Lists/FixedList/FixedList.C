@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -26,19 +26,86 @@ License
 #include "FixedList.H"
 #include "ListLoopM.H"
 
-// * * * * * * * * * * * * * * STL Member Functions  * * * * * * * * * * * * //
+// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class T, unsigned Size>
-void Foam::FixedList<T, Size>::swap(FixedList<T, Size>& a)
+Foam::label Foam::FixedList<T, Size>::find
+(
+    const T& val,
+    const label start
+) const
 {
-    List_ACCESS(T, (*this), vp);
-    List_ACCESS(T, a, ap);
-    T tmp;
-    List_FOR_ALL((*this), i)
-        tmp = List_CELEM((*this), vp, i);
-        List_ELEM((*this), vp, i) = List_CELEM(a, ap, i);
-        List_ELEM(a, ap, i) = tmp;
-    List_END_FOR_ALL
+    if (start >= 0)
+    {
+        List_CONST_ACCESS(T, *this, lst);
+
+        for (label i = start; i < label(Size); ++i)
+        {
+            if (lst[i] == val)
+            {
+                return i;
+            }
+        }
+    }
+
+    return -1;
+}
+
+
+template<class T, unsigned Size>
+void Foam::FixedList<T, Size>::swap(FixedList<T, Size>& lst)
+{
+    Foam::Swap(v_, lst.v_);
+}
+
+
+template<class T, unsigned Size>
+void Foam::FixedList<T, Size>::moveFirst(const label i)
+{
+    checkIndex(i);
+
+    for (label lower = 0; lower < i; ++lower)
+    {
+        Foam::Swap(v_[lower], v_[i]);
+    }
+}
+
+
+template<class T, unsigned Size>
+void Foam::FixedList<T, Size>::moveLast(const label i)
+{
+    checkIndex(i);
+
+    for (label upper = label(Size - 1); upper > i; --upper)
+    {
+        Foam::Swap(v_[i], v_[upper]);
+    }
+}
+
+
+template<class T, unsigned Size>
+void Foam::FixedList<T, Size>::swapFirst(const label i)
+{
+    checkIndex(i);
+
+    if (i > 0)
+    {
+        Foam::Swap(v_[0], v_[i]);
+    }
+}
+
+
+template<class T, unsigned Size>
+void Foam::FixedList<T, Size>::swapLast(const label i)
+{
+    checkIndex(i);
+
+    const label upper = label(Size - 1);
+
+    if (i < upper)
+    {
+        Foam::Swap(v_[i], v_[upper]);
+    }
 }
 
 
@@ -52,9 +119,11 @@ bool Foam::FixedList<T, Size>::operator==(const FixedList<T, Size>& a) const
     List_CONST_ACCESS(T, (*this), vp);
     List_CONST_ACCESS(T, (a), ap);
 
-    List_FOR_ALL((*this), i)
-        equal = equal && (List_ELEM((*this), vp, i) == List_ELEM((a), ap, i));
-    List_END_FOR_ALL
+    for (unsigned i = 0; i < Size; ++i)
+    {
+        equal = (vp[i] == ap[i]);
+        if (!equal) break;
+    }
 
     return equal;
 }
@@ -70,31 +139,24 @@ bool Foam::FixedList<T, Size>::operator!=(const FixedList<T, Size>& a) const
 template<class T, unsigned Size>
 bool Foam::FixedList<T, Size>::operator<(const FixedList<T, Size>& a) const
 {
-    for
-    (
-        const_iterator vi = cbegin(), ai = a.cbegin();
-        vi < cend() && ai < a.cend();
-        vi++, ai++
-    )
+    List_CONST_ACCESS(T, *this, ptr1);
+    List_CONST_ACCESS(T, a, ptr2);
+
+    for (unsigned i=0; i<Size; ++i)
     {
-        if (*vi < *ai)
+        if (ptr1[i] < ptr2[i])
         {
             return true;
         }
-        else if (*vi > *ai)
+        else if (ptr1[i] > ptr2[i])
         {
             return false;
         }
     }
 
-    if (Size < a.Size)
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    // Contents look to be identical.
+    // The sizes are identical by definition (template parameter)
+    return false;
 }
 
 

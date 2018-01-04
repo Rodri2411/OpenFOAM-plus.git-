@@ -95,7 +95,7 @@ Foam::Ostream& Foam::operator<<(Ostream& os, const wchar_t wc)
         os.write(char(0xBD));
     }
 
-    os.check("Ostream& operator<<(Ostream&, const wchar_t)");
+    os.check(FUNCTION_NAME);
     return os;
 }
 
@@ -116,12 +116,7 @@ Foam::Ostream& Foam::operator<<(Ostream& os, const wchar_t* wstr)
 
 Foam::Ostream& Foam::operator<<(Ostream& os, const std::wstring& wstr)
 {
-    for
-    (
-        std::wstring::const_iterator iter = wstr.begin();
-        iter != wstr.end();
-        ++iter
-    )
+    for (auto iter = wstr.cbegin(); iter != wstr.cend(); ++iter)
     {
         os  << *iter;
     }

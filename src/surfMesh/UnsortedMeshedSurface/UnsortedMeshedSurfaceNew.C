@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -24,28 +24,33 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "UnsortedMeshedSurface.H"
+#include "ListOps.H"
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class Face>
 Foam::autoPtr<Foam::UnsortedMeshedSurface<Face>>
-Foam::UnsortedMeshedSurface<Face>::New(const fileName& name, const word& ext)
+Foam::UnsortedMeshedSurface<Face>::New
+(
+    const fileName& name,
+    const word& ext
+)
 {
     if (debug)
     {
         InfoInFunction << "Constructing UnsortedMeshedSurface" << endl;
     }
 
-    typename fileExtensionConstructorTable::iterator cstrIter =
-        fileExtensionConstructorTablePtr_->find(ext);
+    auto cstrIter = fileExtensionConstructorTablePtr_->cfind(ext);
 
-    if (cstrIter == fileExtensionConstructorTablePtr_->end())
+    if (!cstrIter.found())
     {
-        // no direct reader, use the parent if possible
-        wordHashSet supported = ParentType::readTypes();
-        if (supported.found(ext))
+        // No direct reader, delegate to parent if possible
+        const wordHashSet& delegate = ParentType::readTypes();
+
+        if (delegate.found(ext))
         {
-            // create indirectly
+            // Create indirectly
             autoPtr<UnsortedMeshedSurface<Face>> surf
             (
                 new UnsortedMeshedSurface<Face>
@@ -54,15 +59,14 @@ Foam::UnsortedMeshedSurface<Face>::New(const fileName& name, const word& ext)
 
             return surf;
         }
-
-        // nothing left but to issue an error
-        supported += readTypes();
-
-        FatalErrorInFunction
-            << "Unknown file extension " << ext << nl << nl
-            << "Valid types are:" << nl
-            << supported
-            << exit(FatalError);
+        else
+        {
+            FatalErrorInFunction
+                << "Unknown file extension " << ext << nl << nl
+                << "Valid types:" << nl
+                << flatOutput((delegate | readTypes()).sortedToc()) << nl
+                << exit(FatalError);
+        }
     }
 
     return autoPtr<UnsortedMeshedSurface<Face>>(cstrIter()(name));

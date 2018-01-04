@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
      \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
@@ -42,31 +42,6 @@ namespace regionModels
 // * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * * //
 
 void Foam::regionModels::regionModel::constructMeshObjects()
-{
-    // construct region mesh
-    if (!time_.foundObject<fvMesh>(regionName_))
-    {
-        regionMeshPtr_.reset
-        (
-            new fvMesh
-            (
-                IOobject
-                (
-                    regionName_,
-                    time_.timeName(),
-                    time_,
-                    IOobject::MUST_READ
-                )
-            )
-        );
-    }
-}
-
-
-void Foam::regionModels::regionModel::constructMeshObjects
-(
-    const dictionary& dict
-)
 {
     // construct region mesh
     if (!time_.foundObject<fvMesh>(regionName_))
@@ -219,7 +194,7 @@ Foam::regionModels::regionModel::interRegionAMI
     const bool flip
 ) const
 {
-    label nbrRegionID = findIndex(interRegionAMINames_, nbrRegion.name());
+    label nbrRegionID = interRegionAMINames_.find(nbrRegion.name());
 
     const fvMesh& nbrRegionMesh = nbrRegion.regionMesh();
 
@@ -484,7 +459,7 @@ Foam::regionModels::regionModel::regionModel
 {
     if (active_)
     {
-        constructMeshObjects(dict);
+        constructMeshObjects();
         initialise();
 
         if (readFields)
@@ -530,7 +505,8 @@ void Foam::regionModels::regionModel::evolve()
             (
                 IOstream::ASCII,
                 IOstream::currentVersion,
-                time_.writeCompression()
+                time_.writeCompression(),
+                true
             );
         }
     }
@@ -544,9 +520,7 @@ void Foam::regionModels::regionModel::preEvolveRegion()
 
 
 void Foam::regionModels::regionModel::evolveRegion()
-{
-    // do nothing
-}
+{}
 
 
 void Foam::regionModels::regionModel::postEvolveRegion()
@@ -556,9 +530,7 @@ void Foam::regionModels::regionModel::postEvolveRegion()
 
 
 void Foam::regionModels::regionModel::info()
-{
-    // do nothing
-}
+{}
 
 
 // ************************************************************************* //
