@@ -25,6 +25,7 @@ License
 
 #include "cyclicFvPatchField.H"
 #include "transformField.H"
+#include "lduPrimitiveMesh.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -203,8 +204,14 @@ void Foam::cyclicFvPatchField<Type>::updateInterfaceMatrix
     const Pstream::commsTypes
 ) const
 {
-    const labelUList& nbrFaceCells =
-        cyclicPatch().cyclicPatch().neighbPatch().faceCells();
+    //const labelUList& nbrFaceCells =
+    //    cyclicPatch().cyclicPatch().neighbPatch().faceCells();
+
+    label nbrPathid = this->cyclicPatch().neighbPatchID();
+
+    const labelList& nbrFaceCells =
+            cyclicPatch().boundaryMesh().mesh().lduAddr().patchAddr(nbrPathid);
+
 
     Field<Type> pnf(psiInternal, nbrFaceCells);
 

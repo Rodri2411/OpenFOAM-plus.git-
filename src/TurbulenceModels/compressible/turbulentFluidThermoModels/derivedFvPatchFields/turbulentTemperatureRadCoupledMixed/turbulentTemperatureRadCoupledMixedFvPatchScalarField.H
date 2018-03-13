@@ -199,6 +199,17 @@ public:
 
         //- Write
         virtual void write(Ostream&) const;
+
+        // Access Functions
+
+            //- Return local alphaDelta
+            tmp<scalarField> alphaSfDelta() const;
+
+            //- Return local nbr alphaDelta
+            //tmp<scalarField> alphaDeltaNbr() const;
+
+            //- Return delta enthalpy reference between regions
+            tmp<scalarField> deltaH() const;
 };
 
 

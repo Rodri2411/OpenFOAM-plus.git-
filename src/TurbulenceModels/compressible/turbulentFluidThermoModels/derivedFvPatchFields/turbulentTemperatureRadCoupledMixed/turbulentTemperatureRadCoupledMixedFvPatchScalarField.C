@@ -337,6 +337,90 @@ void turbulentTemperatureRadCoupledMixedFvPatchScalarField::updateCoeffs()
 }
 
 
+tmp<scalarField>
+turbulentTemperatureRadCoupledMixedFvPatchScalarField::alphaSfDelta() const
+{
+    const polyMesh& mesh = patch().boundaryMesh().mesh();
+
+    const basicThermo* thermo =
+        mesh.lookupObjectPtr<basicThermo>(basicThermo::dictName);
+
+    const label patchi = patch().index();
+
+    if (thermo)
+    {
+        const scalarField& alphap = thermo->alpha(patchi);
+        return tmp<scalarField>(alphap*patch().deltaCoeffs()*patch().magSf());
+    }
+
+    return tmp<scalarField>();
+}
+
+/*
+tmp<scalarField>
+turbulentTemperatureRadCoupledMixedFvPatchScalarField::alphaDeltaNbr() const
+{
+    const mappedPatchBase& mpp =
+        refCast<const mappedPatchBase>(patch().patch());
+
+    const label samplePatchi = mpp.samplePolyPatch().index();
+    const polyMesh& nbrMesh = mpp.sampleMesh();
+
+    const basicThermo* thermo =
+        nbrMesh.lookupObjectPtr<basicThermo>(basicThermo::dictName);
+
+
+
+    scalarField KDeltaNbr;
+    KDeltaNbr = nbrField.kappa(nbrField)*nbrPatch.deltaCoeffs();
+    mpp.distribute(KDeltaNbr);
+
+    return tmp<scalarField>(KDeltaNbr);
+}
+*/
+
+tmp<scalarField>
+turbulentTemperatureRadCoupledMixedFvPatchScalarField::deltaH() const
+{
+
+    const mappedPatchBase& mpp =
+        refCast<const mappedPatchBase>(patch().patch());
+
+    const polyMesh& nbrMesh = mpp.sampleMesh();
+
+    const basicThermo* nbrThermo =
+            nbrMesh.lookupObjectPtr<basicThermo>(basicThermo::dictName);
+
+    const polyMesh& mesh = patch().boundaryMesh().mesh();
+
+    const basicThermo* localThermo =
+                mesh.lookupObjectPtr<basicThermo>(basicThermo::dictName);
+
+
+    if (nbrThermo && localThermo)
+    {
+        const label patchi = patch().index();
+        const scalarField& pp = localThermo->p().boundaryField()[patchi];
+        const scalarField& Tp = *this;
+
+        const mappedPatchBase& mpp =
+            refCast<const mappedPatchBase>(patch().patch());
+
+        const label patchiNrb = mpp.samplePolyPatch().index();
+        const scalarField& ppNbr = nbrThermo->p().boundaryField()[patchiNrb];
+
+        return
+        (
+            localThermo->he(pp, Tp, patchi)
+          - nbrThermo->he(ppNbr, Tp, patchiNrb)
+        );
+    }
+
+    return tmp<scalarField>(0);
+}
+
+
+
 void turbulentTemperatureRadCoupledMixedFvPatchScalarField::write
 (
     Ostream& os
