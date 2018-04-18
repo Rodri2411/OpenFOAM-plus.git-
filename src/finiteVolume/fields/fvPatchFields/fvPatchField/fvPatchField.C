@@ -360,6 +360,18 @@ void Foam::fvPatchField<Type>::manipulateMatrix
 
 
 template<class Type>
+void Foam::fvPatchField<Type>::manipulateMatrix
+(
+    fvMatrixAssemble& matrix,
+    const labelList& faceMap,
+    const label cellOffSet
+)
+{
+    NotImplemented;
+}
+
+
+template<class Type>
 void Foam::fvPatchField<Type>::write(Ostream& os) const
 {
     os.writeEntry("type", type());

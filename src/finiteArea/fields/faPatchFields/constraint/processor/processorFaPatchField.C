@@ -191,6 +191,8 @@ void Foam::processorFaPatchField<Type>::initInterfaceMatrixUpdate
 (
     scalarField& result,
     const bool add,
+    const lduAddressing& lduAddr,
+    const label patchId,
     const scalarField& psiInternal,
     const scalarField& coeffs,
     const direction,
@@ -210,6 +212,8 @@ void Foam::processorFaPatchField<Type>::updateInterfaceMatrix
 (
     scalarField& result,
     const bool add,
+    const lduAddressing& lduAddr,
+    const label patchId,
     const scalarField&,
     const scalarField& coeffs,
     const direction cmpt,
@@ -250,6 +254,8 @@ void Foam::processorFaPatchField<Type>::initInterfaceMatrixUpdate
 (
     Field<Type>& result,
     const bool add,
+    const lduAddressing& lduAddr,
+    const label patchId,
     const Field<Type>& psiInternal,
     const scalarField& coeffs,
     const Pstream::commsTypes commsType
@@ -268,6 +274,8 @@ void Foam::processorFaPatchField<Type>::updateInterfaceMatrix
 (
     Field<Type>& result,
     const bool add,
+    const lduAddressing& lduAddr,
+    const label patchId,
     const Field<Type>&,
     const scalarField& coeffs,
     const Pstream::commsTypes commsType

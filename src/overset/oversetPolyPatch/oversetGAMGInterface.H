@@ -123,6 +123,16 @@ public:
             ) const;
 
 
+            //- Transfer and return internal field adjacent to the interface
+            //  using faceCells
+            virtual tmp<labelField> internalFieldTransfer
+            (
+                const Pstream::commsTypes commsType,
+                const labelUList& iF,
+                const labelUList& faceCells
+            ) const;
+
+
         //- Overset interface functions
 
             //- Name of lduInterface

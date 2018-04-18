@@ -43,14 +43,19 @@ void Foam::jumpCyclicAMIFvPatchField<scalar>::updateInterfaceMatrix
 (
     scalarField& result,
     const bool add,
+    const lduAddressing& lduAddr,
+    const label patchId,
     const scalarField& psiInternal,
     const scalarField& coeffs,
     const direction cmpt,
     const Pstream::commsTypes
 ) const
 {
-    const labelUList& nbrFaceCells =
-        this->cyclicAMIPatch().cyclicAMIPatch().neighbPatch().faceCells();
+    //const labelUList& nbrFaceCells =
+    //    this->cyclicAMIPatch().cyclicAMIPatch().neighbPatch().faceCells();
+
+    label nbrPathid = this->cyclicAMIPatch().neighbPatchID();
+    const labelUList& nbrFaceCells = lduAddr.patchAddr(nbrPathid);
 
     scalarField pnf(psiInternal, nbrFaceCells);
 
@@ -72,8 +77,11 @@ void Foam::jumpCyclicAMIFvPatchField<scalar>::updateInterfaceMatrix
     // Transform according to the transformation tensors
     this->transformCoupleField(pnf, cmpt);
 
+    const labelUList& faceCells = lduAddr.patchAddr(patchId);
+
+
     // Multiply the field by coefficients and add into the result
-    this->addToInternalField(result, !add, coeffs, pnf);
+    this->addToInternalField(result, !add, faceCells, coeffs, pnf);
 }
 
 

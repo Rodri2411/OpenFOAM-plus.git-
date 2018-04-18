@@ -95,7 +95,18 @@ Foam::tmp<Foam::labelField> Foam::cyclicFvPatch::interfaceInternalField
     const labelUList& internalData
 ) const
 {
+    DebugVar("interfaceInternalField");
     return patchInternalField(internalData);
+}
+
+
+Foam::tmp<Foam::labelField> Foam::cyclicFvPatch::interfaceInternalField
+(
+    const labelUList& internalData,
+    const labelUList& faceCells
+) const
+{
+    return patchInternalField(internalData, faceCells);
 }
 
 
@@ -108,5 +119,15 @@ Foam::tmp<Foam::labelField> Foam::cyclicFvPatch::internalFieldTransfer
     return neighbFvPatch().patchInternalField(iF);
 }
 
+
+Foam::tmp<Foam::labelField> Foam::cyclicFvPatch::internalFieldTransfer
+(
+    const Pstream::commsTypes commsType,
+    const labelUList& iF,
+    const labelUList& nbrFaceCells
+) const
+{
+    return patchInternalField(iF, nbrFaceCells);
+}
 
 // ************************************************************************* //

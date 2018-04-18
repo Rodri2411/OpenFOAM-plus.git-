@@ -384,7 +384,7 @@ const Foam::GAMGAgglomeration& Foam::GAMGAgglomeration::New
 }
 
 
-Foam::autoPtr<Foam::GAMGAgglomeration> Foam::GAMGAgglomeration::New
+const Foam::GAMGAgglomeration& Foam::GAMGAgglomeration::New
 (
     const lduMesh& mesh,
     const scalarField& cellVolumes,
@@ -392,40 +392,69 @@ Foam::autoPtr<Foam::GAMGAgglomeration> Foam::GAMGAgglomeration::New
     const dictionary& controlDict
 )
 {
-    const word agglomeratorType
+    if
     (
-        controlDict.lookupOrDefault<word>("agglomerator", "faceAreaPair")
-    );
-
-    const_cast<Time&>(mesh.thisDb().time()).libs().open
-    (
-        controlDict,
-        "geometricGAMGAgglomerationLibs",
-        geometryConstructorTablePtr_
-    );
-
-    auto cstrIter = geometryConstructorTablePtr_->cfind(agglomeratorType);
-
-    if (!cstrIter.found())
-    {
-        FatalErrorInFunction
-            << "Unknown GAMGAgglomeration type "
-            << agglomeratorType << ".\n"
-            << "Valid geometric GAMGAgglomeration types :"
-            << geometryConstructorTablePtr_->sortedToc()
-            << exit(FatalError);
-    }
-
-    return autoPtr<GAMGAgglomeration>
-    (
-        cstrIter()
+        !mesh.thisDb().foundObject<GAMGAgglomeration>
         (
-            mesh,
-            cellVolumes,
-            faceAreas,
-            controlDict
+            GAMGAgglomeration::typeName
         )
-    );
+    )
+    {
+        const word agglomeratorType
+        (
+            controlDict.lookupOrDefault<word>("agglomerator", "faceAreaPair")
+        );
+
+        const_cast<Time&>(mesh.thisDb().time()).libs().open
+        (
+            controlDict,
+            "geometricGAMGAgglomerationLibs",
+            geometryConstructorTablePtr_
+        );
+
+        auto cstrIter = geometryConstructorTablePtr_->cfind(agglomeratorType);
+
+        if (!cstrIter.found())
+        {
+            FatalErrorInFunction
+                << "Unknown GAMGAgglomeration type "
+                << agglomeratorType << ".\n"
+                << "Valid geometric GAMGAgglomeration types :"
+                << geometryConstructorTablePtr_->sortedToc()
+                << exit(FatalError);
+        }
+
+        return store
+        (
+            cstrIter()
+            (
+                mesh,
+                cellVolumes,
+                faceAreas,
+                controlDict
+            ).ptr()
+        );
+
+        /*
+        return autoPtr<GAMGAgglomeration>
+        (
+            cstrIter()
+            (
+                mesh,
+                cellVolumes,
+                faceAreas,
+                controlDict
+            )
+        );
+        */
+    }
+    else
+    {
+        return mesh.thisDb().lookupObject<GAMGAgglomeration>
+        (
+            GAMGAgglomeration::typeName
+        );
+    }
 }
 
 

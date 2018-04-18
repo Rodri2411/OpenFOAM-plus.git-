@@ -188,6 +188,25 @@ Foam::tmp<Foam::labelField> Foam::cyclicGAMGInterface::internalFieldTransfer
 }
 
 
+Foam::tmp<Foam::labelField> Foam::cyclicGAMGInterface::internalFieldTransfer
+(
+    const Pstream::commsTypes,
+    const labelUList& iF,
+    const labelUList& nbrFaceCells
+) const
+{
+    tmp<labelField> tpnf(new labelField(nbrFaceCells.size()));
+    labelField& pnf = tpnf.ref();
+
+    forAll(pnf, facei)
+    {
+        pnf[facei] = iF[nbrFaceCells[facei]];
+    }
+
+    return tpnf;
+}
+
+
 void Foam::cyclicGAMGInterface::write(Ostream& os) const
 {
     GAMGInterface::write(os);

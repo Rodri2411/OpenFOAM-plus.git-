@@ -94,6 +94,13 @@ public:
 
     // Constructors
 
+
+        //- Construct from number of cells
+        lduPrimitiveMesh
+        (
+            const label nCells
+        );
+
         //- Construct from components but without interfaces. Add interfaces
         //  separately using addInterfaces
         lduPrimitiveMesh
@@ -183,6 +190,19 @@ public:
                 return interfaces_;
             }
 
+            //- Return a non-const list of pointers for each patch
+            //  with only those pointing to interfaces being set
+            virtual lduInterfacePtrsList& interfaces()
+            {
+                return interfaces_;
+            }
+
+            //- Return a non-const list of primitive interfaces
+            PtrList<const lduInterface>& primitiveInterfaces()
+            {
+                return primitiveInterfaces_;
+            }
+
             //- Return a list of pointers for each patch
             //  with only those pointing to interfaces being set
             //  (reference to cached interfaces)
@@ -205,6 +225,18 @@ public:
 
             //- Return Upper addressing
             virtual const labelUList& upperAddr() const
+            {
+                return upperAddr_;
+            }
+
+            //- Return non-const Lower addressing
+            virtual labelList& lowerAddr()
+            {
+                return lowerAddr_;
+            }
+
+            //- Return non-const Upper addressing
+            virtual labelList& upperAddr()
             {
                 return upperAddr_;
             }
@@ -261,6 +293,14 @@ public:
                 const labelUList& l,
                 const labelUList& u
             );
+
+            //- Calculate global cell-cells
+            static labelListList globalCellCells
+            (
+                const lduMesh&,
+                const globalIndex&
+            );
+
 };
 
 

@@ -28,6 +28,7 @@ License
 #include "EdgeMap.H"
 #include "labelPair.H"
 #include "processorGAMGInterface.H"
+#include "globalIndex.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -107,6 +108,145 @@ void Foam::lduPrimitiveMesh::checkUpperTriangular
             }
         }
     }
+}
+
+
+Foam::labelListList Foam::lduPrimitiveMesh::globalCellCells
+(
+    const lduMesh& mesh,
+    const globalIndex& globalNumbering
+)
+{
+    const lduAddressing& addr = mesh.lduAddr();
+    lduInterfacePtrsList interfaces = mesh.interfaces();
+
+    const label myProcID = Pstream::myProcNo(mesh.comm());
+
+    labelList globalIndices(addr.size());
+    forAll(globalIndices, celli)
+    {
+        globalIndices[celli] = globalNumbering.toGlobal(myProcID, celli);
+    }
+
+    // Get the interface cells
+    PtrList<labelList> nbrGlobalCells(interfaces.size());
+    {
+        // Initialise transfer of restrict addressing on the interface
+        forAll(interfaces, inti)
+        {
+            if (interfaces.set(inti))
+            {
+                interfaces[inti].initInternalFieldTransfer
+                (
+                    Pstream::commsTypes::nonBlocking,
+                    globalIndices
+                );
+            }
+        }
+
+        if (Pstream::parRun())
+        {
+            Pstream::waitRequests();
+        }
+
+        forAll(interfaces, inti)
+        {
+            if (interfaces.set(inti))
+            {
+                nbrGlobalCells.set
+                (
+                    inti,
+                    new labelList
+                    (
+                        interfaces[inti].internalFieldTransfer
+                        (
+                            Pstream::commsTypes::nonBlocking,
+                            globalIndices
+                        )
+                    )
+                );
+            }
+        }
+    }
+
+
+    // Scan the neighbour list to find out how many times the cell
+    // appears as a neighbour of the face. Done this way to avoid guessing
+    // and resizing list
+    labelList nNbrs(addr.size(), 0);
+
+    const labelUList& nbr = addr.upperAddr();
+    const labelUList& own = addr.lowerAddr();
+
+    {
+        forAll(nbr, facei)
+        {
+            nNbrs[nbr[facei]]++;
+            nNbrs[own[facei]]++;
+        }
+
+        forAll(interfaces, inti)
+        {
+            if (interfaces.set(inti))
+            {
+                const labelUList& faceCells = interfaces[inti].faceCells();
+
+                forAll(faceCells, i)
+                {
+                    nNbrs[faceCells[i]]++;
+                }
+            }
+        }
+    }
+
+
+    // Create cell-cells addressing
+    labelListList cellCells(addr.size());
+
+    forAll(cellCells, celli)
+    {
+        cellCells[celli].setSize(nNbrs[celli], -1);
+    }
+
+    // Reset the list of number of neighbours to zero
+    nNbrs = 0;
+
+    // Scatter the neighbour faces
+    forAll(nbr, facei)
+    {
+        label c0 = own[facei];
+        label c1 = nbr[facei];
+
+        cellCells[c0][nNbrs[c0]++] = globalIndices[c1];
+        cellCells[c1][nNbrs[c1]++] = globalIndices[c0];
+    }
+    forAll(interfaces, inti)
+    {
+        if (interfaces.set(inti))
+        {
+            const labelUList& faceCells = interfaces[inti].faceCells();
+
+            forAll(faceCells, i)
+            {
+                label c0 = faceCells[i];
+                cellCells[c0][nNbrs[c0]++] = nbrGlobalCells[inti][i];
+            }
+        }
+    }
+/*
+    forAll(cellCells, celli)
+    {
+        Foam::stableSort(cellCells[celli]);
+    }
+*/
+    // Replace the initial element (always -1) with the local cell
+/*
+    forAll(cellCells, celli)
+    {
+        cellCells[celli][0] = globalIndices[celli];
+    }
+*/
+    return cellCells;
 }
 
 
@@ -235,6 +375,20 @@ void Foam::lduPrimitiveMesh::addInterfaces
         }
     }
 }
+
+
+Foam::lduPrimitiveMesh::lduPrimitiveMesh
+(
+    const label nCells
+)
+:
+    lduAddressing(nCells),
+    lowerAddr_(0),
+    upperAddr_(0),
+    primitiveInterfaces_(0),
+    patchSchedule_(0),
+    comm_(0)
+{}
 
 
 Foam::lduPrimitiveMesh::lduPrimitiveMesh

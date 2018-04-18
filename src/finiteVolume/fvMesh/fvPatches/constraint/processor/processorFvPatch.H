@@ -157,6 +157,14 @@ public:
                 const labelUList& internalData
             ) const;
 
+            //- Return the values of the given internal data adjacent to
+            //  the interface as a field using a mapping faceCell
+            virtual tmp<labelField> interfaceInternalField
+            (
+                const labelUList& internalData,
+                const labelUList& faceCell
+            ) const;
+
             //- Inherit initInternalFieldTransfer from coupledFvPatch
             using coupledFvPatch::initInternalFieldTransfer;
 
@@ -167,11 +175,27 @@ public:
                 const labelUList& internalData
             ) const;
 
+            //- Initialise neighbour field transfer using faceCells map
+            virtual void initInternalFieldTransfer
+            (
+                const Pstream::commsTypes commsType,
+                const labelUList& iF,
+                const labelUList& faceCell
+            ) const;
+
             //- Return neighbour field
             virtual tmp<labelField> internalFieldTransfer
             (
                 const Pstream::commsTypes commsType,
                 const labelUList& internalData
+            ) const;
+
+            //- Return neighbour field
+            virtual tmp<labelField> internalFieldTransfer
+            (
+                const Pstream::commsTypes commsType,
+                const labelUList& iF,
+                const labelUList& faceCells
             ) const;
 };
 

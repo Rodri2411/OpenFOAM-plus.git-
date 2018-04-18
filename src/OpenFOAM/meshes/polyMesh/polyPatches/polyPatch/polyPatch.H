@@ -228,6 +228,15 @@ public:
         //- Construct as copy
         polyPatch(const polyPatch&);
 
+        //- Construct as copy and resetting faceCells
+        polyPatch(const polyPatch&, const labelList& faceCells);
+
+        //- Construct and return a clone, resetting faceCells
+        virtual autoPtr<polyPatch> clone(const labelList& faceCells) const
+        {
+            return autoPtr<polyPatch>(new polyPatch(*this, faceCells));
+        }
+
         //- Construct and return a clone, resetting the boundary mesh
         virtual autoPtr<polyPatch> clone(const polyBoundaryMesh& bm) const
         {

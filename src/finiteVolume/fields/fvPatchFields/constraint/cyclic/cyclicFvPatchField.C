@@ -130,7 +130,6 @@ Foam::cyclicFvPatchField<Type>::patchNeighbourField() const
     tmp<Field<Type>> tpnf(new Field<Type>(this->size()));
     Field<Type>& pnf = tpnf.ref();
 
-
     if (doTransform())
     {
         forAll(pnf, facei)
@@ -175,22 +174,27 @@ void Foam::cyclicFvPatchField<Type>::updateInterfaceMatrix
 (
     scalarField& result,
     const bool add,
+    const lduAddressing& lduAddr,
+    const label patchId,
     const scalarField& psiInternal,
     const scalarField& coeffs,
     const direction cmpt,
     const Pstream::commsTypes
 ) const
 {
-    const labelUList& nbrFaceCells =
-        cyclicPatch().cyclicPatch().neighbPatch().faceCells();
+    label nbrPathid = this->cyclicPatch().neighbPatchID();
+
+    const labelUList& nbrFaceCells = lduAddr.patchAddr(nbrPathid);
 
     scalarField pnf(psiInternal, nbrFaceCells);
+
+    const labelUList& faceCells = lduAddr.patchAddr(patchId);
 
     // Transform according to the transformation tensors
     transformCoupleField(pnf, cmpt);
 
     // Multiply the field by coefficients and add into the result
-    this->addToInternalField(result, !add, coeffs, pnf);
+    this->addToInternalField(result, !add, faceCells, coeffs, pnf);
 }
 
 
@@ -199,6 +203,8 @@ void Foam::cyclicFvPatchField<Type>::updateInterfaceMatrix
 (
     Field<Type>& result,
     const bool add,
+    const lduAddressing& lduAddr,
+    const label patchId,
     const Field<Type>& psiInternal,
     const scalarField& coeffs,
     const Pstream::commsTypes
@@ -206,20 +212,19 @@ void Foam::cyclicFvPatchField<Type>::updateInterfaceMatrix
 {
     //const labelUList& nbrFaceCells =
     //    cyclicPatch().cyclicPatch().neighbPatch().faceCells();
-
     label nbrPathid = this->cyclicPatch().neighbPatchID();
 
-    const labelList& nbrFaceCells =
-            cyclicPatch().boundaryMesh().mesh().lduAddr().patchAddr(nbrPathid);
-
+    const labelList& nbrFaceCells = lduAddr.patchAddr(nbrPathid);
 
     Field<Type> pnf(psiInternal, nbrFaceCells);
 
     // Transform according to the transformation tensors
     transformCoupleField(pnf);
 
+    const labelUList& faceCells = lduAddr.patchAddr(patchId);
+
     // Multiply the field by coefficients and add into the result
-    this->addToInternalField(result, !add, coeffs, pnf);
+    this->addToInternalField(result, !add, faceCells, coeffs, pnf);
 }
 
 

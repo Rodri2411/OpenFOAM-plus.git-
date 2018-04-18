@@ -110,10 +110,6 @@ Foam::wordList Foam::basicThermo::heBoundaryTypes()
         {
             hbt[patchi] = energyJumpAMIFvPatchScalarField::typeName;
         }
-        else if (tbf[patchi].type() == "energyRegionCoupledFvPatchScalarField")
-        {
-            hbt[patchi] = "energyRegionCoupledFvPatchScalarField";
-        }
     }
 
     return hbt;

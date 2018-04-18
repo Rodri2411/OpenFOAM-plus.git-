@@ -49,6 +49,26 @@ Foam::tmp<Foam::Field<Type>> Foam::faPatch::patchInternalField
 }
 
 
+template<class Type>
+Foam::tmp<Foam::Field<Type>> Foam::faPatch::patchInternalField
+(
+    const UList<Type>& f,
+    const labelUList& edgeFaces
+) const
+{
+    tmp<Field<Type>> tpif (new Field<Type>(size()));
+    Field<Type>& pif = tpif.ref();
+
+    //const labelUList& edgeFaces = this->edgeFaces();
+
+    forAll(pif, facei)
+    {
+        pif[facei] = f[edgeFaces[facei]];
+    }
+
+    return tpif;
+}
+
 template<class GeometricField, class Type>
 const typename GeometricField::Patch& Foam::faPatch::patchField
 (

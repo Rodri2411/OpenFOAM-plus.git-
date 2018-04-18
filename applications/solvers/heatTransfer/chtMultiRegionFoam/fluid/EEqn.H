@@ -26,13 +26,19 @@
 
     fvOptions.constrain(EEqn);
 
-    EEqn.solve(mesh.solver(he.select(finalIter)));
+    if (!coupled)
+    {
+        EEqn.solve(mesh.solver(he.select(finalIter)));
+        fvOptions.correct(he);
 
-    fvOptions.correct(he);
+        thermo.correct();
+        rad.correct();
 
-    thermo.correct();
-    rad.correct();
-
-    Info<< "Min/max T:" << min(thermo.T()).value() << ' '
-        << max(thermo.T()).value() << endl;
+        Info<< "Min/max T:" << min(thermo.T()).value() << ' '
+            << max(thermo.T()).value() << endl;
+    }
+    else
+    {
+        fvMatrixAssemblePtr->addFvMatrix(EEqn);
+    }
 }

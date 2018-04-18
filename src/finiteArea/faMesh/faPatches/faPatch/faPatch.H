@@ -335,6 +335,16 @@ public:
             template<class Type>
             tmp<Field<Type>> patchInternalField(const UList<Type>&) const;
 
+
+            //- Return given internal field next to patch as patch field
+            // Using edgeFaces
+            template<class Type>
+            tmp<Field<Type>> patchInternalField
+            (
+                const UList<Type>&,
+                const labelUList& edgeFaces
+            ) const;
+
             //- Return the corresponding patchField of the named field
             template<class GeometricField, class Type>
             const typename GeometricField::Patch& patchField

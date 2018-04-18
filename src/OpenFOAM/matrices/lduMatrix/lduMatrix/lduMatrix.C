@@ -311,7 +311,6 @@ const Foam::scalarField& Foam::lduMatrix::upper() const
     }
 }
 
-
 // * * * * * * * * * * * * * * * Friend Operators  * * * * * * * * * * * * * //
 
 Foam::Ostream& Foam::operator<<(Ostream& os, const lduMatrix& ldum)

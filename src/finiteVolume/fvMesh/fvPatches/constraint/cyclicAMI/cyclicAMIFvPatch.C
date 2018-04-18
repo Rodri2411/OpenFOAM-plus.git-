@@ -162,6 +162,16 @@ Foam::tmp<Foam::labelField> Foam::cyclicAMIFvPatch::interfaceInternalField
 }
 
 
+Foam::tmp<Foam::labelField> Foam::cyclicAMIFvPatch::interfaceInternalField
+(
+    const labelUList& internalData,
+    const labelUList& faceCells
+) const
+{
+    return patchInternalField(internalData, faceCells);
+}
+
+
 Foam::tmp<Foam::labelField> Foam::cyclicAMIFvPatch::internalFieldTransfer
 (
     const Pstream::commsTypes commsType,
@@ -171,5 +181,16 @@ Foam::tmp<Foam::labelField> Foam::cyclicAMIFvPatch::internalFieldTransfer
     return neighbFvPatch().patchInternalField(iF);
 }
 
+
+
+Foam::tmp<Foam::labelField> Foam::cyclicAMIFvPatch::internalFieldTransfer
+(
+    const Pstream::commsTypes commsType,
+    const labelUList& iF,
+    const labelUList& nbrFaceCells
+) const
+{
+    return patchInternalField(iF, nbrFaceCells);
+}
 
 // ************************************************************************* //

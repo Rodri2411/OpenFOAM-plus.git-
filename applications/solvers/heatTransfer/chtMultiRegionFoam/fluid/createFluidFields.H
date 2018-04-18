@@ -13,6 +13,8 @@ PtrList<radiation::radiationModel> radiation(fluidRegions.size());
 PtrList<volScalarField> KFluid(fluidRegions.size());
 PtrList<volScalarField> dpdtFluid(fluidRegions.size());
 
+PtrList<fvVectorMatrix> UEqFluid(fluidRegions.size());
+
 List<scalar> initialMassFluid(fluidRegions.size());
 List<bool> frozenFlowFluid(fluidRegions.size(), false);
 
@@ -248,6 +250,12 @@ forAll(fluidRegions, i)
     (
         i,
         new fv::options(fluidRegions[i])
+    );
+
+    UEqFluid.set
+    (
+        i,
+        new fvVectorMatrix(UFluid[i], dimForce)
     );
 
     turbulence[i].validate();

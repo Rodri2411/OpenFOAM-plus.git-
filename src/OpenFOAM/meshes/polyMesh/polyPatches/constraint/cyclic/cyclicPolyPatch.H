@@ -235,6 +235,14 @@ public:
         //- Construct as copy, resetting the boundary mesh
         cyclicPolyPatch(const cyclicPolyPatch&, const polyBoundaryMesh&);
 
+        //- Construct as copy, resetting the nbrPatchID and faceCells
+        cyclicPolyPatch
+        (
+            const cyclicPolyPatch&,
+            label nbrPatchID,
+            const labelList& faceCells
+        );
+
         //- Construct given the original patch and resetting the
         //  face list and boundary mesh information
         cyclicPolyPatch
@@ -261,6 +269,19 @@ public:
         virtual autoPtr<polyPatch> clone(const polyBoundaryMesh& bm) const
         {
             return autoPtr<polyPatch>(new cyclicPolyPatch(*this, bm));
+        }
+
+        //- Construct and return a clone, resetting nbrPatchID and faceCells
+        virtual autoPtr<cyclicPolyPatch> clone
+        (
+            label nbrPatchID,
+            const labelList& faceCells
+        ) const
+        {
+            return autoPtr<cyclicPolyPatch>
+            (
+                new cyclicPolyPatch(*this, nbrPatchID, faceCells)
+            );
         }
 
         //- Construct and return a clone, resetting the face list

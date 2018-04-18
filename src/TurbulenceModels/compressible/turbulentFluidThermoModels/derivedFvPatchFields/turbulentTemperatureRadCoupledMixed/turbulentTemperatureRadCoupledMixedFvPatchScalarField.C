@@ -29,6 +29,7 @@ License
 #include "volFields.H"
 #include "mappedPatchBase.H"
 #include "basicThermo.H"
+#include "fvMatrixAssemble.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -337,6 +338,70 @@ void turbulentTemperatureRadCoupledMixedFvPatchScalarField::updateCoeffs()
 }
 
 
+void turbulentTemperatureRadCoupledMixedFvPatchScalarField::manipulateMatrix
+(
+    fvMatrixAssemble& matrix,
+    const labelList& faceMap,
+    const label cellOffSet
+)
+{
+    const mappedPatchBase& mpp =
+        refCast<const mappedPatchBase>(patch().patch());
+
+    tmp<scalarField> vf = alphaDeltaVf();
+
+    const scalarField pAlphaSfDelta(alphaSfDelta());
+
+    forAll (*this, faceI)
+    {
+        if (faceMap.size() > 0)
+        {
+            label globalFaceI = faceMap[faceI];
+            if (globalFaceI != -1)
+            {
+                const scalar corr(vf()[faceI]*pAlphaSfDelta[faceI]);
+
+                if (mpp.owner())
+                {
+                    const labelUList& l = matrix.lduAddr().lowerAddr();
+                    matrix.diag()[l[globalFaceI]] += corr;
+                    matrix.lower()[globalFaceI] -= corr;
+                }
+                else
+                {
+                    matrix.upper()[globalFaceI] -= corr;
+                    const labelUList& u = matrix.lduAddr().upperAddr();
+                    matrix.diag()[u[globalFaceI]] += corr;
+                }
+            }
+            else
+            {
+                FatalErrorInFunction
+                    << "Can not find faceId : " <<  globalFaceI
+                    << exit(FatalError);
+            }
+        }
+    }
+
+    const scalarField sourceCorrection
+    (
+        pAlphaSfDelta
+        *(
+            deltaH()*vf()
+          + deltaQflux()/beta()
+        )
+    );
+
+    const labelUList& fc = patch().faceCells();
+    forAll(fc, i)
+    {
+        label localCelli = fc[i];
+        label globalCelli = cellOffSet + localCelli;
+        matrix.source()[globalCelli] += sourceCorrection[i];
+    }
+}
+
+
 tmp<scalarField>
 turbulentTemperatureRadCoupledMixedFvPatchScalarField::alphaSfDelta() const
 {
@@ -356,28 +421,76 @@ turbulentTemperatureRadCoupledMixedFvPatchScalarField::alphaSfDelta() const
     return tmp<scalarField>();
 }
 
-/*
+
 tmp<scalarField>
-turbulentTemperatureRadCoupledMixedFvPatchScalarField::alphaDeltaNbr() const
+turbulentTemperatureRadCoupledMixedFvPatchScalarField::alphaDeltaVf() const
 {
+    const polyMesh& mesh = patch().boundaryMesh().mesh();
+
     const mappedPatchBase& mpp =
         refCast<const mappedPatchBase>(patch().patch());
 
     const label samplePatchi = mpp.samplePolyPatch().index();
+    const label patchi = patch().index();
     const polyMesh& nbrMesh = mpp.sampleMesh();
 
-    const basicThermo* thermo =
+    const basicThermo* thermoNbr =
         nbrMesh.lookupObjectPtr<basicThermo>(basicThermo::dictName);
 
+    const basicThermo* thermo =
+        mesh.lookupObjectPtr<basicThermo>(basicThermo::dictName);
 
+    const fvPatch& nbrPatch =
+        refCast<const fvMesh>(nbrMesh).boundary()[samplePatchi];
 
-    scalarField KDeltaNbr;
-    KDeltaNbr = nbrField.kappa(nbrField)*nbrPatch.deltaCoeffs();
-    mpp.distribute(KDeltaNbr);
+    scalarField alphaDeltaNbr;
+    alphaDeltaNbr =
+        thermoNbr->alpha(samplePatchi)*nbrPatch.deltaCoeffs();
+    mpp.distribute(alphaDeltaNbr);
 
-    return tmp<scalarField>(KDeltaNbr);
+    scalarField alphaDelta
+    (
+        thermo->alpha(patchi)*patch().deltaCoeffs()
+    );
+
+    return tmp<scalarField>(alphaDeltaNbr/(alphaDeltaNbr + alphaDelta));
 }
-*/
+
+
+tmp<scalarField>
+turbulentTemperatureRadCoupledMixedFvPatchScalarField::beta() const
+{
+    const polyMesh& mesh = patch().boundaryMesh().mesh();
+
+    const mappedPatchBase& mpp =
+        refCast<const mappedPatchBase>(patch().patch());
+
+    const label samplePatchi = mpp.samplePolyPatch().index();
+    const label patchi = patch().index();
+    const polyMesh& nbrMesh = mpp.sampleMesh();
+
+    const basicThermo* thermoNbr =
+        nbrMesh.lookupObjectPtr<basicThermo>(basicThermo::dictName);
+
+    const basicThermo* thermo =
+        mesh.lookupObjectPtr<basicThermo>(basicThermo::dictName);
+
+    const fvPatch& nbrPatch =
+        refCast<const fvMesh>(nbrMesh).boundary()[samplePatchi];
+
+    scalarField alphaDeltaNbr;
+    alphaDeltaNbr =
+        thermoNbr->alpha(samplePatchi)*nbrPatch.deltaCoeffs();
+    mpp.distribute(alphaDeltaNbr);
+
+    scalarField alphaDelta
+    (
+        thermo->alpha(patchi)*patch().deltaCoeffs()
+    );
+
+    return tmp<scalarField>(alphaDeltaNbr + alphaDelta);
+}
+
 
 tmp<scalarField>
 turbulentTemperatureRadCoupledMixedFvPatchScalarField::deltaH() const
@@ -419,7 +532,30 @@ turbulentTemperatureRadCoupledMixedFvPatchScalarField::deltaH() const
     return tmp<scalarField>(0);
 }
 
+tmp<scalarField>
+turbulentTemperatureRadCoupledMixedFvPatchScalarField::deltaQflux() const
+{
+    scalarField qr(patch().size(), 0.0);
+    if (qrName_ != "none")
+    {
+        qr = patch().lookupPatchField<volScalarField, scalar>(qrName_);
+    }
 
+    scalarField qrNbr(patch().size(), 0.0);
+    if (qrNbrName_ != "none")
+    {
+        const mappedPatchBase& mpp =
+            refCast<const mappedPatchBase>(patch().patch());
+        const polyMesh& nbrMesh = mpp.sampleMesh();
+        const label samplePatchi = mpp.samplePolyPatch().index();
+        const fvPatch& nbrPatch =
+            refCast<const fvMesh>(nbrMesh).boundary()[samplePatchi];
+        qrNbr = nbrPatch.lookupPatchField<volScalarField, scalar>(qrNbrName_);
+        mpp.distribute(qrNbr);
+    }
+
+    return(qr + qrNbr);
+}
 
 void turbulentTemperatureRadCoupledMixedFvPatchScalarField::write
 (

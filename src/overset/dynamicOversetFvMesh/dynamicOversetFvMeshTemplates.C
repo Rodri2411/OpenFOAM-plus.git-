@@ -247,6 +247,8 @@ void Foam::dynamicOversetFvMesh::addInterpolation(fvMatrix<Type>& m) const
                         (
                             corrSourceCmpt,
                             true,
+                            addr,
+                            patchi,
                             psiCmpt,
                             m.boundaryCoeffs()[patchi].component(cmpt),
                             cmpt,
@@ -262,6 +264,8 @@ void Foam::dynamicOversetFvMesh::addInterpolation(fvMatrix<Type>& m) const
                         (
                             corrSourceCmpt,
                             true,
+                            addr,
+                            patchi,
                             psiCmpt,
                             m.boundaryCoeffs()[patchi].component(cmpt),
                             cmpt,

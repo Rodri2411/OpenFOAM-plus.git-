@@ -75,6 +75,16 @@ Foam::tmp<Foam::labelField> Foam::GAMGInterface::interfaceInternalField
 }
 
 
+Foam::tmp<Foam::labelField> Foam::GAMGInterface::interfaceInternalField
+(
+    const labelUList& internalData,
+    const labelUList& faceCells
+) const
+{
+    return interfaceInternalField<label>(internalData, faceCells);
+}
+
+
 Foam::tmp<Foam::scalarField> Foam::GAMGInterface::agglomerateCoeffs
 (
     const scalarField& fineCoeffs

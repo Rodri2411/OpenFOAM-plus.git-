@@ -185,6 +185,7 @@ public:
             );
 
 
+
         // Constructors
 
             solver
@@ -196,6 +197,7 @@ public:
                 const lduInterfaceFieldPtrsList& interfaces,
                 const dictionary& solverControls
             );
+
 
         // Selectors
 
@@ -209,7 +211,6 @@ public:
                 const lduInterfaceFieldPtrsList& interfaces,
                 const dictionary& solverControls
             );
-
 
 
         //- Destructor
@@ -541,6 +542,7 @@ public:
 
     // Member functions
 
+
         // Access to addressing
 
             //- Return the LDU mesh from which the addressing is obtained
@@ -570,7 +572,6 @@ public:
 
             // Size with externally provided sizes (for constructing with 'fake'
             // mesh in GAMG)
-
                 scalarField& lower(const label size);
                 scalarField& diag(const label nCoeffs);
                 scalarField& upper(const label nCoeffs);

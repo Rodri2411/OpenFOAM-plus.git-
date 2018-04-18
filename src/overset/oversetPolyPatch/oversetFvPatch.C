@@ -50,6 +50,16 @@ Foam::tmp<Foam::labelField> Foam::oversetFvPatch::interfaceInternalField
 }
 
 
+Foam::tmp<Foam::labelField> Foam::oversetFvPatch::interfaceInternalField
+(
+    const labelUList& internalData,
+    const labelUList& faceCells
+) const
+{
+    return patchInternalField(internalData, faceCells);
+}
+
+
 Foam::tmp<Foam::labelField> Foam::oversetFvPatch::internalFieldTransfer
 (
     const Pstream::commsTypes commsType,
@@ -66,6 +76,22 @@ Foam::tmp<Foam::labelField> Foam::oversetFvPatch::internalFieldTransfer
     }
 
     return patchInternalField(restrictMap);
+}
+
+
+Foam::tmp<Foam::labelField> Foam::oversetFvPatch::internalFieldTransfer
+(
+    const Pstream::commsTypes commsType,
+    const labelUList& restrictMap,
+    const labelUList& faceCells
+) const
+{
+    if (master())
+    {
+        restrictMap_ = restrictMap;
+    }
+
+    return patchInternalField(restrictMap, faceCells);
 }
 
 

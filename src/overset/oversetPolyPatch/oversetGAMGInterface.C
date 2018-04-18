@@ -261,4 +261,19 @@ Foam::tmp<Foam::labelField> Foam::oversetGAMGInterface::internalFieldTransfer
 }
 
 
+Foam::tmp<Foam::labelField> Foam::oversetGAMGInterface::internalFieldTransfer
+(
+    const Pstream::commsTypes,
+    const labelUList& restrictMap,
+    const labelUList& faceCells
+) const
+{
+    if (master())
+    {
+        restrictMap_ = restrictMap;
+    }
+
+    return tmp<labelField>(new labelField(restrictMap, faceCells));
+}
+
 // ************************************************************************* //

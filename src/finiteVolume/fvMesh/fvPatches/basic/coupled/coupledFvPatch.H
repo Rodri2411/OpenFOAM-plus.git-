@@ -86,6 +86,7 @@ public:
         {}
 
 
+
     //- Destructor
     virtual ~coupledFvPatch();
 
@@ -128,6 +129,15 @@ public:
                 const labelUList& internalData
             ) const = 0;
 
+
+            //- Return the values of the given internal data adjacent to
+            //  the interface as a field using a mapping faceCell
+            virtual tmp<labelField> interfaceInternalField
+            (
+                const labelUList& internalData,
+                const labelUList& faceCell
+            ) const = 0;
+
             //- Inherit initInternalFieldTransfer from lduInterface
             using lduInterface::initInternalFieldTransfer;
 
@@ -139,11 +149,29 @@ public:
             ) const
             {}
 
+            //- Initialise neighbour field transfer using faceCells map
+            virtual void initInternalFieldTransfer
+            (
+                const Pstream::commsTypes commsType,
+                labelUList& iF,
+                const labelUList& faceCell
+            ) const
+            {}
+
             //- Return neighbour field
             virtual tmp<labelField> internalFieldTransfer
             (
                 const Pstream::commsTypes commsType,
                 const labelUList& iF
+            ) const = 0;
+
+
+            //- Return neighbour field
+            virtual tmp<labelField> internalFieldTransfer
+            (
+                const Pstream::commsTypes commsType,
+                const labelUList& iF,
+                const labelUList& faceCells
             ) const = 0;
 };
 

@@ -120,6 +120,8 @@ public:
             (
                 scalarField& result,
                 const bool add,
+                const lduAddressing& lduAddr,
+                const label patchId,
                 const scalarField& psiInternal,
                 const scalarField& coeffs,
                 const direction cmpt,

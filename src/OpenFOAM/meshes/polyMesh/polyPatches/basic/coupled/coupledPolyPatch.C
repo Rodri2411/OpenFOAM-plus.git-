@@ -526,6 +526,18 @@ Foam::coupledPolyPatch::coupledPolyPatch
 Foam::coupledPolyPatch::coupledPolyPatch
 (
     const coupledPolyPatch& pp,
+    const labelList& faceCells
+)
+:
+    polyPatch(pp, faceCells),
+    matchTolerance_(pp.matchTolerance_),
+    transform_(pp.transform_)
+{}
+
+
+Foam::coupledPolyPatch::coupledPolyPatch
+(
+    const coupledPolyPatch& pp,
     const polyBoundaryMesh& bm,
     const label index,
     const label newSize,

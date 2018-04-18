@@ -1703,7 +1703,6 @@ Foam::labelList Foam::decompositionMethod::decompose
 )
 {
     // Collect all constraints
-
     boolList blockedFace;
     PtrList<labelList> specifiedProcessorFaces;
     labelList specifiedProcessor;
@@ -1749,3 +1748,4 @@ Foam::labelList Foam::decompositionMethod::decompose
 
 
 // ************************************************************************* //
+

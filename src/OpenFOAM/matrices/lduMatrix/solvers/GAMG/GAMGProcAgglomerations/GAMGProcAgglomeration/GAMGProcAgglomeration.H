@@ -75,7 +75,7 @@ protected:
             const label procAgglomComm
         );
 
-        //- Debug: calculate global cell-cells
+//         //- Debug: calculate global cell-cells
         static labelListList globalCellCells(const lduMesh&);
 
 private:

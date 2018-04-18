@@ -50,6 +50,8 @@ void processorFaPatchField<scalar>::initInterfaceMatrixUpdate
 (
     scalarField& result,
     const bool add,
+    const lduAddressing& lduAddr,
+    const label,
     const scalarField&,
     const scalarField& coeffs,
     const direction,
@@ -62,6 +64,8 @@ void processorFaPatchField<scalar>::updateInterfaceMatrix
 (
     scalarField& result,
     const bool add,
+    const lduAddressing& lduAddr,
+    const label,
     const scalarField&,
     const scalarField& coeffs,
     const direction,

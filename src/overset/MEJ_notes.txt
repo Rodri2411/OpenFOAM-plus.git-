@@ -1,0 +1,25 @@
+constant/fluid/
+constant/heater/
+
+system/fluid/decomposeParDict:
+    method scotch;
+
+system/heater/decomposePardict:
+    method regionFollow;
+    regionFollowCoeffs
+    {
+        masterRegion fluid;
+    }
+
+
+regionFollow :
+
+
+Other:
+- for all regions
+    load mesh
+    dump faceCentres of mappedPatchBase
+- work out correspondendence
+- decompose fluid
+- have 'regionFollow' read correspondence file and use as constraint
+

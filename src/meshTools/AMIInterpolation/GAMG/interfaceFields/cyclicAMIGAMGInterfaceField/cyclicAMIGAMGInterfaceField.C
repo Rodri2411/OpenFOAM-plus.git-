@@ -94,6 +94,8 @@ void Foam::cyclicAMIGAMGInterfaceField::updateInterfaceMatrix
 (
     scalarField& result,
     const bool add,
+    const lduAddressing& lduAddr,
+    const label patchId,
     const scalarField& psiInternal,
     const scalarField& coeffs,
     const direction cmpt,
@@ -101,10 +103,14 @@ void Foam::cyclicAMIGAMGInterfaceField::updateInterfaceMatrix
 ) const
 {
     // Get neighbouring field
-    scalarField pnf
-    (
-        cyclicAMIInterface_.neighbPatch().interfaceInternalField(psiInternal)
-    );
+//     scalarField pnf
+//     (
+//         cyclicAMIInterface_.neighbPatch().interfaceInternalField(psiInternal)
+//     );
+
+    label nbrPathid = cyclicAMIInterface_.neighbPatchID();
+    const labelList& nbrFaceCells = lduAddr.patchAddr(nbrPathid);
+    scalarField pnf(psiInternal, nbrFaceCells);
 
     // Transform according to the transformation tensors
     transformCoupleField(pnf, cmpt);
@@ -118,7 +124,10 @@ void Foam::cyclicAMIGAMGInterfaceField::updateInterfaceMatrix
         pnf = cyclicAMIInterface_.neighbPatch().AMI().interpolateToTarget(pnf);
     }
 
-    this->addToInternalField(result, !add, coeffs, pnf);
+    //const labelUList& faceCells = lduAddr.patchAddr(cyclicAMIInterface_.index());
+    const labelUList& faceCells = lduAddr.patchAddr(patchId);
+
+    this->addToInternalField(result, !add, faceCells, coeffs, pnf);
 }
 
 

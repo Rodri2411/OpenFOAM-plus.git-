@@ -292,6 +292,12 @@ public:
             //- Neighbour patch ID
             virtual label neighbPatchID() const;
 
+            //- Set neighbour patch ID
+            label& neighbPatchID()
+            {
+                return nbrPatchID_;
+            };
+
             //- Does this side own the patch?
             virtual bool owner() const;
 

@@ -101,6 +101,14 @@ turbulentTemperatureCoupledBaffleMixedFvPatchScalarField
             << exit(FatalError);
     }
 
+    WarningInFunction
+        << "This BC has been superseded by "
+        << "compressible::turbulentTemperatureRadCoupledMixed "
+        << "which has more functionalities and it can handle "
+        << "the assemble coupled option for energy. "
+        << endl;
+
+
     if (dict.found("thicknessLayers"))
     {
         dict.lookup("thicknessLayers") >> thicknessLayers_;

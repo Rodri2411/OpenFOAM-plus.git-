@@ -98,6 +98,8 @@ public:
             (
                 Field<Type>&,
                 const bool add,
+                const lduAddressing&,
+                const label,
                 const Field<Type>&,
                 const scalarField&,
                 const Pstream::commsTypes commsType
@@ -112,6 +114,8 @@ public:
             (
                 Field<Type>&,
                 const bool add,
+                const lduAddressing&,
+                const label,
                 const Field<Type>&,
                 const scalarField&,
                 const Pstream::commsTypes commsType

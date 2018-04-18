@@ -166,4 +166,15 @@ inline const Foam::AMIPatchToPatchInterpolation& Foam::mappedPatchBase::AMI
 }
 
 
+inline bool Foam::mappedPatchBase::owner() const
+{
+    bool owner(false);
+    if (patch_.boundaryMesh().mesh().name() < sampleRegion())
+    {
+        owner = true;
+    }
+    return owner;
+}
+
+
 // ************************************************************************* //

@@ -189,6 +189,27 @@ Foam::tmp<Foam::labelField> Foam::cyclicACMIFvPatch::interfaceInternalField
 }
 
 
+Foam::tmp<Foam::labelField> Foam::cyclicACMIFvPatch::interfaceInternalField
+(
+    const labelUList& internalData,
+    const labelUList& faceCells
+) const
+{
+    return patchInternalField(internalData, faceCells);
+    /*
+    tmp<labelField> tpif(new labelField(internalData.size()));
+    labelField& pif = tpif.ref();
+
+    forAll(pif, facei)
+    {
+        pif[facei] = internalData[faceCells[facei]];
+    }
+
+    return tpif;
+    */
+}
+
+
 Foam::tmp<Foam::labelField> Foam::cyclicACMIFvPatch::internalFieldTransfer
 (
     const Pstream::commsTypes commsType,
@@ -196,6 +217,17 @@ Foam::tmp<Foam::labelField> Foam::cyclicACMIFvPatch::internalFieldTransfer
 ) const
 {
     return neighbFvPatch().patchInternalField(iF);
+}
+
+
+Foam::tmp<Foam::labelField> Foam::cyclicACMIFvPatch::internalFieldTransfer
+(
+    const Pstream::commsTypes commsType,
+    const labelUList& iF,
+    const labelUList& nbrFaceCells
+) const
+{
+    return patchInternalField(iF, nbrFaceCells);
 }
 
 

@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2013 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -22,23 +22,20 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::regionCoupledPointPatch
+    Foam::assembleFaceAreaPairGAMGAgglomeration
 
 Description
-    Cyclic AMI point patch - place holder only
+    Agglomerate using the pair algorithm.
 
 SourceFiles
-    regionCoupledPointPatch.C
+    assembleFaceAreaPairGAMGAgglomeration.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef regionCoupledPointPatch_H
-#define regionCoupledPointPatch_H
+#ifndef assembleFaceAreaPairGAMGAgglomeration_H
+#define assembleFaceAreaPairGAMGAgglomeration_H
 
-#include "facePointPatch.H"
-#include "regionCoupledPolyPatch.H"
-#include "addToRunTimeSelectionTable.H"
-
+#include "pairGAMGAgglomeration.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -46,30 +43,37 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                      Class regionCoupledPointPatch Declaration
+                 Class assembleFaceAreaPairGAMGAgglomeration Declaration
 \*---------------------------------------------------------------------------*/
 
-class regionCoupledPointPatch
+class assembleFaceAreaPairGAMGAgglomeration
 :
-    public facePointPatch
+    public pairGAMGAgglomeration
 {
+
 public:
 
     //- Runtime type information
-    TypeName(regionCoupledPolyPatch::typeName_());
+    TypeName("assembledFaceAreaPair");
 
 
     // Constructors
 
-        //- Construct from components
-        regionCoupledPointPatch
+        //- Construct given mesh and controls
+        assembleFaceAreaPairGAMGAgglomeration
         (
-            const polyPatch& patch,
-            const pointBoundaryMesh& bm
-        ):
-             facePointPatch(patch, bm)
-        {}
+            const lduMatrix& matrix,
+            const dictionary& controlDict
+        );
 
+        //- Construct given mesh and controls
+        assembleFaceAreaPairGAMGAgglomeration
+        (
+            const lduMatrix& matrix,
+            const scalarField& cellVolumes,
+            const vectorField& faceAreas,
+            const dictionary& controlDict
+        );
 };
 
 

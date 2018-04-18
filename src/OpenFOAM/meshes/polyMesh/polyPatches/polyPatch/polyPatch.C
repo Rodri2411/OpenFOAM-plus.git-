@@ -257,6 +257,28 @@ Foam::polyPatch::polyPatch(const polyPatch& p)
 {}
 
 
+Foam::polyPatch::polyPatch
+(
+    const polyPatch& p,
+    const labelList& faceCells
+)
+:
+    patchIdentifier(p),
+    primitivePatch(p),
+    start_(p.start_),
+    boundaryMesh_(p.boundaryMesh_),
+    faceCellsPtr_(nullptr),
+    mePtr_(nullptr)
+{
+    if (!faceCellsPtr_)
+    {
+        faceCellsPtr_ = new labelList::subList
+        (
+            faceCells, faceCells.size()
+        );
+    }
+}
+
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 Foam::polyPatch::~polyPatch()

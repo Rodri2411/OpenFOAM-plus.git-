@@ -297,6 +297,16 @@ Foam::tmp<Foam::labelField> Foam::cyclicFaPatch::interfaceInternalField
 }
 
 
+Foam::tmp<Foam::labelField> Foam::cyclicFaPatch::interfaceInternalField
+(
+    const labelUList& internalData,
+    const labelUList& edgeFaces
+) const
+{
+    return patchInternalField(internalData, edgeFaces);
+}
+
+
 Foam::tmp<Foam::labelField> Foam::cyclicFaPatch::transfer
 (
     const Pstream::commsTypes,
@@ -340,5 +350,26 @@ Foam::tmp<Foam::labelField> Foam::cyclicFaPatch::internalFieldTransfer
     return tpnf;
 }
 
+
+Foam::tmp<Foam::labelField> Foam::cyclicFaPatch::internalFieldTransfer
+(
+    const Pstream::commsTypes commsType,
+    const labelUList& iF,
+    const labelUList& edgeCells
+) const
+{
+    tmp<labelField> tpnf(new labelField(this->size()));
+    labelField& pnf = tpnf.ref();
+
+    label sizeby2 = this->size()/2;
+
+    for (label edgei=0; edgei<sizeby2; ++edgei)
+    {
+        pnf[edgei] = iF[edgeCells[edgei + sizeby2]];
+        pnf[edgei + sizeby2] = iF[edgeCells[edgei]];
+    }
+
+    return tpnf;
+}
 
 // ************************************************************************* //

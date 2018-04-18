@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2013 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,65 +23,85 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "regionCoupledGAMGInterfaceField.H"
-#include "addToRunTimeSelectionTable.H"
+#include "assembleFaceAreaPairGAMGAgglomeration.H"
 #include "lduMatrix.H"
+#include "addToRunTimeSelectionTable.H"
+#include "fvMatrixAssemble.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 namespace Foam
 {
-    defineTypeNameAndDebug(regionCoupledGAMGInterfaceField, 0);
+    defineTypeNameAndDebug(assembleFaceAreaPairGAMGAgglomeration, 0);
+
     addToRunTimeSelectionTable
     (
-        GAMGInterfaceField,
-        regionCoupledGAMGInterfaceField,
-        lduInterface
+        GAMGAgglomeration,
+        assembleFaceAreaPairGAMGAgglomeration,
+        lduMatrix
     );
+
     addToRunTimeSelectionTable
     (
-        GAMGInterfaceField,
-        regionCoupledGAMGInterfaceField,
-        lduInterfaceField
+        GAMGAgglomeration,
+        assembleFaceAreaPairGAMGAgglomeration,
+        geometry
     );
 }
 
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-Foam::regionCoupledGAMGInterfaceField::regionCoupledGAMGInterfaceField
+Foam::assembleFaceAreaPairGAMGAgglomeration::
+assembleFaceAreaPairGAMGAgglomeration
 (
-    const GAMGInterface& GAMGCp,
-    const lduInterfaceField& fineInterface
+    const lduMatrix& matrix,
+    const dictionary& controlDict
 )
 :
-    GAMGInterfaceField(GAMGCp, fineInterface),
-    regionCoupledGAMGInterface_
+    pairGAMGAgglomeration(matrix.mesh(), controlDict)
+{
+    const fvMatrixAssemble& assembleMatrix =
+        static_cast<const fvMatrixAssemble&>(matrix);
+
+    agglomerate
     (
-        refCast<const regionCoupledGAMGInterface>(GAMGCp)
-    )
-{}
+        matrix.mesh(),
+        mag
+        (
+            cmptMultiply
+            (
+                assembleMatrix.Sf()/sqrt(mag(assembleMatrix.Sf())),
+                vector(1, 1.01, 1.02)
+            )
+        )
+    );
+}
 
 
-Foam::regionCoupledGAMGInterfaceField::regionCoupledGAMGInterfaceField
+Foam::assembleFaceAreaPairGAMGAgglomeration::assembleFaceAreaPairGAMGAgglomeration
 (
-    const GAMGInterface& GAMGCp,
-    const bool doTransform,
-    const int rank
+    const lduMatrix& matrix,
+    const scalarField& cellVolumes,
+    const vectorField& faceAreas,
+    const dictionary& controlDict
 )
 :
-    GAMGInterfaceField(GAMGCp, doTransform, rank),
-    regionCoupledGAMGInterface_
+    pairGAMGAgglomeration(matrix.mesh(), controlDict)
+{
+    agglomerate
     (
-        refCast<const regionCoupledGAMGInterface>(GAMGCp)
-    )
-{}
-
-
-// * * * * * * * * * * * * * * * * Desstructor * * * * * * * * * * * * * * * //
-
-Foam::regionCoupledGAMGInterfaceField::~regionCoupledGAMGInterfaceField()
-{}
+        matrix.mesh(),
+        mag
+        (
+            cmptMultiply
+            (
+                faceAreas/sqrt(mag(faceAreas)),
+                vector(1, 1.01, 1.02)
+            )
+        )
+    );
+}
 
 
 // ************************************************************************* //

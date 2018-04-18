@@ -30,11 +30,12 @@ void Foam::lduInterfaceField::addToInternalField
 (
     Field<Type>& result,
     const bool add,
+    const labelUList& faceCells,
     const scalarField& coeffs,
     const Field<Type>& vals
 ) const
 {
-    const labelUList& faceCells = this->interface().faceCells();
+    //const labelUList& faceCells = this->interface().faceCells();
 
     if (add)
     {

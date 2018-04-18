@@ -121,6 +121,26 @@ class turbulentTemperatureRadCoupledMixedFvPatchScalarField
         Switch thermalInertia_;
 
 
+    // Private functions
+
+
+            //- Return local alphaSfDelta
+            tmp<scalarField> alphaSfDelta() const;
+
+            //- Return the alpha-based value fraction between nbr patch and
+            //  local
+            tmp<scalarField> alphaDeltaVf() const;
+
+            //- Return delta enthalpy between regions
+            tmp<scalarField> deltaH() const;
+
+            //- Return the sum of deltaCoeff*alpha from nbr and local
+            tmp<scalarField> beta() const;
+
+            //- Return the difference of heat flux between both regions
+            tmp<scalarField> deltaQflux() const;
+
+
 public:
 
     //- Runtime type information
@@ -197,19 +217,16 @@ public:
         //- Update the coefficients associated with the patch field
         virtual void updateCoeffs();
 
+        //- Manipulate fvMatrixAssemble
+        virtual void manipulateMatrix
+        (
+            fvMatrixAssemble& matrix,
+            const labelList& faceMap,
+            const label cellOffSet
+        );
+
         //- Write
         virtual void write(Ostream&) const;
-
-        // Access Functions
-
-            //- Return local alphaDelta
-            tmp<scalarField> alphaSfDelta() const;
-
-            //- Return local nbr alphaDelta
-            //tmp<scalarField> alphaDeltaNbr() const;
-
-            //- Return delta enthalpy reference between regions
-            tmp<scalarField> deltaH() const;
 };
 
 

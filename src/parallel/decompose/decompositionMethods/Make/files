@@ -7,6 +7,7 @@ multiLevelDecomp/multiLevelDecomp.C
 metisLikeDecomp/metisLikeDecomp.C
 structuredDecomp/structuredDecomp.C
 noDecomp/noDecomp.C
+assembleDecomp/assembleDecomp.C
 
 
 decompositionConstraints = decompositionConstraints

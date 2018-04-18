@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2018 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -22,23 +22,22 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::regionCoupledWallPointPatch
+    Foam::cyclicAssembleFvPatch
 
 Description
-    Cyclic AMI point patch - place holder only
+    Assemble fvPatch to cache nbrCells in global addressing for assemble matrix.
+    Re-implementing internalFieldTransfer called from the GAMG ldu agglomeration
+    function.
 
 SourceFiles
-    regionCoupledWallPointPatch.C
+    cyclicAssembleFvPatch.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef regionCoupledWallPointPatch_H
-#define regionCoupledWallPointPatch_H
+#ifndef cyclicAssembleFvPatch_H
+#define cyclicAssembleFvPatch_H
 
-#include "facePointPatch.H"
-#include "regionCoupledWallPolyPatch.H"
-#include "addToRunTimeSelectionTable.H"
-
+#include "cyclicFvPatch.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -46,29 +45,54 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                    Class regionCoupledWallPointPatch Declaration
+                  Class cyclicAssembleFvPatch Declaration
 \*---------------------------------------------------------------------------*/
 
-class regionCoupledWallPointPatch
+class cyclicAssembleFvPatch
 :
-    public facePointPatch
+    public cyclicFvPatch
 {
+     // Private data
+
+        //- Nbr faceCell
+        const labelList& nrbFaceCells_;
+
+
 public:
 
     //- Runtime type information
-    TypeName(regionCoupledWallPolyPatch::typeName_());
+    TypeName(cyclicFvPatch::typeName_());
 
 
     // Constructors
 
-        //- Construct from components
-        regionCoupledWallPointPatch
+        //- Construct from polyPatch
+        cyclicAssembleFvPatch
         (
             const polyPatch& patch,
-            const pointBoundaryMesh& bm
-        ):
-             facePointPatch(patch, bm)
+            const fvBoundaryMesh& bm,
+            const labelList& nrbFaceCells
+        )
+        :
+            cyclicFvPatch(patch, bm),
+            nrbFaceCells_(nrbFaceCells)
         {}
+
+    //- Destructor
+    virtual ~cyclicAssembleFvPatch();
+
+
+    // Member Functions
+
+
+        //- Return neighbour field
+        virtual tmp<labelField> internalFieldTransfer
+        (
+            const Pstream::commsTypes commsType,
+            const labelUList& internalData
+        ) const;
+
+
 
 };
 

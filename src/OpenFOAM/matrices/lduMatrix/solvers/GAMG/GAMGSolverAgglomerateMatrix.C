@@ -39,12 +39,10 @@ void Foam::GAMGSolver::agglomerateMatrix
 {
     // Get fine matrix
     const lduMatrix& fineMatrix = matrixLevel(fineLevelIndex);
-
     if (UPstream::myProcNo(fineMatrix.mesh().comm()) != -1)
     {
         const label nCoarseFaces = agglomeration_.nFaces(fineLevelIndex);
         const label nCoarseCells = agglomeration_.nCells(fineLevelIndex);
-
         // Set the coarse level matrix
         matrixLevels_.set
         (

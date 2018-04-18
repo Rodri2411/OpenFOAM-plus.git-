@@ -1,3 +1,5 @@
-derivedFvPatchFields/energyRegionCoupled/energyRegionCoupledFvPatchScalarField.C
-
+fvMatrixAssemble/fvMatrixAssemble.C
+lduPrimitiveMeshAssemble/lduPrimitiveMeshAssemble.C
+assembleFaceAreaPairGAMGAgglomeration/assembleFaceAreaPairGAMGAgglomeration.C
+patches/cyclicAssembleFvPatch/cyclicAssembleFvPatch.C
 LIB = $(FOAM_LIBBIN)/libregionCoupled

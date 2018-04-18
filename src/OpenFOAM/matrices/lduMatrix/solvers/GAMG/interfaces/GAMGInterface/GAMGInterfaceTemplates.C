@@ -40,6 +40,24 @@ Foam::tmp<Foam::Field<Type>> Foam::GAMGInterface::interfaceInternalField
 
 
 template<class Type>
+Foam::tmp<Foam::Field<Type>> Foam::GAMGInterface::interfaceInternalField
+(
+    const UList<Type>& iF,
+    const labelUList& faceCells
+) const
+{
+    tmp<Field<Type>> tresult(new Field<Type>(faceCells.size()));
+
+    forAll(tresult(), elemI)
+    {
+        tresult.ref()[elemI] = iF[faceCells[elemI]];
+    }
+    //interfaceInternalField(iF, tresult.ref());
+    return tresult;
+}
+
+
+template<class Type>
 void Foam::GAMGInterface::interfaceInternalField
 (
     const UList<Type>& iF,

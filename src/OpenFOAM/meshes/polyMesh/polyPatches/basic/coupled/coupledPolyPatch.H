@@ -208,6 +208,9 @@ public:
         //- Construct as copy, resetting the boundary mesh
         coupledPolyPatch(const coupledPolyPatch&, const polyBoundaryMesh&);
 
+        //- Construct as copy, resetting the faceCells
+        coupledPolyPatch(const coupledPolyPatch&, const labelList&);
+
         //- Construct given the original patch and resetting the
         //  face list and boundary mesh information
         coupledPolyPatch

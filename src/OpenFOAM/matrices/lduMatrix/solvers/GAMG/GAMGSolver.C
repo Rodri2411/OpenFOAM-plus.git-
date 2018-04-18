@@ -39,8 +39,8 @@ namespace Foam
         addGAMGAsymSolverMatrixConstructorToTable_;
 }
 
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
+
 
 Foam::GAMGSolver::GAMGSolver
 (

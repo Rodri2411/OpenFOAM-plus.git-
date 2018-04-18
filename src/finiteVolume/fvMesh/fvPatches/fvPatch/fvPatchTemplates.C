@@ -48,6 +48,25 @@ Foam::tmp<Foam::Field<Type>> Foam::fvPatch::patchInternalField
 
 
 template<class Type>
+Foam::tmp<Foam::Field<Type>> Foam::fvPatch::patchInternalField
+(
+    const UList<Type>& f,
+    const labelUList& faceCells
+) const
+{
+    tmp<Field<Type>> tpif(new Field<Type>(size()));
+    Field<Type>& pif = tpif.ref();
+
+    forAll(pif, facei)
+    {
+        pif[facei] = f[faceCells[facei]];
+    }
+
+    return tpif;
+}
+
+
+template<class Type>
 void Foam::fvPatch::patchInternalField
 (
     const UList<Type>& f,

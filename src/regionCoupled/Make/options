@@ -1,15 +1,7 @@
-EXE_INC = \
-    -I$(LIB_SRC)/transportModels/compressible/lnInclude \
-    -I$(LIB_SRC)/TurbulenceModels/turbulenceModels/lnInclude \
-    -I$(LIB_SRC)/TurbulenceModels/compressible/lnInclude \
-    -I$(LIB_SRC)/thermophysicalModels/basic/lnInclude \
+EXE_INC = -DFULLDEBUG -O0 -g \
     -I$(LIB_SRC)/finiteVolume/lnInclude \
     -I$(LIB_SRC)/meshTools/lnInclude
 
 LIB_LIBS = \
-    -lcompressibleTransportModels \
-    -lfluidThermophysicalModels \
-    -lturbulenceModels \
-    -lcompressibleTurbulenceModels \
     -lfiniteVolume \
     -lmeshTools

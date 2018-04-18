@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2018 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,26 +23,38 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "regionCoupledPointPatch.H"
-#include "addToRunTimeSelectionTable.H"
+#include "cyclicAssembleFvPatch.H"
 
+// * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 namespace Foam
 {
+    defineTypeNameAndDebug(cyclicAssembleFvPatch, 0);
+}
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-    defineTypeNameAndDebug(regionCoupledPointPatch, 0);
-    addToRunTimeSelectionTable
-    (
-        facePointPatch,
-        regionCoupledPointPatch,
-        polyPatch
-    );
+Foam::tmp<Foam::labelField> Foam::cyclicAssembleFvPatch::internalFieldTransfer
+(
+    const Pstream::commsTypes commsType,
+    const labelUList& iF
+) const
+{
+    tmp<labelField> tpif(new labelField(size()));
+    labelField& pif = tpif.ref();
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+    forAll(pif, facei)
+    {
+        pif[facei] = iF[nrbFaceCells_[facei]];
+    }
 
-} // End namespace Foam
+    return tpif;
+}
+
+// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
+
+Foam::cyclicAssembleFvPatch::~cyclicAssembleFvPatch()
+{}
 
 
 // ************************************************************************* //

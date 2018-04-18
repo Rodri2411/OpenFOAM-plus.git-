@@ -37,13 +37,23 @@ void processorFvPatchField<scalar>::initInterfaceMatrixUpdate
 (
     scalarField&,
     const bool add,
+    const lduAddressing& lduAddr,
+    const label patchId,
     const scalarField& psiInternal,
     const scalarField&,
     const direction,
     const Pstream::commsTypes commsType
 ) const
 {
-    this->patch().patchInternalField(psiInternal, scalarSendBuf_);
+    //this->patch().patchInternalField(psiInternal, scalarSendBuf_);
+    scalarSendBuf_.setSize(this->patch().size());
+
+    const labelUList& faceCells = lduAddr.patchAddr(patchId);
+
+    forAll(scalarSendBuf_, facei)
+    {
+        scalarSendBuf_[facei] = psiInternal[faceCells[facei]];
+    }
 
     if
     (
@@ -98,6 +108,8 @@ void processorFvPatchField<scalar>::updateInterfaceMatrix
 (
     scalarField& result,
     const bool add,
+    const lduAddressing& lduAddr,
+    const label patchId,
     const scalarField&,
     const scalarField& coeffs,
     const direction,
@@ -108,6 +120,8 @@ void processorFvPatchField<scalar>::updateInterfaceMatrix
     {
         return;
     }
+
+    const labelUList& faceCells = lduAddr.patchAddr(patchId);
 
     if
     (
@@ -128,9 +142,15 @@ void processorFvPatchField<scalar>::updateInterfaceMatrix
         outstandingSendRequest_ = -1;
         outstandingRecvRequest_ = -1;
 
-
         // Consume straight from scalarReceiveBuf_
-        this->addToInternalField(result, !add, coeffs, scalarReceiveBuf_);
+        this->addToInternalField
+        (
+            result,
+            !add,
+            faceCells,
+            coeffs,
+            scalarReceiveBuf_
+        );
     }
     else
     {
@@ -139,7 +159,7 @@ void processorFvPatchField<scalar>::updateInterfaceMatrix
             procPatch_.compressedReceive<scalar>(commsType, this->size())()
         );
 
-        this->addToInternalField(result, !add, coeffs, pnf);
+        this->addToInternalField(result, !add, faceCells, coeffs, pnf);
     }
 
     const_cast<processorFvPatchField<scalar>&>(*this).updatedMatrix() = true;

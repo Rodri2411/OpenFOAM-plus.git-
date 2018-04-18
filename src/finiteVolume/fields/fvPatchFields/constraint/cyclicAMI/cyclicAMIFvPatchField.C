@@ -180,14 +180,18 @@ void Foam::cyclicAMIFvPatchField<Type>::updateInterfaceMatrix
 (
     scalarField& result,
     const bool add,
+    const lduAddressing& lduAddr,
+    const label patchId,
     const scalarField& psiInternal,
     const scalarField& coeffs,
     const direction cmpt,
     const Pstream::commsTypes
 ) const
 {
-    const labelUList& nbrFaceCells =
-        cyclicAMIPatch_.cyclicAMIPatch().neighbPatch().faceCells();
+    //const labelUList& nbrFaceCells =
+    //    cyclicAMIPatch_.cyclicAMIPatch().neighbPatch().faceCells();
+    label nbrPathid = cyclicAMIPatch_.cyclicAMIPatch().neighbPatchID();
+    const labelUList& nbrFaceCells = lduAddr.patchAddr(nbrPathid);
 
     scalarField pnf(psiInternal, nbrFaceCells);
 
@@ -204,8 +208,11 @@ void Foam::cyclicAMIFvPatchField<Type>::updateInterfaceMatrix
         pnf = cyclicAMIPatch_.interpolate(pnf);
     }
 
+    //const label patchId = this->patch().index();
+    const labelUList& faceCells = lduAddr.patchAddr(patchId);
+
     // Multiply the field by coefficients and add into the result
-    this->addToInternalField(result, !add, coeffs, pnf);
+    this->addToInternalField(result, !add, faceCells, coeffs, pnf);
 }
 
 
@@ -214,13 +221,17 @@ void Foam::cyclicAMIFvPatchField<Type>::updateInterfaceMatrix
 (
     Field<Type>& result,
     const bool add,
+    const lduAddressing& lduAddr,
+    const label patchId,
     const Field<Type>& psiInternal,
     const scalarField& coeffs,
     const Pstream::commsTypes
 ) const
 {
-    const labelUList& nbrFaceCells =
-        cyclicAMIPatch_.cyclicAMIPatch().neighbPatch().faceCells();
+    //const labelUList& nbrFaceCells =
+    //    cyclicAMIPatch_.cyclicAMIPatch().neighbPatch().faceCells();
+    label nbrPathid = cyclicAMIPatch_.cyclicAMIPatch().neighbPatchID();
+    const labelUList& nbrFaceCells = lduAddr.patchAddr(nbrPathid);
 
     Field<Type> pnf(psiInternal, nbrFaceCells);
 
@@ -237,8 +248,11 @@ void Foam::cyclicAMIFvPatchField<Type>::updateInterfaceMatrix
         pnf = cyclicAMIPatch_.interpolate(pnf);
     }
 
+    //const label patchId = this->patch().index();
+    const labelUList& faceCells = lduAddr.patchAddr(patchId);
+
     // Multiply the field by coefficients and add into the result
-    this->addToInternalField(result, !add, coeffs, pnf);
+    this->addToInternalField(result, !add, faceCells, coeffs, pnf);
 }
 
 
