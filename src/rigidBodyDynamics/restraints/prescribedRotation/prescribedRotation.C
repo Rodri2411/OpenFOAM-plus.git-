@@ -122,7 +122,7 @@ void Foam::RBD::restraints::prescribedRotation::restrain
 
 
     // from the definition of the angular momentum
-    vector moment((Inertia * (omegaSet_->value(0.0) + omega)& a)*a);
+    vector moment((Inertia * (omegaSet_->value(0.0) - omega) & a) * a);
 
     if (model_.debug)
     {
