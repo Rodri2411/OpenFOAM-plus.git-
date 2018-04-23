@@ -53,7 +53,7 @@ SourceFiles
 #define prescribedRotation_H
 
 #include "rigidBodyRestraint.H"
-#include "Function1.H"
+#include "TimeFunction1.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -81,7 +81,7 @@ class prescribedRotation
         vector axis_;
 
         //- Rotational velocity [rad/sec]
-        autoPtr<Function1<vector>> omegaSet_;
+        TimeFunction1<vector> omegaSet_;
 
 
 public:

@@ -116,13 +116,16 @@ motionSolver        rigidBodyMotion;
             axis                    (0 1 0);
             omega                   (0 26 0);
         }
-        proppelerRotation
+        propellerRotation
         {
             type                    prescribedRotation;
             body                    propeller;
             referenceOrientation    (1 0 0 0 1 0 0 0 1);
             axis                    (1 0 0);
-            omega                   (16 0 0);
+            omega                   table
+            (
+                (0 (16 0 0))
+            );
         }
     }
 

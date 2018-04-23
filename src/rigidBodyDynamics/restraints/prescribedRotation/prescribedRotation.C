@@ -26,6 +26,7 @@ License
 #include "prescribedRotation.H"
 #include "rigidBodyModel.H"
 #include "addToRunTimeSelectionTable.H"
+#include "Time.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -57,7 +58,8 @@ Foam::RBD::restraints::prescribedRotation::prescribedRotation
     const rigidBodyModel& model
 )
 :
-    restraint(name, dict, model)
+    restraint(name, dict, model),
+    omegaSet_(model_.time(), "omega")
 {
     read(dict);
 }
@@ -122,7 +124,10 @@ void Foam::RBD::restraints::prescribedRotation::restrain
 
 
     // from the definition of the angular momentum
-    vector moment((Inertia * (omegaSet_->value(0.0) - omega) & a) * a);
+    vector moment
+    (
+        (Inertia * (omegaSet_.value(model_.time().value()) - omega) & a) * a
+    );
 
     if (model_.debug)
     {
@@ -157,14 +162,6 @@ bool Foam::RBD::restraints::prescribedRotation::read
             << exit(FatalError);
     }
 
-
-
-DebugVar(dict);
-DebugVar(dict.name());
-DebugVar(dict.topDict());
-DebugVar(isA<IOdictionary>(dict.topDict()));
-
-
     axis_ = coeffs_.lookup("axis");
 
     scalar magAxis(mag(axis_));
@@ -180,7 +177,8 @@ DebugVar(isA<IOdictionary>(dict.topDict()));
             << abort(FatalError);
     }
 
-    omegaSet_ = Function1<vector>::New("omega", coeffs_);
+    // Read the actual entry
+    omegaSet_.reset(coeffs_);
 
     return true;
 }
@@ -195,7 +193,7 @@ void Foam::RBD::restraints::prescribedRotation::write
 
     os.writeEntry("referenceOrientation", refQ_);
     os.writeEntry("axis", axis_);
-    os.writeEntry("omega", omegaSet_());
+    omegaSet_.writeData(os);
 }
 
 
