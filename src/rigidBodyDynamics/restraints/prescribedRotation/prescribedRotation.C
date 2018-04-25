@@ -123,7 +123,10 @@ void Foam::RBD::restraints::prescribedRotation::restrain
     scalar Inertia = mag(model_.I(model_.master(bodyID_)).Ic());
 
 
-    // from the definition of the angular momentum
+    // from the definition of the angular momentum:
+    //  moment = Inertia*ddt(omega)
+    // with time step 1:
+    //  moment = Inertia*(omega_wanted - omega)
     vector moment
     (
         (Inertia * (omegaSet_.value(model_.time().value()) - omega) & a) * a
