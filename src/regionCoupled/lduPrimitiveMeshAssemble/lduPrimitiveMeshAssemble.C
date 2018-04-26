@@ -123,7 +123,7 @@ Foam::lduPrimitiveMeshAssemble::lduPrimitiveMeshAssemble
                 if (pp.size() != nbrpp.size())
                 {
                     FatalErrorInFunction
-                        << "The number of faces on either side of the mapped
+                        << "The number of faces on either side of the mapped"
                         << "patch " << pp.name() << " are not the same."
                         << "This might be due to the decomposition used.Please"
                         << " use the type assembleDecomp."
