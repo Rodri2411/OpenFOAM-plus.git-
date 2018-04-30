@@ -32,6 +32,8 @@ wmake $targetType meshTools
 
 # Decomposition methods needed by dummyThirdParty
 # (dummy metisDecomp, scotchDecomp etc) needed by e.g. meshTools
+wmakeLnInclude -u regionModels/regionModel
+wmakeLnInclude -u regionCoupled
 parallel/decompose/AllwmakeLnInclude
 dummyThirdParty/Allwmake $targetType $*
 
@@ -50,6 +52,8 @@ wmake $targetType sampling
 wmake $targetType dynamicFvMesh
 wmake $targetType sampling
 wmake $targetType topoChangerFvMesh
+
+wmake $targetType regionCoupled
 
 # Compile scotchDecomp, metisDecomp etc.
 parallel/Allwmake $targetType $*
@@ -73,7 +77,6 @@ wmake $targetType waveModels
 
 wmake $targetType engine
 wmake $targetType fvOptions
-wmake $targetType regionCoupled
 
 functionObjects/Allwmake $targetType $*
 
