@@ -54,6 +54,8 @@ SourceFiles
 #define assembleDecomp_H
 
 #include "decompositionMethod.H"
+#include "mappedPatchBase.H"
+#include "fvMesh.H"
 
 namespace Foam
 {
@@ -80,6 +82,14 @@ class assembleDecomp
 
 
     // Private Member Functions
+
+         //- Find nrb mesh Id for mapped patches
+        label findNbrMeshId
+        (
+            const mappedPatchBase&,
+            const UPtrList<fvMesh>&
+        ) const;
+
 
         //- Disallow default bitwise copy construct and assignment
         void operator=(const assembleDecomp&) = delete;

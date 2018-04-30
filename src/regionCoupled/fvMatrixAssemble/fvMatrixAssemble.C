@@ -582,7 +582,7 @@ Foam::SolverPerformance<Foam::scalar> Foam::fvMatrixAssemble::solve
     forAll (psis_, i)
     {
         psis_[i].correctBoundaryConditions();
-        //psis_[i].mesh().setSolverPerformance(psiName_, solverPerf);
+        psis_[i].mesh().setSolverPerformance(psiName_, solverPerf);
     }
 
     clear();

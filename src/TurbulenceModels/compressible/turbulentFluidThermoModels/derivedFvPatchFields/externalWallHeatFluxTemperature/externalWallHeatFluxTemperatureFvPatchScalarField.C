@@ -84,7 +84,7 @@ externalWallHeatFluxTemperatureFvPatchScalarField
     temperatureCoupledBase(patch(), dict),
     mode_(operationModeNames.lookup("mode", dict)),
     Q_(0),
-    Ta_(Function1<scalar>::New("Ta", dict)),
+    Ta_(),
     relaxation_(dict.lookupOrDefault<scalar>("relaxation", 1)),
     emissivity_(dict.lookupOrDefault<scalar>("emissivity", 0)),
     qrRelaxation_(dict.lookupOrDefault<scalar>("qrRelaxation", 1)),
@@ -109,6 +109,8 @@ externalWallHeatFluxTemperatureFvPatchScalarField
         case fixedHeatTransferCoeff:
         {
             h_ = scalarField("h", dict, p.size());
+
+            Ta_.reset(Function1<scalar>::New("Ta", dict).ptr());
 
             if (dict.found("thicknessLayers"))
             {

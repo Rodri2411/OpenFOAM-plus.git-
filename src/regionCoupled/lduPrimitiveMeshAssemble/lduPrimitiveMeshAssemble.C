@@ -35,8 +35,8 @@ namespace Foam
     defineTypeNameAndDebug(lduPrimitiveMeshAssemble, 0);
 }
 
-// * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
+// * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
 
 Foam::label Foam::lduPrimitiveMeshAssemble::totalSize
@@ -51,6 +51,23 @@ Foam::label Foam::lduPrimitiveMeshAssemble::totalSize
         size += meshes[i].lduAddr().size();
     }
     return size;
+}
+
+
+Foam::label Foam::lduPrimitiveMeshAssemble::findNbrMeshId
+(
+    const mappedPatchBase& pp,
+    const UPtrList<fvMesh>& meshes
+) const
+{
+    for(label i = 0; i < meshes.size(); i++)
+    {
+        if (meshes[i].name() == pp.sampleMesh().name())
+        {
+            return i;
+        }
+    }
+    return -1;
 }
 
 
@@ -123,7 +140,7 @@ Foam::lduPrimitiveMeshAssemble::lduPrimitiveMeshAssemble
                 if (pp.size() != nbrpp.size())
                 {
                     FatalErrorInFunction
-                        << "The number of faces on either side of the mapped
+                        << "The number of faces on either side of the mapped"
                         << "patch " << pp.name() << " are not the same."
                         << "This might be due to the decomposition used.Please"
                         << " use the type assembleDecomp."
@@ -229,21 +246,27 @@ Foam::lduPrimitiveMeshAssemble::lduPrimitiveMeshAssemble
                                 patchAddr_[globalNbr]
                             )
                         );
+
+                        interfaces().set
+                        (
+                            interfaceID,
+                            &primitiveInterfaces()[interfaceID]
+                        );
                     }
                     else
                     {
                         primitiveInterfaces().set
                         (
                             interfaceID,
+                            nullptr
+                        );
+
+                        interfaces().set
+                        (
+                            interfaceID,
                             interfacesLst(patchI)
                         );
                     }
-
-                    interfaces().set
-                    (
-                        interfaceID,
-                        &primitiveInterfaces()[interfaceID]
-                    );
                 }
                 interfaceID++;
             }
@@ -426,22 +449,5 @@ Foam::lduPrimitiveMeshAssemble::lduPrimitiveMeshAssemble
     }
 }
 
-// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
-
-Foam::label Foam::lduPrimitiveMeshAssemble::findNbrMeshId
-(
-    const mappedPatchBase& pp,
-    const UPtrList<fvMesh>& meshes
-) const
-{
-    for(label i = 0; i < meshes.size(); i++)
-    {
-        if (meshes[i].name() == pp.sampleMesh().name())
-        {
-            return i;
-        }
-    }
-    return -1;
-}
-
 // ************************************************************************* //
+

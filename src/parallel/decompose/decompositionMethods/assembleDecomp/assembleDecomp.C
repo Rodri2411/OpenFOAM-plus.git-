@@ -46,6 +46,23 @@ namespace Foam
     );
 }
 
+// * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
+
+Foam::label Foam::assembleDecomp::findNbrMeshId
+(
+    const mappedPatchBase& pp,
+    const UPtrList<fvMesh>& meshes
+) const
+{
+    for(label i = 0; i < meshes.size(); i++)
+    {
+        if (meshes[i].name() == pp.sampleMesh().name())
+        {
+            return i;
+        }
+    }
+    return -1;
+}
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -75,9 +92,9 @@ Foam::labelList Foam::assembleDecomp::decompose
     const wordList solidsNames(rp["solid"]);
 
      //- Use regionProperties to find all other regions
-    UPtrList<fvMesh> allMeshes(fluidNames.size() + solidsNames.size());
+    UPtrList<fvMesh> meshes(fluidNames.size() + solidsNames.size());
 
-    wordList meshNames(allMeshes.size());
+    wordList meshNames(meshes.size());
 
     label regioni = 0;
     forAll(fluidNames, i)
@@ -89,9 +106,9 @@ Foam::labelList Foam::assembleDecomp::decompose
         meshNames[regioni++] = solidsNames[i];
     }
 
-    forAll(allMeshes, i)
+    forAll(meshes, i)
     {
-        allMeshes.set
+        meshes.set
         (
             i,
             new fvMesh
@@ -117,7 +134,7 @@ Foam::labelList Foam::assembleDecomp::decompose
         false
     );
 
-    lduPrimitiveMeshAssemble assembleLduMesh(allMeshes, io);
+    lduPrimitiveMeshAssemble assembleLduMesh(meshes, io);
 
     const lduAddressing& addr = assembleLduMesh.lduAddr();
 
@@ -146,56 +163,80 @@ Foam::labelList Foam::assembleDecomp::decompose
     const labelUList& nbr = addr.upperAddr();
     const labelUList& own = addr.lowerAddr();
 
-    forAll(allMeshes, i)
+    PackedBoolList isMappedFace(addr.upperAddr().size());
     {
-        // extend the same processor Id on each side of the mappedPatch
-        forAll(allMeshes[i].boundaryMesh(), patchI)
+        forAll(meshes, i)
         {
-            const polyPatch& pp = allMeshes[i].boundaryMesh()[patchI];
-            if (isA<mappedPatchBase>(pp))
+            forAll(meshes[i].boundaryMesh(), patchI)
             {
-                const mappedPatchBase& mpp =
-                    refCast<const mappedPatchBase>(pp);
-
-                if (mpp.owner())
+                const polyPatch& pp = meshes[i].boundaryMesh()[patchI];
+                if (isA<mappedPatchBase>(pp))
                 {
                     forAll (pp, localFaceI)
                     {
-                        //label faceI = pp.start() + localFaceI;
                         label allFacei =
                             assembleLduMesh.faceBoundMap()[i][patchI]
                             [
                                 localFaceI
                             ];
-
-                        subDecomp[nbr[allFacei]] = subDecomp[own[allFacei]];
+                        isMappedFace[allFacei] = true;
                     }
                 }
             }
         }
     }
 
+    while (true)
+    {
+
+        label nChanged = 0;
+
+        forAll(addr.upperAddr(), facei)
+        {
+            if (isMappedFace[facei])
+            {
+                label ownProc = subDecomp[own[facei]];
+                label neiProc = subDecomp[nbr[facei]];
+                if (ownProc < neiProc)
+                {
+                    subDecomp[nbr[facei]] = ownProc;
+                    nChanged++;
+                }
+                else if (neiProc < ownProc)
+                {
+                    subDecomp[own[facei]] = neiProc;
+                    nChanged++;
+                }
+            }
+        }
+
+        if (returnReduce(nChanged, sumOp<label>()) == 0)
+        {
+            break;
+        }
+    }
+
     label offset(0);
 
-    forAll(allMeshes, i)
+    forAll(meshes, i)
     {
         // Write decompositions for other regions
-        if (mesh.name() != allMeshes[i].name())
+        if (mesh.name() != meshes[i].name())
         {
             labelIOList otherDecomp
             (
                 IOobject
                 (
                     dataFile_,
-                    allMeshes[i].facesInstance(),
-                    allMeshes[i],
+                    meshes[i].facesInstance(),
+                    meshes[i],
                     IOobject::NO_READ,
                     IOobject::NO_WRITE
                 ),
                 SubList<label>
                 (
                     subDecomp,
-                    allMeshes[i].nCells(),
+                    meshes[i].nCells(),
                     offset
                 )
             );
@@ -203,7 +244,7 @@ Foam::labelList Foam::assembleDecomp::decompose
             otherDecomp.write();
         }
 
-        offset += allMeshes[i].nCells();
+        offset += meshes[i].nCells();
     }
 
     const labelList localDecomp = SubList<label>(subDecomp, mesh.nCells());
