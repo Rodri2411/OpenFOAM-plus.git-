@@ -31,6 +31,7 @@ License
 #include "fvMesh.H"
 #include "lduPrimitiveMeshAssemble.H"
 #include "labelIOList.H"
+#include "volFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -88,8 +89,8 @@ Foam::labelList Foam::assembleDecomp::decompose
 
     regionProperties rp(mesh.time());
 
-    const wordList fluidNames(rp["fluid"]);
-    const wordList solidsNames(rp["solid"]);
+    const wordList& fluidNames(rp["fluid"]);
+    const wordList& solidsNames(rp["solid"]);
 
      //- Use regionProperties to find all other regions
     UPtrList<fvMesh> meshes(fluidNames.size() + solidsNames.size());
@@ -146,18 +147,30 @@ Foam::labelList Foam::assembleDecomp::decompose
         Pstream::parRun()
     );
 
-    labelListList assembleCellCells =
-        static_cast<const lduPrimitiveMesh&>(assembleLduMesh).globalCellCells
+    const labelListList assembleCellCells
+    (
+        assembleLduMesh.globalCellCells
         (
             assembleLduMesh,
             globalNumbering
-        );
+        )
+    );
 
-    const pointField dummyCc(addr.size(), vector::zero);
+    vectorField cellCentres(addr.size(), vector::zero);
 
-    labelList subDecomp
+    forAll(meshes, i)
+    {
+        const label cellOffset = assembleLduMesh.cellOffsets()[i];
+
+        forAll (meshes[i].C(), localCellI)
+        {
+            cellCentres[cellOffset + localCellI] = meshes[i].C()[localCellI];
+        }
+    }
+
+    labelList assemblyDecomp
     (
-        method_().decompose(assembleCellCells, dummyCc)
+        method_().decompose(assembleCellCells, cellCentres)
     );
 
     const labelUList& nbr = addr.upperAddr();
@@ -191,20 +204,20 @@ Foam::labelList Foam::assembleDecomp::decompose
 
         label nChanged = 0;
 
-        forAll(addr.upperAddr(), facei)
+        forAll(own, facei)
         {
             if (isMappedFace[facei])
             {
-                label ownProc = subDecomp[own[facei]];
-                label neiProc = subDecomp[nbr[facei]];
+                label ownProc = assemblyDecomp[own[facei]];
+                label neiProc = assemblyDecomp[nbr[facei]];
                 if (ownProc < neiProc)
                 {
-                    subDecomp[nbr[facei]] = ownProc;
+                    assemblyDecomp[nbr[facei]] = ownProc;
                     nChanged++;
                 }
                 else if (neiProc < ownProc)
                 {
-                    subDecomp[own[facei]] = neiProc;
+                    assemblyDecomp[own[facei]] = neiProc;
                     nChanged++;
                 }
             }
@@ -217,6 +230,8 @@ Foam::labelList Foam::assembleDecomp::decompose
     }
 
     label offset(0);
+
+    labelList localDecomp(mesh.nCells());
 
     forAll(meshes, i)
     {
@@ -235,7 +250,7 @@ Foam::labelList Foam::assembleDecomp::decompose
                 ),
                 SubList<label>
                 (
-                    subDecomp,
+                    assemblyDecomp,
                     meshes[i].nCells(),
                     offset
                 )
@@ -243,11 +258,13 @@ Foam::labelList Foam::assembleDecomp::decompose
 
             otherDecomp.write();
         }
+        else
+        {
+            localDecomp = SubList<label>(assemblyDecomp, mesh.nCells(), offset);
+        }
 
         offset += meshes[i].nCells();
     }
-
-    const labelList localDecomp = SubList<label>(subDecomp, mesh.nCells());
 
     // Return decomposition of my region
     return localDecomp;
