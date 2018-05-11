@@ -71,7 +71,7 @@ void Foam::swirlFanVelocityFvPatchField::calcFanJump()
         if (useRealRadius_)
         {
             const scalarField rMag(mag(patch().Cf() - origin_));
-            forAll (rMag, i)
+            forAll(rMag, i)
             {
                 if (rMag[i] > rInner_ &&  rMag[i] < rOuter_)
                 {

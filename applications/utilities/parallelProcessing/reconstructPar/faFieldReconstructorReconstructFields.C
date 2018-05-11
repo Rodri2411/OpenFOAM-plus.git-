@@ -48,7 +48,7 @@ Foam::faFieldReconstructor::reconstructFaAreaField
         procMeshes_.size()
     );
 
-    forAll (procMeshes_, procI)
+    forAll(procMeshes_, procI)
     {
         procFields.set
         (
@@ -89,7 +89,7 @@ Foam::faFieldReconstructor::reconstructFaAreaField
         gStarts[i] = gStarts[i-1] + mesh_.boundary()[i-1].labelList::size();
     }
 
-    forAll (procMeshes_, procI)
+    forAll(procMeshes_, procI)
     {
         const GeometricField<Type, faPatchField, areaMesh>& procField =
             procFields[procI];
@@ -203,7 +203,7 @@ Foam::faFieldReconstructor::reconstructFaAreaField
 //                         label curBPatch = mesh_.boundary().whichPatch(curE);
                         label curBPatch = -1;
 
-                        forAll (mesh_.boundary(), pI)
+                        forAll(mesh_.boundary(), pI)
                         {
                             if
                             (
@@ -307,7 +307,7 @@ Foam::faFieldReconstructor::reconstructFaEdgeField
         procMeshes_.size()
     );
 
-    forAll (procMeshes_, procI)
+    forAll(procMeshes_, procI)
     {
         procFields.set
         (
@@ -348,7 +348,7 @@ Foam::faFieldReconstructor::reconstructFaEdgeField
     }
 
 
-    forAll (procMeshes_, procI)
+    forAll(procMeshes_, procI)
     {
         const GeometricField<Type, faePatchField, edgeMesh>& procField =
             procFields[procI];
@@ -361,7 +361,7 @@ Foam::faFieldReconstructor::reconstructFaEdgeField
         {
             labelList curAddr(edgeProcAddressing_[procI]);
 
-//             forAll (curAddr, addrI)
+//             forAll(curAddr, addrI)
 //             {
 //                 curAddr[addrI] -= 1;
 //             }
@@ -476,7 +476,7 @@ Foam::faFieldReconstructor::reconstructFaEdgeField
 
                             label curBPatch = -1;
 
-                            forAll (mesh_.boundary(), pI)
+                            forAll(mesh_.boundary(), pI)
                             {
                                 if
                                 (

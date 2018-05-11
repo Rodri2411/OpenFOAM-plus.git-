@@ -47,7 +47,7 @@ writeFileHeader
     const wordList& speciesNames =
         chemistryModel_.thermo().composition().species();
 
-    forAll (speciesNames, si)
+    forAll(speciesNames, si)
     {
         writeTabbed(os, speciesNames[si]);
     }

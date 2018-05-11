@@ -49,7 +49,7 @@ faFieldDecomposer::decomposeField
     // Create and map the patch field values
     PtrList<faPatchField<Type> > patchFields(boundaryAddressing_.size());
 
-    forAll (boundaryAddressing_, patchi)
+    forAll(boundaryAddressing_, patchi)
     {
         if (boundaryAddressing_[patchi] >= 0)
         {
@@ -121,7 +121,7 @@ faFieldDecomposer::decomposeField
             procMesh_.nInternalEdges()
         )
     );
-    forAll (mapAddr, i)
+    forAll(mapAddr, i)
     {
         mapAddr[i] -= 1;
     }
@@ -140,18 +140,18 @@ faFieldDecomposer::decomposeField
     // (i.e. using slices)
     Field<Type> allEdgeField(field.mesh().nEdges());
 
-    forAll (field.internalField(), i)
+    forAll(field.internalField(), i)
     {
         allEdgeField[i] = field.internalField()[i];
     }
 
-    forAll (field.boundaryField(), patchi)
+    forAll(field.boundaryField(), patchi)
     {
         const Field<Type> & p = field.boundaryField()[patchi];
 
         const label patchStart = field.mesh().boundary()[patchi].start();
 
-        forAll (p, i)
+        forAll(p, i)
         {
             allEdgeField[patchStart + i] = p[i];
         }
@@ -160,7 +160,7 @@ faFieldDecomposer::decomposeField
     // Create and map the patch field values
     PtrList<faePatchField<Type> > patchFields(boundaryAddressing_.size());
 
-    forAll (boundaryAddressing_, patchi)
+    forAll(boundaryAddressing_, patchi)
     {
         if (boundaryAddressing_[patchi] >= 0)
         {
@@ -223,7 +223,7 @@ void faFieldDecomposer::decomposeFields
     const PtrList<GeoField>& fields
 ) const
 {
-    forAll (fields, fieldI)
+    forAll(fields, fieldI)
     {
         decomposeField(fields[fieldI])().write();
     }
