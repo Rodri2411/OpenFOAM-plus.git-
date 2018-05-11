@@ -57,11 +57,11 @@ Foam::distributionModels::multiNormal::multiNormal
 
     scalar sMax = 0;
     label n = strength_.size();
-    for (label i=0; i<n; i++)
+    for (label i=0; i<n; ++i)
     {
         scalar x = expectation_[i];
         scalar s = strength_[i];
-        for (label j=0; j<n; j++)
+        for (label j=0; j<n; ++j)
         {
             if (i!=j)
             {
@@ -74,7 +74,7 @@ Foam::distributionModels::multiNormal::multiNormal
         sMax = max(sMax, s);
     }
 
-    for (label i=0; i<n; i++)
+    for (label i=0; i<n; ++i)
     {
         strength_[i] /= sMax;
     }
@@ -114,7 +114,7 @@ Foam::scalar Foam::distributionModels::multiNormal::sample() const
         y = rndGen_.sample01<scalar>();
         scalar p = 0.0;
 
-        for (label i=0; i<n; i++)
+        for (label i=0; i<n; ++i)
         {
             scalar nu = expectation_[i];
             scalar sigma = variance_[i];

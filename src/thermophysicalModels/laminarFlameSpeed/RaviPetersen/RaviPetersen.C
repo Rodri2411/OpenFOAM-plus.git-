@@ -189,7 +189,7 @@ inline Foam::scalar Foam::laminarFlameSpeedModels::RaviPetersen::dPolynomial
 {
     scalar xPow = 1.0;
     scalar y = 0.0;
-    for (label i = 1; i < coeffs.size(); i++)
+    for (label i = 1; i < coeffs.size(); ++i)
     {
         y += i*coeffs[i]*xPow;
         xPow *= x;

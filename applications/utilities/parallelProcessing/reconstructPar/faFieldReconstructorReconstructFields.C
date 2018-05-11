@@ -84,7 +84,7 @@ Foam::faFieldReconstructor::reconstructFaAreaField
         gStarts[0] = mesh_.nInternalEdges();
     }
 
-    for(label i=1; i<mesh_.boundary().size(); i++)
+    for (label i=1; i<mesh_.boundary().size(); ++i)
     {
         gStarts[i] = gStarts[i-1] + mesh_.boundary()[i-1].labelList::size();
     }
@@ -112,7 +112,7 @@ Foam::faFieldReconstructor::reconstructFaAreaField
             starts[0] = procMeshes_[procI].nInternalEdges();
         }
 
-        for(label i=1; i<procMeshes_[procI].boundary().size(); i++)
+        for (label i=1; i<procMeshes_[procI].boundary().size(); ++i)
         {
             starts[i] =
                 starts[i-1]
@@ -342,7 +342,7 @@ Foam::faFieldReconstructor::reconstructFaEdgeField
         gStarts[0] = mesh_.nInternalEdges();
     }
 
-    for(label i=1; i<mesh_.boundary().size(); i++)
+    for (label i=1; i<mesh_.boundary().size(); ++i)
     {
         gStarts[i] = gStarts[i-1] + mesh_.boundary()[i-1].labelList::size();
     }
@@ -382,7 +382,7 @@ Foam::faFieldReconstructor::reconstructFaEdgeField
             starts[0] = procMeshes_[procI].nInternalEdges();
         }
 
-        for(label i=1; i<procMeshes_[procI].boundary().size(); i++)
+        for (label i=1; i<procMeshes_[procI].boundary().size(); ++i)
         {
             starts[i] =
                 starts[i-1]

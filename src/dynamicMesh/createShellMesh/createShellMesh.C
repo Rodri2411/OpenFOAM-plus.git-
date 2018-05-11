@@ -503,7 +503,7 @@ void Foam::createShellMesh::setRefinement
     labelList addedCells(nLayers*patch_.size());
     forAll(patch_, facei)
     {
-        for (label layerI = 0; layerI < nLayers; layerI++)
+        for (label layerI = 0; layerI < nLayers; ++layerI)
         {
             addedCells[nLayers*facei+layerI] = meshMod.addCell
             (
@@ -551,7 +551,7 @@ void Foam::createShellMesh::setRefinement
 
         point pt = patch_.localPoints()[pointi];
         point disp = firstLayerDisp[regionI];
-        for (label layerI = 0; layerI < nLayers; layerI++)
+        for (label layerI = 0; layerI < nLayers; ++layerI)
         {
             pt += disp;
 
@@ -606,7 +606,7 @@ void Foam::createShellMesh::setRefinement
 
         face newF(f.size());
 
-        for (label layerI = 0; layerI < nLayers; layerI++)
+        for (label layerI = 0; layerI < nLayers; ++layerI)
         {
             // Pick up point based on region and layer
             forAll(f, fp)
@@ -707,7 +707,7 @@ void Foam::createShellMesh::setRefinement
 
         face newF(4);
 
-        for (label layerI = 0; layerI < nLayers; layerI++)
+        for (label layerI = 0; layerI < nLayers; ++layerI)
         {
             label region0 = pointRegions_[eFaces[0]][fp0];
             label region1 = pointRegions_[eFaces[0]][fp1];
@@ -736,7 +736,7 @@ void Foam::createShellMesh::setRefinement
                 // rotate one back to get newF[1] (originating from e[0])
                 // into newF[0]
                 label v0 = newF[0];
-                for (label i = 0; i < newF.size()-1; i++)
+                for (label i = 0; i < newF.size()-1; ++i)
                 {
                     newF[i] = newF[newF.fcIndex(i)];
                 }
@@ -806,7 +806,7 @@ void Foam::createShellMesh::setRefinement
 
         if (ePatches.size() >= 2)
         {
-            for (label i = 1; i < ePatches.size(); i++)
+            for (label i = 1; i < ePatches.size(); ++i)
             {
                 // Extrude eFaces[i]
                 label minFacei = eFaces[i];
@@ -825,7 +825,7 @@ void Foam::createShellMesh::setRefinement
                 }
 
                 face newF(4);
-                for (label layerI = 0; layerI < nLayers; layerI++)
+                for (label layerI = 0; layerI < nLayers; ++layerI)
                 {
                     label region0 = pointRegions_[minFacei][fp0];
                     label region1 = pointRegions_[minFacei][fp1];
@@ -854,7 +854,7 @@ void Foam::createShellMesh::setRefinement
                         // rotate one back to get newF[1] (originating
                         // from e[0]) into newF[0].
                         label v0 = newF[0];
-                        for (label i = 0; i < newF.size()-1; i++)
+                        for (label i = 0; i < newF.size()-1; ++i)
                         {
                             newF[i] = newF[newF.fcIndex(i)];
                         }

@@ -49,7 +49,7 @@ vertices #codeStream
         // Duplicate z points
         label sz = points.size();
         points.setSize(2*sz);
-        for (label i = 0; i < sz; i++)
+        for (label i = 0; i < sz; ++i)
         {
             const point& pt = points[i];
             points[i+sz] = point(pt.x(), pt.y(), -pt.z());

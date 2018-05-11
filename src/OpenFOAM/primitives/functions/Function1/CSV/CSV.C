@@ -105,7 +105,7 @@ void Foam::Function1Types::CSV<Type>::read()
     DynamicList<Tuple2<scalar, Type>> values;
 
     // skip header
-    for (label i = 0; i < nHeaderLine_; i++)
+    for (label i = 0; i < nHeaderLine_; ++i)
     {
         string line;
         is.getLine(line);

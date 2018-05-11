@@ -91,7 +91,7 @@ Foam::mapPolyMesh::mapPolyMesh
     oldCellVolumesPtr_(oldCellVolumesPtr)
 {
     // Calculate old patch sizes
-    for (label patchi = 0; patchi < oldPatchStarts_.size() - 1; patchi++)
+    for (label patchi = 0; patchi < oldPatchStarts_.size() - 1; ++patchi)
     {
         oldPatchSizes_[patchi] =
             oldPatchStarts_[patchi + 1] - oldPatchStarts_[patchi];
@@ -189,7 +189,7 @@ Foam::mapPolyMesh::mapPolyMesh
     if (oldPatchStarts_.size() > 0)
     {
         // Calculate old patch sizes
-        for (label patchi = 0; patchi < oldPatchStarts_.size() - 1; patchi++)
+        for (label patchi = 0; patchi < oldPatchStarts_.size() - 1; ++patchi)
         {
             oldPatchSizes_[patchi] =
                 oldPatchStarts_[patchi + 1] - oldPatchStarts_[patchi];

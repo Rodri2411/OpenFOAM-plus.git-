@@ -155,7 +155,7 @@ public:
                 )
             );
 
-            for (direction cmpt=0; cmpt<pTraits<Type>::nComponents; cmpt++)
+            for (direction cmpt=0; cmpt<pTraits<Type>::nComponents; ++cmpt)
             {
                 tsfCorr.ref().replace
                 (

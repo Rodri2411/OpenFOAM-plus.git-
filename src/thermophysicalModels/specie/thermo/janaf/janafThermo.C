@@ -67,7 +67,7 @@ Foam::janafThermo<EquationOfState>::janafThermo(const dictionary& dict)
     lowCpCoeffs_(dict.subDict("thermodynamics").lookup("lowCpCoeffs"))
 {
     // Convert coefficients to mass-basis
-    for (label coefLabel=0; coefLabel<nCoeffs_; coefLabel++)
+    for (label coefLabel=0; coefLabel<nCoeffs_; ++coefLabel)
     {
         highCpCoeffs_[coefLabel] *= this->R();
         lowCpCoeffs_[coefLabel] *= this->R();
@@ -87,7 +87,7 @@ void Foam::janafThermo<EquationOfState>::write(Ostream& os) const
     // Convert coefficients back to dimensionless form
     coeffArray highCpCoeffs;
     coeffArray lowCpCoeffs;
-    for (label coefLabel=0; coefLabel<nCoeffs_; coefLabel++)
+    for (label coefLabel=0; coefLabel<nCoeffs_; ++coefLabel)
     {
         highCpCoeffs[coefLabel] = highCpCoeffs_[coefLabel]/this->R();
         lowCpCoeffs[coefLabel] = lowCpCoeffs_[coefLabel]/this->R();

@@ -44,7 +44,7 @@ Foam::chemistryReductionMethods::EFA<CompType, ThermoType>::EFA
 {
     const List<List<specieElement>>& specieComposition =
     this->chemistry_.specieComp();
-    for (label i=0; i<this->nSpecie_; i++)
+    for (label i=0; i<this->nSpecie_; ++i)
     {
         const List<specieElement>& curSpecieComposition =
         specieComposition[i];
@@ -102,7 +102,7 @@ void Foam::chemistryReductionMethods::EFA<CompType, ThermoType>::reduceMechanism
     scalarField& completeC(this->chemistry_.completeC());
     scalarField c1(this->chemistry_.nEqns(), 0.0);
 
-    for (label i=0; i<this->nSpecie_; i++)
+    for (label i=0; i<this->nSpecie_; ++i)
     {
         c1[i] = c[i];
         completeC[i] = c[i];
@@ -245,7 +245,7 @@ void Foam::chemistryReductionMethods::EFA<CompType, ThermoType>::reduceMechanism
     // Select species according to the total flux cutoff (1-tolerance)
     // of the flux is included
     label speciesNumber = 0;
-    for (label i=0; i<this->nSpecie_; i++)
+    for (label i=0; i<this->nSpecie_; ++i)
     {
         this->activeSpecies_[i] = false;
     }
@@ -256,9 +256,9 @@ void Foam::chemistryReductionMethods::EFA<CompType, ThermoType>::reduceMechanism
         labelList source(nbPairs);
         labelList sink(nbPairs);
         label nP(0);
-        for (int A=0; A<this->nSpecie_ ; A++)
+        for (int A=0; A<this->nSpecie_; ++A)
         {
-            for (int j=0; j<NbrABInit[A]; j++)
+            for (int j=0; j<NbrABInit[A]; ++j)
             {
                 label pairIndex = nP++;
                 pairsFlux[pairIndex] = 0.0;
@@ -293,7 +293,7 @@ void Foam::chemistryReductionMethods::EFA<CompType, ThermoType>::reduceMechanism
             label nbi = min(nbToSort, nbPairs-startPoint);
             pairsFlux.partialSort(nbi, startPoint);
             const labelList& idx = pairsFlux.indices();
-            for (int i=0; i<nbi; i++)
+            for (int i=0; i<nbi; ++i)
             {
                 cumFlux += pairsFlux[idx[startPoint+i]];
                 if (!this->activeSpecies_[source[idx[startPoint+i]]])
@@ -322,9 +322,9 @@ void Foam::chemistryReductionMethods::EFA<CompType, ThermoType>::reduceMechanism
         labelList source(nbPairs);
         labelList sink(nbPairs);
         label nP(0);
-        for (int A=0; A<this->nSpecie_ ; A++)
+        for (int A=0; A<this->nSpecie_; ++A)
         {
-            for (int j=0; j<NbrABInit[A]; j++)
+            for (int j=0; j<NbrABInit[A]; ++j)
             {
                 label pairIndex = nP++;
                 pairsFlux[pairIndex] = 0.0;
@@ -355,7 +355,7 @@ void Foam::chemistryReductionMethods::EFA<CompType, ThermoType>::reduceMechanism
             label nbi = min(nbToSort, nbPairs-startPoint);
             pairsFlux.partialSort(nbi, startPoint);
             const labelList& idx = pairsFlux.indices();
-            for (int i=0; i<nbi; i++)
+            for (int i=0; i<nbi; ++i)
             {
                 cumFlux += pairsFlux[idx[startPoint+i]];
 
@@ -385,9 +385,9 @@ void Foam::chemistryReductionMethods::EFA<CompType, ThermoType>::reduceMechanism
         labelList source(nbPairs);
         labelList sink(nbPairs);
         label nP(0);
-        for (int A=0; A<this->nSpecie_ ; A++)
+        for (int A=0; A<this->nSpecie_; ++A)
         {
-            for (int j=0; j<NbrABInit[A]; j++)
+            for (int j=0; j<NbrABInit[A]; ++j)
             {
                 label pairIndex = nP++;
                 pairsFlux[pairIndex] = 0.0;
@@ -417,7 +417,7 @@ void Foam::chemistryReductionMethods::EFA<CompType, ThermoType>::reduceMechanism
             label nbi = min(nbToSort, nbPairs-startPoint);
             pairsFlux.partialSort(nbi, startPoint);
             const labelList& idx = pairsFlux.indices();
-            for (int i=0; i<nbi; i++)
+            for (int i=0; i<nbi; ++i)
             {
                 cumFlux += pairsFlux[idx[startPoint+i]];
 
@@ -447,9 +447,9 @@ void Foam::chemistryReductionMethods::EFA<CompType, ThermoType>::reduceMechanism
         labelList source(nbPairs);
         labelList sink(nbPairs);
         label nP(0);
-        for (int A=0; A<this->nSpecie_ ; A++)
+        for (int A=0; A<this->nSpecie_; ++A)
         {
-            for (int j=0; j<NbrABInit[A]; j++)
+            for (int j=0; j<NbrABInit[A]; ++j)
             {
                 label pairIndex = nP++;
                 pairsFlux[pairIndex] = 0.0;
@@ -479,7 +479,7 @@ void Foam::chemistryReductionMethods::EFA<CompType, ThermoType>::reduceMechanism
             label nbi = min(nbToSort, nbPairs-startPoint);
             pairsFlux.partialSort(nbi, startPoint);
             const labelList& idx = pairsFlux.indices();
-            for (int i=0; i<nbi; i++)
+            for (int i=0; i<nbi; ++i)
             {
                 cumFlux += pairsFlux[idx[startPoint+i]];
 
@@ -539,7 +539,7 @@ void Foam::chemistryReductionMethods::EFA<CompType, ThermoType>::reduceMechanism
     Field<label>& c2s(this->chemistry_.completeToSimplifiedIndex());
     label j = 0;
 
-    for (label i=0; i<this->nSpecie_; i++)
+    for (label i=0; i<this->nSpecie_; ++i)
     {
         if (this->activeSpecies_[i])
         {

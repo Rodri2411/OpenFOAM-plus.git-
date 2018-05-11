@@ -46,7 +46,7 @@
         talphaPhiCorr0 = talphaPhiUD;
     }
 
-    for (int aCorr=0; aCorr<nAlphaCorr; aCorr++)
+    for (int aCorr=0; aCorr<nAlphaCorr; ++aCorr)
     {
         tmp<surfaceScalarField> talphaPhiUn
         (

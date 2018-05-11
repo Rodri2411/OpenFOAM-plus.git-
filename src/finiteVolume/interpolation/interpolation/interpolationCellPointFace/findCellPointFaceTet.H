@@ -71,7 +71,7 @@ bool interpolationCellPointFace<Type>::findTet
         bool inside = true;
         scalar dist = 0.0;
 
-        for (label n=0; n<4; n++)
+        for (label n=0; n<4; ++n)
         {
             label p1 = (n + 1) % 4;
             label p2 = (n + 2) % 4;
@@ -118,7 +118,7 @@ bool interpolationCellPointFace<Type>::findTet
                 minDistance = mag(dist - 1.0);
                 closestFace = nFace;
 
-                for (label i=0; i<4; i++)
+                for (label i=0; i<4; ++i)
                 {
                     phiCandidate[i] = phi[i];
                 }

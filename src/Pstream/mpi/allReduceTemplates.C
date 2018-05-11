@@ -52,7 +52,7 @@ void Foam::allReduce
             (
                 int slave=UPstream::firstSlave();
                 slave<=UPstream::lastSlave(communicator);
-                slave++
+                ++slave
             )
             {
                 Type value;
@@ -107,7 +107,7 @@ void Foam::allReduce
             (
                 int slave=UPstream::firstSlave();
                 slave<=UPstream::lastSlave(communicator);
-                slave++
+                ++slave
             )
             {
                 if

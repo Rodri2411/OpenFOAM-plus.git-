@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
     printInfo(Info, map);
     Info<< timer.cpuTimeIncrement() << " s\n\n";
 
-    for (label i = 0; i < nSize; i++)
+    for (label i = 0; i < nSize; ++i)
     {
         map.insert(i, i);
     }
@@ -72,9 +72,9 @@ int main(int argc, char *argv[])
     Info<< timer.cpuTimeIncrement() << " s\n\n";
 
     label elemI = 0;
-    for (label iLoop = 0; iLoop < nLoops; iLoop++)
+    for (label iLoop = 0; iLoop < nLoops; ++iLoop)
     {
-        for (label i = 0; i < nBase; i++)
+        for (label i = 0; i < nBase; ++i)
         {
             map.erase(elemI++);
         }

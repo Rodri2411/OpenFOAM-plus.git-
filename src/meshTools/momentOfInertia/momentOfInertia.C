@@ -315,7 +315,7 @@ void Foam::momentOfInertia::massPropertiesPatch
         {
             const label v0 = 0;
 
-            for (label i = 1; i < f.size() - 1; i++)
+            for (label i = 1; i < f.size() - 1; ++i)
             {
                 faces.append(triFace(f[v0], f[i],f[i + 1]));
             }

@@ -74,7 +74,7 @@ BEGIN {
         data = (data "<tr>\n");
         if (flag == 1)
         {
-            for (i = 0; i <= NF; i++)
+            for (i = 0; i <= NF; ++i)
             {
                 if ((i != 0) && (firstRow == 1))
                 {
@@ -95,7 +95,7 @@ BEGIN {
         }
         else if (flag == 2)
         {
-            for (i = 0; i <= NF; i++)
+            for (i = 0; i <= NF; ++i)
             {
                 if (i == 1)
                 {
@@ -110,7 +110,7 @@ BEGIN {
         }
         else if (flag == 3)
         {
-            for (i = 0; i <= NF; i++)
+            for (i = 0; i <= NF; ++i)
             {
                 if (i == 1)
                 {

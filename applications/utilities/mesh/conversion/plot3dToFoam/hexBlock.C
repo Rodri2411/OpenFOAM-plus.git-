@@ -45,11 +45,11 @@ void hexBlock::setHandedness()
 {
     const pointField& p = points_;
 
-    for (label k = 0; k <= zDim_ - 1; k++)
+    for (label k = 0; k <= zDim_ - 1; ++k)
     {
-        for (label j = 0; j <= yDim_ - 1; j++)
+        for (label j = 0; j <= yDim_ - 1; ++j)
         {
-            for (label i = 0; i <= xDim_ - 1; i++)
+            for (label i = 0; i <= xDim_ - 1; ++i)
             {
                 vector x = p[vtxLabel(i+1, j, k)] - p[vtxLabel(i, j, k)];
                 vector y = p[vtxLabel(i, j+1, k)] - p[vtxLabel(i, j, k)];
@@ -126,13 +126,13 @@ void hexBlock::readPoints
     }
 
     Info<< "Reading " << nPoints << " x coordinates..." << endl;
-    for (label i=0; i < nPoints; i++)
+    for (label i=0; i < nPoints; ++i)
     {
         is  >> points_[i].x();
     }
 
     Info<< "Reading " << nPoints << " y coordinates..." << endl;
-    for (label i=0; i < nPoints; i++)
+    for (label i=0; i < nPoints; ++i)
     {
         is  >> points_[i].y();
     }
@@ -141,11 +141,11 @@ void hexBlock::readPoints
     {
         Info<< "Extruding " << nPoints << " points in z direction..." << endl;
         // Duplicate points
-        for (label i=0; i < nPoints; i++)
+        for (label i=0; i < nPoints; ++i)
         {
             points_[i+nPoints] = points_[i];
         }
-        for (label i=0; i < nPoints; i++)
+        for (label i=0; i < nPoints; ++i)
         {
             points_[i].z() = 0;
             points_[i+nPoints].z() = twoDThicknes;
@@ -154,7 +154,7 @@ void hexBlock::readPoints
     else
     {
         Info<< "Reading " << nPoints << " z coordinates..." << endl;
-        for (label i=0; i < nPoints; i++)
+        for (label i=0; i < nPoints; ++i)
         {
             is  >> points_[i].z();
         }
@@ -164,7 +164,7 @@ void hexBlock::readPoints
     if (readBlank)
     {
         Info<< "Reading " << nPoints << " blanks..." << endl;
-        for (label i=0; i < nPoints; i++)
+        for (label i=0; i < nPoints; ++i)
         {
             is  >> iBlank;
         }
@@ -183,11 +183,11 @@ labelListList hexBlock::blockCells() const
 
     if (blockHandedness_ == right)
     {
-        for (label k = 0; k <= zDim_ - 1; k++)
+        for (label k = 0; k <= zDim_ - 1; ++k)
         {
-            for (label j = 0; j <= yDim_ - 1; j++)
+            for (label j = 0; j <= yDim_ - 1; ++j)
             {
-                for (label i = 0; i <= xDim_ - 1; i++)
+                for (label i = 0; i <= xDim_ - 1; ++i)
                 {
                     labelList& hexLabels = result[cellNo];
                     hexLabels.setSize(8);
@@ -208,11 +208,11 @@ labelListList hexBlock::blockCells() const
     }
     else if (blockHandedness_ == left)
     {
-        for (label k = 0; k <= zDim_ - 1; k++)
+        for (label k = 0; k <= zDim_ - 1; ++k)
         {
-            for (label j = 0; j <= yDim_ - 1; j++)
+            for (label j = 0; j <= yDim_ - 1; ++j)
             {
-                for (label i = 0; i <= xDim_ - 1; i++)
+                for (label i = 0; i <= xDim_ - 1; ++i)
                 {
                     labelList& hexLabels = result[cellNo];
                     hexLabels.setSize(8);
@@ -279,9 +279,9 @@ faceList hexBlock::patchFaces(const label direc, const labelList& range) const
             );
 
             label p = 0;
-            for (label k = zMinRange - 1; k <= zMaxRange - 1; k++)
+            for (label k = zMinRange - 1; k <= zMaxRange - 1; ++k)
             {
-                for (label j = yMinRange - 1; j <= yMaxRange - 1; j++)
+                for (label j = yMinRange - 1; j <= yMaxRange - 1; ++j)
                 {
                     result[p].setSize(4);
 
@@ -308,9 +308,9 @@ faceList hexBlock::patchFaces(const label direc, const labelList& range) const
             );
 
             label p = 0;
-            for (label i = xMinRange - 1; i <= xMaxRange - 1; i++)
+            for (label i = xMinRange - 1; i <= xMaxRange - 1; ++i)
             {
-                for (label k = zMinRange - 1; k <= zMaxRange - 1; k++)
+                for (label k = zMinRange - 1; k <= zMaxRange - 1; ++k)
                 {
                     result[p].setSize(4);
 
@@ -337,9 +337,9 @@ faceList hexBlock::patchFaces(const label direc, const labelList& range) const
             );
 
             label p = 0;
-            for (label i = xMinRange - 1; i <= xMaxRange - 1; i++)
+            for (label i = xMinRange - 1; i <= xMaxRange - 1; ++i)
             {
-                for (label j = yMinRange - 1; j <= yMaxRange - 1; j++)
+                for (label j = yMinRange - 1; j <= yMaxRange - 1; ++j)
                 {
                     result[p].setSize(4);
 
@@ -366,9 +366,9 @@ faceList hexBlock::patchFaces(const label direc, const labelList& range) const
             );
 
             label p = 0;
-            for (label k = zMinRange - 1; k <= zMaxRange - 1; k++)
+            for (label k = zMinRange - 1; k <= zMaxRange - 1; ++k)
             {
-                for (label j = yMinRange - 1; j <= yMaxRange - 1; j++)
+                for (label j = yMinRange - 1; j <= yMaxRange - 1; ++j)
                 {
                     result[p].setSize(4);
 
@@ -395,9 +395,9 @@ faceList hexBlock::patchFaces(const label direc, const labelList& range) const
             );
 
             label p = 0;
-            for (label i = xMinRange - 1; i <= xMaxRange - 1; i++)
+            for (label i = xMinRange - 1; i <= xMaxRange - 1; ++i)
             {
-                for (label k = zMinRange - 1; k <= zMaxRange - 1; k++)
+                for (label k = zMinRange - 1; k <= zMaxRange - 1; ++k)
                 {
                     result[p].setSize(4);
 
@@ -424,9 +424,9 @@ faceList hexBlock::patchFaces(const label direc, const labelList& range) const
             );
 
             label p = 0;
-            for (label i = xMinRange - 1; i <= xMaxRange - 1; i++)
+            for (label i = xMinRange - 1; i <= xMaxRange - 1; ++i)
             {
-                for (label j = yMinRange - 1; j <= yMaxRange - 1; j++)
+                for (label j = yMinRange - 1; j <= yMaxRange - 1; ++j)
                 {
                     result[p].setSize(4);
 

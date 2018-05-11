@@ -264,7 +264,7 @@ Foam::label Foam::RBD::rigidBodyModel::join
 
     // For all but the final joint in the set add a jointBody with the
     // joint and transform
-    for (label j=0; j<cJoint.size()-1; j++)
+    for (label j=0; j<cJoint.size()-1; ++j)
     {
         parent = join_
         (
@@ -387,7 +387,7 @@ void Foam::RBD::rigidBodyModel::write(Ostream& os) const
     os.beginBlock("bodies");
 
     // Write the moving bodies
-    for (label i=1; i<nBodies(); i++)
+    for (label i=1; i<nBodies(); ++i)
     {
         // Do not write joint-bodies created automatically to support elements
         // of composite joints

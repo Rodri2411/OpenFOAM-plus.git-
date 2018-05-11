@@ -97,7 +97,7 @@ void Foam::cellToFace::combine(topoSet& set, const bool add) const
 
 
         // Check all internal faces
-        for (label facei = 0; facei < nInt; facei++)
+        for (label facei = 0; facei < nInt; ++facei)
         {
             if (loadedSet.found(own[facei]) && loadedSet.found(nei[facei]))
             {

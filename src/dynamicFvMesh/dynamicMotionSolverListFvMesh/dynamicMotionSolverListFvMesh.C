@@ -84,7 +84,7 @@ bool Foam::dynamicMotionSolverListFvMesh::update()
         // Accumulated displacement
         pointField disp(motionSolvers_[0].newPoints() - fvMesh::points());
 
-        for (label i = 1; i < motionSolvers_.size(); i++)
+        for (label i = 1; i < motionSolvers_.size(); ++i)
         {
             disp += motionSolvers_[i].newPoints() - fvMesh::points();
         }

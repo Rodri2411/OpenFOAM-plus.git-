@@ -182,7 +182,7 @@ Foam::scalar Foam::chemistryModel<CompType, ThermoType>::omega
     lRef = R.lhs()[slRef].index;
 
     pf = kf;
-    for (label s = 1; s < Nl; s++)
+    for (label s = 1; s < Nl; ++s)
     {
         const label si = R.lhs()[s].index;
 
@@ -225,7 +225,7 @@ Foam::scalar Foam::chemistryModel<CompType, ThermoType>::omega
 
     // Find the matrix element and element position for the rhs
     pr = kr;
-    for (label s = 1; s < Nr; s++)
+    for (label s = 1; s < Nr; ++s)
     {
         const label si = R.rhs()[s].index;
         if (c[si] < c[rRef])
@@ -277,7 +277,7 @@ void Foam::chemistryModel<CompType, ThermoType>::derivatives
     const scalar T = c[nSpecie_];
     const scalar p = c[nSpecie_ + 1];
 
-    for (label i = 0; i < nSpecie_; i++)
+    for (label i = 0; i < nSpecie_; ++i)
     {
         c_[i] = max(0.0, c[i]);
     }
@@ -288,21 +288,21 @@ void Foam::chemistryModel<CompType, ThermoType>::derivatives
     // dT/dt = ...
     scalar rho = 0.0;
     scalar cSum = 0.0;
-    for (label i = 0; i < nSpecie_; i++)
+    for (label i = 0; i < nSpecie_; ++i)
     {
         const scalar W = specieThermo_[i].W();
         cSum += c_[i];
         rho += W*c_[i];
     }
     scalar cp = 0.0;
-    for (label i=0; i<nSpecie_; i++)
+    for (label i=0; i<nSpecie_; ++i)
     {
         cp += c_[i]*specieThermo_[i].cp(p, T);
     }
     cp /= rho;
 
     scalar dT = 0.0;
-    for (label i = 0; i < nSpecie_; i++)
+    for (label i = 0; i < nSpecie_; ++i)
     {
         const scalar hi = specieThermo_[i].ha(p, T);
         dT += hi*dcdt[i];
@@ -442,13 +442,13 @@ void Foam::chemistryModel<CompType, ThermoType>::jacobian
     const scalar delta = 1.0e-3;
 
     omega(c_, T + delta, p, dcdt_);
-    for (label i=0; i<nSpecie_; i++)
+    for (label i=0; i<nSpecie_; ++i)
     {
         dfdc(i, nSpecie_) = dcdt_[i];
     }
 
     omega(c_, T - delta, p, dcdt_);
-    for (label i=0; i<nSpecie_; i++)
+    for (label i=0; i<nSpecie_; ++i)
     {
         dfdc(i, nSpecie_) = 0.5*(dfdc(i, nSpecie_) - dcdt_[i])/delta;
     }
@@ -504,7 +504,7 @@ Foam::chemistryModel<CompType, ThermoType>::tc() const
 
             scalar cSum = 0.0;
 
-            for (label i=0; i<nSpecie_; i++)
+            for (label i=0; i<nSpecie_; ++i)
             {
                 c_[i] = rhoi*Y_[i][celli]/specieThermo_[i].W();
                 cSum += c_[i];
@@ -614,7 +614,7 @@ Foam::chemistryModel<CompType, ThermoType>::calculateRR
         const scalar Ti = T[celli];
         const scalar pi = p[celli];
 
-        for (label i=0; i<nSpecie_; i++)
+        for (label i=0; i<nSpecie_; ++i)
         {
             const scalar Yi = Y_[i][celli];
             c_[i] = rhoi*Yi/specieThermo_[i].W();
@@ -661,7 +661,7 @@ void Foam::chemistryModel<CompType, ThermoType>::calculate()
         const scalar Ti = T[celli];
         const scalar pi = p[celli];
 
-        for (label i=0; i<nSpecie_; i++)
+        for (label i=0; i<nSpecie_; ++i)
         {
             const scalar Yi = Y_[i][celli];
             c_[i] = rhoi*Yi/specieThermo_[i].W();
@@ -669,7 +669,7 @@ void Foam::chemistryModel<CompType, ThermoType>::calculate()
 
         omega(c_, Ti, pi, dcdt_);
 
-        for (label i=0; i<nSpecie_; i++)
+        for (label i=0; i<nSpecie_; ++i)
         {
             RR_[i][celli] = dcdt_[i]*specieThermo_[i].W();
         }
@@ -710,7 +710,7 @@ Foam::scalar Foam::chemistryModel<CompType, ThermoType>::solve
             const scalar rhoi = rho[celli];
             scalar pi = p[celli];
 
-            for (label i=0; i<nSpecie_; i++)
+            for (label i=0; i<nSpecie_; ++i)
             {
                 c_[i] = rhoi*Y_[i][celli]/specieThermo_[i].W();
                 c0[i] = c_[i];
@@ -729,7 +729,7 @@ Foam::scalar Foam::chemistryModel<CompType, ThermoType>::solve
 
             deltaTMin = min(this->deltaTChem_[celli], deltaTMin);
 
-            for (label i=0; i<nSpecie_; i++)
+            for (label i=0; i<nSpecie_; ++i)
             {
                 RR_[i][celli] =
                     (c_[i] - c0[i])*specieThermo_[i].W()/deltaT[celli];
@@ -737,7 +737,7 @@ Foam::scalar Foam::chemistryModel<CompType, ThermoType>::solve
         }
         else
         {
-            for (label i=0; i<nSpecie_; i++)
+            for (label i=0; i<nSpecie_; ++i)
             {
                 RR_[i][celli] = 0;
             }

@@ -78,7 +78,7 @@ inline Foam::scalar Foam::JanevReactionRate::operator()
 
     scalar lnT = log(T);
 
-    for (int n=0; n<nb_; n++)
+    for (int n=0; n<nb_; ++n)
     {
         expArg += b_[n]*pow(lnT, n);
     }

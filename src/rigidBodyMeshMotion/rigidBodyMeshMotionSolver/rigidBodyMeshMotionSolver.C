@@ -197,7 +197,7 @@ void Foam::rigidBodyMeshMotionSolver::solve()
     {
         label nIter(readLabel(coeffDict().lookup("nIter")));
 
-        for (label i=0; i<nIter; i++)
+        for (label i=0; i<nIter; ++i)
         {
             model_.solve
             (

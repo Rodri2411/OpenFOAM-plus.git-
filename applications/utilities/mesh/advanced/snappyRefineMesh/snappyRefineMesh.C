@@ -452,7 +452,7 @@ void doRefinement
 
     refLevel.setSize(mesh.nCells());
 
-    for (label celli = oldCells; celli < mesh.nCells(); celli++)
+    for (label celli = oldCells; celli < mesh.nCells(); ++celli)
     {
         refLevel[celli] = 0;
     }

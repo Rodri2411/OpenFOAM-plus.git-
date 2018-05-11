@@ -298,7 +298,7 @@ void Foam::turbulentDFSEMInletFvPatchVectorField::initialisePatch()
     Pstream::listCombineGather(sumTriMagSf_, maxEqOp<scalar>());
     Pstream::listCombineScatter(sumTriMagSf_);
 
-    for (label i = 1; i < triMagSf.size(); i++)
+    for (label i = 1; i < triMagSf.size(); ++i)
     {
         triMagSf[i] += triMagSf[i-1];
     }
@@ -309,7 +309,7 @@ void Foam::turbulentDFSEMInletFvPatchVectorField::initialisePatch()
     triCumulativeMagSf_.transfer(triMagSf);
 
     // Convert sumTriMagSf_ into cumulative sum of areas per proc
-    for (label i = 1; i < sumTriMagSf_.size(); i++)
+    for (label i = 1; i < sumTriMagSf_.size(); ++i)
     {
         sumTriMagSf_[i] += sumTriMagSf_[i-1];
     }
@@ -676,7 +676,7 @@ void Foam::turbulentDFSEMInletFvPatchVectorField::calcOverlappingProcEddies
             label nRecv = sendSizes[procI][Pstream::myProcNo()];
             constructMap[procI].setSize(nRecv);
 
-            for (label i = 0; i < nRecv; i++)
+            for (label i = 0; i < nRecv; ++i)
             {
                 constructMap[procI][i] = segmentI++;
             }
@@ -687,7 +687,7 @@ void Foam::turbulentDFSEMInletFvPatchVectorField::calcOverlappingProcEddies
 
     PstreamBuffers pBufs(Pstream::commsTypes::nonBlocking);
 
-    for (label domain = 0; domain < Pstream::nProcs(); domain++)
+    for (label domain = 0; domain < Pstream::nProcs(); ++domain)
     {
         const labelList& sendElems = map.subMap()[domain];
 
@@ -705,7 +705,7 @@ void Foam::turbulentDFSEMInletFvPatchVectorField::calcOverlappingProcEddies
     pBufs.finishedSends();
 
     // Consume
-    for (label domain = 0; domain < Pstream::nProcs(); domain++)
+    for (label domain = 0; domain < Pstream::nProcs(); ++domain)
     {
         const labelList& recvElems = map.constructMap()[domain];
 

@@ -119,7 +119,7 @@ void Foam::GAMGAgglomeration::agglomerateLduAddressing
             bool nbrFound = false;
             label& ccnFaces = cCellnFaces[cOwn];
 
-            for (int i=0; i<ccnFaces; i++)
+            for (int i=0; i<ccnFaces; ++i)
             {
                 if (initCoarseNeighb[ccFaces[i]] == cNei)
                 {
@@ -143,7 +143,7 @@ void Foam::GAMGAgglomeration::agglomerateLduAddressing
                         label* oldCcNbrs = &cCellFaces[oldMaxNnbrs*i];
                         label* newCcNbrs = &cCellFaces[maxNnbrs*i];
 
-                        for (int j=0; j<cCellnFaces[i]; j++)
+                        for (int j=0; j<cCellnFaces[i]; ++j)
                         {
                             newCcNbrs[j] = oldCcNbrs[j];
                         }
@@ -178,7 +178,7 @@ void Foam::GAMGAgglomeration::agglomerateLduAddressing
         label* cFaces = &cCellFaces[maxNnbrs*cci];
         label ccnFaces = cCellnFaces[cci];
 
-        for (int i=0; i<ccnFaces; i++)
+        for (int i=0; i<ccnFaces; ++i)
         {
             coarseOwner[coarseFacei] = cci;
             coarseNeighbour[coarseFacei] = initCoarseNeighb[cFaces[i]];
@@ -500,7 +500,7 @@ void Foam::GAMGAgglomeration::procAgglomerateRestrictAddressing
         nCells_[levelIndex] = coarseCellOffsets.last();
 
         // Renumber consecutively
-        for (label proci = 1; proci < procIDs.size(); proci++)
+        for (label proci = 1; proci < procIDs.size(); ++proci)
         {
             SubList<label> procSlot
             (
@@ -634,7 +634,7 @@ void Foam::GAMGAgglomeration::combineLevels(const label curLevel)
 //    {
 //        vals[0] = myVal;
 //
-//        for (label i=1; i<procIDs.size(); i++)
+//        for (label i=1; i<procIDs.size(); ++i)
 //        {
 //            label& slaveVal = vals[i];
 //            IPstream::read

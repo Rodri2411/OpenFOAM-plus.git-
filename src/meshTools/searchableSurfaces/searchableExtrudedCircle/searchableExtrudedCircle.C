@@ -314,7 +314,7 @@ void Foam::searchableExtrudedCircle::findParametricNearest
     // Find wanted location along curve
     labelList indices;
     scalarField weights;
-    for (label i = 1; i < curvePoints.size()-1; i++)
+    for (label i = 1; i < curvePoints.size()-1; ++i)
     {
         interpolator.valueWeights(lambdas[i], indices, weights);
 
@@ -373,7 +373,7 @@ void Foam::searchableExtrudedCircle::findParametricNearest
         info.last() = pointIndexHit(true, end, 0);
     }
 
-    for (label i = 1; i < lambdas.size()-1; i++)
+    for (label i = 1; i < lambdas.size()-1; ++i)
     {
         quaternion q(slerp(qStart, qProjectedEnd, lambdas[i]));
         vector radialDir(q.transform(radialStart));

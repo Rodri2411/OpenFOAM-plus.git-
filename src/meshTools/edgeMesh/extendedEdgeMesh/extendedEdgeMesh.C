@@ -1042,44 +1042,44 @@ void Foam::extendedEdgeMesh::add(const extendedEdgeMesh& fem)
     labelList reverseFemPointMap(fem.points().size());
 
     label newPointi = 0;
-    for (label i = 0; i < concaveStart(); i++)
+    for (label i = 0; i < concaveStart(); ++i)
     {
         reversePointMap[i] = newPointi++;
     }
-    for (label i = 0; i < fem.concaveStart(); i++)
+    for (label i = 0; i < fem.concaveStart(); ++i)
     {
         reverseFemPointMap[i] = newPointi++;
     }
 
     // Concave
     label newConcaveStart = newPointi;
-    for (label i = concaveStart(); i < mixedStart(); i++)
+    for (label i = concaveStart(); i < mixedStart(); ++i)
     {
         reversePointMap[i] = newPointi++;
     }
-    for (label i = fem.concaveStart(); i < fem.mixedStart(); i++)
+    for (label i = fem.concaveStart(); i < fem.mixedStart(); ++i)
     {
         reverseFemPointMap[i] = newPointi++;
     }
 
     // Mixed
     label newMixedStart = newPointi;
-    for (label i = mixedStart(); i < nonFeatureStart(); i++)
+    for (label i = mixedStart(); i < nonFeatureStart(); ++i)
     {
         reversePointMap[i] = newPointi++;
     }
-    for (label i = fem.mixedStart(); i < fem.nonFeatureStart(); i++)
+    for (label i = fem.mixedStart(); i < fem.nonFeatureStart(); ++i)
     {
         reverseFemPointMap[i] = newPointi++;
     }
 
     // Non-feature
     label newNonFeatureStart = newPointi;
-    for (label i = nonFeatureStart(); i < points().size(); i++)
+    for (label i = nonFeatureStart(); i < points().size(); ++i)
     {
         reversePointMap[i] = newPointi++;
     }
-    for (label i = fem.nonFeatureStart(); i < fem.points().size(); i++)
+    for (label i = fem.nonFeatureStart(); i < fem.points().size(); ++i)
     {
         reverseFemPointMap[i] = newPointi++;
     }
@@ -1098,55 +1098,55 @@ void Foam::extendedEdgeMesh::add(const extendedEdgeMesh& fem)
 
     // External
     label newEdgeI = 0;
-    for (label i = 0; i < internalStart(); i++)
+    for (label i = 0; i < internalStart(); ++i)
     {
         reverseEdgeMap[i] = newEdgeI++;
     }
-    for (label i = 0; i < fem.internalStart(); i++)
+    for (label i = 0; i < fem.internalStart(); ++i)
     {
         reverseFemEdgeMap[i] = newEdgeI++;
     }
 
     // Internal
     label newInternalStart = newEdgeI;
-    for (label i = internalStart(); i < flatStart(); i++)
+    for (label i = internalStart(); i < flatStart(); ++i)
     {
         reverseEdgeMap[i] = newEdgeI++;
     }
-    for (label i = fem.internalStart(); i < fem.flatStart(); i++)
+    for (label i = fem.internalStart(); i < fem.flatStart(); ++i)
     {
         reverseFemEdgeMap[i] = newEdgeI++;
     }
 
     // Flat
     label newFlatStart = newEdgeI;
-    for (label i = flatStart(); i < openStart(); i++)
+    for (label i = flatStart(); i < openStart(); ++i)
     {
         reverseEdgeMap[i] = newEdgeI++;
     }
-    for (label i = fem.flatStart(); i < fem.openStart(); i++)
+    for (label i = fem.flatStart(); i < fem.openStart(); ++i)
     {
         reverseFemEdgeMap[i] = newEdgeI++;
     }
 
     // Open
     label newOpenStart = newEdgeI;
-    for (label i = openStart(); i < multipleStart(); i++)
+    for (label i = openStart(); i < multipleStart(); ++i)
     {
         reverseEdgeMap[i] = newEdgeI++;
     }
-    for (label i = fem.openStart(); i < fem.multipleStart(); i++)
+    for (label i = fem.openStart(); i < fem.multipleStart(); ++i)
     {
         reverseFemEdgeMap[i] = newEdgeI++;
     }
 
     // Multiple
     label newMultipleStart = newEdgeI;
-    for (label i = multipleStart(); i < edges().size(); i++)
+    for (label i = multipleStart(); i < edges().size(); ++i)
     {
         reverseEdgeMap[i] = newEdgeI++;
     }
-    for (label i = fem.multipleStart(); i < fem.edges().size(); i++)
+    for (label i = fem.multipleStart(); i < fem.edges().size(); ++i)
     {
         reverseFemEdgeMap[i] = newEdgeI++;
     }
@@ -1314,13 +1314,13 @@ void Foam::extendedEdgeMesh::flipNormals()
 
     label newPointi = 0;
     // Concave points become convex
-    for (label i = concaveStart(); i < mixedStart(); i++)
+    for (label i = concaveStart(); i < mixedStart(); ++i)
     {
         reversePointMap[i] = newPointi++;
     }
     // Convex points become concave
     label newConcaveStart = newPointi;
-    for (label i = 0; i < concaveStart(); i++)
+    for (label i = 0; i < concaveStart(); ++i)
     {
         reversePointMap[i] = newPointi++;
     }
@@ -1336,13 +1336,13 @@ void Foam::extendedEdgeMesh::flipNormals()
 
     label newEdgeI = 0;
     // Internal become external
-    for (label i = internalStart(); i < flatStart(); i++)
+    for (label i = internalStart(); i < flatStart(); ++i)
     {
         reverseEdgeMap[i] = newEdgeI++;
     }
     // External become internal
     label newInternalStart = newEdgeI;
-    for (label i = 0; i < internalStart(); i++)
+    for (label i = 0; i < internalStart(); ++i)
     {
         reverseEdgeMap[i] = newEdgeI++;
     }
@@ -1499,7 +1499,7 @@ void Foam::extendedEdgeMesh::autoMap
     if (featurePointEdges().size())
     {
         subFeaturePointEdges.setSize(subNonFeatStart);
-        for (label subPointI = 0; subPointI < subNonFeatStart; subPointI++)
+        for (label subPointI = 0; subPointI < subNonFeatStart; ++subPointI)
         {
             label pointI = pointMap[subPointI];
             const labelList& pEdges = featurePointEdges()[pointI];
@@ -1526,7 +1526,7 @@ void Foam::extendedEdgeMesh::autoMap
 
     {
         bitSet isSubNormal(normals().size());
-        for (label subPointI = 0; subPointI < subNonFeatStart; subPointI++)
+        for (label subPointI = 0; subPointI < subNonFeatStart; ++subPointI)
         {
             label pointI = pointMap[subPointI];
             const labelList& pNormals = featurePointNormals()[pointI];
@@ -1592,7 +1592,7 @@ void Foam::extendedEdgeMesh::autoMap
     }
 
     labelListList subPointNormals(pointMap.size());
-    for (label subPointI = 0; subPointI < subNonFeatStart; subPointI++)
+    for (label subPointI = 0; subPointI < subNonFeatStart; ++subPointI)
     {
         label pointI = pointMap[subPointI];
         const labelList& pNormals = featurePointNormals()[pointI];
@@ -1905,7 +1905,7 @@ void Foam::extendedEdgeMesh::writeObj(const fileName& prefix) const
         Info<< "Writing " << concaveStart_
             << " convex feature points to " << convexFtPtStr.name() << endl;
 
-        for(label i = 0; i < concaveStart_; i++)
+        for (label i = 0; i < concaveStart_; ++i)
         {
             convexFtPtStr.write(points()[i]);
         }
@@ -1917,7 +1917,7 @@ void Foam::extendedEdgeMesh::writeObj(const fileName& prefix) const
             << " concave feature points to "
             << concaveFtPtStr.name() << endl;
 
-        for(label i = concaveStart_; i < mixedStart_; i++)
+        for (label i = concaveStart_; i < mixedStart_; ++i)
         {
             concaveFtPtStr.write(points()[i]);
         }
@@ -1928,7 +1928,7 @@ void Foam::extendedEdgeMesh::writeObj(const fileName& prefix) const
         Info<< "Writing " << nonFeatureStart_-mixedStart_
             << " mixed feature points to " << mixedFtPtStr.name() << endl;
 
-        for(label i = mixedStart_; i < nonFeatureStart_; i++)
+        for (label i = mixedStart_; i < nonFeatureStart_; ++i)
         {
             mixedFtPtStr.write(points()[i]);
         }
@@ -1941,7 +1941,7 @@ void Foam::extendedEdgeMesh::writeObj(const fileName& prefix) const
             << " mixed feature point structure to "
             << mixedFtPtStructureStr.name() << endl;
 
-        for(label i = mixedStart_; i < nonFeatureStart_; i++)
+        for (label i = mixedStart_; i < nonFeatureStart_; ++i)
         {
             const labelList& ptEds = pointEdges()[i];
 
@@ -1962,7 +1962,7 @@ void Foam::extendedEdgeMesh::writeObj(const fileName& prefix) const
         Info<< "Writing " << internalStart_-externalStart_
             << " external edges to " << externalStr.name() << endl;
 
-        for (label i = externalStart_; i < internalStart_; i++)
+        for (label i = externalStart_; i < internalStart_; ++i)
         {
             const edge& e = edges()[i];
             externalStr.write(linePointRef(points()[e[0]], points()[e[1]]));
@@ -1974,7 +1974,7 @@ void Foam::extendedEdgeMesh::writeObj(const fileName& prefix) const
         Info<< "Writing " << flatStart_-internalStart_
             << " internal edges to " << internalStr.name() << endl;
 
-        for (label i = internalStart_; i < flatStart_; i++)
+        for (label i = internalStart_; i < flatStart_; ++i)
         {
             const edge& e = edges()[i];
             internalStr.write(linePointRef(points()[e[0]], points()[e[1]]));
@@ -1986,7 +1986,7 @@ void Foam::extendedEdgeMesh::writeObj(const fileName& prefix) const
         Info<< "Writing " << openStart_-flatStart_
             << " flat edges to " << flatStr.name() << endl;
 
-        for (label i = flatStart_; i < openStart_; i++)
+        for (label i = flatStart_; i < openStart_; ++i)
         {
             const edge& e = edges()[i];
             flatStr.write(linePointRef(points()[e[0]], points()[e[1]]));
@@ -1998,7 +1998,7 @@ void Foam::extendedEdgeMesh::writeObj(const fileName& prefix) const
         Info<< "Writing " << multipleStart_-openStart_
             << " open edges to " << openStr.name() << endl;
 
-        for (label i = openStart_; i < multipleStart_; i++)
+        for (label i = openStart_; i < multipleStart_; ++i)
         {
             const edge& e = edges()[i];
             openStr.write(linePointRef(points()[e[0]], points()[e[1]]));
@@ -2010,7 +2010,7 @@ void Foam::extendedEdgeMesh::writeObj(const fileName& prefix) const
         Info<< "Writing " << edges().size()-multipleStart_
             << " multiple edges to " << multipleStr.name() << endl;
 
-        for (label i = multipleStart_; i < edges().size(); i++)
+        for (label i = multipleStart_; i < edges().size(); ++i)
         {
             const edge& e = edges()[i];
             multipleStr.write(linePointRef(points()[e[0]], points()[e[1]]));

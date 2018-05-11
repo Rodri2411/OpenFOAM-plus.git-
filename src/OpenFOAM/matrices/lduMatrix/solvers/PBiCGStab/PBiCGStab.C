@@ -162,7 +162,7 @@ Foam::solverPerformance Foam::PBiCGStab::solve
             // --- Update pA
             if (solverPerf.nIterations() == 0)
             {
-                for (label cell=0; cell<nCells; cell++)
+                for (label cell=0; cell<nCells; ++cell)
                 {
                     pAPtr[cell] = rAPtr[cell];
                 }
@@ -177,7 +177,7 @@ Foam::solverPerformance Foam::PBiCGStab::solve
 
                 const scalar beta = (rA0rA/rA0rAold)*(alpha/omega);
 
-                for (label cell=0; cell<nCells; cell++)
+                for (label cell=0; cell<nCells; ++cell)
                 {
                     pAPtr[cell] =
                         rAPtr[cell] + beta*(pAPtr[cell] - omega*AyAPtr[cell]);
@@ -195,7 +195,7 @@ Foam::solverPerformance Foam::PBiCGStab::solve
             alpha = rA0rA/rA0AyA;
 
             // --- Calculate sA
-            for (label cell=0; cell<nCells; cell++)
+            for (label cell=0; cell<nCells; ++cell)
             {
                 sAPtr[cell] = rAPtr[cell] - alpha*AyAPtr[cell];
             }
@@ -206,7 +206,7 @@ Foam::solverPerformance Foam::PBiCGStab::solve
 
             if (solverPerf.checkConvergence(tolerance_, relTol_))
             {
-                for (label cell=0; cell<nCells; cell++)
+                for (label cell=0; cell<nCells; ++cell)
                 {
                     psiPtr[cell] += alpha*yAPtr[cell];
                 }
@@ -229,7 +229,7 @@ Foam::solverPerformance Foam::PBiCGStab::solve
             omega = gSumProd(tA, sA, matrix().mesh().comm())/tAtA;
 
             // --- Update solution and residual
-            for (label cell=0; cell<nCells; cell++)
+            for (label cell=0; cell<nCells; ++cell)
             {
                 psiPtr[cell] += alpha*yAPtr[cell] + omega*zAPtr[cell];
                 rAPtr[cell] = sAPtr[cell] - omega*tAPtr[cell];

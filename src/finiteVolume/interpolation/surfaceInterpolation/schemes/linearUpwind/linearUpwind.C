@@ -74,7 +74,7 @@ Foam::linearUpwind<Type>::correction
         )
     );
 
-    for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; cmpt++)
+    for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; ++cmpt)
     {
         tmp<volVectorField> tgradVf =
             gradScheme_().grad(vf.component(cmpt), gradSchemeName_);

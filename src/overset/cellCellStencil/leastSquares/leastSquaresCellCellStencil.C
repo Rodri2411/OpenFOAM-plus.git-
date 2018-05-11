@@ -108,7 +108,7 @@ void Foam::cellCellStencils::leastSquares::stencilWeights
         scalar saveDiag(W);
 
         // Diagonal coefficient
-        for (label i = 0; i < 3; i++)
+        for (label i = 0; i < 3; ++i)
         {
             // Get row
             scalarList Row(UList<scalar>(ATAinvAT[i], nD));

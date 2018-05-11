@@ -37,7 +37,7 @@ void Foam::CV2D::insertSurfaceNearPointPairs()
     (
         Triangulation::Finite_edges_iterator eit = finite_edges_begin();
         eit != finite_edges_end();
-        eit++
+        ++eit
     )
     {
         Vertex_handle v0h = eit->first->vertex(cw(eit->second));

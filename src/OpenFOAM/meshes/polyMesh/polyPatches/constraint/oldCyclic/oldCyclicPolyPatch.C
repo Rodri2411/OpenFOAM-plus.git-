@@ -163,7 +163,7 @@ bool Foam::oldCyclicPolyPatch::getGeometricHalves
 
         labelList nZoneFaces(ppZones.nZones());
 
-        for (label zoneI = 0; zoneI < ppZones.nZones(); zoneI++)
+        for (label zoneI = 0; zoneI < ppZones.nZones(); ++zoneI)
         {
             OFstream stream
             (
@@ -863,7 +863,7 @@ bool Foam::oldCyclicPolyPatch::order
     if (!matchedAll)
     {
         label facei = 0;
-        for (label i = 0; i < halfSize; i++)
+        for (label i = 0; i < halfSize; ++i)
         {
             half0ToPatch[i] = facei++;
             half1ToPatch[i] = facei++;

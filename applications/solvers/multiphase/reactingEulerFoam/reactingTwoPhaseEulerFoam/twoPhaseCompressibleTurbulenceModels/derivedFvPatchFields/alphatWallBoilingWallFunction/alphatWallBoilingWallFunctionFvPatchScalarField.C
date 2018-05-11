@@ -429,7 +429,7 @@ void alphatWallBoilingWallFunctionFvPatchScalarField::updateCoeffs()
             // Convective thermal diffusivity
             alphatConv_ = calcAlphat(alphatConv_);
 
-            for (label i=0; i<10; i++)
+            for (label i=0; i<10; ++i)
             {
                 // Liquid temperature at y+=250 is estimated from logarithmic
                 // thermal wall function (Koncar, Krepper & Egorov, 2005)

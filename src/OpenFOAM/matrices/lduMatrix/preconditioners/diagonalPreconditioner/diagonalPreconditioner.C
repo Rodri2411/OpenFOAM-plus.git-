@@ -58,7 +58,7 @@ Foam::diagonalPreconditioner::diagonalPreconditioner
     label nCells = rD.size();
 
     // Generate reciprocal diagonal
-    for (label cell=0; cell<nCells; cell++)
+    for (label cell=0; cell<nCells; ++cell)
     {
         rDPtr[cell] = 1.0/DPtr[cell];
     }
@@ -80,7 +80,7 @@ void Foam::diagonalPreconditioner::precondition
 
     label nCells = wA.size();
 
-    for (label cell=0; cell<nCells; cell++)
+    for (label cell=0; cell<nCells; ++cell)
     {
         wAPtr[cell] = rDPtr[cell]*rAPtr[cell];
     }

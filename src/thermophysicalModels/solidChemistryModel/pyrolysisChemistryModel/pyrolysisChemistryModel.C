@@ -251,7 +251,7 @@ Foam::pyrolysisChemistryModel<CompType, SolidThermo, GasThermo>::omega
 
     label celli = cellCounter_;
 
-    for (label i=0; i<nSpecie_; i++)
+    for (label i=0; i<nSpecie_; ++i)
     {
         c1[i] = max(0.0, c[i]);
     }
@@ -260,7 +260,7 @@ Foam::pyrolysisChemistryModel<CompType, SolidThermo, GasThermo>::omega
 
     const label Nl = R.lhs().size();
 
-    for (label s=0; s<Nl; s++)
+    for (label s=0; s<Nl; ++s)
     {
         label si = R.lhs()[s].index;
         const scalar exp = R.lhs()[si].exponent;
@@ -315,14 +315,14 @@ derivatives
 
     //Total mass concentration
     scalar cTot = 0.0;
-    for (label i=0; i<this->nSolids_; i++)
+    for (label i=0; i<this->nSolids_; ++i)
     {
         cTot += c[i];
     }
 
     scalar newCp = 0.0;
     scalar newhi = 0.0;
-    for (label i=0; i<this->nSolids_; i++)
+    for (label i=0; i<this->nSolids_; ++i)
     {
         scalar dYidt = dcdt[i]/cTot;
         scalar Yi = c[i]/cTot;
@@ -354,14 +354,14 @@ jacobian
 
     scalarField c2(nSpecie_, 0.0);
 
-    for (label i=0; i<this->nSolids_; i++)
+    for (label i=0; i<this->nSolids_; ++i)
     {
         c2[i] = max(c[i], 0.0);
     }
 
-    for (label i=0; i<nEqns(); i++)
+    for (label i=0; i<nEqns(); ++i)
     {
-        for (label j=0; j<nEqns(); j++)
+        for (label j=0; j<nEqns(); ++j)
         {
             dfdc(i, j) = 0.0;
         }
@@ -370,7 +370,7 @@ jacobian
     // length of the first argument must be nSolids
     dcdt = omega(c2, T, p);
 
-    for (label ri=0; ri<this->reactions_.size(); ri++)
+    for (label ri=0; ri<this->reactions_.size(); ++ri)
     {
         const Reaction<SolidThermo>& R = this->reactions_[ri];
 
@@ -428,7 +428,7 @@ jacobian
     scalarField dcdT0 = omega(c2, T - delta, p);
     scalarField dcdT1 = omega(c2, T + delta, p);
 
-    for (label i=0; i<nEqns(); i++)
+    for (label i=0; i<nEqns(); ++i)
     {
         dfdc[i][nSpecie_] = 0.5*(dcdT1[i] - dcdT0[i])/delta;
     }
@@ -491,7 +491,7 @@ calculate()
             scalar pi = this->solidThermo().p()[celli];
 
             scalarField c(nSpecie_, 0.0);
-            for (label i=0; i<this->nSolids_; i++)
+            for (label i=0; i<this->nSolids_; ++i)
             {
                 c[i] = rhoi*this->Ys_[i][celli]*delta;
             }
@@ -567,7 +567,7 @@ Foam::pyrolysisChemistryModel<CompType, SolidThermo, GasThermo>::solve
             scalar pi = p[celli];
             scalar Ti = T[celli];
 
-            for (label i=0; i<this->nSolids_; i++)
+            for (label i=0; i<this->nSolids_; ++i)
             {
                 c[i] = rhoi*this->Ys_[i][celli]*delta[celli];
             }

@@ -67,7 +67,7 @@ void Foam::noPreconditioner::precondition
 
     label nCells = wA.size();
 
-    for (label cell=0; cell<nCells; cell++)
+    for (label cell=0; cell<nCells; ++cell)
     {
         wAPtr[cell] = rAPtr[cell];
     }

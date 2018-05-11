@@ -39,7 +39,7 @@ Foam::chemistryReductionMethods::DRG<CompType, ThermoType>::DRG
 {
     label j=0;
     dictionary initSet = this->coeffsDict_.subDict("initialSet");
-    for (label i=0; i<chemistry.nSpecie(); i++)
+    for (label i=0; i<chemistry.nSpecie(); ++i)
     {
         if (initSet.found(chemistry.Y()[i].name()))
         {
@@ -76,7 +76,7 @@ void Foam::chemistryReductionMethods::DRG<CompType, ThermoType>::reduceMechanism
 {
     scalarField c1(this->nSpecie_+2, 0.0);
 
-    for(label i=0; i<this->nSpecie_; i++)
+    for (label i=0; i<this->nSpecie_; ++i)
     {
         c1[i] = c[i];
     }
@@ -223,7 +223,7 @@ void Foam::chemistryReductionMethods::DRG<CompType, ThermoType>::reduceMechanism
 
     // Set all species to inactive and activate them according
     // to rAB and initial set
-    for (label i=0; i<this->nSpecie_; i++)
+    for (label i=0; i<this->nSpecie_; ++i)
     {
         this->activeSpecies_[i] = false;
     }
@@ -232,7 +232,7 @@ void Foam::chemistryReductionMethods::DRG<CompType, ThermoType>::reduceMechanism
 
     // Initialize the list of active species with the search initiating set
     // (SIS)
-    for (label i=0; i<searchInitSet_.size(); i++)
+    for (label i=0; i<searchInitSet_.size(); ++i)
     {
         label q = searchInitSet_[i];
         this->activeSpecies_[q] = true;
@@ -248,7 +248,7 @@ void Foam::chemistryReductionMethods::DRG<CompType, ThermoType>::reduceMechanism
 
         if (Den > VSMALL)
         {
-            for (label v=0; v<NbrABInit[u]; v++)
+            for (label v=0; v<NbrABInit[u]; ++v)
             {
                 label otherSpec = rABOtherSpec(u, v);
                 scalar rAB = rABNum(u, v)/Den;
@@ -318,7 +318,7 @@ void Foam::chemistryReductionMethods::DRG<CompType, ThermoType>::reduceMechanism
     this->chemistry_.simplifiedToCompleteIndex().setSize(this->NsSimp_);
 
     label j = 0;
-    for (label i=0; i<this->nSpecie_; i++)
+    for (label i=0; i<this->nSpecie_; ++i)
     {
         if (this->activeSpecies_[i])
         {

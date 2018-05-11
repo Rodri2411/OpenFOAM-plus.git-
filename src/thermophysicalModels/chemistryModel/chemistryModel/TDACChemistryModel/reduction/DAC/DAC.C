@@ -87,7 +87,7 @@ Foam::chemistryReductionMethods::DAC<CompType, ThermoType>::DAC
     label j = 0;
     dictionary initSet = this->coeffsDict_.subDict("initialSet");
 
-    for (label i = 0; i < chemistry.nSpecie(); i++)
+    for (label i = 0; i < chemistry.nSpecie(); ++i)
     {
         if (initSet.found(chemistry.Y()[i].name()))
         {
@@ -108,7 +108,7 @@ Foam::chemistryReductionMethods::DAC<CompType, ThermoType>::DAC
     const List<List<specieElement>>& specieComposition =
         chemistry.specieComp();
 
-    for (label i=0; i<this->nSpecie_; i++)
+    for (label i=0; i<this->nSpecie_; ++i)
     {
         const List<specieElement>& curSpecieComposition =
             specieComposition[i];
@@ -204,7 +204,7 @@ Foam::chemistryReductionMethods::DAC<CompType, ThermoType>::DAC
         forAll(fuelSpecies_, i)
         {
             fuelSpeciesProp_[i] = readScalar(fuelDict.lookup(fuelSpecies_[i]));
-            for (label j=0; j<this->nSpecie_; j++)
+            for (label j=0; j<this->nSpecie_; ++j)
             {
                 if (this->chemistry_.Y()[j].name() == fuelSpecies_[i])
                 {
@@ -253,7 +253,7 @@ void Foam::chemistryReductionMethods::DAC<CompType, ThermoType>::reduceMechanism
 {
     scalarField& completeC(this->chemistry_.completeC());
     scalarField c1(this->chemistry_.nEqns(), 0.0);
-    for (label i=0; i<this->nSpecie_; i++)
+    for (label i=0; i<this->nSpecie_; ++i)
     {
         c1[i] = c[i];
         completeC[i] = c[i];
@@ -467,7 +467,7 @@ void Foam::chemistryReductionMethods::DAC<CompType, ThermoType>::reduceMechanism
         scalarList Na(nElements, 0.0);
         scalarList Nal(nElements, 0.0); // for large hydrocarbons
 
-        for (label i=0; i<this->nSpecie_; i++)
+        for (label i=0; i<this->nSpecie_; ++i)
         {
             // Complete combustion products are not considered
             if
@@ -604,7 +604,7 @@ void Foam::chemistryReductionMethods::DAC<CompType, ThermoType>::reduceMechanism
     }
     else // No automaticSIS => all species of the SIS are added
     {
-        for (label i=0; i<SIS.size(); i++)
+        for (label i=0; i<SIS.size(); ++i)
         {
             label q = SIS[i];
             this->activeSpecies_[q] = true;
@@ -697,7 +697,7 @@ void Foam::chemistryReductionMethods::DAC<CompType, ThermoType>::reduceMechanism
     Field<label>& c2s(this->chemistry_.completeToSimplifiedIndex());
 
     label j = 0;
-    for (label i=0; i<this->nSpecie_; i++)
+    for (label i=0; i<this->nSpecie_; ++i)
     {
         if (this->activeSpecies_[i])
         {

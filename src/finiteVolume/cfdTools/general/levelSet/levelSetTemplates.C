@@ -139,7 +139,7 @@ Foam::tmp<Foam::Field<Type>> Foam::levelSetAverage
         vector a = vector::zero;
         sumType r = Zero;
 
-        for(label eI = 0; eI < f.size(); ++ eI)
+        for (label eI = 0; eI < f.size(); ++eI)
         {
             const edge e = f.faceEdge(eI);
 

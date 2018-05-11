@@ -75,21 +75,21 @@ Foam::seulex::seulex(const ODESystem& ode, const dictionary& dict)
     nSeq_[0] = 2;
     nSeq_[1] = 3;
 
-    for (int i=2; i<iMaxx_; i++)
+    for (int i=2; i<iMaxx_; ++i)
     {
         nSeq_[i] = 2*nSeq_[i-2];
     }
     cpu_[0] = cpuJac + cpuLU + nSeq_[0]*(cpuFunc + cpuSolve);
 
-    for (int k=0; k<kMaxx_; k++)
+    for (int k=0; k<kMaxx_; ++k)
     {
         cpu_[k+1] = cpu_[k] + (nSeq_[k+1]-1)*(cpuFunc + cpuSolve) + cpuLU;
     }
 
     // Set the extrapolation coefficients array
-    for (int k=0; k<iMaxx_; k++)
+    for (int k=0; k<iMaxx_; ++k)
     {
-        for (int l=0; l<k; l++)
+        for (int l=0; l<k; ++l)
         {
             scalar ratio = scalar(nSeq_[k])/nSeq_[l];
             coeff_(k, l) = 1/(ratio - 1);
@@ -113,9 +113,9 @@ bool Foam::seulex::seul
     label nSteps = nSeq_[k];
     scalar dx = dxTot/nSteps;
 
-    for (label i=0; i<n_; i++)
+    for (label i=0; i<n_; ++i)
     {
-        for (label j=0; j<n_; j++)
+        for (label j=0; j<n_; ++j)
         {
             a_(i, j) = -dfdy_(i, j);
         }
@@ -131,7 +131,7 @@ bool Foam::seulex::seul
 
     yTemp_ = y0;
 
-    for (label nn=1; nn<nSteps; nn++)
+    for (label nn=1; nn<nSteps; ++nn)
     {
         yTemp_ += dy_;
         xnew += dx;
@@ -139,14 +139,14 @@ bool Foam::seulex::seul
         if (nn == 1 && k<=1)
         {
             scalar dy1 = 0;
-            for (label i=0; i<n_; i++)
+            for (label i=0; i<n_; ++i)
             {
                 dy1 += sqr(dy_[i]/scale[i]);
             }
             dy1 = sqrt(dy1);
 
             odes_.derivatives(x0 + dx, yTemp_, dydx_);
-            for (label i=0; i<n_; i++)
+            for (label i=0; i<n_; ++i)
             {
                 dy_[i] = dydx_[i] - dy_[i]/dx;
             }
@@ -155,7 +155,7 @@ bool Foam::seulex::seul
 
             const scalar denom = min(1, dy1 + SMALL);
             scalar dy2 = 0;
-            for (label i=0; i<n_; i++)
+            for (label i=0; i<n_; ++i)
             {
                 // Test of dy_[i] to avoid overflow
                 if (mag(dy_[i]) > scale[i]*denom)
@@ -179,7 +179,7 @@ bool Foam::seulex::seul
         LUBacksubstitute(a_, pivotIndices_, dy_);
     }
 
-    for (label i=0; i<n_; i++)
+    for (label i=0; i<n_; ++i)
     {
         y[i] = yTemp_[i] + dy_[i];
     }
@@ -197,14 +197,14 @@ void Foam::seulex::extrapolate
 {
     for (int j=k-1; j>0; j--)
     {
-        for (label i=0; i<n_; i++)
+        for (label i=0; i<n_; ++i)
         {
             table[j-1][i] =
                 table(j, i) + coeff_(k, j)*(table(j, i) - table[j-1][i]);
         }
     }
 
-    for (int i=0; i<n_; i++)
+    for (int i=0; i<n_; ++i)
     {
         y[i] = table(0, i) + coeff_(k, 0)*(table(0, i) - y[i]);
     }
@@ -291,7 +291,7 @@ void Foam::seulex::solve
 
         scalar errOld = 0;
 
-        for (k=0; k<=kTarg_+1; k++)
+        for (k=0; k<=kTarg_+1; ++k)
         {
             bool success = seul(x, y0_, dx, k, ySequence_, scale_);
 

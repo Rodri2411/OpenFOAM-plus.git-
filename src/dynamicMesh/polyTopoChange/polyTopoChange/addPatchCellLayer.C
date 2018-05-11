@@ -604,7 +604,7 @@ Foam::labelListList Foam::addPatchCellLayer::addedCells
             labelList& added = layerCells[patchFacei];
             added.setSize(faceLabels.size()-1);
 
-            for (label i = 0; i < faceLabels.size()-1; i++)
+            for (label i = 0; i < faceLabels.size()-1; ++i)
             {
                 added[i] = mesh.faceNeighbour()[faceLabels[i]];
             }
@@ -1212,7 +1212,7 @@ void Foam::addPatchCellLayer::setRefinement
         // sides decide the same.
         // ~~~~~~~~~~~~~~~~~~~~~~
 
-        for (label edgei = pp.nInternalEdges(); edgei < pp.nEdges(); edgei++)
+        for (label edgei = pp.nInternalEdges(); edgei < pp.nEdges(); ++edgei)
         {
             const edge& e = pp.edges()[edgei];
 
@@ -1405,7 +1405,7 @@ void Foam::addPatchCellLayer::setRefinement
                 mesh_.faceOwner()[meshFacei]
             );
 
-            for (label i = 0; i < nFaceLayers[patchFacei]; i++)
+            for (label i = 0; i < nFaceLayers[patchFacei]; ++i)
             {
                 // Note: add from cell (owner of patch face) or from face?
                 // for now add from cell so we can map easily.
@@ -1707,7 +1707,7 @@ void Foam::addPatchCellLayer::setRefinement
 
                 label fp = startFp;
 
-                for (label i = 0; i < stringedVerts.size()-1; i++)
+                for (label i = 0; i < stringedVerts.size()-1; ++i)
                 {
                     stringedVerts[i] = f[fp];
                     doneEdge[fEdges[fp]] = true;
@@ -1729,7 +1729,7 @@ void Foam::addPatchCellLayer::setRefinement
 
                 label numEdgeSideFaces = edgeLayers[startEdgei];
 
-                for (label i = 0; i < numEdgeSideFaces; i++)
+                for (label i = 0; i < numEdgeSideFaces; ++i)
                 {
                     label vEnd = stringedVerts.last();
                     label vStart = stringedVerts[0];
@@ -1815,7 +1815,7 @@ void Foam::addPatchCellLayer::setRefinement
                         {
                             label offset =
                                 addedPoints_[vEnd].size() - numEdgeSideFaces;
-                            for (label ioff = 0; ioff < offset; ioff++)
+                            for (label ioff = 0; ioff < offset; ++ioff)
                             {
                                 addVertex
                                 (

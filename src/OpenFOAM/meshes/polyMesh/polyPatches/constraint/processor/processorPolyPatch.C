@@ -354,7 +354,7 @@ void Foam::processorPolyPatch::initUpdateMesh(PstreamBuffers& pBufs)
         labelList pointFace(nPoints());
         labelList pointIndex(nPoints());
 
-        for (label patchPointi = 0; patchPointi < nPoints(); patchPointi++)
+        for (label patchPointi = 0; patchPointi < nPoints(); ++patchPointi)
         {
             label facei = pointFaces()[patchPointi][0];
 
@@ -369,7 +369,7 @@ void Foam::processorPolyPatch::initUpdateMesh(PstreamBuffers& pBufs)
         labelList edgeFace(nEdges());
         labelList edgeIndex(nEdges());
 
-        for (label patchEdgeI = 0; patchEdgeI < nEdges(); patchEdgeI++)
+        for (label patchEdgeI = 0; patchEdgeI < nEdges(); ++patchEdgeI)
         {
             label facei = edgeFaces()[patchEdgeI][0];
 

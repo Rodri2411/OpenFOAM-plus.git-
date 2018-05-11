@@ -186,7 +186,7 @@ Foam::Ostream& Foam::writer<Type>::writeVS
     Ostream& os
 ) const
 {
-    for (direction d=0; d<VSType::nComponents; d++)
+    for (direction d=0; d<VSType::nComponents; ++d)
     {
         if (d > 0)
         {

@@ -231,7 +231,7 @@ void Foam::ensightSurfaceReader::readCase(IFstream& is)
     // Read the time values
     readLine(is, buffer); // time values:
     timeValues_.setSize(nTimeSteps_);
-    for (label i = 0; i < nTimeSteps_; i++)
+    for (label i = 0; i < nTimeSteps_; ++i)
     {
         scalar t(readScalar(is));
 
@@ -349,7 +349,7 @@ const Foam::meshedSurface& Foam::ensightSurfaceReader::geometry()
         pointField points(nPoints);
         {
             scalarField x(nPoints);
-            for (label dir = 0; dir < 3; dir++)
+            for (label dir = 0; dir < 3; ++dir)
             {
                 forAll(points, pointI)
                 {
@@ -388,7 +388,7 @@ const Foam::meshedSurface& Foam::ensightSurfaceReader::geometry()
                 for (label faceI = 0; faceI < nFace; ++faceI)
                 {
                     face f(np);
-                    for (label fpI = 0; fpI < np; fpI++)
+                    for (label fpI = 0; fpI < np; ++fpI)
                     {
                         is.read(f[fpI]);
                     }
@@ -404,7 +404,7 @@ const Foam::meshedSurface& Foam::ensightSurfaceReader::geometry()
                 for (label faceI = 0; faceI < nFace; ++faceI)
                 {
                     face f(np);
-                    for (label fpI = 0; fpI < np; fpI++)
+                    for (label fpI = 0; fpI < np; ++fpI)
                     {
                         is.read(f[fpI]);
                     }

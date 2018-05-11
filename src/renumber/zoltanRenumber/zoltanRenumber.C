@@ -99,7 +99,7 @@ static void get_vertex_list(void *data, int sizeGID, int sizeLID,
     wgt_dim = 0;
     obj_wgts = nullptr;
 
-    for (Foam::label i=0; i<mesh.nCells(); i++)
+    for (Foam::label i=0; i<mesh.nCells(); ++i)
     {
         globalID[i] = i;        // should be global
         localID[i] = i;
@@ -120,7 +120,7 @@ static void get_num_edges_list(void *data, int sizeGID, int sizeLID,
         return;
     }
 
-    for (Foam::label i=0; i < num_obj ;i++)
+    for (Foam::label i=0; i < num_obj; ++i)
     {
         Foam::label celli = localID[i];
         const Foam::cell& cFaces = mesh.cells()[celli];
@@ -163,7 +163,7 @@ static void get_edge_list(void *data, int sizeGID, int sizeLID,
     int* nextProc = nborProc;
     float* nextWgt = ewgts;
 
-    for (Foam::label i=0; i < num_obj; i++)
+    for (Foam::label i=0; i < num_obj; ++i)
     {
         Foam::label celli = localID[i];
 
@@ -241,11 +241,11 @@ static void get_geom_list
 
     const Foam::pointField& cc = mesh.cellCentres();
 
-    for (Foam::label celli = 0; celli < num_obj; celli++)
+    for (Foam::label celli = 0; celli < num_obj; ++celli)
     {
         const Foam::point& pt = cc[celli];
 
-        for (Foam::direction cmpt = 0; cmpt < Foam::vector::nComponents; cmpt++)
+        for (Foam::direction cmpt = 0; cmpt < Foam::vector::nComponents; ++cmpt)
         {
             if (sol[cmpt] == 1)
             {
@@ -279,7 +279,7 @@ Foam::labelList Foam::zoltanRenumber::renumber
 
     int argc = args.size();
     char* argv[argc];
-    for (label i = 0; i < argc; i++)
+    for (label i = 0; i < argc; ++i)
     {
         argv[i] = strdup(args[i].c_str());
     }
@@ -356,7 +356,7 @@ Foam::labelList Foam::zoltanRenumber::renumber
     }
 
 
-    for (label i = 0; i < argc; i++)
+    for (label i = 0; i < argc; ++i)
     {
         free(argv[i]);
     }

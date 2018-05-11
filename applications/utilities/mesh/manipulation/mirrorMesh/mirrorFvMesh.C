@@ -224,7 +224,7 @@ Foam::mirrorFvMesh::mirrorFvMesh(const IOobject& io)
     }
 
     // Mirror internal faces
-    for (label facei = 0; facei < nOldInternalFaces; facei++)
+    for (label facei = 0; facei < nOldInternalFaces; ++facei)
     {
         const face& oldFace = oldFaces[facei];
         face& nf = newFaces[nNewFaces];
@@ -232,7 +232,7 @@ Foam::mirrorFvMesh::mirrorFvMesh(const IOobject& io)
 
         nf[0] = mirrorPointLookup[oldFace[0]];
 
-        for (label i = 1; i < oldFace.size(); i++)
+        for (label i = 1; i < oldFace.size(); ++i)
         {
             nf[i] = mirrorPointLookup[oldFace[oldFace.size() - i]];
         }
@@ -254,7 +254,7 @@ Foam::mirrorFvMesh::mirrorFvMesh(const IOobject& io)
         newPatchStarts[patchi] = nNewFaces;
 
         // Master side
-        for (label facei = 0; facei < curPatchSize; facei++)
+        for (label facei = 0; facei < curPatchSize; ++facei)
         {
             // Check if the face has already been added.  If not, add it and
             // insert the numbering details.
@@ -268,7 +268,7 @@ Foam::mirrorFvMesh::mirrorFvMesh(const IOobject& io)
         }
 
         // Mirror side
-        for (label facei = 0; facei < curPatchSize; facei++)
+        for (label facei = 0; facei < curPatchSize; ++facei)
         {
             // Check if the face has already been added.  If not, add it and
             // insert the numbering details.
@@ -280,7 +280,7 @@ Foam::mirrorFvMesh::mirrorFvMesh(const IOobject& io)
 
                 nf[0] = mirrorPointLookup[oldFace[0]];
 
-                for (label i = 1; i < oldFace.size(); i++)
+                for (label i = 1; i < oldFace.size(); ++i)
                 {
                     nf[i] = mirrorPointLookup[oldFace[oldFace.size() - i]];
                 }

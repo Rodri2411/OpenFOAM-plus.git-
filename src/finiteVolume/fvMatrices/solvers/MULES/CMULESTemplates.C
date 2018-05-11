@@ -317,7 +317,7 @@ void Foam::MULES::limiterCorr
     scalarField sumlPhip(psiIf.size());
     scalarField mSumlPhim(psiIf.size());
 
-    for (int j=0; j<nLimiterIter; j++)
+    for (int j=0; j<nLimiterIter; ++j)
     {
         sumlPhip = 0;
         mSumlPhim = 0;

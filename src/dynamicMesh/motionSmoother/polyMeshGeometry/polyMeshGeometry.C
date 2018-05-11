@@ -70,14 +70,14 @@ void Foam::polyMeshGeometry::updateFaceCentresAndAreas
             vector sumAc = Zero;
 
             point fCentre = p[f[0]];
-            for (label pi = 1; pi < nPoints; pi++)
+            for (label pi = 1; pi < nPoints; ++pi)
             {
                 fCentre += p[f[pi]];
             }
 
             fCentre /= nPoints;
 
-            for (label pi = 0; pi < nPoints; pi++)
+            for (label pi = 0; pi < nPoints; ++pi)
             {
                 const point& nextPoint = p[f[(pi + 1) % nPoints]];
 
@@ -387,7 +387,7 @@ bool Foam::polyMeshGeometry::checkFaceDotProduct
     // Calculate coupled cell centre
     pointField neiCc(mesh.nFaces() - mesh.nInternalFaces());
 
-    for (label facei = mesh.nInternalFaces(); facei < mesh.nFaces(); facei++)
+    for (label facei = mesh.nInternalFaces(); facei < mesh.nFaces(); ++facei)
     {
         neiCc[facei-mesh.nInternalFaces()] = cellCentres[own[facei]];
     }
@@ -747,7 +747,7 @@ bool Foam::polyMeshGeometry::checkFaceTets
     // Calculate coupled cell centre
     pointField neiCc(mesh.nFaces() - mesh.nInternalFaces());
 
-    for (label facei = mesh.nInternalFaces(); facei < mesh.nFaces(); facei++)
+    for (label facei = mesh.nInternalFaces(); facei < mesh.nFaces(); ++facei)
     {
         neiCc[facei - mesh.nInternalFaces()] = cellCentres[own[facei]];
     }
@@ -1189,7 +1189,7 @@ bool Foam::polyMeshGeometry::checkFaceWeights
     // Calculate coupled cell centre
     pointField neiCc(mesh.nFaces()-mesh.nInternalFaces());
 
-    for (label facei = mesh.nInternalFaces(); facei < mesh.nFaces(); facei++)
+    for (label facei = mesh.nInternalFaces(); facei < mesh.nFaces(); ++facei)
     {
         neiCc[facei-mesh.nInternalFaces()] = cellCentres[own[facei]];
     }
@@ -1342,7 +1342,7 @@ bool Foam::polyMeshGeometry::checkVolRatio
     // Calculate coupled cell vol
     scalarField neiVols(mesh.nFaces()-mesh.nInternalFaces());
 
-    for (label facei = mesh.nInternalFaces(); facei < mesh.nFaces(); facei++)
+    for (label facei = mesh.nInternalFaces(); facei < mesh.nFaces(); ++facei)
     {
         neiVols[facei-mesh.nInternalFaces()] = cellVolumes[own[facei]];
     }
@@ -1674,7 +1674,7 @@ bool Foam::polyMeshGeometry::checkFaceTwist
     // Calculate coupled cell centre
     pointField neiCc(mesh.nFaces()-mesh.nInternalFaces());
 
-    for (label facei = mesh.nInternalFaces(); facei < mesh.nFaces(); facei++)
+    for (label facei = mesh.nInternalFaces(); facei < mesh.nFaces(); ++facei)
     {
         neiCc[facei-mesh.nInternalFaces()] = cellCentres[own[facei]];
     }

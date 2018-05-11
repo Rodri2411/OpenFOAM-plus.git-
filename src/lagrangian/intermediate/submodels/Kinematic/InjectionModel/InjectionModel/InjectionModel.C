@@ -460,7 +460,7 @@ void Foam::InjectionModel<CloudType>::inject
         const scalar padTime = max(0.0, SOI_ - time0_);
 
         // Introduce new parcels linearly across carrier phase timestep
-        for (label parcelI = 0; parcelI < newParcels; parcelI++)
+        for (label parcelI = 0; parcelI < newParcels; ++parcelI)
         {
             if (validInjection(parcelI))
             {
@@ -589,7 +589,7 @@ void Foam::InjectionModel<CloudType>::injectSteadyState
     label newParcels = parcelsToInject(0.0, 1.0);
 
     // Inject new parcels
-    for (label parcelI = 0; parcelI < newParcels; parcelI++)
+    for (label parcelI = 0; parcelI < newParcels; ++parcelI)
     {
         // Volume to inject is split equally amongst all parcel streams
         scalar newVolumeFraction = 1.0/scalar(newParcels);

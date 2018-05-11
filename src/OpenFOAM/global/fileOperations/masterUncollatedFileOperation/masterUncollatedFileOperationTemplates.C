@@ -38,7 +38,7 @@ Type Foam::fileOperations::masterUncollatedFileOperation::scatterList
     PstreamBuffers pBufs(UPstream::commsTypes::nonBlocking);
     if (Pstream::master())
     {
-        for (label proci = 1; proci < Pstream::nProcs(); proci++)
+        for (label proci = 1; proci < Pstream::nProcs(); ++proci)
         {
             UOPstream os(proci, pBufs);
             os << masterLst[proci];
@@ -82,7 +82,7 @@ Type Foam::fileOperations::masterUncollatedFileOperation::masterOp
         if (Pstream::master())
         {
             result = fop(filePaths[0]);
-            for (label i = 1; i < filePaths.size(); i++)
+            for (label i = 1; i < filePaths.size(); ++i)
             {
                 if (filePaths[i] != filePaths[0])
                 {
@@ -127,7 +127,7 @@ Type Foam::fileOperations::masterUncollatedFileOperation::masterOp
         if (Pstream::master())
         {
             result = fop(srcs[0], dests[0]);
-            for (label i = 1; i < srcs.size(); i++)
+            for (label i = 1; i < srcs.size(); ++i)
             {
                 if (srcs[i] != srcs[0])
                 {

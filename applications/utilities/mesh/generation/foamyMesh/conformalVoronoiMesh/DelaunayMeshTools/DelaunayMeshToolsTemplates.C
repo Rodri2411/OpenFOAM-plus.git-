@@ -230,7 +230,7 @@ void Foam::DelaunayMeshTools::drawDelaunayCell
         << mag(c->dual() - topoint(c->vertex(0)->point()))
         << endl;
 
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 4; ++i)
     {
         os  << "# index / type / procIndex: "
             << label(c->vertex(i)->index()) << " "

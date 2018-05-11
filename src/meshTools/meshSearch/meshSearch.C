@@ -757,7 +757,7 @@ Foam::label Foam::meshSearch::findNearestBoundaryFace
             (
                 label facei = mesh_.nInternalFaces();
                 facei < mesh_.nFaces();
-                facei++
+                ++facei
             )
             {
                 const face& f =  mesh_.faces()[facei];

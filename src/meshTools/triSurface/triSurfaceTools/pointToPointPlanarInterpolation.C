@@ -65,7 +65,7 @@ Foam::pointToPointPlanarInterpolation::calcCoordinateSystem
     label index1 = -1;
     scalar maxDist = -GREAT;
 
-    for (label i = 1; i < points.size(); i++)
+    for (label i = 1; i < points.size(); ++i)
     {
         const vector d = points[i] - p0;
         scalar magD = mag(d);
@@ -82,7 +82,7 @@ Foam::pointToPointPlanarInterpolation::calcCoordinateSystem
 
     label index2 = -1;
     maxDist = -GREAT;
-    for (label i = 1; i < points.size(); i++)
+    for (label i = 1; i < points.size(); ++i)
     {
         if (i != index1)
         {
@@ -415,7 +415,7 @@ bool Foam::pointToPointPlanarInterpolation::findTime
     lo = startSampleTime;
     hi = -1;
 
-    for (label i = startSampleTime+1; i < times.size(); i++)
+    for (label i = startSampleTime+1; i < times.size(); ++i)
     {
         if (times[i].value() > timeVal)
         {

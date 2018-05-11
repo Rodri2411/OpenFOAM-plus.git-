@@ -80,7 +80,7 @@ void Foam::attachDetach::detachInterface
         const labelList& faceLabels = zoneMesh[faceZoneID_.index()];
         if (faceLabels.size() > 0)
         {
-            for (label i = 1; i < faceLabels.size(); i++)
+            for (label i = 1; i < faceLabels.size(); ++i)
             {
                 if (faceLabels[i] <= faceLabels[i-1])
                 {
@@ -118,7 +118,7 @@ void Foam::attachDetach::detachInterface
     // with their original labels to stop duplication
     label nIntEdges = masterFaceLayer.nInternalEdges();
 
-    for (label curEdgeID = nIntEdges; curEdgeID < meshEdges.size(); curEdgeID++)
+    for (label curEdgeID = nIntEdges; curEdgeID < meshEdges.size(); ++curEdgeID)
     {
         const labelList& curFaces = meshEdgeFaces[meshEdges[curEdgeID]];
 

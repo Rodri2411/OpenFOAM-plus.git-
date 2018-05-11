@@ -220,7 +220,7 @@ Foam::Ostream& Foam::OBJstream::write
     if (lines)
     {
         write('l');
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 3; ++i)
         {
             write(' ') << i+start;
         }
@@ -229,7 +229,7 @@ Foam::Ostream& Foam::OBJstream::write
     else
     {
         write('f');
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 3; ++i)
         {
             write(' ') << i+start;
         }

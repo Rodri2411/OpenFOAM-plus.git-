@@ -445,7 +445,7 @@ Foam::instantList Foam::fileOperation::findTimes
             {
                 combinedTimes[sz++] = times[i];
             }
-            for (; extrai < extraTimes.size(); extrai++)
+            for (; extrai < extraTimes.size(); ++extrai)
             {
                 combinedTimes[sz++] = extraTimes[extrai];
             }
@@ -464,7 +464,7 @@ Foam::instantList Foam::fileOperation::findTimes
 
                 // Filter out duplicates
                 label newi = starti+1;
-                for (label i = newi; i < times.size(); i++)
+                for (label i = newi; i < times.size(); ++i)
                 {
                     if (times[i].value() != times[i-1].value())
                     {

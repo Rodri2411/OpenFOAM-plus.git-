@@ -125,7 +125,7 @@ Foam::autoPtr<Foam::fvMesh> Foam::loadOrCreateMesh
         (
             int slave=Pstream::firstSlave();
             slave<=Pstream::lastSlave();
-            slave++
+            ++slave
         )
         {
             OPstream toSlave(Pstream::commsTypes::scheduled, slave);

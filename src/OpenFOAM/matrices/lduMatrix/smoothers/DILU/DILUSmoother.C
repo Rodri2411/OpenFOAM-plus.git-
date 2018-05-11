@@ -86,7 +86,7 @@ void Foam::DILUSmoother::smooth
     scalarField rA(rD_.size());
     scalar* __restrict__ rAPtr = rA.begin();
 
-    for (label sweep=0; sweep<nSweeps; sweep++)
+    for (label sweep=0; sweep<nSweeps; ++sweep)
     {
         matrix_.residual
         (
@@ -101,7 +101,7 @@ void Foam::DILUSmoother::smooth
         rA *= rD_;
 
         label nFaces = matrix_.upper().size();
-        for (label face=0; face<nFaces; face++)
+        for (label face=0; face<nFaces; ++face)
         {
             label u = uPtr[face];
             rAPtr[u] -= rDPtr[u]*lowerPtr[face]*rAPtr[lPtr[face]];

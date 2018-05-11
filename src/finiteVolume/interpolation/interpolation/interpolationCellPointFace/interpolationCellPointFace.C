@@ -146,7 +146,7 @@ Type Foam::interpolationCellPointFace<Type>::interpolate
             if (minDistance < 1.0e-5)
             {
                 foundTet = true;
-                for (label i=0; i<4; i++)
+                for (label i=0; i<4; ++i)
                 {
                     phi[i] = phiCandidate[i];
                 }
@@ -193,7 +193,7 @@ Type Foam::interpolationCellPointFace<Type>::interpolate
             if (minDistance < 1.0e-3)
             {
                 foundTet = true;
-                for (label i=0; i<4; i++)
+                for (label i=0; i<4; ++i)
                 {
                     phi[i] = phiCandidate[i];
                 }
@@ -209,7 +209,7 @@ Type Foam::interpolationCellPointFace<Type>::interpolate
 
         if (foundTet)
         {
-            for (label i=0; i<2; i++)
+            for (label i=0; i<2; ++i)
             {
                 ts[i] = psip_[tetPointLabels[i]];
             }
@@ -243,7 +243,7 @@ Type Foam::interpolationCellPointFace<Type>::interpolate
 
             ts[3] = this->psi_[celli];
 
-            for (label n=0; n<4; n++)
+            for (label n=0; n<4; ++n)
             {
                 phi[n] = min(1.0, phi[n]);
                 phi[n] = max(0.0, phi[n]);
@@ -299,7 +299,7 @@ Type Foam::interpolationCellPointFace<Type>::interpolate
         if (foundTriangle)
         {
             // add up the point values ...
-            for (label i=0; i<2; i++)
+            for (label i=0; i<2; ++i)
             {
                 Type vel = psip_[tetPointLabels[i]];
                 t += phi[i]*vel;

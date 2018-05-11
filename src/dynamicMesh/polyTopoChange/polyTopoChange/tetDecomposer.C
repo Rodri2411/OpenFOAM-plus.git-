@@ -292,7 +292,7 @@ void Foam::tetDecomposer::setRefinement
             }
             else
             {
-                for (label triI = 0; triI < f.size()-2; triI++)
+                for (label triI = 0; triI < f.size()-2; ++triI)
                 {
                     if (cFacei == 0 && triI == 0)
                     {
@@ -440,7 +440,7 @@ void Foam::tetDecomposer::setRefinement
             label fp0 = max(mesh_.tetBasePtIs()[facei], 0);
             label fp = f.fcIndex(fp0);
 
-            for (label triI = 0; triI < f.size()-2; triI++)
+            for (label triI = 0; triI < f.size()-2; ++triI)
             {
                 label nextTri = triI+1;
                 if (nextTri >= f.size()-2)

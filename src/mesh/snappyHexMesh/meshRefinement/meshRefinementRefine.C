@@ -48,7 +48,7 @@ namespace Foam
     //- To compare normals
     static bool less(const vector& x, const vector& y)
     {
-        for (direction i = 0; i < vector::nComponents; i++)
+        for (direction i = 0; i < vector::nComponents; ++i)
         {
             if (x[i] < y[i])
             {
@@ -149,7 +149,7 @@ Foam::labelList Foam::meshRefinement::getChangedFaces
 
         // 1. Internal faces
 
-        for (label faceI = 0; faceI < nInternalFaces; faceI++)
+        for (label faceI = 0; faceI < nInternalFaces; ++faceI)
         {
             label oldOwn = map.cellMap()[faceOwner[faceI]];
             label oldNei = map.cellMap()[faceNeighbour[faceI]];
@@ -1287,16 +1287,16 @@ Foam::label Foam::meshRefinement::markSurfaceCurvatureRefinement
     (
         label cellI = 0;
         !reachedLimit && cellI < cellSurfNormals.size();
-        cellI++
+        ++cellI
     )
     {
         const vectorList& normals = cellSurfNormals[cellI];
         const labelList& levels = cellSurfLevels[cellI];
 
         // n^2 comparison of all normals in a cell
-        for (label i = 0; !reachedLimit && i < normals.size(); i++)
+        for (label i = 0; !reachedLimit && i < normals.size(); ++i)
         {
-            for (label j = i+1; !reachedLimit && j < normals.size(); j++)
+            for (label j = i+1; !reachedLimit && j < normals.size(); ++j)
             {
                 if ((normals[i] & normals[j]) < curvature)
                 {
@@ -1342,7 +1342,7 @@ Foam::label Foam::meshRefinement::markSurfaceCurvatureRefinement
     (
         label faceI = 0;
         !reachedLimit && faceI < mesh_.nInternalFaces();
-        faceI++
+        ++faceI
     )
     {
         label own = mesh_.faceOwner()[faceI];
@@ -1370,9 +1370,9 @@ Foam::label Foam::meshRefinement::markSurfaceCurvatureRefinement
         if (!ownIsSubset && !neiIsSubset)
         {
             // n^2 comparison of between ownNormals and neiNormals
-            for (label i = 0; !reachedLimit &&  i < ownNormals.size(); i++)
+            for (label i = 0; !reachedLimit &&  i < ownNormals.size(); ++i)
             {
-                for (label j = 0; !reachedLimit && j < neiNormals.size(); j++)
+                for (label j = 0; !reachedLimit && j < neiNormals.size(); ++j)
                 {
                     // Have valid data on both sides. Check curvature.
                     if ((ownNormals[i] & neiNormals[j]) < curvature)
@@ -1440,7 +1440,7 @@ Foam::label Foam::meshRefinement::markSurfaceCurvatureRefinement
     (
         label faceI = mesh_.nInternalFaces();
         !reachedLimit && faceI < mesh_.nFaces();
-        faceI++
+        ++faceI
     )
     {
         label own = mesh_.faceOwner()[faceI];
@@ -1466,9 +1466,9 @@ Foam::label Foam::meshRefinement::markSurfaceCurvatureRefinement
         if (!ownIsSubset && !neiIsSubset)
         {
             // n^2 comparison of between ownNormals and neiNormals
-            for (label i = 0; !reachedLimit &&  i < ownNormals.size(); i++)
+            for (label i = 0; !reachedLimit &&  i < ownNormals.size(); ++i)
             {
-                for (label j = 0; !reachedLimit && j < neiNormals.size(); j++)
+                for (label j = 0; !reachedLimit && j < neiNormals.size(); ++j)
                 {
                     // Have valid data on both sides. Check curvature.
                     if ((ownNormals[i] & neiNormals[j]) < curvature)
@@ -1870,7 +1870,7 @@ Foam::label Foam::meshRefinement::markProximityRefinement
     pointField neiBndMaxLocation(mesh_.nFaces()-mesh_.nInternalFaces());
     vectorField neiBndMaxNormal(mesh_.nFaces()-mesh_.nInternalFaces());
 
-    for (label faceI = mesh_.nInternalFaces(); faceI < mesh_.nFaces(); faceI++)
+    for (label faceI = mesh_.nInternalFaces(); faceI < mesh_.nFaces(); ++faceI)
     {
         label bFaceI = faceI-mesh_.nInternalFaces();
         label own = mesh_.faceOwner()[faceI];
@@ -1886,7 +1886,7 @@ Foam::label Foam::meshRefinement::markProximityRefinement
     // Loop over all faces. Could only be checkFaces.. except if they're coupled
 
     // Internal faces
-    for (label faceI = 0; faceI < mesh_.nInternalFaces(); faceI++)
+    for (label faceI = 0; faceI < mesh_.nInternalFaces(); ++faceI)
     {
         label own = mesh_.faceOwner()[faceI];
         label nei = mesh_.faceNeighbour()[faceI];
@@ -1956,7 +1956,7 @@ Foam::label Foam::meshRefinement::markProximityRefinement
         }
     }
     // Boundary faces
-    for (label faceI = mesh_.nInternalFaces(); faceI < mesh_.nFaces(); faceI++)
+    for (label faceI = mesh_.nInternalFaces(); faceI < mesh_.nFaces(); ++faceI)
     {
         label own = mesh_.faceOwner()[faceI];
         label bFaceI = faceI - mesh_.nInternalFaces();
@@ -2479,7 +2479,7 @@ Foam::meshRefinement::balanceAndRefine
     //    globalIndex globalCells(mesh_.nCells());
     //
     //    Info<< "** Distribution before balancing/refining:" << endl;
-    //    for (label procI = 0; procI < Pstream::nProcs(); procI++)
+    //    for (label procI = 0; procI < Pstream::nProcs(); ++procI)
     //    {
     //        Info<< "    " << procI << '\t'
     //            << globalCells.localSize(procI) << endl;
@@ -2490,7 +2490,7 @@ Foam::meshRefinement::balanceAndRefine
     //    globalIndex globalCells(cellsToRefine.size());
     //
     //    Info<< "** Cells to be refined:" << endl;
-    //    for (label procI = 0; procI < Pstream::nProcs(); procI++)
+    //    for (label procI = 0; procI < Pstream::nProcs(); ++procI)
     //    {
     //        Info<< "    " << procI << '\t'
     //            << globalCells.localSize(procI) << endl;
@@ -2552,7 +2552,7 @@ Foam::meshRefinement::balanceAndRefine
         //    globalIndex globalCells(mesh_.nCells());
         //
         //    Info<< "** Distribution after balancing:" << endl;
-        //    for (label procI = 0; procI < Pstream::nProcs(); procI++)
+        //    for (label procI = 0; procI < Pstream::nProcs(); ++procI)
         //    {
         //        Info<< "    " << procI << '\t'
         //            << globalCells.localSize(procI) << endl;
@@ -2610,7 +2610,7 @@ Foam::meshRefinement::balanceAndRefine
     //    globalIndex globalCells(mesh_.nCells());
     //
     //    Info<< "** After refinement distribution:" << endl;
-    //    for (label procI = 0; procI < Pstream::nProcs(); procI++)
+    //    for (label procI = 0; procI < Pstream::nProcs(); ++procI)
     //    {
     //        Info<< "    " << procI << '\t'
     //            << globalCells.localSize(procI) << endl;

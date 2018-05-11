@@ -174,7 +174,7 @@ void Foam::blockMesh::readPatches
 
 
         // Check for multiple patches
-        for (label i = 0; i < nPatches; i++)
+        for (label i = 0; i < nPatches; ++i)
         {
             if (patchNames[nPatches] == patchNames[i])
             {

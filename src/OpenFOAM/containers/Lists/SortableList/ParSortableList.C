@@ -283,7 +283,7 @@ void Foam::ParSortableList<Type>::sort()
 
     label combinedI = 0;
 
-    for (label proci = 0; proci < Pstream::nProcs(); proci++)
+    for (label proci = 0; proci < Pstream::nProcs(); ++proci)
     {
         if (proci == Pstream::myProcNo())
         {

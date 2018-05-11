@@ -113,7 +113,7 @@ void Foam::patchPatchDist::correct()
     (
         label edgeI = patch_.nInternalEdges();
         edgeI < patch_.nEdges();
-        edgeI++
+        ++edgeI
     )
     {
         const edge& e = patch_.edges()[edgeI];

@@ -16,7 +16,7 @@ int USERD_get_part_coords
         const vectorField& points = meshPtr->points();
         label nPoints = points.size();
 
-        for (label indx=0; indx<nPoints; indx++)
+        for (label indx=0; indx<nPoints; ++indx)
         {
             coord_array[0][indx+1] = float(points[indx].x());
             coord_array[1][indx+1] = float(points[indx].y());
@@ -30,7 +30,7 @@ int USERD_get_part_coords
         const vectorField& points = bMesh[patchi].points();
         label nPoints = points.size();
 
-        for (label indx=0; indx<nPoints; indx++)
+        for (label indx=0; indx<nPoints; ++indx)
         {
             coord_array[0][indx+1] = float(points[indx].x());
             coord_array[1][indx+1] = float(points[indx].y());

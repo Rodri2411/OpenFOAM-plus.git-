@@ -167,7 +167,7 @@ void Foam::snappyLayerDriver::checkMeshManifold() const
     // Get all outside faces
     labelList outsideFaces(mesh.nFaces() - mesh.nInternalFaces());
 
-    for (label facei = mesh.nInternalFaces(); facei < mesh.nFaces(); facei++)
+    for (label facei = mesh.nInternalFaces(); facei < mesh.nFaces(); ++facei)
     {
          outsideFaces[facei - mesh.nInternalFaces()] = facei;
     }
@@ -408,7 +408,7 @@ bool Foam::snappyLayerDriver::checkCommonOrder
             curInc = -curInc;
             nbInc = -nbInc;
 
-            for (label commonI = 0; commonI < nCommon; commonI++)
+            for (label commonI = 0; commonI < nCommon; ++commonI)
             {
                 curFp = constrainFp(curFace.size(), curFp+curInc);
                 curNb = constrainFp(nbFace.size(), curNb+nbInc);
@@ -1318,7 +1318,7 @@ void Foam::snappyLayerDriver::determineSidePatches
         // so prepare to renumber edgePatchID
         Map<label> wantedToAddedPatch;
 
-        for (label patchi = nOldPatches; patchi < nPatches; patchi++)
+        for (label patchi = nOldPatches; patchi < nPatches; ++patchi)
         {
             label nbrProci = patchToNbrProc[patchi];
             word name
@@ -2228,7 +2228,7 @@ Foam::label Foam::snappyLayerDriver::truncateDisplacement
                     {
                         // Any pinch in the middle
                         bool pinch = false;
-                        for (label i = 1; i < stringedVerts.size()-1; i++)
+                        for (label i = 1; i < stringedVerts.size()-1; ++i)
                         {
                             if (extrudeStatus[stringedVerts[i]] == NOEXTRUDE)
                             {
@@ -2426,7 +2426,7 @@ void Foam::snappyLayerDriver::setupLayerInfoTruncation
         label nLevels = gMax(patchNLayers);
 
         // flag neighbouring patch faces with number of layers to grow
-        for (label ilevel = 1; ilevel < nLevels; ilevel++)
+        for (label ilevel = 1; ilevel < nLevels; ++ilevel)
         {
             label nBuffer;
 
@@ -2439,7 +2439,7 @@ void Foam::snappyLayerDriver::setupLayerInfoTruncation
                 nBuffer = nBufferCellsNoExtrude;
             }
 
-            for (label ibuffer = 0; ibuffer < nBuffer + 1; ibuffer++)
+            for (label ibuffer = 0; ibuffer < nBuffer + 1; ++ibuffer)
             {
                 labelList tempCounter(nPatchFaceLayers);
 
@@ -2676,7 +2676,7 @@ Foam::label Foam::snappyLayerDriver::checkAndUnmark
         if (nReportLocal)
         {
             Pout<< "Checked mesh with layers. Disabled extrusion at " << endl;
-            for (label i=0; i < nReportLocal; i++)
+            for (label i=0; i < nReportLocal; ++i)
             {
                 Pout<< "    " << disabledFaceCentres[i] << endl;
             }
@@ -2752,7 +2752,7 @@ Foam::List<Foam::labelPair> Foam::snappyLayerDriver::getBafflesOnAddedMesh
     (
         label facei = mesh.nInternalFaces();
         facei < mesh.nFaces();
-        facei++
+        ++facei
     )
     {
         label oldFacei = newToOldFaces[facei];
@@ -2834,7 +2834,7 @@ void Foam::snappyLayerDriver::getLayerCellsFaces
         {
             // Layer contains both original boundary face and new boundary
             // face so is nLayers+1. Leave out old internal face.
-            for (label i = 1; i < layer.size(); i++)
+            for (label i = 1; i < layer.size(); ++i)
             {
                 faceRealThickness[layer[i]] = realThickness;
             }
@@ -2973,7 +2973,7 @@ bool Foam::snappyLayerDriver::writeLayerSets
     }
     {
         label nAdded = 0;
-        for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
+        for (label facei = 0; facei < mesh.nInternalFaces(); ++facei)
         {
             if (faceRealThickness[facei] > 0)
             {
@@ -2982,7 +2982,7 @@ bool Foam::snappyLayerDriver::writeLayerSets
         }
 
         faceSet layerFacesSet(mesh, "layerFaces", nAdded);
-        for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
+        for (label facei = 0; facei < mesh.nInternalFaces(); ++facei)
         {
             if (faceRealThickness[facei] > 0)
             {
@@ -3728,7 +3728,7 @@ void Foam::snappyLayerDriver::addLayers
         addProfiling(grow, "snappyHexMesh::layers::grow");
 
         // Grow out region of non-extrusion
-        for (label i = 0; i < layerParams.nGrow(); i++)
+        for (label i = 0; i < layerParams.nGrow(); ++i)
         {
             growNoExtrusion
             (
@@ -3841,7 +3841,7 @@ void Foam::snappyLayerDriver::addLayers
         (
             label iteration = 0;
             iteration < layerParams.nLayerIter();
-            iteration++
+            ++iteration
         )
         {
             Info<< nl
@@ -4143,7 +4143,7 @@ void Foam::snappyLayerDriver::addLayers
                 (
                     label facei = newMesh.nInternalFaces();
                     facei < newMesh.nFaces();
-                    facei++
+                    ++facei
                 )
                 {
                     label newMeshFacei = map.faceMap()[facei];
@@ -4222,7 +4222,7 @@ void Foam::snappyLayerDriver::addLayers
             medialAxisMoverPtr().movePoints(mesh.points());
 
             // Grow out region of non-extrusion
-            for (label i = 0; i < layerParams.nGrow(); i++)
+            for (label i = 0; i < layerParams.nGrow(); ++i)
             {
                 growNoExtrusion
                 (
@@ -4332,7 +4332,7 @@ void Foam::snappyLayerDriver::addLayers
             (
                 label facei = mesh.nInternalFaces();
                 facei < mesh.nFaces();
-                facei++
+                ++facei
             )
             {
                 label oldFacei = map.faceMap()[facei];
@@ -4677,7 +4677,7 @@ void Foam::snappyLayerDriver::doLayers
             (
                 label facei = mesh.nInternalFaces();
                 facei < mesh.nFaces();
-                facei++
+                ++facei
             )
             {
                 if (intOrCoupled[facei] && isExtrudedZoneFace[facei])

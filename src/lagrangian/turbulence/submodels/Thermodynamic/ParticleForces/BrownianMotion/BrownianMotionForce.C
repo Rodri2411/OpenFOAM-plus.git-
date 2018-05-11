@@ -195,7 +195,7 @@ Foam::forceSuSp Foam::BrownianMotionForce<CloudType>::calcCoupled
 
     // To generate a cubic distribution (3 independent directions) :
     // const scalar sqrt2 = sqrt(2.0);
-    // for (direction dir = 0; dir < vector::nComponents; dir++)
+    // for (direction dir = 0; dir < vector::nComponents; ++dir)
     // {
     //     const scalar x = rndGen_.sample01<scalar>();
     //     const scalar eta = sqrt2*erfInv(2*x - 1.0);

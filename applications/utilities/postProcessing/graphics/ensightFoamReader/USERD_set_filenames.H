@@ -41,7 +41,7 @@ int USERD_set_filenames
     // the path is pre-pended to filename_1
     // 1 is the 'Geometry' : 2 the 'Result' which is null here
     // since two_field is FALSE
-    for (label i=0; i<lCase-lRoot;i++)
+    for (label i=0; i<lCase-lRoot; ++i)
     {
         tmp[i] = filename_1[i+1+lRoot];
     }

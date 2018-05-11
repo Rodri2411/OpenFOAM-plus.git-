@@ -128,7 +128,7 @@ Foam::PBiCICG<Type, DType, LUType>::solve(Field<Type>& psi) const
 
             if (nIter == 0)
             {
-                for (label cell=0; cell<nCells; cell++)
+                for (label cell=0; cell<nCells; ++cell)
                 {
                     pAPtr[cell] = wAPtr[cell];
                     pTPtr[cell] = wTPtr[cell];
@@ -142,7 +142,7 @@ Foam::PBiCICG<Type, DType, LUType>::solve(Field<Type>& psi) const
                     stabilise(wArTold, solverPerf.vsmall_)
                 );
 
-                for (label cell=0; cell<nCells; cell++)
+                for (label cell=0; cell<nCells; ++cell)
                 {
                     pAPtr[cell] = wAPtr[cell] + cmptMultiply(beta, pAPtr[cell]);
                     pTPtr[cell] = wTPtr[cell] + cmptMultiply(beta, pTPtr[cell]);
@@ -177,7 +177,7 @@ Foam::PBiCICG<Type, DType, LUType>::solve(Field<Type>& psi) const
                 stabilise(wApT, solverPerf.vsmall_)
             );
 
-            for (label cell=0; cell<nCells; cell++)
+            for (label cell=0; cell<nCells; ++cell)
             {
                 psiPtr[cell] += cmptMultiply(alpha, pAPtr[cell]);
                 rAPtr[cell] -= cmptMultiply(alpha, wAPtr[cell]);

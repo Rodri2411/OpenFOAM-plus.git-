@@ -100,7 +100,7 @@ word cellShapeControlMesh::meshSubDir = "cellShapeControlMesh";
 //
 //    const scalar spanMag = geometryToConformTo.globalBounds().mag();
 //
-//    for (label i = 0; i < s; i++)
+//    for (label i = 0; i < s; ++i)
 //    {
 //        vector spoke
 //        (

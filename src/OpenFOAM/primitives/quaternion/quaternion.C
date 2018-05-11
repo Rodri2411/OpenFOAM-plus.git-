@@ -77,7 +77,7 @@ Foam::quaternion Foam::average
 {
     quaternion qa(w[0]*qs[0]);
 
-    for (label i=1; i<qs.size(); i++)
+    for (label i=1; i<qs.size(); ++i)
     {
         // Invert quaternion if it has the opposite sign to the average
         if ((qa & qs[i]) > 0)

@@ -58,7 +58,7 @@ void Foam::MULES::limitSum(UPtrList<scalarField>& phiPsiCorrs)
         scalar sumPos = 0;
         scalar sumNeg = 0;
 
-        for (int phasei=0; phasei<phiPsiCorrs.size(); phasei++)
+        for (int phasei=0; phasei<phiPsiCorrs.size(); ++phasei)
         {
             if (phiPsiCorrs[phasei][facei] > 0)
             {
@@ -76,7 +76,7 @@ void Foam::MULES::limitSum(UPtrList<scalarField>& phiPsiCorrs)
         {
             scalar lambda = -sumNeg/sumPos;
 
-            for (int phasei=0; phasei<phiPsiCorrs.size(); phasei++)
+            for (int phasei=0; phasei<phiPsiCorrs.size(); ++phasei)
             {
                 if (phiPsiCorrs[phasei][facei] > 0)
                 {
@@ -88,7 +88,7 @@ void Foam::MULES::limitSum(UPtrList<scalarField>& phiPsiCorrs)
         {
             scalar lambda = -sumPos/sumNeg;
 
-            for (int phasei=0; phasei<phiPsiCorrs.size(); phasei++)
+            for (int phasei=0; phasei<phiPsiCorrs.size(); ++phasei)
             {
                 if (phiPsiCorrs[phasei][facei] < 0)
                 {

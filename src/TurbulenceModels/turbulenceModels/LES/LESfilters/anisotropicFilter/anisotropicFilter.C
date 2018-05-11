@@ -61,7 +61,7 @@ Foam::anisotropicFilter::anisotropicFilter
         calculatedFvPatchVectorField::typeName
     )
 {
-    for (direction d=0; d<vector::nComponents; d++)
+    for (direction d=0; d<vector::nComponents; ++d)
     {
         coeff_.primitiveFieldRef().replace
         (
@@ -101,7 +101,7 @@ Foam::anisotropicFilter::anisotropicFilter
         calculatedFvPatchScalarField::typeName
     )
 {
-    for (direction d=0; d<vector::nComponents; d++)
+    for (direction d=0; d<vector::nComponents; ++d)
     {
         coeff_.primitiveFieldRef().replace
         (
@@ -197,7 +197,7 @@ Foam::tmp<Foam::volSymmTensorField> Foam::anisotropicFilter::operator()
         )
     );
 
-    for (direction d=0; d<symmTensor::nComponents; d++)
+    for (direction d=0; d<symmTensor::nComponents; ++d)
     {
         tmpFilteredField.ref().replace
         (
@@ -233,7 +233,7 @@ Foam::tmp<Foam::volTensorField> Foam::anisotropicFilter::operator()
         )
     );
 
-    for (direction d=0; d<tensor::nComponents; d++)
+    for (direction d=0; d<tensor::nComponents; ++d)
     {
         tmpFilteredField.ref().replace
         (

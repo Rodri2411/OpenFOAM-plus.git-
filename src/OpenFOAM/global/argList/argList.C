@@ -1087,7 +1087,7 @@ void Foam::argList::parse
                 (
                     int slave = Pstream::firstSlave();
                     slave <= Pstream::lastSlave();
-                    slave++
+                    ++slave
                 )
                 {
                     options_.set("case", roots[slave-1]/globalCase_);
@@ -1140,7 +1140,7 @@ void Foam::argList::parse
                 (
                     int slave = Pstream::firstSlave();
                     slave <= Pstream::lastSlave();
-                    slave++
+                    ++slave
                 )
                 {
                     OPstream toSlave(Pstream::commsTypes::scheduled, slave);
@@ -1186,7 +1186,7 @@ void Foam::argList::parse
             (
                 int slave = Pstream::firstSlave();
                 slave <= Pstream::lastSlave();
-                slave++
+                ++slave
             )
             {
                 IPstream fromSlave(Pstream::commsTypes::scheduled, slave);

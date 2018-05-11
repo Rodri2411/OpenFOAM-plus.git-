@@ -80,11 +80,11 @@ Foam::Istream& Foam::operator>>(Istream& is, Matrix<Form, Type>& M)
                     label k = 0;
 
                     // loop over rows
-                    for (label i=0; i<M.m(); i++)
+                    for (label i=0; i<M.m(); ++i)
                     {
                         listDelimiter = is.readBeginList("MatrixRow");
 
-                        for (label j=0; j<M.n(); j++)
+                        for (label j=0; j<M.n(); ++j)
                         {
                             is >> v[k++];
 
@@ -109,7 +109,7 @@ Foam::Istream& Foam::operator>>(Istream& is, Matrix<Form, Type>& M)
                         "reading the single entry"
                     );
 
-                    for (label i=0; i<mn; i++)
+                    for (label i=0; i<mn; ++i)
                     {
                         v[i] = element;
                     }
@@ -195,12 +195,12 @@ Foam::Ostream& Foam::operator<<(Ostream& os, const Matrix<Form, Type>& M)
                 label k = 0;
 
                 // loop over rows
-                for (label i=0; i<M.m(); i++)
+                for (label i=0; i<M.m(); ++i)
                 {
                     os  << token::BEGIN_LIST;
 
                     // Write row
-                    for (label j=0; j< M.n(); j++)
+                    for (label j=0; j< M.n(); ++j)
                     {
                         if (j) os << token::SPACE;
                         os << v[k++];
@@ -220,12 +220,12 @@ Foam::Ostream& Foam::operator<<(Ostream& os, const Matrix<Form, Type>& M)
                 label k = 0;
 
                 // loop over rows
-                for (label i=0; i<M.m(); i++)
+                for (label i=0; i<M.m(); ++i)
                 {
                     os  << nl << token::BEGIN_LIST;
 
                     // Write row
-                    for (label j=0; j< M.n(); j++)
+                    for (label j=0; j< M.n(); ++j)
                     {
                         os << nl << v[k++];
                     }

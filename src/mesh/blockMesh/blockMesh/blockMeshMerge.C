@@ -83,7 +83,7 @@ void Foam::blockMesh::calcMergeInfo()
         (
             blockPfaceLabel = 0;
             blockPfaceLabel < blockPfaces.size();
-            blockPfaceLabel++
+            ++blockPfaceLabel
         )
         {
             if (blockPfaces[blockPfaceLabel] == blockFaceLabel)
@@ -188,7 +188,7 @@ void Foam::blockMesh::calcMergeInfo()
         (
             blockNfaceLabel = 0;
             blockNfaceLabel < blockNfaces.size();
-            blockNfaceLabel++
+            ++blockNfaceLabel
         )
         {
             if
@@ -328,7 +328,7 @@ void Foam::blockMesh::calcMergeInfo()
             (
                 blockPfaceLabel = 0;
                 blockPfaceLabel < blockPfaces.size();
-                blockPfaceLabel++
+                ++blockPfaceLabel
             )
             {
                 if
@@ -347,7 +347,7 @@ void Foam::blockMesh::calcMergeInfo()
             (
                 blockNfaceLabel = 0;
                 blockNfaceLabel < blockNfaces.size();
-                blockNfaceLabel++
+                ++blockNfaceLabel
             )
             {
                 if
@@ -436,7 +436,7 @@ void Foam::blockMesh::calcMergeInfo()
         (
             blockPfaceLabel = 0;
             blockPfaceLabel < blockPfaces.size();
-            blockPfaceLabel++
+            ++blockPfaceLabel
         )
         {
             if
@@ -463,7 +463,7 @@ void Foam::blockMesh::calcMergeInfo()
         (
             blockNfaceLabel = 0;
             blockNfaceLabel < blockNfaces.size();
-            blockNfaceLabel++
+            ++blockNfaceLabel
         )
         {
             if

@@ -104,7 +104,7 @@ Foam::label Foam::sampledSet::pointInCell
     {
         // If the sample does not pass through a single cell check if the point
         // is in any of the owners or neighbours otherwise ignore
-        for (label i=0; i<4; i++)
+        for (label i=0; i<4; ++i)
         {
             if (mesh().pointInCell(p, cells[i], searchEngine_.decompMode()))
             {

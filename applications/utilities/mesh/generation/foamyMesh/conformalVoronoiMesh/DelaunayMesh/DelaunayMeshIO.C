@@ -509,7 +509,7 @@ Foam::DelaunayMesh<Triangulation>::createMesh
         label ownerCell = -1;
         label neighbourCell = -1;
 
-        for (label i = 0; i < 3; i++)
+        for (label i = 0; i < 3; ++i)
         {
             verticesOnTriFace[i] = vertexMap
             [

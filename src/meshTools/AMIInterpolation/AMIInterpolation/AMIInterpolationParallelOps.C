@@ -128,7 +128,7 @@ void Foam::AMIInterpolation<SourcePatch, TargetPatch>::distributePatches
 {
     PstreamBuffers pBufs(Pstream::commsTypes::nonBlocking);
 
-    for (label domain = 0; domain < Pstream::nProcs(); domain++)
+    for (label domain = 0; domain < Pstream::nProcs(); ++domain)
     {
         const labelList& sendElems = map.subMap()[domain];
 
@@ -195,7 +195,7 @@ void Foam::AMIInterpolation<SourcePatch, TargetPatch>::distributePatches
     }
 
     // Consume
-    for (label domain = 0; domain < Pstream::nProcs(); domain++)
+    for (label domain = 0; domain < Pstream::nProcs(); ++domain)
     {
         const labelList& recvElems = map.constructMap()[domain];
 
@@ -447,7 +447,7 @@ Foam::AMIInterpolation<SourcePatch, TargetPatch>::calcProcMap
             label nRecv = sendSizes[proci][Pstream::myProcNo()];
             constructMap[proci].setSize(nRecv);
 
-            for (label i = 0; i < nRecv; i++)
+            for (label i = 0; i < nRecv; ++i)
             {
                 constructMap[proci][i] = segmentI++;
             }

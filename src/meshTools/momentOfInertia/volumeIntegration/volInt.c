@@ -131,7 +131,7 @@ void readPolyhedron(char *name, POLYHEDRON *p)
   
   fscanf(fp, "%d", &p->numVerts);
   printf("Reading in %d vertices\n", p->numVerts);
-  for (i = 0; i < p->numVerts; i++)
+  for (i = 0; i < p->numVerts; ++i)
     fscanf(fp, "%lf %lf %lf", 
 	   &p->verts[i][X], &p->verts[i][Y], &p->verts[i][Z]);
 

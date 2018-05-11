@@ -94,7 +94,7 @@ Foam::label Foam::primitiveMesh::findNearestCell(const point& location) const
     label nearestCelli = 0;
     scalar minProximity = magSqr(centres[0] - location);
 
-    for (label celli = 1; celli < centres.size(); celli++)
+    for (label celli = 1; celli < centres.size(); ++celli)
     {
         scalar proximity = magSqr(centres[celli] - location);
 

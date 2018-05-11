@@ -252,7 +252,7 @@ void Foam::regionToCell::erode
     // Now erode and see which regions get disconnected
     boolList shrunkSelectedCell(selectedCell);
 
-    for (label iter = 0; iter < nErode_; iter++)
+    for (label iter = 0; iter < nErode_; ++iter)
     {
         shrinkRegions(shrunkSelectedCell);
     }
@@ -289,7 +289,7 @@ void Foam::regionToCell::erode
 
 
     // Grow removeCell
-    for (label iter = 0; iter < nErode_; iter++)
+    for (label iter = 0; iter < nErode_; ++iter)
     {
         // Grow selected cell in regions that are not for keeping
         boolList boundaryPoint(mesh_.nPoints(), false);

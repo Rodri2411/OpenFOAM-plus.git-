@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
         rMix[0].volFrac()*thermo(thermoData.subDict(rMix[0].name()))
     );
 
-    for (label i = 1; i < rMix.size(); i++)
+    for (label i = 1; i < rMix.size(); ++i)
     {
         reactants = reactants
             + rMix[i].volFrac()*thermo(thermoData.subDict(rMix[i].name()));
@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
         2*pMix[0].volFrac()*thermo(thermoData.subDict(pMix[0].name()))
     );
 
-    for (label i = 1; i < pMix.size(); i++)
+    for (label i = 1; i < pMix.size(); ++i)
     {
         products = products
             + 2*pMix[i].volFrac()*thermo(thermoData.subDict(pMix[i].name()));

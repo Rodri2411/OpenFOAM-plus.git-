@@ -103,7 +103,7 @@ Foam::scalar JacobiAmp(const scalar u, const scalar mIn)
 
     aux = 1.0;
 
-    for (n = 0; n < ITER; n++)
+    for (n = 0; n < ITER; ++n)
     {
         if (mag(a[n] - g[n]) < SMALL)
         {

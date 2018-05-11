@@ -637,7 +637,7 @@ Foam::Ostream& Foam::dimensionSet::write
     if (writeUnits.valid() && os.format() == IOstream::ASCII)
     {
         scalarField exponents(dimensionSet::nDimensions);
-        for (int d=0; d<dimensionSet::nDimensions; d++)
+        for (int d=0; d<dimensionSet::nDimensions; ++d)
         {
             exponents[d] = exponents_[d];
         }

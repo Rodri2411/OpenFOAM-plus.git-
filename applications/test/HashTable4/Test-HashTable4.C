@@ -110,7 +110,7 @@ inline void insertElem
 template<class Container>
 inline void loopInsert(Container& container, const label n)
 {
-    for (label i = 0; i < n; i++)
+    for (label i = 0; i < n; ++i)
     {
         insertElem(container, i, i);
     }
@@ -123,7 +123,7 @@ inline unsigned long loopFind(const Container& container, const label n)
     const auto endIter = container.end();
     unsigned long sum = 0;
 
-    for (label i = 0; i < n; i++)
+    for (label i = 0; i < n; ++i)
     {
         if (container.find(i) != endIter)
         {

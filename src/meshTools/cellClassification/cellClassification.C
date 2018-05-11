@@ -437,7 +437,7 @@ void Foam::cellClassification::getMeshOutside
 
     // Get faces on interface between meshType and non-meshType
 
-    for (label facei = 0; facei < mesh_.nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh_.nInternalFaces(); ++facei)
     {
         label ownType = operator[](own[facei]);
         label nbrType = operator[](nbr[facei]);
@@ -458,7 +458,7 @@ void Foam::cellClassification::getMeshOutside
 
     // Get faces on outside of real mesh with cells of meshType.
 
-    for (label facei = mesh_.nInternalFaces(); facei < mesh_.nFaces(); facei++)
+    for (label facei = mesh_.nInternalFaces(); facei < mesh_.nFaces(); ++facei)
     {
         if (operator[](own[facei]) == meshType)
         {
@@ -556,7 +556,7 @@ Foam::label Foam::cellClassification::trimCutCells
 
 
     // Do point-cell-point walk on newCellType out from meshType cells
-    for (label iter = 0; iter < nLayers; iter++)
+    for (label iter = 0; iter < nLayers; ++iter)
     {
         // Get status of points: visible from meshType (pointSide == MESH)
         // or fillType/cutCells cells (pointSide == NONMESH) or
@@ -679,7 +679,7 @@ Foam::label Foam::cellClassification::fillHangingCells
 {
     label nTotChanged = 0;
 
-    for (label iter = 0; iter < maxIter; iter++)
+    for (label iter = 0; iter < maxIter; ++iter)
     {
         label nChanged = 0;
 
@@ -736,7 +736,7 @@ Foam::label Foam::cellClassification::fillRegionEdges
 {
     label nTotChanged = 0;
 
-    for (label iter = 0; iter < maxIter; iter++)
+    for (label iter = 0; iter < maxIter; ++iter)
     {
         // Get interface between meshType cells and non-meshType cells as a list
         // of faces and for each face the cell which is the meshType.

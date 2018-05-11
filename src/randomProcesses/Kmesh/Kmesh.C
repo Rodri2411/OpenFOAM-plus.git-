@@ -78,15 +78,15 @@ Foam::Kmesh::Kmesh(const fvMesh& mesh)
             << abort(FatalError);
     }
 
-    for (label i=0; i<nn_[0]; i++)
+    for (label i=0; i<nn_[0]; ++i)
     {
         scalar k1 = (i - nn_[0]/2)*constant::mathematical::twoPi/l_[0];
 
-        for (label j=0; j<nn_[1]; j++)
+        for (label j=0; j<nn_[1]; ++j)
         {
             scalar k2 = (j - nn_[1]/2)*constant::mathematical::twoPi/l_[1];
 
-            for (label k=0; k<nn_[2]; k++)
+            for (label k=0; k<nn_[2]; ++k)
             {
                 scalar k3 = (k - nn_[2]/2)*constant::mathematical::twoPi/l_[2];
 

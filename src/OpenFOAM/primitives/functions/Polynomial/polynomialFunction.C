@@ -310,7 +310,7 @@ Foam::Ostream& Foam::operator<<(Ostream& os, const polynomialFunction& poly)
 
     if (!poly.empty())
     {
-        for (int i=0; i<poly.size()-1; i++)
+        for (int i=0; i<poly.size()-1; ++i)
         {
             os  << poly[i] << token::SPACE;
         }

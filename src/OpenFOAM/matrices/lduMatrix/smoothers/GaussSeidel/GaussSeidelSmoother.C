@@ -107,7 +107,7 @@ void Foam::GaussSeidelSmoother::smooth
     // To compensate for this, it is necessary to turn the
     // sign of the contribution.
 
-    for (label sweep=0; sweep<nSweeps; sweep++)
+    for (label sweep=0; sweep<nSweeps; ++sweep)
     {
         bPrime = source;
 
@@ -135,7 +135,7 @@ void Foam::GaussSeidelSmoother::smooth
         label fStart;
         label fEnd = ownStartPtr[0];
 
-        for (label celli=0; celli<nCells; celli++)
+        for (label celli=0; celli<nCells; ++celli)
         {
             // Start and end of this row
             fStart = fEnd;
@@ -145,7 +145,7 @@ void Foam::GaussSeidelSmoother::smooth
             psii = bPrimePtr[celli];
 
             // Accumulate the owner product side
-            for (label facei=fStart; facei<fEnd; facei++)
+            for (label facei=fStart; facei<fEnd; ++facei)
             {
                 psii -= upperPtr[facei]*psiPtr[uPtr[facei]];
             }
@@ -154,7 +154,7 @@ void Foam::GaussSeidelSmoother::smooth
             psii /= diagPtr[celli];
 
             // Distribute the neighbour side using psi for this cell
-            for (label facei=fStart; facei<fEnd; facei++)
+            for (label facei=fStart; facei<fEnd; ++facei)
             {
                 bPrimePtr[uPtr[facei]] -= lowerPtr[facei]*psii;
             }

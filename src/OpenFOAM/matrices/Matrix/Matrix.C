@@ -76,7 +76,7 @@ Foam::Matrix<Form, Type>::Matrix(const label m, const label n, const zero)
     if (v_)
     {
         const label mn = size();
-        for (label i=0; i<mn; i++)
+        for (label i=0; i<mn; ++i)
         {
             v_[i] = Zero;
         }
@@ -103,7 +103,7 @@ Foam::Matrix<Form, Type>::Matrix(const label m, const label n, const Type& s)
     if (v_)
     {
         const label mn = size();
-        for (label i=0; i<mn; i++)
+        for (label i=0; i<mn; ++i)
         {
             v_[i] = s;
         }
@@ -123,7 +123,7 @@ Foam::Matrix<Form, Type>::Matrix(const Matrix<Form, Type>& M)
         allocate();
 
         const label mn = size();
-        for (label i=0; i<mn; i++)
+        for (label i=0; i<mn; ++i)
         {
             v_[i] = M.v_[i];
         }
@@ -144,7 +144,7 @@ Foam::Matrix<Form, Type>::Matrix(const Matrix<Form2, Type>& M)
         allocate();
 
         const label mn = size();
-        for (label i=0; i<mn; i++)
+        for (label i=0; i<mn; ++i)
         {
             v_[i] = M.v()[i];
         }
@@ -164,9 +164,9 @@ inline Foam::Matrix<Form, Type>::Matrix
 {
     allocate();
 
-    for (label i=0; i<mRows_; i++)
+    for (label i=0; i<mRows_; ++i)
     {
-        for (label j=0; j<nCols_; j++)
+        for (label j=0; j<nCols_; ++j)
         {
             (*this)(i,j) = Mb(i,j);
         }
@@ -186,9 +186,9 @@ inline Foam::Matrix<Form, Type>::Matrix
 {
     allocate();
 
-    for (label i=0; i<mRows_; i++)
+    for (label i=0; i<mRows_; ++i)
     {
-        for (label j=0; j<nCols_; j++)
+        for (label j=0; j<nCols_; ++j)
         {
             (*this)(i,j) = Mb(i,j);
         }
@@ -248,9 +248,9 @@ void Foam::Matrix<Form, Type>::setSize(const label m, const label n)
     label minM = min(m, mRows_);
     label minN = min(n, nCols_);
 
-    for (label i=0; i<minM; i++)
+    for (label i=0; i<minM; ++i)
     {
-        for (label j=0; j<minN; j++)
+        for (label j=0; j<minN; ++j)
         {
             newMatrix(i, j) = (*this)(i, j);
         }
@@ -266,9 +266,9 @@ Form Foam::Matrix<Form, Type>::T() const
     const Matrix<Form, Type>& A = *this;
     Form At(n(), m());
 
-    for (label i=0; i<m(); i++)
+    for (label i=0; i<m(); ++i)
     {
-        for (label j=0; j<n(); j++)
+        for (label j=0; j<n(); ++j)
         {
             At(j, i) = A(i, j);
         }
@@ -301,7 +301,7 @@ void Foam::Matrix<Form, Type>::operator=(const Matrix<Form, Type>& M)
     if (v_)
     {
         const label mn = size();
-        for (label i=0; i<mn; i++)
+        for (label i=0; i<mn; ++i)
         {
             v_[i] = M.v_[i];
         }
@@ -316,9 +316,9 @@ void Foam::Matrix<Form, Type>::operator=
     const ConstMatrixBlock<MatrixType>& Mb
 )
 {
-    for (label i=0; i<mRows_; i++)
+    for (label i=0; i<mRows_; ++i)
     {
-        for (label j=0; j<nCols_; j++)
+        for (label j=0; j<nCols_; ++j)
         {
             (*this)(i,j) = Mb(i,j);
         }
@@ -333,9 +333,9 @@ void Foam::Matrix<Form, Type>::operator=
     const MatrixBlock<MatrixType>& Mb
 )
 {
-    for (label i=0; i<mRows_; i++)
+    for (label i=0; i<mRows_; ++i)
     {
-        for (label j=0; j<nCols_; j++)
+        for (label j=0; j<nCols_; ++j)
         {
             (*this)(i,j) = Mb(i,j);
         }
@@ -349,7 +349,7 @@ void Foam::Matrix<Form, Type>::operator=(const Type& s)
     if (v_)
     {
         const label mn = size();
-        for (label i=0; i<mn; i++)
+        for (label i=0; i<mn; ++i)
         {
             v_[i] = s;
         }
@@ -363,7 +363,7 @@ void Foam::Matrix<Form, Type>::operator=(const zero)
     if (v_)
     {
         const label mn = size();
-        for (label i=0; i<mn; i++)
+        for (label i=0; i<mn; ++i)
         {
             v_[i] = Zero;
         }
@@ -383,7 +383,7 @@ const Type& Foam::max(const Matrix<Form, Type>& M)
         label curMaxI = 0;
         const Type* Mv = M.v();
 
-        for (label i=1; i<mn; i++)
+        for (label i=1; i<mn; ++i)
         {
             if (Mv[i] > Mv[curMaxI])
             {
@@ -415,7 +415,7 @@ const Type& Foam::min(const Matrix<Form, Type>& M)
         label curMinI = 0;
         const Type* Mv = M.v();
 
-        for (label i=1; i<mn; i++)
+        for (label i=1; i<mn; ++i)
         {
             if (Mv[i] < Mv[curMinI])
             {
@@ -450,7 +450,7 @@ Form Foam::operator-(const Matrix<Form, Type>& M)
         const Type* Mv = M.v();
 
         const label mn = M.size();
-        for (label i=0; i<mn; i++)
+        for (label i=0; i<mn; ++i)
         {
             nMv[i] = -Mv[i];
         }
@@ -486,7 +486,7 @@ Form Foam::operator+(const Matrix<Form, Type>& A, const Matrix<Form, Type>& B)
     const Type* Bv = B.v();
 
     const label mn = A.size();
-    for (label i=0; i<mn; i++)
+    for (label i=0; i<mn; ++i)
     {
         ABv[i] = Av[i] + Bv[i];
     }
@@ -521,7 +521,7 @@ Form Foam::operator-(const Matrix<Form, Type>& A, const Matrix<Form, Type>& B)
     const Type* Bv = B.v();
 
     const label mn = A.size();
-    for (label i=0; i<mn; i++)
+    for (label i=0; i<mn; ++i)
     {
         ABv[i] = Av[i] - Bv[i];
     }
@@ -541,7 +541,7 @@ Form Foam::operator*(const scalar s, const Matrix<Form, Type>& M)
         const Type* Mv = M.v();
 
         const label mn = M.size();
-        for (label i=0; i<mn; i++)
+        for (label i=0; i<mn; ++i)
         {
             sMv[i] = s*Mv[i];
         }
@@ -562,7 +562,7 @@ Form Foam::operator*(const Matrix<Form, Type>& M, const scalar s)
         const Type* Mv = M.v();
 
         const label mn = M.size();
-        for (label i=0; i<mn; i++)
+        for (label i=0; i<mn; ++i)
         {
             sMv[i] = Mv[i]*s;
         }
@@ -583,7 +583,7 @@ Form Foam::operator/(const Matrix<Form, Type>& M, const scalar s)
         const Type* Mv = M.v();
 
         const label mn = M.size();
-        for (label i=0; i<mn; i++)
+        for (label i=0; i<mn; ++i)
         {
             sMv[i] = Mv[i]/s;
         }
@@ -619,11 +619,11 @@ Foam::operator*
         Zero
     );
 
-    for (label i=0; i<AB.m(); i++)
+    for (label i=0; i<AB.m(); ++i)
     {
-        for (label j=0; j<AB.n(); j++)
+        for (label j=0; j<AB.n(); ++j)
         {
-            for (label k=0; k<B.m(); k++)
+            for (label k=0; k<B.m(); ++k)
             {
                 AB(i, j) += A(i, k)*B(k, j);
             }
@@ -655,9 +655,9 @@ inline Foam::tmp<Foam::Field<Type>> Foam::operator*
     tmp<Field<Type>> tMf(new Field<Type>(f.size(), Zero));
     Field<Type>& Mf = tMf.ref();
 
-    for (label i=0; i<M.m(); i++)
+    for (label i=0; i<M.m(); ++i)
     {
-        for (label j=0; j<M.n(); j++)
+        for (label j=0; j<M.n(); ++j)
         {
             Mf[i] += M(i, j)*f[j];
         }

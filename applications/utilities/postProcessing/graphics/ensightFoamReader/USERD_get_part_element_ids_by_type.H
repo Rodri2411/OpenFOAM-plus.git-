@@ -27,7 +27,7 @@ int USERD_get_part_element_ids_by_type
 
         if (element_type == Z_HEX08)
         {
-            for (label n=0; n<nCells; n++)
+            for (label n=0; n<nCells; ++n)
             {
                 label nFaces = cells[n].size();
                 labelList points = cellShapes[n];
@@ -40,7 +40,7 @@ int USERD_get_part_element_ids_by_type
         }
         else if (element_type == Z_PEN06)
         {
-            for (label n=0; n<nCells; n++)
+            for (label n=0; n<nCells; ++n)
             {
                 label nFaces = cells[n].size();
                 labelList points = cellShapes[n];
@@ -53,7 +53,7 @@ int USERD_get_part_element_ids_by_type
         }
         else if (element_type == Z_PYR05)
         {
-            for (label n=0; n<nCells; n++)
+            for (label n=0; n<nCells; ++n)
             {
                 label nFaces = cells[n].size();
                 labelList points = cellShapes[n];
@@ -66,7 +66,7 @@ int USERD_get_part_element_ids_by_type
         }
         else if (element_type == Z_TET04)
         {
-            for (label n=0; n<nCells; n++)
+            for (label n=0; n<nCells; ++n)
             {
                 label nFaces = cells[n].size();
                 labelList points = cellShapes[n];
@@ -79,7 +79,7 @@ int USERD_get_part_element_ids_by_type
         }
         else if (element_type == Z_NFACED)
         {
-            for (label n=0; n<nCells; n++)
+            for (label n=0; n<nCells; ++n)
             {
                 label nFaces = cells[n].size();
                 labelList points = cellShapes[n];

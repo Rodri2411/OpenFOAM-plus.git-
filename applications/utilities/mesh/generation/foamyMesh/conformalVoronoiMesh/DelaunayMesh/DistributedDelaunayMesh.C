@@ -98,7 +98,7 @@ Foam::DistributedDelaunayMesh<Triangulation>::buildMap
 
             constructMap[proci].setSize(nRecv);
 
-            for (label i = 0; i < nRecv; i++)
+            for (label i = 0; i < nRecv; ++i)
             {
                 constructMap[proci][i] = constructSize++;
             }
@@ -421,7 +421,7 @@ void Foam::DistributedDelaunayMesh<Triangulation>::markVerticesToRefer
             {
                 label proci = citOverlaps[cOI];
 
-                for (int i = 0; i < 4; i++)
+                for (int i = 0; i < 4; ++i)
                 {
                     Vertex_handle v = cit->vertex(i);
 
@@ -489,7 +489,7 @@ Foam::label Foam::DistributedDelaunayMesh<Triangulation>::referVertices
 
     pointMap.distribute(parallelVertices);
 
-    for (label proci = 0; proci < Pstream::nProcs(); proci++)
+    for (label proci = 0; proci < Pstream::nProcs(); ++proci)
     {
         const labelList& constructMap = pointMap.constructMap()[proci];
 

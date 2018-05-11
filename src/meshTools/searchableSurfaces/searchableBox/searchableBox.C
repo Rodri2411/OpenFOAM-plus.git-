@@ -92,7 +92,7 @@ Foam::pointIndexHit Foam::searchableBox::findNearest
     // (for internal points) per direction what nearest cube side is
     point near;
 
-    for (direction dir = 0; dir < vector::nComponents; dir++)
+    for (direction dir = 0; dir < vector::nComponents; ++dir)
     {
         if (info.rawPoint()[dir] < min()[dir])
         {
@@ -303,7 +303,7 @@ Foam::pointIndexHit Foam::searchableBox::findNearestOnEdge
     // (for internal points) per direction what nearest cube side is
     point near;
 
-    for (direction dir = 0; dir < vector::nComponents; dir++)
+    for (direction dir = 0; dir < vector::nComponents; ++dir)
     {
         if (info.rawPoint()[dir] < min()[dir])
         {
@@ -405,7 +405,7 @@ Foam::pointIndexHit Foam::searchableBox::findLine
     {
         info.setHit();
 
-        for (direction dir = 0; dir < vector::nComponents; dir++)
+        for (direction dir = 0; dir < vector::nComponents; ++dir)
         {
             if (info.rawPoint()[dir] == min()[dir])
             {
@@ -608,7 +608,7 @@ void Foam::searchableBox::getVolumeType
     {
         const point& pt = points[pointi];
 
-        for (direction dir = 0; dir < vector::nComponents; dir++)
+        for (direction dir = 0; dir < vector::nComponents; ++dir)
         {
             if (pt[dir] < min()[dir] || pt[dir] > max()[dir])
             {

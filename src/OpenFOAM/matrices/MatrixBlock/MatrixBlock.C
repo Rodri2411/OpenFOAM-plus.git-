@@ -87,9 +87,9 @@ void Foam::MatrixBlock<MatrixType>::operator=
             << abort(FatalError);
     }
 
-    for (label i=0; i<mRows_; i++)
+    for (label i=0; i<mRows_; ++i)
     {
-        for (label j=0; j<nCols_; j++)
+        for (label j=0; j<nCols_; ++j)
         {
             (*this)(i, j) = Mb(i, j);
         }
@@ -114,9 +114,9 @@ void Foam::MatrixBlock<MatrixType>::operator=
                 << abort(FatalError);
         }
 
-        for (label i=0; i<mRows_; i++)
+        for (label i=0; i<mRows_; ++i)
         {
-            for (label j=0; j<nCols_; j++)
+            for (label j=0; j<nCols_; ++j)
             {
                 (*this)(i, j) = Mb(i, j);
             }
@@ -142,9 +142,9 @@ void Foam::MatrixBlock<MatrixType>::operator=
                 << abort(FatalError);
         }
 
-        for (label i=0; i<mRows_; i++)
+        for (label i=0; i<mRows_; ++i)
         {
-            for (label j=0; j<nCols_; j++)
+            for (label j=0; j<nCols_; ++j)
             {
                 (*this)(i, j) = Mb(i, j);
             }
@@ -171,9 +171,9 @@ void Foam::MatrixBlock<MatrixType>::operator=
                 << abort(FatalError);
         }
 
-        for (label i=0; i<mRows_; i++)
+        for (label i=0; i<mRows_; ++i)
         {
-            for (label j=0; j<nCols_; j++)
+            for (label j=0; j<nCols_; ++j)
             {
                 (*this)(i, j) = Mb(i, j);
             }
@@ -200,9 +200,9 @@ void Foam::MatrixBlock<MatrixType>::operator=
                 << abort(FatalError);
         }
 
-        for (label i=0; i<mRows_; i++)
+        for (label i=0; i<mRows_; ++i)
         {
-            for (label j=0; j<nCols_; j++)
+            for (label j=0; j<nCols_; ++j)
             {
                 (*this)(i, j) = Mb(i, j);
             }
@@ -287,9 +287,9 @@ void Foam::MatrixBlock<MatrixType>::operator=
             << abort(FatalError);
     }
 
-    for (label i=0; i<mRows_; i++)
+    for (label i=0; i<mRows_; ++i)
     {
-        for (label j=0; j<nCols_; j++)
+        for (label j=0; j<nCols_; ++j)
         {
             (*this)(i, j) = ms(i, j);
         }

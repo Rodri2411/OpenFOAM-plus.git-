@@ -75,7 +75,7 @@ Hanning::Hanning(const dictionary& dict, const label nSamples)
             midPointI = (nSamples + 1)/2;
         }
 
-        for (label i = 0; i < midPointI; i++)
+        for (label i = 0; i < midPointI; ++i)
         {
             wf[nSamples - i - 1] = wf[i];
         }

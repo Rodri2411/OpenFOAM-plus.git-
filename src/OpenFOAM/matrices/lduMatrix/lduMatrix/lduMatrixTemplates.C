@@ -54,7 +54,7 @@ Foam::tmp<Foam::Field<Type>> Foam::lduMatrix::H(const Field<Type>& psi) const
 
         const label nFaces = upper().size();
 
-        for (label face=0; face<nFaces; face++)
+        for (label face=0; face<nFaces; ++face)
         {
             HpsiPtr[uPtr[face]] -= lowerPtr[face]*psiPtr[lPtr[face]];
             HpsiPtr[lPtr[face]] -= upperPtr[face]*psiPtr[uPtr[face]];
@@ -89,7 +89,7 @@ Foam::lduMatrix::faceH(const Field<Type>& psi) const
         tmp<Field<Type>> tfaceHpsi(new Field<Type> (Lower.size()));
         Field<Type> & faceHpsi = tfaceHpsi.ref();
 
-        for (label face=0; face<l.size(); face++)
+        for (label face=0; face<l.size(); ++face)
         {
             faceHpsi[face] =
                 Upper[face]*psi[u[face]]

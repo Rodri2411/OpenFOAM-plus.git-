@@ -99,7 +99,7 @@ void Foam::pairPatchAgglomeration::setLevel0EdgeWeights()
             {
                 forAll(eFaces, j)
                 {
-                    for (label k = j+1; k<eFaces.size(); k++)
+                    for (label k = j+1; k<eFaces.size(); ++k)
                     {
                         facePairWeight_.insert
                         (
@@ -177,7 +177,7 @@ void Foam::pairPatchAgglomeration::setEdgeWeights
                 // Set edge as barrier by setting weight to -1
                 forAll(eFaces, j)
                 {
-                    for (label k = j+1; k<eFaces.size(); k++)
+                    for (label k = j+1; k<eFaces.size(); ++k)
                     {
                         facePairWeight_.insert
                         (
@@ -334,7 +334,7 @@ bool Foam::pairPatchAgglomeration::agglomeratePatch
     // Patch faces per agglomeration
     labelListList coarseToFine(invertOneToMany(nCoarseI, fineToCoarse));
 
-    for (label coarseI = 0; coarseI < nCoarseI; coarseI++)
+    for (label coarseI = 0; coarseI < nCoarseI; ++coarseI)
     {
         const labelList& fineFaces = coarseToFine[coarseI];
 
@@ -554,7 +554,7 @@ Foam::tmp<Foam::labelField> Foam::pairPatchAgglomeration::agglomerateOneLevel
     }
 
     // Check that all faces are part of clusters,
-    for (label facei=0; facei<nFineFaces; facei++)
+    for (label facei=0; facei<nFineFaces; ++facei)
     {
         if (coarseCellMap[facei] < 0)
         {

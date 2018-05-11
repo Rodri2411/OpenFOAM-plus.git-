@@ -146,7 +146,7 @@ Foam::SolverPerformance<Type> Foam::fvMatrix<Type>::solveSegregated
         psi.mesh().template validComponents<Type>()
     );
 
-    for (direction cmpt=0; cmpt<Type::nComponents; cmpt++)
+    for (direction cmpt=0; cmpt<Type::nComponents; ++cmpt)
     {
         if (validComponents[cmpt] == -1) continue;
 
@@ -327,7 +327,7 @@ Foam::tmp<Foam::Field<Type>> Foam::fvMatrix<Type>::residual() const
     addBoundarySource(res);
 
     // Loop over field components
-    for (direction cmpt=0; cmpt<Type::nComponents; cmpt++)
+    for (direction cmpt=0; cmpt<Type::nComponents; ++cmpt)
     {
         scalarField psiCmpt(psi_.primitiveField().component(cmpt));
 

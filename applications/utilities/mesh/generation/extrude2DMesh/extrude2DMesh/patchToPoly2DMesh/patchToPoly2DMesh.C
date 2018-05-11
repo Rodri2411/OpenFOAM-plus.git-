@@ -303,7 +303,7 @@ Foam::patchToPoly2DMesh::~patchToPoly2DMesh()
 
 void Foam::patchToPoly2DMesh::createMesh()
 {
-    for (label edgeI = 0; edgeI < patch_.nInternalEdges(); edgeI++)
+    for (label edgeI = 0; edgeI < patch_.nInternalEdges(); ++edgeI)
     {
         if (patch_.edgeFaces()[edgeI].size() != 2)
         {
@@ -318,7 +318,7 @@ void Foam::patchToPoly2DMesh::createMesh()
     (
         label edgeI = patch_.nInternalEdges();
         edgeI < patch_.nEdges();
-        edgeI++
+        ++edgeI
     )
     {
         if (patch_.edgeFaces()[edgeI].size() != 1)

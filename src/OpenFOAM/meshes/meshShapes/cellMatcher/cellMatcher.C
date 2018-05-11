@@ -148,7 +148,7 @@ void Foam::cellMatcher::calcEdgeAddressing(const label numVert)
         (
             label fp = 0;
             fp < faceSize_[localFacei];
-            fp++
+            ++fp
         )
         {
             label start = f[prevVertI];
@@ -249,7 +249,7 @@ void Foam::cellMatcher::write(Foam::Ostream& os) const
     {
         os  << "    ";
 
-        for (label fp = 0; fp < faceSize_[facei]; fp++)
+        for (label fp = 0; fp < faceSize_[facei]; ++fp)
         {
             os  << ' ' << localFaces_[facei][fp];
         }

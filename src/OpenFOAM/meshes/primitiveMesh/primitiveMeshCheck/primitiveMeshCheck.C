@@ -61,7 +61,7 @@ bool Foam::primitiveMesh::checkClosedBoundary
     vector sumClosed(Zero);
     scalar sumMagClosedBoundary = 0;
 
-    for (label facei = nInternalFaces(); facei < areas.size(); facei++)
+    for (label facei = nInternalFaces(); facei < areas.size(); ++facei)
     {
         if (!internalOrCoupledFaces.size() || !internalOrCoupledFaces[facei])
         {
@@ -988,7 +988,7 @@ bool Foam::primitiveMesh::checkUpperTriangular
 
     // Loop through faceCells once more and make sure that for internal cell
     // the first label is smaller
-    for (label facei = 0; facei < internal; facei++)
+    for (label facei = 0; facei < internal; ++facei)
     {
         if (own[facei] >= nei[facei])
         {
@@ -1055,7 +1055,7 @@ bool Foam::primitiveMesh::checkUpperTriangular
 
         bool hasMultipleFaces = false;
 
-        for (label i = 1; i < nbr.size(); i++)
+        for (label i = 1; i < nbr.size(); ++i)
         {
             label thisCell = nbr[i];
             label thisFace = curFaces[nbr.indices()[i]];
@@ -1520,7 +1520,7 @@ bool Foam::primitiveMesh::checkCommonOrder
                     curInc = -curInc;
                     nbInc = -nbInc;
 
-                    for (label commonI = 0; commonI < nCommon; commonI++)
+                    for (label commonI = 0; commonI < nCommon; ++commonI)
                     {
                         curFp += curInc;
 
@@ -1588,7 +1588,7 @@ bool Foam::primitiveMesh::checkFaceFaces
     label nErrorOrder = 0;
     Map<label> nCommonPoints(100);
 
-    for (label facei = 0; facei < nFaces(); facei++)
+    for (label facei = 0; facei < nFaces(); ++facei)
     {
         const face& curFace = faces()[facei];
 

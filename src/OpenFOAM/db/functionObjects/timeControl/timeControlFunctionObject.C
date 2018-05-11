@@ -102,7 +102,7 @@ Foam::scalar Foam::functionObjects::timeControl::calcExpansion
     // ratio giving the desired overall timestep change.
     // Note max iteration count to avoid hanging; function generally
     // converges in 5 iterations or so.
-    for (label iter = 0; iter < 100; iter++)
+    for (label iter = 0; iter < 100; ++iter)
     {
         // Dimensionless equation
         scalar f = (y-1)*pow(ratio, n)+1-y*pow(ratio, n-1);
@@ -254,7 +254,7 @@ void Foam::functionObjects::timeControl::calcDeltaTCoeff
         }
         // Provision for fall-back value if we can't satisfy requirements
         bool searchConverged = false;
-        for (label iter = 0; iter < 100; iter++)
+        for (label iter = 0; iter < 100; ++iter)
         {
             // Calculate the new expansion and the overall time step changes
             const scalar newRatio = calcExpansion

@@ -280,7 +280,7 @@ void Foam::mapNearestAMI<SourcePatch, TargetPatch>::calculate
             label srcFacei = srcFaces[0];
             scalar d = magSqr(tgtC - srcCf[srcFacei]);
 
-            for (label i = 1; i < srcFaces.size(); i++)
+            for (label i = 1; i < srcFaces.size(); ++i)
             {
                 label srcI = srcFaces[i];
                 scalar dNew = magSqr(tgtC - srcCf[srcI]);
@@ -375,7 +375,7 @@ void Foam::mapNearestAMI<SourcePatch, TargetPatch>::normaliseWeights
                 label minFaceI = addr[0];
                 scalar minWeight = wghts[0];
 
-                for (label i = 0; i < addr.size(); i++)
+                for (label i = 0; i < addr.size(); ++i)
                 {
                     if (wghts[i] < minWeight)
                     {
@@ -408,7 +408,7 @@ void Foam::mapNearestAMI<SourcePatch, TargetPatch>::normaliseWeights
                 label minFaceI = addr[0];
                 scalar minWeight = wghts[0];
 
-                for (label i = 0; i < addr.size(); i++)
+                for (label i = 0; i < addr.size(); ++i)
                 {
                     if (wghts[i] < minWeight)
                     {

@@ -737,7 +737,7 @@ Foam::label Foam::removeFaces::compatibleRemoves
     // Recreate facesToRemove to be consistent with the cellRegions.
     DynamicList<label> allFacesToRemove(facesToRemove.size());
 
-    for (label facei = 0; facei < mesh_.nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh_.nInternalFaces(); ++facei)
     {
         label own = faceOwner[facei];
         label nei = faceNeighbour[facei];
@@ -1120,7 +1120,7 @@ void Foam::removeFaces::setRefinement
         while (true)
         {
             // Find unset region.
-            for (; startFacei < mesh_.nFaces(); startFacei++)
+            for (; startFacei < mesh_.nFaces(); ++startFacei)
             {
                 if (faceRegion[startFacei] == -1 && !removedFace[startFacei])
                 {
@@ -1181,7 +1181,7 @@ void Foam::removeFaces::setRefinement
         (
             label facei = mesh_.nInternalFaces();
             facei < mesh_.nFaces();
-            facei++
+            ++facei
         )
         {
             // Get the neighbouring region.

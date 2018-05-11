@@ -51,7 +51,7 @@ diffusionMulticomponent<CombThermoType, ThermoType>::init()
     scalarList specieStoichCoeffs(species.size());
     const label nReactions = reactions_.size();
 
-    for (label k=0; k < nReactions; k++)
+    for (label k=0; k < nReactions; ++k)
     {
         RijPtr_.set
         (
@@ -183,7 +183,7 @@ diffusionMulticomponent<CombThermoType, ThermoType>::correct()
 
         PtrList<volScalarField> RijlPtr(nReactions);
 
-        for (label k=0; k < nReactions; k++)
+        for (label k=0; k < nReactions; ++k)
         {
             RijlPtr.set
             (
@@ -237,7 +237,7 @@ diffusionMulticomponent<CombThermoType, ThermoType>::correct()
         }
 
 
-        for (label k=0; k < nReactions; k++)
+        for (label k=0; k < nReactions; ++k)
         {
             const label fuelIndex = species[fuelNames_[k]];
             const label oxidantIndex = species[oxidantNames_[k]];

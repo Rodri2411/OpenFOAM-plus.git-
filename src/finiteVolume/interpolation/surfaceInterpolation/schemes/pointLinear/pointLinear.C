@@ -80,7 +80,7 @@ correction
           + pvf[f[f.size()-1]]
         );
 
-        for (label pointi=1; pointi<f.size(); pointi++)
+        for (label pointi=1; pointi<f.size(); ++pointi)
         {
             at = triangle<point, const point&>
             (
@@ -142,7 +142,7 @@ correction
                   + pvf[f[f.size()-1]]
                 );
 
-                for (label pointi=1; pointi<f.size(); pointi++)
+                for (label pointi=1; pointi<f.size(); ++pointi)
                 {
                     at = triangle<point, const point&>
                     (

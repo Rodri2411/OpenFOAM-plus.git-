@@ -212,7 +212,7 @@ int main(int argc, char *argv[])
                 label nRefine = mesh.nCells()/20;
                 DynamicList<label> refineCandidates(nRefine);
 
-                for (label i=0; i<nRefine; i++)
+                for (label i=0; i<nRefine; ++i)
                 {
                     refineCandidates.append
                     (
@@ -244,7 +244,7 @@ int main(int argc, char *argv[])
                 label nUnrefine = allSplitPoints.size()/20;
                 labelHashSet candidates(2*nUnrefine);
 
-                for (label i=0; i<nUnrefine; i++)
+                for (label i=0; i<nUnrefine; ++i)
                 {
                     const label index =
                         rndGen.position<label>(0, allSplitPoints.size()-1);

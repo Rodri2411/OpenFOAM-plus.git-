@@ -1020,7 +1020,7 @@ void Foam::faceCoupleInfo::findSlavesCoveringMaster
     (
         label mesh1Facei = mesh1.nInternalFaces();
         mesh1Facei < mesh1.nFaces();
-        mesh1Facei++
+        ++mesh1Facei
     )
     {
         const face& f1 = mesh1.faces()[mesh1Facei];

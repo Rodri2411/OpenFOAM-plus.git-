@@ -70,7 +70,7 @@ Foam::boundBox Foam::searchablePlane::calcBounds() const
 {
     point max(VGREAT, VGREAT, VGREAT);
 
-    for (direction dir = 0; dir < vector::nComponents; dir++)
+    for (direction dir = 0; dir < vector::nComponents; ++dir)
     {
         if (mag(normal()[dir]) - 1 < SMALL)
         {

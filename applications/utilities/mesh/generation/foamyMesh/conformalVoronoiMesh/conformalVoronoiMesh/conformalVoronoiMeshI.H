@@ -92,7 +92,7 @@ inline Foam::scalar Foam::conformalVoronoiMesh::averageAnyCellSize
     const Cell_handle c(fit->first);
     const label oppositeVertex = fit->second;
 
-    for (label i = 0; i < 3; i++)
+    for (label i = 0; i < 3; ++i)
     {
         Vertex_handle v = c->vertex(vertex_triple_index(oppositeVertex, i));
 
@@ -110,7 +110,7 @@ inline Foam::scalar Foam::conformalVoronoiMesh::averageAnyCellSize
         // There are no internalOrBoundaryPoints available, determine
         // size from scratch
 
-        for (label i = 0; i < 3; i++)
+        for (label i = 0; i < 3; ++i)
         {
             Vertex_handle v = c->vertex(vertex_triple_index(oppositeVertex, i));
 

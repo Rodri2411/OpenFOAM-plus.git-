@@ -47,7 +47,7 @@ Foam::globalIndex::globalIndex
 
     label offset = 0;
     offsets_[0] = 0;
-    for (label proci = 0; proci < Pstream::nProcs(comm); proci++)
+    for (label proci = 0; proci < Pstream::nProcs(comm); ++proci)
     {
         label oldOffset = offset;
         offset += localSizes[proci];
@@ -76,7 +76,7 @@ Foam::globalIndex::globalIndex(const label localSize)
 
     label offset = 0;
     offsets_[0] = 0;
-    for (label proci = 0; proci < Pstream::nProcs(); proci++)
+    for (label proci = 0; proci < Pstream::nProcs(); ++proci)
     {
         label oldOffset = offset;
         offset += localSizes[proci];

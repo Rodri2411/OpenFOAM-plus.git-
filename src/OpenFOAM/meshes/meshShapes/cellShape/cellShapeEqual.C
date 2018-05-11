@@ -75,7 +75,7 @@ bool Foam::operator==(const cellShape& a, const cellShape& b)
     label dir = 0;
 
     // Check whether at top of list
-    Bptr++;
+    ++Bptr;
     if (Bptr == labsB.size())
     {
         Bptr = 0;
@@ -130,13 +130,13 @@ bool Foam::operator==(const cellShape& a, const cellShape& b)
     {
         while (sizeA--)
         {
-            Aptr++;
+            ++Aptr;
             if (Aptr >= labsA.size())
             {
                 Aptr = 0;
             }
 
-            Bptr++;
+            ++Bptr;
             if (Bptr >= labsB.size())
             {
                 Bptr = 0;
@@ -151,13 +151,13 @@ bool Foam::operator==(const cellShape& a, const cellShape& b)
     {
         while (sizeA--)
         {
-            Aptr++;
+            ++Aptr;
             if (Aptr >= labsA.size())
             {
                 Aptr = 0;
             }
 
-            Bptr--;
+            --Bptr;
             if (Bptr < 0)
             {
                 Bptr = labsB.size() - 1;

@@ -130,7 +130,7 @@ void Foam::printMeshStats(const polyMesh& mesh, const bool allTopology)
 
     Map<label> polyhedralFaces;
 
-    for (label celli = 0; celli < mesh.nCells(); celli++)
+    for (label celli = 0; celli < mesh.nCells(); ++celli)
     {
         if (hex.isA(mesh, celli))
         {
@@ -327,7 +327,7 @@ void Foam::mergeAndWrite
 
 
     DynamicList<label> outsideFaces(3*set.size());
-    for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh.nInternalFaces(); ++facei)
     {
         const bool ownVal = isInSet[mesh.faceOwner()[facei]];
         const bool neiVal = isInSet[mesh.faceNeighbour()[facei]];
@@ -430,7 +430,7 @@ void Foam::mergeAndWrite
             pOffset += myPoints.size();
 
             // Receive slave ones
-            for (int slave=1; slave<Pstream::nProcs(); slave++)
+            for (int slave=1; slave<Pstream::nProcs(); ++slave)
             {
                 IPstream fromSlave(Pstream::commsTypes::scheduled, slave);
 

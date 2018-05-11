@@ -116,7 +116,7 @@ Foam::extendedCellToFaceStencil::weightedSum
     GeometricField<Type, fvsPatchField, surfaceMesh>& sf = tsfCorr.ref();
 
     // Internal faces
-    for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh.nInternalFaces(); ++facei)
     {
         const List<Type>& stField = stencilFld[facei];
         const List<scalar>& stWeight = stencilWeights[facei];

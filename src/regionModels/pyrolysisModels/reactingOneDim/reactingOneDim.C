@@ -263,7 +263,7 @@ void reactingOneDim::solveSpeciesMass()
 
     volScalarField Yt(0.0*Ys_[0]);
 
-    for (label i=0; i<Ys_.size()-1; i++)
+    for (label i=0; i<Ys_.size()-1; ++i)
     {
         volScalarField& Yi = Ys_[i];
 
@@ -696,7 +696,7 @@ void reactingOneDim::evolveRegion()
 
     solveSpeciesMass();
 
-    for (int nonOrth=0; nonOrth<=nNonOrthCorr_; nonOrth++)
+    for (int nonOrth=0; nonOrth<=nNonOrthCorr_; ++nonOrth)
     {
         solveEnergy();
     }

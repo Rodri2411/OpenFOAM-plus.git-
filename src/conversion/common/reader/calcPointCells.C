@@ -84,7 +84,7 @@ void Foam::meshReader::calcPointCells() const
                 // check if the cell has been added before
                 bool found = false;
 
-                for (label f = 0; f < curCount; f++)
+                for (label f = 0; f < curCount; ++f)
                 {
                     if (curPointCells[f] == celli)
                     {

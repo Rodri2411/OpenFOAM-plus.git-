@@ -342,7 +342,7 @@ inline bool Foam::molecule::constantProperties::linearMoleculeTest() const
     (
         label i = 2;
         i < siteReferencePositions_.size();
-        i++
+        ++i
     )
     {
         vector dir = siteReferencePositions_[i] - siteReferencePositions_[i-1];

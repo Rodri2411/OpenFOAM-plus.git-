@@ -172,7 +172,7 @@ void Foam::primitiveMesh::calcEdges(const bool doFaceEdges) const
         else
         {
             // 1. Do external faces first. This creates external edges.
-            for (label facei = nInternalFaces_; facei < fcs.size(); facei++)
+            for (label facei = nInternalFaces_; facei < fcs.size(); ++facei)
             {
                 const face& f = fcs[facei];
 
@@ -196,7 +196,7 @@ void Foam::primitiveMesh::calcEdges(const bool doFaceEdges) const
             }
 
             // 2. Do internal faces. This creates internal edges.
-            for (label facei = 0; facei < nInternalFaces_; facei++)
+            for (label facei = 0; facei < nInternalFaces_; ++facei)
             {
                 const face& f = fcs[facei];
 

@@ -131,7 +131,7 @@ inline Foam::scalar Foam::SprayCloud<CloudType>::penetration
         // flatten the mass lists
         List<scalar> allMass(nParcelSum, 0.0);
         SortableList<scalar> allDist(nParcelSum, 0.0);
-        for (label proci = 0; proci < Pstream::nProcs(); proci++)
+        for (label proci = 0; proci < Pstream::nProcs(); ++proci)
         {
             SubList<scalar>
             (

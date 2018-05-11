@@ -208,7 +208,7 @@ void Foam::sampledPatch::remapFaces(const labelUList& faceMap)
         if (patchIndex_.size() > 0)
         {
             patchStart_[patchIndex_[0]] = 0;
-            for (label i = 1; i < patchIndex_.size(); i++)
+            for (label i = 1; i < patchIndex_.size(); ++i)
             {
                 if (patchIndex_[i] != patchIndex_[i-1])
                 {

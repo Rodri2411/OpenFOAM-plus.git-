@@ -202,7 +202,7 @@ void Foam::attachDetach::checkDefinition()
     // Check that trigger times are in ascending order
     bool triggersOK = true;
 
-    for (label i = 0; i < triggerTimes_.size() - 1; i++)
+    for (label i = 0; i < triggerTimes_.size() - 1; ++i)
     {
         triggersOK = triggersOK && (triggerTimes_[i] < triggerTimes_[i + 1]);
     }

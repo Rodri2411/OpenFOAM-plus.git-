@@ -15,7 +15,7 @@
         mixture.cAlpha()*mag(phi/mesh.magSf())*mixture.nHatf()
     );
 
-    for (int gCorr=0; gCorr<nAlphaCorr; gCorr++)
+    for (int gCorr=0; gCorr<nAlphaCorr; ++gCorr)
     {
         // Create the limiter to be used for all phase-fractions
         scalarField allLambda(mesh.nFaces(), 1.0);

@@ -65,7 +65,7 @@ Foam::extendedUpwindCellToFaceStencil::weightedSum
     GeometricField<Type, fvsPatchField, surfaceMesh>& sf = tsfCorr.ref();
 
     // Internal faces
-    for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh.nInternalFaces(); ++facei)
     {
         if (phi[facei] > 0)
         {

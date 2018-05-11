@@ -75,11 +75,11 @@ void Foam::block::createPoints()
     points_[pointLabel(ni, nj, nk)] = p111;
     points_[pointLabel(0,  nj, nk)] = p011;
 
-    for (label k=0; k<=nk; k++)
+    for (label k=0; k<=nk; ++k)
     {
-        for (label j=0; j<=nj; j++)
+        for (label j=0; j<=nj; ++j)
         {
-            for (label i=0; i<=ni; i++)
+            for (label i=0; i<=ni; ++i)
             {
                 // Skip block vertices
                 if (vertex(i, j, k)) continue;
@@ -189,14 +189,14 @@ void Foam::block::createPoints()
     correctFacePoints(facePoints);
 
     // Loop over points and apply the correction from the from the i-faces
-    for (label ii=0; ii<=ni; ii++)
+    for (label ii=0; ii<=ni; ++ii)
     {
         // Process the points on the curved faces last
         label i = (ii + 1)%(ni + 1);
 
-        for (label j=0; j<=nj; j++)
+        for (label j=0; j<=nj; ++j)
         {
-            for (label k=0; k<=nk; k++)
+            for (label k=0; k<=nk; ++k)
             {
                 // Skip non-curved faces and edges
                 if (flatFaceOrEdge(i, j, k)) continue;
@@ -241,14 +241,14 @@ void Foam::block::createPoints()
     }
 
     // Loop over points and apply the correction from the from the j-faces
-    for (label jj=0; jj<=nj; jj++)
+    for (label jj=0; jj<=nj; ++jj)
     {
         // Process the points on the curved faces last
         label j = (jj + 1)%(nj + 1);
 
-        for (label i=0; i<=ni; i++)
+        for (label i=0; i<=ni; ++i)
         {
-            for (label k=0; k<=nk; k++)
+            for (label k=0; k<=nk; ++k)
             {
                 // Skip flat faces and edges
                 if (flatFaceOrEdge(i, j, k)) continue;
@@ -293,14 +293,14 @@ void Foam::block::createPoints()
     }
 
     // Loop over points and apply the correction from the from the k-faces
-    for (label kk=0; kk<=nk; kk++)
+    for (label kk=0; kk<=nk; ++kk)
     {
         // Process the points on the curved faces last
         label k = (kk + 1)%(nk + 1);
 
-        for (label i=0; i<=ni; i++)
+        for (label i=0; i<=ni; ++i)
         {
-            for (label j=0; j<=nj; j++)
+            for (label j=0; j<=nj; ++j)
             {
                 // Skip flat faces and edges
                 if (flatFaceOrEdge(i, j, k)) continue;
@@ -356,11 +356,11 @@ Foam::List<Foam::FixedList<Foam::label, 8>> Foam::block::cells() const
 
     label celli = 0;
 
-    for (label k=0; k<nk; k++)
+    for (label k=0; k<nk; ++k)
     {
-        for (label j=0; j<nj; j++)
+        for (label j=0; j<nj; ++j)
         {
-            for (label i=0; i<ni; i++)
+            for (label i=0; i<ni; ++i)
             {
                 cells[celli][0] = pointLabel(i,   j,   k);
                 cells[celli][1] = pointLabel(i+1, j,   k);
@@ -393,9 +393,9 @@ void Foam::block::createBoundary()
 
     // x-min
     boundaryPatches_[patchi].setSize(nj*nk);
-    for (label k=0; k<nk; k++)
+    for (label k=0; k<nk; ++k)
     {
-        for (label j=0; j<nj; j++)
+        for (label j=0; j<nj; ++j)
         {
             boundaryPatches_[patchi][facei][0] = pointLabel(0, j,   k);
             boundaryPatches_[patchi][facei][1] = pointLabel(0, j,   k+1);
@@ -412,9 +412,9 @@ void Foam::block::createBoundary()
 
     boundaryPatches_[patchi].setSize(nj*nk);
 
-    for (label k=0; k<nk; k++)
+    for (label k=0; k<nk; ++k)
     {
-        for (label j=0; j<nj; j++)
+        for (label j=0; j<nj; ++j)
         {
             boundaryPatches_[patchi][facei][0] = pointLabel(ni, j,   k);
             boundaryPatches_[patchi][facei][1] = pointLabel(ni, j+1, k);
@@ -432,9 +432,9 @@ void Foam::block::createBoundary()
     facei = 0;
 
     boundaryPatches_[patchi].setSize(ni*nk);
-    for (label i=0; i<ni; i++)
+    for (label i=0; i<ni; ++i)
     {
-        for (label k=0; k<nk; k++)
+        for (label k=0; k<nk; ++k)
         {
             boundaryPatches_[patchi][facei][0] = pointLabel(i,   0, k);
             boundaryPatches_[patchi][facei][1] = pointLabel(i+1, 0, k);
@@ -451,9 +451,9 @@ void Foam::block::createBoundary()
 
     boundaryPatches_[patchi].setSize(ni*nk);
 
-    for (label i=0; i<ni; i++)
+    for (label i=0; i<ni; ++i)
     {
-        for (label k=0; k<nk; k++)
+        for (label k=0; k<nk; ++k)
         {
             boundaryPatches_[patchi][facei][0] = pointLabel(i,   nj, k);
             boundaryPatches_[patchi][facei][1] = pointLabel(i,   nj, k+1);
@@ -472,9 +472,9 @@ void Foam::block::createBoundary()
 
     boundaryPatches_[patchi].setSize(ni*nj);
 
-    for (label i=0; i<ni; i++)
+    for (label i=0; i<ni; ++i)
     {
-        for (label j=0; j<nj; j++)
+        for (label j=0; j<nj; ++j)
         {
             boundaryPatches_[patchi][facei][0] = pointLabel(i,   j,   0);
             boundaryPatches_[patchi][facei][1] = pointLabel(i,   j+1, 0);
@@ -491,9 +491,9 @@ void Foam::block::createBoundary()
 
     boundaryPatches_[patchi].setSize(ni*nj);
 
-    for (label i=0; i<ni; i++)
+    for (label i=0; i<ni; ++i)
     {
-        for (label j=0; j<nj; j++)
+        for (label j=0; j<nj; ++j)
         {
             boundaryPatches_[patchi][facei][0] = pointLabel(i,   j,   nk);
             boundaryPatches_[patchi][facei][1] = pointLabel(i+1, j,   nk);

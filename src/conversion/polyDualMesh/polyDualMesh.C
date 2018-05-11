@@ -115,7 +115,7 @@ Foam::labelList Foam::polyDualMesh::getFaceOrder
     Pout<< "nCells:" << cells.size() << endl;
 
     // Leave patch faces intact.
-    for (label facei = newFacei; facei < faceOwner.size(); facei++)
+    for (label facei = newFacei; facei < faceOwner.size(); ++facei)
     {
         oldToNew[facei] = facei;
     }
@@ -488,7 +488,7 @@ void Foam::polyDualMesh::splitFace
                 subFace[0] = pointToDualPoint[patch.meshPoints()[pointi]];
 
                 // Copy from startFp up to endFp.
-                for (label subFp = 1; subFp < subFace.size(); subFp++)
+                for (label subFp = 1; subFp < subFace.size(); ++subFp)
                 {
                     subFace[subFp] = dualFace[startFp];
 
@@ -803,7 +803,7 @@ void Foam::polyDualMesh::calcDual
 
     boundaryFacePoint_.setSize(mesh.nFaces() - nIntFaces);
 
-    for (label facei = nIntFaces; facei < mesh.nFaces(); facei++)
+    for (label facei = nIntFaces; facei < mesh.nFaces(); ++facei)
     {
         boundaryFacePoint_[facei - nIntFaces] = dualPointi;
         dualPoints[dualPointi++] = faceCentres[facei];

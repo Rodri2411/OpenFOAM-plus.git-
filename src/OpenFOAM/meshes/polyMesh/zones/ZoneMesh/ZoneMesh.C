@@ -524,7 +524,7 @@ bool Foam::ZoneMesh<ZoneType, MeshType>::checkParallelSync
 
     // Have every processor check but only master print error.
 
-    for (label proci = 1; proci < allNames.size(); proci++)
+    for (label proci = 1; proci < allNames.size(); ++proci)
     {
         if
         (

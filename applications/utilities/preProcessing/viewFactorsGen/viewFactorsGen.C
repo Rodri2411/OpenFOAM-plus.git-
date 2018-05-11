@@ -818,7 +818,7 @@ int main(int argc, char *argv[])
     labelList compactToGlobal(map.constructSize());
 
     // Local indices first (note: are not in compactMap)
-    for (label i = 0; i < globalNumbering.localSize(); i++)
+    for (label i = 0; i < globalNumbering.localSize(); ++i)
     {
         compactToGlobal[i] = globalNumbering.toGlobal(i);
     }

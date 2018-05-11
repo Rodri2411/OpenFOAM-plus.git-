@@ -827,7 +827,7 @@ void Foam::boundaryMesh::writeTriSurface(const fileName& fName) const
 
             label triVertI = 3*startTri[facei];
 
-            for (label faceTriI = 0; faceTriI < nTris[facei]; faceTriI++)
+            for (label faceTriI = 0; faceTriI < nTris[facei]; ++faceTriI)
             {
                 label v0 = triVerts[triVertI++];
                 label v1 = triVerts[triVertI++];
@@ -1301,7 +1301,7 @@ void Foam::boundaryMesh::patchify
         // Change patch > 0. (since above we put all faces into the zeroth
         // patch)
 
-        for (label newPatchi = 1; newPatchi < patchFaces.size(); newPatchi++)
+        for (label newPatchi = 1; newPatchi < patchFaces.size(); ++newPatchi)
         {
             const labelList& pFaces = patchFaces[newPatchi];
 
@@ -1625,14 +1625,14 @@ void Foam::boundaryMesh::deletePatch(const word& patchName)
 
     PtrList<boundaryPatch> newPatches(patches_.size() - 1);
 
-    for (label patchi = 0; patchi < delPatchi; patchi++)
+    for (label patchi = 0; patchi < delPatchi; ++patchi)
     {
         newPatches.set(patchi, patches_[patchi].clone());
     }
 
     // Move patches down, starting from delPatchi.
 
-    for (label patchi = delPatchi + 1; patchi < patches_.size(); patchi++)
+    for (label patchi = delPatchi + 1; patchi < patches_.size(); ++patchi)
     {
         newPatches.set(patchi - 1, patches_[patchi].clone());
     }
@@ -1749,7 +1749,7 @@ void Foam::boundaryMesh::changeFaces
 
     startFace[0] = 0;
 
-    for (label patchi = 1; patchi < patches_.size(); patchi++)
+    for (label patchi = 1; patchi < patches_.size(); ++patchi)
     {
         startFace[patchi] = startFace[patchi-1] + nFaces[patchi-1];
     }
@@ -1848,7 +1848,7 @@ Foam::label Foam::boundaryMesh::getNTris
 
     nTris.setSize(nFaces);
 
-    for (label i = 0; i < nFaces; i++)
+    for (label i = 0; i < nFaces; ++i)
     {
         label faceNTris = getNTris(startFacei + i);
 
@@ -1875,7 +1875,7 @@ void Foam::boundaryMesh::triangulate
 
     label vertI = 0;
 
-    for (label i = 0; i < nFaces; i++)
+    for (label i = 0; i < nFaces; ++i)
     {
         label facei = startFacei + i;
 
@@ -1939,7 +1939,7 @@ void Foam::boundaryMesh::triangulateLocal
 
     label vertI = 0;
 
-    for (label i = 0; i < nFaces; i++)
+    for (label i = 0; i < nFaces; ++i)
     {
         // Local face
         const face& f = patch.localFaces()[i];

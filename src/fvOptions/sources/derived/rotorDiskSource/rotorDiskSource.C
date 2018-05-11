@@ -162,7 +162,7 @@ void Foam::fv::rotorDiskSource::setFaceArea(vector& axis, const bool correct)
     syncTools::swapBoundaryFaceList(mesh_, nbrFaceCellAddr);
 
     // Add internal field contributions
-    for (label facei = 0; facei < nInternalFaces; facei++)
+    for (label facei = 0; facei < nInternalFaces; ++facei)
     {
         const label own = cellAddr[mesh_.faceOwner()[facei]];
         const label nbr = cellAddr[mesh_.faceNeighbour()[facei]];

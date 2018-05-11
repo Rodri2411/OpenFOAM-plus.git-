@@ -527,7 +527,7 @@ Foam::autoPtr<Foam::mapPolyMesh> Foam::meshRefinement::createBaffles
 
     label nBaffles = 0;
 
-    for (label faceI = 0; faceI < mesh_.nInternalFaces(); faceI++)
+    for (label faceI = 0; faceI < mesh_.nInternalFaces(); ++faceI)
     {
         if (ownPatch[faceI] != -1)
         {
@@ -832,7 +832,7 @@ Foam::autoPtr<Foam::mapPolyMesh> Foam::meshRefinement::createZoneBaffles
             (
                 label faceI = mesh_.nInternalFaces();
                 faceI < mesh_.nFaces();
-                faceI++
+                ++faceI
             )
             {
                 label oldFaceI = faceMap[faceI];
@@ -1519,7 +1519,7 @@ void Foam::meshRefinement::findCellZoneGeometric
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // for if any cells were not completely covered.
 
-    for (label faceI = 0; faceI < mesh_.nInternalFaces(); faceI++)
+    for (label faceI = 0; faceI < mesh_.nInternalFaces(); ++faceI)
     {
         label ownZone = cellToZone[mesh_.faceOwner()[faceI]];
         label neiZone = cellToZone[mesh_.faceNeighbour()[faceI]];
@@ -1963,7 +1963,7 @@ void Foam::meshRefinement::findCellZoneTopo
 
         // Internal faces
 
-        for (label faceI = 0; faceI < mesh_.nInternalFaces(); faceI++)
+        for (label faceI = 0; faceI < mesh_.nInternalFaces(); ++faceI)
         {
             label surfI = namedSurfaceIndex[faceI];
 
@@ -2074,14 +2074,14 @@ void Foam::meshRefinement::erodeCellZone
     // regions into a neighbouring region(=cellZone) unless there is an
     // intersected faces inbetween the two.
 
-    for (label iter = 0; iter < nErodeCellZones; iter++)
+    for (label iter = 0; iter < nErodeCellZones; ++iter)
     {
         label nChanged = 0;
 
         labelList erodedCellToZone(cellToZone);
 
         // Do internal faces
-        for (label facei = 0; facei < mesh_.nInternalFaces(); facei++)
+        for (label facei = 0; facei < mesh_.nInternalFaces(); ++facei)
         {
             if
             (
@@ -2177,7 +2177,7 @@ void Foam::meshRefinement::makeConsistentFaceIndex
     const labelList& faceOwner = mesh_.faceOwner();
     const labelList& faceNeighbour = mesh_.faceNeighbour();
 
-    for (label faceI = 0; faceI < mesh_.nInternalFaces(); faceI++)
+    for (label faceI = 0; faceI < mesh_.nInternalFaces(); ++faceI)
     {
         label ownZone = cellToZone[faceOwner[faceI]];
         label neiZone = cellToZone[faceNeighbour[faceI]];
@@ -2860,7 +2860,7 @@ Foam::labelList Foam::meshRefinement::freeStandingBaffleFaces
 
     DynamicList<label> faceLabels(mesh_.nFaces()/100);
 
-    for (label faceI = 0; faceI < mesh_.nInternalFaces(); faceI++)
+    for (label faceI = 0; faceI < mesh_.nInternalFaces(); ++faceI)
     {
         if (faceToZone[faceI] != -1)
         {
@@ -2984,7 +2984,7 @@ Foam::label Foam::meshRefinement::markPatchZones
     {
         // Pick an unset face
         label globalSeed = labelMax;
-        for (; faceI < allFaceInfo.size(); faceI++)
+        for (; faceI < allFaceInfo.size(); ++faceI)
         {
             if (!allFaceInfo[faceI].valid(dummyTrackData))
             {
@@ -3351,7 +3351,7 @@ void Foam::meshRefinement::zonify
     const labelList& faceOwner = mesh_.faceOwner();
     const labelList& faceNeighbour = mesh_.faceNeighbour();
 
-    for (label faceI = 0; faceI < mesh_.nInternalFaces(); faceI++)
+    for (label faceI = 0; faceI < mesh_.nInternalFaces(); ++faceI)
     {
         label faceZoneI = faceToZone[faceI];
 
@@ -3891,7 +3891,7 @@ Foam::autoPtr<Foam::mapPolyMesh> Foam::meshRefinement::splitMesh
         defaultPatch = globalToMasterPatch[0];
     }
 
-    for (label i = 0; i < nBufferLayers; i++)
+    for (label i = 0; i < nBufferLayers; ++i)
     {
         // 1. From cells (via faces) to points
 
@@ -3931,7 +3931,7 @@ Foam::autoPtr<Foam::mapPolyMesh> Foam::meshRefinement::splitMesh
         (
             label faceI = mesh_.nInternalFaces();
             faceI < mesh_.nFaces();
-            faceI++
+            ++faceI
         )
         {
             const face& f = mesh_.faces()[faceI];
@@ -4446,7 +4446,7 @@ Foam::autoPtr<Foam::mapPolyMesh> Foam::meshRefinement::zonify
 
         HashTable<word, labelPair, labelPair::Hash<>> zoneIDsToFaceZone;
 
-        for (label faceI = 0; faceI < mesh_.nInternalFaces(); faceI++)
+        for (label faceI = 0; faceI < mesh_.nInternalFaces(); ++faceI)
         {
             if (faceToZone[faceI] == -1)    // Not named surface
             {
@@ -4535,7 +4535,7 @@ Foam::autoPtr<Foam::mapPolyMesh> Foam::meshRefinement::zonify
         // 4. Set faceToZone with new faceZones
 
 
-        for (label faceI = 0; faceI < mesh_.nInternalFaces(); faceI++)
+        for (label faceI = 0; faceI < mesh_.nInternalFaces(); ++faceI)
         {
             if (faceToZone[faceI] == -1)
             {
@@ -4669,7 +4669,7 @@ Foam::autoPtr<Foam::mapPolyMesh> Foam::meshRefinement::zonify
             );
 
             Map<label> nPosOrientation(2*nZones);
-            for (label zoneI = 0; zoneI < nZones; zoneI++)
+            for (label zoneI = 0; zoneI < nZones; ++zoneI)
             {
                 nPosOrientation.insert(zoneI, 0);
             }
@@ -4718,7 +4718,7 @@ Foam::autoPtr<Foam::mapPolyMesh> Foam::meshRefinement::zonify
                 << " (negative denotes wrong orientation) :"
                 << endl;
 
-            for (label zoneI = 0; zoneI < nZones; zoneI++)
+            for (label zoneI = 0; zoneI < nZones; ++zoneI)
             {
                 Info<< "    " << zoneI << "\t" << nPosOrientation[zoneI]
                     << endl;

@@ -153,7 +153,7 @@ bool Foam::fileFormats::OBJedgeFormat::read(const fileName& filename)
 
             readObjVertices(tokens, dynVerts);
 
-            for (label i = 1; i < dynVerts.size(); i++)
+            for (label i = 1; i < dynVerts.size(); ++i)
             {
                 const edge e(dynVerts[i-1], dynVerts[i]);
                 dynEdges.append(e);
@@ -172,7 +172,7 @@ bool Foam::fileFormats::OBJedgeFormat::read(const fileName& filename)
 
             if (readObjVertices(tokens, dynVerts) == 2)
             {
-                for (label i = 1; i < dynVerts.size(); i++)
+                for (label i = 1; i < dynVerts.size(); ++i)
                 {
                     const edge e(dynVerts[i-1], dynVerts[i]);
                     dynEdges.append(e);

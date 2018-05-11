@@ -27,7 +27,7 @@ if (pimple.dict().lookupOrDefault("hydrostaticInitialization", false))
             pimple.dict().lookupOrDefault<label>("nHydrostaticCorrectors", 5)
         );
 
-        for (label i=0; i<nCorr; i++)
+        for (label i=0; i<nCorr; ++i)
         {
             surfaceScalarField rhof("rhof", fvc::interpolate(rho));
 

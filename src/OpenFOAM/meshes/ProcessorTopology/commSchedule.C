@@ -111,7 +111,7 @@ Foam::commSchedule::commSchedule
         {
             OStringStream os;
             os  << "iter|";
-            for (int i = 0; i < nProcs; i++)
+            for (int i = 0; i < nProcs; ++i)
             {
                 os  << setw(3) << i;
             }
@@ -120,7 +120,7 @@ Foam::commSchedule::commSchedule
         {
             OStringStream os;
             os  << "----+";
-            for (int i = 0; i < nProcs; i++)
+            for (int i = 0; i < nProcs; ++i)
             {
                 os  << "---";
             }

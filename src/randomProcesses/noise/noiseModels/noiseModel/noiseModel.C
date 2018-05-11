@@ -67,7 +67,7 @@ Foam::scalar Foam::noiseModel::checkUniformTimeStep
 
     if (times.size() > 1)
     {
-        for (label i = 1; i < times.size(); i++)
+        for (label i = 1; i < times.size(); ++i)
         {
             scalar dT = times[i] - times[i-1];
 

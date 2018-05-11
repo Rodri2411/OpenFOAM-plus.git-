@@ -291,7 +291,7 @@ Foam::labelHashSet Foam::surfaceSets::getHangingCells
 
     List<pointStatus> pointSide(mesh.nPoints(), NOTSET);
 
-    for (label celli = 0; celli < mesh.nCells(); celli++)
+    for (label celli = 0; celli < mesh.nCells(); ++celli)
     {
         if (internalCells.found(celli))
         {

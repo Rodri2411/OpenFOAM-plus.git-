@@ -275,7 +275,7 @@ autoPtr<refinementSurfaces> createRefinementSurfaces
         label nRegions = allGeometry[surfaces[surfi]].regions().size();
 
         // Initialise to global (i.e. per surface)
-        for (label i = 0; i < nRegions; i++)
+        for (label i = 0; i < nRegions; ++i)
         {
             label globalRegioni = regionOffset[surfi] + i;
             minLevel[globalRegioni] = globalMinLevel[surfi];

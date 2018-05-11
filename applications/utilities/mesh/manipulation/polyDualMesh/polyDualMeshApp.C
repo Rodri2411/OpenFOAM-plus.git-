@@ -117,7 +117,7 @@ void simpleMarkFeatures
         const labelList& meshEdges = pp.meshEdges();
 
         // All patch corner edges. These need to be feature points & edges!
-        for (label edgeI = pp.nInternalEdges(); edgeI < pp.nEdges(); edgeI++)
+        for (label edgeI = pp.nInternalEdges(); edgeI < pp.nEdges(); ++edgeI)
         {
             label meshEdgeI = meshEdges[edgeI];
             featureEdgeSet.insert(meshEdgeI);
@@ -240,7 +240,7 @@ void simpleMarkFeatures
     // Face centres that need inclusion in the dual mesh
     labelHashSet featureFaceSet(mesh.nFaces()-mesh.nInternalFaces());
     // A. boundary faces.
-    for (label facei = mesh.nInternalFaces(); facei < mesh.nFaces(); facei++)
+    for (label facei = mesh.nInternalFaces(); facei < mesh.nFaces(); ++facei)
     {
         featureFaceSet.insert(facei);
     }
@@ -391,7 +391,7 @@ int main(int argc, char *argv[])
     // (Note: in 1.4.2 we can use the built-in mesh point ordering
     //  facility instead)
     bitSet isBoundaryEdge(mesh.nEdges());
-    for (label facei = mesh.nInternalFaces(); facei < mesh.nFaces(); facei++)
+    for (label facei = mesh.nInternalFaces(); facei < mesh.nFaces(); ++facei)
     {
         const labelList& fEdges = mesh.faceEdges()[facei];
 

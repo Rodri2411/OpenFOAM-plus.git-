@@ -143,7 +143,7 @@ bool Foam::primitiveMesh::calcPointOrder
     // from 0 inside oldToNew. (shifted up later on)
 
     label nBoundaryPoints = 0;
-    for (label facei = nInternalFaces; facei < faces.size(); facei++)
+    for (label facei = nInternalFaces; facei < faces.size(); ++facei)
     {
         const face& f = faces[facei];
 
@@ -179,7 +179,7 @@ bool Foam::primitiveMesh::calcPointOrder
 
     bool ordered = true;
 
-    for (label facei = 0; facei < nInternalFaces; facei++)
+    for (label facei = 0; facei < nInternalFaces; ++facei)
     {
         const face& f = faces[facei];
 

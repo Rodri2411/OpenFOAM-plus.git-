@@ -134,7 +134,7 @@ void Foam::Function1Types::Polynomial<Type>::convertTimeBase(const Time& t)
     forAll(coeffs_, i)
     {
         Type value = coeffs_[i].first();
-        for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; cmpt++)
+        for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; ++cmpt)
         {
             setComponent(coeffs_[i].first(), cmpt) =
                 t.userTimeToTime(component(value, cmpt));

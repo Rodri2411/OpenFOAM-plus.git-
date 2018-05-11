@@ -551,7 +551,7 @@ bool Foam::searchableSurfaces::checkSizes
     {
         const boundBox& bb = operator[](i).bounds();
 
-        for (label j = i+1; j < size(); j++)
+        for (label j = i+1; j < size(); ++j)
         {
             scalar ratio = bb.mag()/operator[](j).bounds().mag();
 

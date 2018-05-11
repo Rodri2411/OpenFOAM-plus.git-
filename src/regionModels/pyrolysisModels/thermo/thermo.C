@@ -151,7 +151,7 @@ void thermo::evolveRegion()
 
         volScalarField& h = solidThermo_->he();
 
-        for (int nonOrth=0; nonOrth<=nNonOrthCorr_; nonOrth++)
+        for (int nonOrth=0; nonOrth<=nNonOrthCorr_; ++nonOrth)
         {
             tmp<volScalarField> alpha(solidThermo_->alpha());
             fvScalarMatrix hEqn

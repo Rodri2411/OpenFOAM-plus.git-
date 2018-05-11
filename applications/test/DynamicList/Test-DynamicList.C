@@ -164,7 +164,7 @@ int main(int argc, char *argv[])
     printInfo("dlB", dlB, true);
 
     // Copy back and append a few time
-    for (label i=0; i < 3; i++)
+    for (label i=0; i < 3; ++i)
     {
         dlB.append(lstA);
     }
@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
     printInfo("dlB", dlB, true);
 
     // Copy back and append a few time
-    for (label i=0; i < 3; i++)
+    for (label i=0; i < 3; ++i)
     {
         dlB.append(lstA);
     }

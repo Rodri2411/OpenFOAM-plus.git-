@@ -388,7 +388,7 @@ void Foam::hierarchGeomDecomp::sortComponent
     scalar leftCoord = minCoord;
 
     // Sort bins of size n
-    for (label bin = 0; bin < n_[compI]; bin++)
+    for (label bin = 0; bin < n_[compI]; ++bin)
     {
         // Now we need to determine the size of the bin (dx). This is
         // determined by the 'pivot' values - everything to the left of this
@@ -582,7 +582,7 @@ void Foam::hierarchGeomDecomp::sortComponent
     scalar leftCoord = minCoord;
 
     // Sort bins of size n
-    for (label bin = 0; bin < n_[compI]; bin++)
+    for (label bin = 0; bin < n_[compI]; ++bin)
     {
         // Now we need to determine the size of the bin (dx). This is
         // determined by the 'pivot' values - everything to the left of this

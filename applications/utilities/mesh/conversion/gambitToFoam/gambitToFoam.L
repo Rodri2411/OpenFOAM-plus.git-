@@ -349,7 +349,7 @@ mtype                 {space}"MTYPE:"{space}
         // set read of the next line
         label labelsToRead = min(8, nVertices);
         label labelI = 0;
-        for (; labelI < labelsToRead; labelI++)
+        for (; labelI < labelsToRead; ++labelI)
         {
             if (elementStream.eof()) break;
 
@@ -394,7 +394,7 @@ mtype                 {space}"MTYPE:"{space}
         (
             label labelI = nCellContinuationLines*7;
             labelI < labelsToRead;
-            labelI++
+            ++labelI
         )
         {
             curLabels[labelI] = readLabel(elementStream);

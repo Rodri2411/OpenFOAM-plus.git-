@@ -105,9 +105,9 @@ List<Vb::Point> uniformGrid::initialPoints() const
     // Initialise points list
     DynamicList<Vb::Point> initialPoints(scalar(ni)*nj*nk/10);
 
-    for (label i = 0; i < ni; i++)
+    for (label i = 0; i < ni; ++i)
     {
-        for (label j = 0; j < nj; j++)
+        for (label j = 0; j < nj; ++j)
         {
             // Generating, testing and adding points one line at a time to
             // reduce the memory requirement for cases with bounding boxes that
@@ -117,7 +117,7 @@ List<Vb::Point> uniformGrid::initialPoints() const
 
             pointField points(nk);
 
-            for (label k = 0; k < nk; k++)
+            for (label k = 0; k < nk; ++k)
             {
                 point p
                 (

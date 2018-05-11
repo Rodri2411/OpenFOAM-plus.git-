@@ -124,7 +124,7 @@ Foam::laminarFlameSpeedModels::SCOPE::SCOPE
     {
         Info<< "phi     Su  (T = Tref, p = pref)" << endl;
         label n = 200;
-        for (int i=0; i<n; i++)
+        for (int i=0; i<n; ++i)
         {
             scalar phi = (2.0*i)/n;
             Info<< phi << token::TAB << SuRef(phi) << endl;

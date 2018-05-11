@@ -106,14 +106,14 @@ void Foam::SIBS::solve
         scalar eps1 = safe1*relTol_[0];
         a_[0] = nSeq_[0] + 1;
 
-        for (label k=0; k<kMaxX_; k++)
+        for (label k=0; k<kMaxX_; ++k)
         {
             a_[k + 1] = a_[k] + nSeq_[k + 1];
         }
 
-        for (label iq = 1; iq<kMaxX_; iq++)
+        for (label iq = 1; iq<kMaxX_; ++iq)
         {
-            for (label k=0; k<iq; k++)
+            for (label k=0; k<iq; ++k)
             {
                 alpha_[k][iq] =
                     pow(eps1, (a_[k + 1] - a_[iq + 1])
@@ -124,12 +124,12 @@ void Foam::SIBS::solve
         epsOld_ = relTol_[0];
         a_[0] += n_;
 
-        for (label k=0; k<kMaxX_; k++)
+        for (label k=0; k<kMaxX_; ++k)
         {
             a_[k + 1] = a_[k] + nSeq_[k + 1];
         }
 
-        for (kOpt_ = 1; kOpt_<kMaxX_ - 1; kOpt_++)
+        for (kOpt_ = 1; kOpt_<kMaxX_ - 1; ++kOpt_)
         {
             if (a_[kOpt_ + 1] > a_[kOpt_]*alpha_[kOpt_ - 1][kOpt_])
             {
@@ -159,7 +159,7 @@ void Foam::SIBS::solve
     {
         scalar red = 1.0;
 
-        for (k=0; k <= kMax_; k++)
+        for (k=0; k <= kMax_; ++k)
         {
             xNew_ = x + h;
 
@@ -178,7 +178,7 @@ void Foam::SIBS::solve
             if (k != 0)
             {
                 maxErr = SMALL;
-                for (label i=0; i<n_; i++)
+                for (label i=0; i<n_; ++i)
                 {
                     maxErr = max
                     (
@@ -237,7 +237,7 @@ void Foam::SIBS::solve
     scalar wrkmin = GREAT;
     scalar scale = 1.0;
 
-    for (label kk=0; kk<=km; kk++)
+    for (label kk=0; kk<=km; ++kk)
     {
         scalar fact = max(err_[kk], scaleMX);
         scalar work = fact*a_[kk + 1];

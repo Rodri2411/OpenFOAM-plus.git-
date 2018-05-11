@@ -98,7 +98,7 @@ void Foam::faceSelections::searchableSurfaceSelection::select
     pointField end(mesh_.nFaces());
 
     // Internal faces
-    for (label facei = 0; facei < mesh_.nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh_.nInternalFaces(); ++facei)
     {
         start[facei] = mesh_.cellCentres()[mesh_.faceOwner()[facei]];
         end[facei] = mesh_.cellCentres()[mesh_.faceNeighbour()[facei]];
@@ -146,7 +146,7 @@ void Foam::faceSelections::searchableSurfaceSelection::select
 
     //- Note: do not select boundary faces.
 
-    for (label facei = 0; facei < mesh_.nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh_.nInternalFaces(); ++facei)
     {
         if (hits[facei].hit())
         {

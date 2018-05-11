@@ -186,7 +186,7 @@ void Foam::chemPointISAT<CompType, ThermoType>::rotate
         c = fact*s;
     }
 
-    for (label j=i; j<n ;++j)
+    for (label j=i; j<n; ++j)
     {
         y = R(i, j);
         w = R(i+1, j);

@@ -265,7 +265,7 @@ Foam::UList<Foam::UPstream::commsStruct>::operator[](const label procID)
             if (procID == 0)
             {
                 below.setSize(size()-1);
-                for (label procI = 1; procI < size(); procI++)
+                for (label procI = 1; procI < size(); ++procI)
                 {
                     below[procI-1] = procI;
                 }
@@ -331,7 +331,7 @@ Foam::UList<Foam::UPstream::commsStruct>::operator[](const label procID)
                     (
                         label j = procID + step;
                         j < size() && j < procID + mod;
-                        j++
+                        ++j
                     )
                     {
                         allBelow.append(j);

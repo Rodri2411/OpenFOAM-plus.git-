@@ -261,7 +261,7 @@ Foam::scalar Foam::faceAreaIntersect::triangleIntersect
 
         nWorkTris2 = 0;
 
-        for (label i = 0; i < nWorkTris1; i++)
+        for (label i = 0; i < nWorkTris1; ++i)
         {
             triSliceWithPlane(workTris1[i], pl1, workTris2, nWorkTris2, t);
         }
@@ -282,7 +282,7 @@ Foam::scalar Foam::faceAreaIntersect::triangleIntersect
 
         nWorkTris1 = 0;
 
-        for (label i = 0; i < nWorkTris2; i++)
+        for (label i = 0; i < nWorkTris2; ++i)
         {
             triSliceWithPlane(workTris2[i], pl2, workTris1, nWorkTris1, t);
         }
@@ -295,7 +295,7 @@ Foam::scalar Foam::faceAreaIntersect::triangleIntersect
         {
             // calculate area of sub-triangles
             scalar area = 0.0;
-            for (label i = 0; i < nWorkTris1; i++)
+            for (label i = 0; i < nWorkTris1; ++i)
             {
                 area += triArea(workTris1[i]);
             }

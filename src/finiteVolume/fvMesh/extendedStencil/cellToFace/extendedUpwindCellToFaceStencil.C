@@ -238,7 +238,7 @@ void Foam::extendedUpwindCellToFaceStencil::transportStencils
     ownStencil.setSize(mesh_.nFaces());
 
     // Internal faces
-    for (label facei = 0; facei < mesh_.nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh_.nInternalFaces(); ++facei)
     {
         // Get stencil as owner + neighbour + stencil from 'opposite' faces
         transportStencil
@@ -308,7 +308,7 @@ void Foam::extendedUpwindCellToFaceStencil::transportStencils
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     labelListList neiBndStencil(nBnd);
-    for (label facei = mesh_.nInternalFaces(); facei < mesh_.nFaces(); facei++)
+    for (label facei = mesh_.nInternalFaces(); facei < mesh_.nFaces(); ++facei)
     {
         neiBndStencil[facei-mesh_.nInternalFaces()] = ownStencil[facei];
     }
@@ -332,7 +332,7 @@ void Foam::extendedUpwindCellToFaceStencil::transportStencils
     neiStencil.setSize(mesh_.nFaces());
 
     // Internal faces
-    for (label facei = 0; facei < mesh_.nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh_.nInternalFaces(); ++facei)
     {
         transportStencil
         (

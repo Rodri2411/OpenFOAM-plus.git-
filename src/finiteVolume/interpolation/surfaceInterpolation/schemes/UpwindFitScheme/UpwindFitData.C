@@ -93,7 +93,7 @@ void Foam::UpwindFitData<Polynomial>::calcFit()
     // find the fit coefficients for every owner
 
     //Pout<< "-- Owner --" << endl;
-    for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh.nInternalFaces(); ++facei)
     {
         FitData
         <
@@ -152,7 +152,7 @@ void Foam::UpwindFitData<Polynomial>::calcFit()
     // find the fit coefficients for every neighbour
 
     //Pout<< "-- Neighbour --" << endl;
-    for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh.nInternalFaces(); ++facei)
     {
         FitData
         <

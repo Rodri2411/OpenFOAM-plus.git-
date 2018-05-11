@@ -98,14 +98,14 @@ void Foam::primitiveMesh::makeFaceCentresAndAreas
             vector sumAc = Zero;
 
             point fCentre = p[f[0]];
-            for (label pi = 1; pi < nPoints; pi++)
+            for (label pi = 1; pi < nPoints; ++pi)
             {
                 fCentre += p[f[pi]];
             }
 
             fCentre /= nPoints;
 
-            for (label pi = 0; pi < nPoints; pi++)
+            for (label pi = 0; pi < nPoints; ++pi)
             {
                 const point& nextPoint = p[f[(pi + 1) % nPoints]];
 

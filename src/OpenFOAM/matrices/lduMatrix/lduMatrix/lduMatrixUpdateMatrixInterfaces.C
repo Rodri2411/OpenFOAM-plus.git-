@@ -69,7 +69,7 @@ void Foam::lduMatrix::initMatrixInterfaces
         (
             label interfacei=patchSchedule.size()/2;
             interfacei<interfaces.size();
-            interfacei++
+            ++interfacei
         )
         {
             if (interfaces.set(interfacei))
@@ -129,7 +129,7 @@ void Foam::lduMatrix::updateMatrixInterfaces
         // Try and consume interfaces as they become available
         bool allUpdated = false;
 
-        for (label i=0; i<UPstream::nPollProcInterfaces; i++)
+        for (label i=0; i<UPstream::nPollProcInterfaces; ++i)
         {
             allUpdated = true;
 
@@ -249,7 +249,7 @@ void Foam::lduMatrix::updateMatrixInterfaces
         (
             label interfacei=patchSchedule.size()/2;
             interfacei<interfaces.size();
-            interfacei++
+            ++interfacei
         )
         {
             if (interfaces.set(interfacei))

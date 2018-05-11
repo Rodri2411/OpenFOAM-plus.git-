@@ -129,7 +129,7 @@ void Foam::polyLineSet::calcSamples
             << sampleCoords_ << exit(FatalError);
     }
     point oldPoint = sampleCoords_[0];
-    for (label sampleI = 1; sampleI < sampleCoords_.size(); sampleI++)
+    for (label sampleI = 1; sampleI < sampleCoords_.size(); ++sampleI)
     {
         if (mag(sampleCoords_[sampleI] - oldPoint) < SMALL)
         {

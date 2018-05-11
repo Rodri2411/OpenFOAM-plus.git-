@@ -199,7 +199,7 @@ void Foam::conformalVoronoiMesh::calcTetMesh
         label ownerCell = -1;
         label neighbourCell = -1;
 
-        for (label i = 0; i < 3; i++)
+        for (label i = 0; i < 3; ++i)
         {
             verticesOnTriFace[i] = vertexMap
             [
@@ -1065,7 +1065,7 @@ Foam::labelHashSet Foam::conformalVoronoiMesh::checkPolyMeshQuality
 
         labelList nInternalFaces(pMesh.nCells(), label(0));
 
-        for (label fI = 0; fI < pMesh.nInternalFaces(); fI++)
+        for (label fI = 0; fI < pMesh.nInternalFaces(); ++fI)
         {
             nInternalFaces[pMesh.faceOwner()[fI]]++;
             nInternalFaces[pMesh.faceNeighbour()[fI]]++;
@@ -1556,7 +1556,7 @@ Foam::label Foam::conformalVoronoiMesh::createPatchInfo
         (
             Delaunay::Finite_vertices_iterator vit = finite_vertices_begin();
             vit != finite_vertices_end();
-            vit++
+            ++vit
         )
         {
             // This test is not sufficient if one of the processors does
@@ -1927,7 +1927,7 @@ void Foam::conformalVoronoiMesh::createFacesOwnerNeighbourAndPatches
                             (
                                 cellStr,
                                 vc2->neighbor(cI),
-                                vcount++
+                                ++vcount
                             );
 
                             Info<< "        neighbour " << cI << " "

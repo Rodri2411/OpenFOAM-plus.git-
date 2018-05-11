@@ -56,7 +56,7 @@ Foam::sampledPatchInternalField::sampleOnFaces
           : patchFaceLabels().size()
         );
 
-        for (label triI = patchStart()[i]; triI < end; triI++)
+        for (label triI = patchStart()[i]; triI < end; ++triI)
         {
             values[triI] = interpVals[patchFaceLabels()[triI]];
         }

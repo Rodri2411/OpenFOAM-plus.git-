@@ -298,9 +298,9 @@ Foam::blockDescriptor::facePoints(const pointField& points) const
     facePoints[0].setSize((nj + 1)*(nk + 1));
     facePoints[1].setSize((nj + 1)*(nk + 1));
 
-    for (label j=0; j<=nj; j++)
+    for (label j=0; j<=nj; ++j)
     {
-        for (label k=0; k<=nk; k++)
+        for (label k=0; k<=nk; ++k)
         {
             facePoints[0][facePointLabel(0, j, k)] =
                 points[pointLabel(0, j, k)];
@@ -312,9 +312,9 @@ Foam::blockDescriptor::facePoints(const pointField& points) const
     facePoints[2].setSize((ni + 1)*(nk + 1));
     facePoints[3].setSize((ni + 1)*(nk + 1));
 
-    for (label i=0; i<=ni; i++)
+    for (label i=0; i<=ni; ++i)
     {
-        for (label k=0; k<=nk; k++)
+        for (label k=0; k<=nk; ++k)
         {
             facePoints[2][facePointLabel(2, i, k)] =
                 points[pointLabel(i, 0, k)];
@@ -326,9 +326,9 @@ Foam::blockDescriptor::facePoints(const pointField& points) const
     facePoints[4].setSize((ni + 1)*(nj + 1));
     facePoints[5].setSize((ni + 1)*(nj + 1));
 
-    for (label i=0; i<=ni; i++)
+    for (label i=0; i<=ni; ++i)
     {
-        for (label j=0; j<=nj; j++)
+        for (label j=0; j<=nj; ++j)
         {
             facePoints[4][facePointLabel(4, i, j)] =
                 points[pointLabel(i, j, 0)];

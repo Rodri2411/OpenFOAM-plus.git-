@@ -44,7 +44,7 @@ void Foam::faMeshDecomposition::distributeFaces()
 
     cpuTime decompositionTime;
 
-    for (label procI = 0; procI < nProcs(); procI++)
+    for (label procI = 0; procI < nProcs(); ++procI)
     {
         Time processorDb
         (
@@ -244,7 +244,7 @@ void Foam::faMeshDecomposition::decomposeMesh()
 
     // Find processor mesh faceLabels and ...
 
-    for (label procI = 0; procI < nProcs(); procI++)
+    for (label procI = 0; procI < nProcs(); ++procI)
     {
         Time processorDb
         (
@@ -332,7 +332,7 @@ void Foam::faMeshDecomposition::decomposeMesh()
 
         const label nIntEdges = patch.nInternalEdges();
 
-        for (label curEdge = 0; curEdge < nIntEdges; curEdge++)
+        for (label curEdge = 0; curEdge < nIntEdges; ++curEdge)
         {
             edgesHash.insert(patch.edges()[curEdge], ++edgeI);
         }
@@ -343,7 +343,7 @@ void Foam::faMeshDecomposition::decomposeMesh()
 
             const label size = boundary()[patchI].labelList::size();
 
-            for(int eI=0; eI<size; eI++)
+            for (int eI=0; eI<size; ++eI)
             {
                 edgesHash.insert(patch.edges()[boundary()[patchI][eI]], ++edgeI);
             }
@@ -406,7 +406,7 @@ void Foam::faMeshDecomposition::decomposeMesh()
 
         forAll(procEdgeList, procI)
         {
-            for(label i=0; i<procNInternalEdges_[procI]; i++)
+            for (label i=0; i<procNInternalEdges_[procI]; ++i)
             {
                 procEdgeList[procI].append(procPatchEdgeAddressing_[procI][i]);
             }
@@ -566,7 +566,7 @@ void Foam::faMeshDecomposition::decomposeMesh()
 
                 labelList patchEdgeFaces(size, -1);
 
-                for(int eI=0; eI<size; eI++)
+                for (int eI=0; eI<size; ++eI)
                 {
                     patchEdgeFaces[eI] = eF[patches[patchI][eI]][0];
                 }
@@ -998,7 +998,7 @@ void Foam::faMeshDecomposition::decomposeMesh()
         // processor boundaries.  When a point is used twice, it is a
         // globally shared point
 
-        for (label procI = 0; procI < nProcs(); procI++)
+        for (label procI = 0; procI < nProcs(); ++procI)
         {
             // Get list of edge labels
             const labelList& curEdgeLabels = procEdgeAddressing_[procI];
@@ -1022,7 +1022,7 @@ void Foam::faMeshDecomposition::decomposeMesh()
                 (
                     label edgeI = curStart;
                     edgeI < curEnd;
-                    edgeI++
+                    ++edgeI
                 )
                 {
                     // Mark the original edge as used
@@ -1056,7 +1056,7 @@ void Foam::faMeshDecomposition::decomposeMesh()
 
     // Edge label for faPatches
 
-    for (label procI = 0; procI < nProcs(); procI++)
+    for (label procI = 0; procI < nProcs(); ++procI)
     {
         fileName processorCasePath
         (
@@ -1122,7 +1122,7 @@ void Foam::faMeshDecomposition::decomposeMesh()
             (
                 int i=curPatchStartIndex[patchI];
                 i<(curPatchStartIndex[patchI]+curPatchSize[patchI]);
-                i++
+                ++i
             )
             {
                 curEdgeLabels[edgeI] =
@@ -1144,7 +1144,7 @@ void Foam::faMeshDecomposition::decomposeMesh()
                 int i=curProcessorPatchStartIndex[patchI];
                 i<(curProcessorPatchStartIndex[patchI]
                 +curProcessorPatchSize[patchI]);
-                i++
+                ++i
             )
             {
                 curEdgeLabels[edgeI] =
@@ -1174,7 +1174,7 @@ bool Foam::faMeshDecomposition::writeDecomposition()
     label maxProcEdges = 0;
 
     // Write out the meshes
-    for (label procI = 0; procI < nProcs(); procI++)
+    for (label procI = 0; procI < nProcs(); ++procI)
     {
         // Create processor mesh without a boundary
 

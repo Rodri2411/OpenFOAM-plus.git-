@@ -114,7 +114,7 @@ void Foam::GAMGPreconditioner::precondition
         finestCorrectionScratch
     );
 
-    for (label cycle=0; cycle<nVcycles_; cycle++)
+    for (label cycle=0; cycle<nVcycles_; ++cycle)
     {
         Vcycle
         (

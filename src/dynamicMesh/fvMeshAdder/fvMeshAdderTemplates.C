@@ -112,7 +112,7 @@ void Foam::fvMeshAdder::MapVolField
         (
             label newPatchi = nUsedPatches;
             newPatchi < bfld.size();
-            newPatchi++
+            ++newPatchi
         )
         {
             bfld.set(newPatchi, nullptr);
@@ -428,7 +428,7 @@ void Foam::fvMeshAdder::MapSurfaceField
         (
             label newPatchi = nUsedPatches;
             newPatchi < bfld.size();
-            newPatchi++
+            ++newPatchi
         )
         {
             bfld.set(newPatchi, nullptr);

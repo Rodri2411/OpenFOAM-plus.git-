@@ -71,7 +71,7 @@ Foam::tetIndices Foam::functionObjects::wallBoundedStreamLine::findNearestTet
             const point& basePoint = mesh_.points()[f[fp0]];
 
             label fp = f.fcIndex(fp0);
-            for (label i = 2; i < f.size(); i++)
+            for (label i = 2; i < f.size(); ++i)
             {
                 const point& thisPoint = mesh_.points()[f[fp]];
                 label nextFp = f.fcIndex(fp);

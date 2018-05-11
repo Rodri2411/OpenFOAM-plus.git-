@@ -120,7 +120,7 @@ void Foam::inverseFaceDistanceDiffusivity::correct()
     const List<wallPoint>& faceInfo = waveInfo.allFaceInfo();
     const List<wallPoint>& cellInfo = waveInfo.allCellInfo();
 
-    for (label facei=0; facei<mesh().nInternalFaces(); facei++)
+    for (label facei=0; facei<mesh().nInternalFaces(); ++facei)
     {
         scalar dist = faceInfo[facei].distSqr();
 

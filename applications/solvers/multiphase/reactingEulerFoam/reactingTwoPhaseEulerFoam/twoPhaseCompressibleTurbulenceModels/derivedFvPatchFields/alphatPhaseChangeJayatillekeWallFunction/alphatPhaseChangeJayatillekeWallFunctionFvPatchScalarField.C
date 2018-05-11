@@ -89,7 +89,7 @@ alphatPhaseChangeJayatillekeWallFunctionFvPatchScalarField::yPlusTherm
     {
         scalar ypt = 11.0;
 
-        for (int i=0; i<maxIters_; i++)
+        for (int i=0; i<maxIters_; ++i)
         {
             scalar f = ypt - (log(E_*ypt)/kappa_ + P[facei])/Prat[facei];
             scalar df = 1 - 1.0/(ypt*kappa_*Prat[facei]);

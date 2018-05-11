@@ -503,7 +503,7 @@ endOfSection               {space}")"{space}
 
         curFaceLabels[0] = strtol(YYText(), &endPtr, 16) - 1;
 
-        for (int i=1; i<faceGroupElementType; i++)
+        for (int i=1; i<faceGroupElementType; ++i)
         {
             curFaceLabels[i] = strtol(endPtr, &endPtr, 16) - 1;
         }
@@ -1004,7 +1004,7 @@ int main(int argc, char *argv[])
 
             // Set the owner of these faces to -1 so that they do not get
             // added to the mesh
-            for (label facei = start; facei <= end; facei++)
+            for (label facei = start; facei <= end; ++facei)
             {
                 owner[facei] = -1;
             }
@@ -1206,7 +1206,7 @@ int main(int argc, char *argv[])
     points.setSize(0);
 
     // Add all cells
-    for (label celli = 0; celli < nCells; celli++)
+    for (label celli = 0; celli < nCells; ++celli)
     {
         meshMod.addCell
         (
@@ -1227,7 +1227,7 @@ int main(int argc, char *argv[])
         (
             label celli = cellGroupStartIndex[cgi];
             celli <= cellGroupEndIndex[cgi];
-            celli++
+            ++celli
         )
         {
             meshMod.modifyCell(celli, cellZonei);
@@ -1250,7 +1250,7 @@ int main(int argc, char *argv[])
             << " type: " << groupType[zoneID]
             << endl;
 
-        for (label facei = start; facei <= end; facei++)
+        for (label facei = start; facei <= end; ++facei)
         {
             if (owner[facei] >= nCells || neighbour[facei] >= nCells)
             {
@@ -1301,7 +1301,7 @@ int main(int argc, char *argv[])
             << " type: " << groupType[zoneID]
             << endl;
 
-        for (label facei = start; facei <= end; facei++)
+        for (label facei = start; facei <= end; ++facei)
         {
             if (owner[facei] >= nCells || neighbour[facei] >= nCells)
             {

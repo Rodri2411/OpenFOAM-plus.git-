@@ -66,7 +66,7 @@ bool Foam::directMethod::findInitialSeeds
     const faceList& srcFaces = src_.faces();
     const pointField& srcPts = src_.points();
 
-    for (label i = startSeedI; i < srcCellIDs.size(); i++)
+    for (label i = startSeedI; i < srcCellIDs.size(); ++i)
     {
         label srcI = srcCellIDs[i];
 

@@ -44,7 +44,7 @@ void Foam::GAMGProcAgglomeration::printStats
     GAMGAgglomeration& agglom
 ) const
 {
-    for (label levelI = 0; levelI <= agglom.size(); levelI++)
+    for (label levelI = 0; levelI <= agglom.size(); ++levelI)
     {
         if (agglom.hasMeshLevel(levelI))
         {
@@ -293,7 +293,7 @@ bool Foam::GAMGProcAgglomeration::agglomerate
         (
             label levelI = fineLevelIndex+1;
             levelI < agglom_.meshLevels_.size();
-            levelI++
+            ++levelI
         )
         {
             agglom_.procAgglomerateRestrictAddressing
@@ -311,7 +311,7 @@ bool Foam::GAMGProcAgglomeration::agglomerate
             (
                 label levelI = fineLevelIndex;
                 levelI < agglom_.meshLevels_.size();
-                levelI++
+                ++levelI
             )
             {
                 agglom_.agglomerateLduAddressing(levelI);
@@ -324,7 +324,7 @@ bool Foam::GAMGProcAgglomeration::agglomerate
             (
                 label levelI = fineLevelIndex+1;
                 levelI <= agglom_.size();
-                levelI++
+                ++levelI
             )
             {
                 agglom_.clearLevel(levelI);

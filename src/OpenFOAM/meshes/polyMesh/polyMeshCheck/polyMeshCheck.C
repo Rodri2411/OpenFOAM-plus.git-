@@ -290,7 +290,7 @@ bool Foam::polyMesh::checkEdgeAlignment
     }
 
     label nDirs = 0;
-    for (direction cmpt=0; cmpt<vector::nComponents; cmpt++)
+    for (direction cmpt=0; cmpt<vector::nComponents; ++cmpt)
     {
         if (directions[cmpt] == 1)
         {
@@ -334,7 +334,7 @@ bool Foam::polyMesh::checkEdgeAlignment
                     // Check how many empty directions are used by the edge.
                     label nEmptyDirs = 0;
                     label nNonEmptyDirs = 0;
-                    for (direction cmpt=0; cmpt<vector::nComponents; cmpt++)
+                    for (direction cmpt=0; cmpt<vector::nComponents; ++cmpt)
                     {
                         if (mag(d[cmpt]) > 1e-6)
                         {

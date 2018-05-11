@@ -40,7 +40,7 @@ Description
         // Set desired displacement:
         meshMover.displacement() = ..
 
-        for (label iter = 0; iter < maxIter; iter++)
+        for (label iter = 0; iter < maxIter; ++iter)
         {
             if (meshMover.scaleMesh(true))
             {
@@ -109,7 +109,7 @@ class motionSmootherAlgo
 
             void operator()(vector& x, const vector& y) const
             {
-                for (direction i = 0; i < vector::nComponents; i++)
+                for (direction i = 0; i < vector::nComponents; ++i)
                 {
                     scalar magX = mag(x[i]);
                     scalar magY = mag(y[i]);

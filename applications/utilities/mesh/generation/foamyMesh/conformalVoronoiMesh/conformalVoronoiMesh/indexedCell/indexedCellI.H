@@ -31,7 +31,7 @@ Foam::tetCell CGAL::indexedCell<Gt, Cb>::unsortedVertexGlobalIndices
 {
     Foam::tetCell tVGI;
 
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 4; ++i)
     {
         Vertex_handle v = this->vertex(i);
 
@@ -317,9 +317,9 @@ inline Foam::tetCell CGAL::indexedCell<Gt, Cb>::vertexGlobalIndices
         = unsortedVertexGlobalIndices(globalDelaunayVertexIndices);
 
     // bubble sort
-    for (int i = 0; i < tVGI.size(); i++)
+    for (int i = 0; i < tVGI.size(); ++i)
     {
-        for (int j = tVGI.size() - 1 ; j > i; j--)
+        for (int j = tVGI.size() - 1; j > i; --j)
         {
             if (tVGI[j - 1] > tVGI[j])
             {
@@ -346,9 +346,9 @@ CGAL::indexedCell<Gt, Cb>::globallyOrderedCellVertices
     Foam::FixedList<Foam::label, 4> vertexMap(Foam::identity(4));
 
     // bubble sort
-    for (int i = 0; i < tVGI.size(); i++)
+    for (int i = 0; i < tVGI.size(); ++i)
     {
-        for (int j = tVGI.size() - 1 ; j > i; j--)
+        for (int j = tVGI.size() - 1; j > i; --j)
         {
             if (tVGI[j - 1] > tVGI[j])
             {
@@ -358,7 +358,7 @@ CGAL::indexedCell<Gt, Cb>::globallyOrderedCellVertices
         }
     }
 
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 4; ++i)
     {
         tVGI[i] = vertexMap[i];
     }

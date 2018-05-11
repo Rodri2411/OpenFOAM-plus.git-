@@ -887,7 +887,7 @@ void Foam::meshDualiser::setRefinement
     // (Note: in 1.4.2 we can use the built-in mesh point ordering
     //  facility instead)
     bitSet isBoundaryEdge(mesh_.nEdges());
-    for (label facei = mesh_.nInternalFaces(); facei < mesh_.nFaces(); facei++)
+    for (label facei = mesh_.nInternalFaces(); facei < mesh_.nFaces(); ++facei)
     {
         const labelList& fEdges = mesh_.faceEdges()[facei];
 
@@ -953,7 +953,7 @@ void Foam::meshDualiser::setRefinement
         (
             label facei = mesh_.nInternalFaces();
             facei < mesh_.nFaces();
-            facei++
+            ++facei
         )
         {
             if (!featureFaceSet[facei])
@@ -1141,7 +1141,7 @@ void Foam::meshDualiser::setRefinement
     // Detect whether different dual cells on either side of a face. This
     // would necessitate having a dual face built from the face and thus a
     // dual point at the face centre.
-    for (label facei = 0; facei < mesh_.nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh_.nInternalFaces(); ++facei)
     {
         if (faceToDualPoint_[facei] == -1)
         {
@@ -1205,7 +1205,7 @@ void Foam::meshDualiser::setRefinement
             label dualE0 = findDualCell(eCells[0], e[0]);
             label dualE1 = findDualCell(eCells[0], e[1]);
 
-            for (label i = 1; i < eCells.size(); i++)
+            for (label i = 1; i < eCells.size(); ++i)
             {
                 label newDualE0 = findDualCell(eCells[i], e[0]);
 

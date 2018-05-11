@@ -85,9 +85,9 @@ Foam::scalar Foam::EulerSI::solve
 {
     odes_.jacobian(x0, y0, dfdx_, dfdy_);
 
-    for (label i=0; i<n_; i++)
+    for (label i=0; i<n_; ++i)
     {
-        for (label j=0; j<n_; j++)
+        for (label j=0; j<n_; ++j)
         {
             a_(i, j) = -dfdy_(i, j);
         }

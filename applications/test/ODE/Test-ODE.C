@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
     Info<< setw(13) << "dxDid" << setw(14) << "dxNext" << endl;
     Info<< setprecision(6);
 
-    for (label i=0; i<15; i++)
+    for (label i=0; i<15; ++i)
     {
         scalar relTol = ::Foam::exp(-scalar(i + 1));
 

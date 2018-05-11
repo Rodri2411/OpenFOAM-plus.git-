@@ -414,7 +414,7 @@ Type max(const FieldField<Field, Type>& f)
     {
         Type Max(max(f[i]));
 
-        for (label j=i+1; j<f.size(); j++)
+        for (label j=i+1; j<f.size(); ++j)
         {
             if (f[j].size())
             {
@@ -445,7 +445,7 @@ Type min(const FieldField<Field, Type>& f)
 
         Type Min(min(f[i]));
 
-        for (label j=i+1; j<f.size(); j++)
+        for (label j=i+1; j<f.size(); ++j)
         {
             if (f[j].size())
             {

@@ -158,7 +158,7 @@ bool Foam::streamLineParticle::move
         // Cross cell in steps:
         // - at subiter 0 calculate dt to cross cell in nSubCycle steps
         // - at the last subiter do all of the remaining track
-        for (label subIter = 0; subIter < max(1, td.nSubCycle_); subIter++)
+        for (label subIter = 0; subIter < max(1, td.nSubCycle_); ++subIter)
         {
             --lifeTime_;
 

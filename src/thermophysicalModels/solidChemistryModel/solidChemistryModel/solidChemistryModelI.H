@@ -87,7 +87,7 @@ Foam::solidChemistryModel<CompType, SolidThermo>::RRs() const
     if (this->chemistry_)
     {
         volScalarField::Internal& RRs = tRRs.ref();
-        for (label i=0; i < nSolids_; i++)
+        for (label i=0; i < nSolids_; ++i)
         {
             RRs += RRs_[i];
         }
@@ -124,7 +124,7 @@ Foam::solidChemistryModel<CompType, SolidThermo>::RRsHs() const
         const volScalarField& T =  this->solidThermo().T();
         const volScalarField& p =  this->solidThermo().p();
 
-        for (label i=0; i < nSolids_; i++)
+        for (label i=0; i < nSolids_; ++i)
         {
             forAll (RRs, cellI)
             {

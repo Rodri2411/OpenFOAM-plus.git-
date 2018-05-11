@@ -220,7 +220,7 @@ bool Foam::domainDecomposition::writeDecomposition(const bool decomposeSets)
 
 
     // Write out the meshes
-    for (label proci = 0; proci < nProcs_; proci++)
+    for (label proci = 0; proci < nProcs_; ++proci)
     {
         // Create processor points
         const labelList& curPointLabels = procPointAddressing_[proci];

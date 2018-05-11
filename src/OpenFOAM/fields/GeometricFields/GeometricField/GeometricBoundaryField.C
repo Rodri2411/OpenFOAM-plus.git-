@@ -69,7 +69,7 @@ readField
                         iter().dict()
                     )
                 );
-                nUnset--;
+                --nUnset;
             }
         }
     }

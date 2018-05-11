@@ -131,7 +131,7 @@ void thermoSingleLayer::updateSurfaceTemperatures()
     correctHsForMappedT();
 
     // Push boundary film temperature into wall temperature internal field
-    for (label i=0; i<intCoupledPatchIDs_.size(); i++)
+    for (label i=0; i<intCoupledPatchIDs_.size(); ++i)
     {
         label patchi = intCoupledPatchIDs_[i];
         const polyPatch& pp = regionMesh().boundaryMesh()[patchi];
@@ -632,7 +632,7 @@ void thermoSingleLayer::evolveRegion()
     // Solve continuity for deltaRho_
     solveContinuity();
 
-    for (int oCorr=1; oCorr<=nOuterCorr_; oCorr++)
+    for (int oCorr=1; oCorr<=nOuterCorr_; ++oCorr)
     {
         // Explicit pressure source contribution
         tmp<volScalarField> tpu(this->pu());
@@ -647,7 +647,7 @@ void thermoSingleLayer::evolveRegion()
         solveEnergy();
 
         // Film thickness correction loop
-        for (int corr=1; corr<=nCorr_; corr++)
+        for (int corr=1; corr<=nCorr_; ++corr)
         {
             // Solve thickness for delta_
             solveThickness(tpu(), tpp(), UEqn());

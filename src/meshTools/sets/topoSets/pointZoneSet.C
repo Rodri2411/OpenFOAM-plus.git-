@@ -138,7 +138,7 @@ void Foam::pointZoneSet::invert(const label maxLen)
     // Count
     label n = 0;
 
-    for (label pointi = 0; pointi < maxLen; pointi++)
+    for (label pointi = 0; pointi < maxLen; ++pointi)
     {
         if (!found(pointi))
         {
@@ -150,7 +150,7 @@ void Foam::pointZoneSet::invert(const label maxLen)
     addressing_.setSize(n);
     n = 0;
 
-    for (label pointi = 0; pointi < maxLen; pointi++)
+    for (label pointi = 0; pointi < maxLen; ++pointi)
     {
         if (!found(pointi))
         {

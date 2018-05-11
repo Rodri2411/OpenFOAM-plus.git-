@@ -130,7 +130,7 @@ void Foam::triad::orthogonalize()
     // If all the axes are set
     if (set())
     {
-        for (int i=0; i<2; i++)
+        for (int i=0; i<2; ++i)
         {
             scalar o01 = mag(operator[](0) & operator[](1));
             scalar o02 = mag(operator[](0) & operator[](2));
@@ -184,7 +184,7 @@ void Foam::triad::operator+=(const triad& t2)
 {
     bool preset[3];
 
-    for (direction i=0; i<3; i++)
+    for (direction i=0; i<3; ++i)
     {
         if (t2.set(i) && !set(i))
         {
@@ -202,7 +202,7 @@ void Foam::triad::operator+=(const triad& t2)
         direction correspondance[3]{0, 0, 0};
         short signd[3];
 
-        for (direction i=0; i<3; i++)
+        for (direction i=0; i<3; ++i)
         {
             if (preset[i])
             {
@@ -211,10 +211,10 @@ void Foam::triad::operator+=(const triad& t2)
             }
 
             scalar mostAligned = -1;
-            for (direction j=0; j<3; j++)
+            for (direction j=0; j<3; ++j)
             {
                 bool set = false;
-                for (direction k=0; k<i; k++)
+                for (direction k=0; k<i; ++k)
                 {
                     if (correspondance[k] == j)
                     {
@@ -398,7 +398,7 @@ Foam::scalar Foam::diff(const triad& A, const triad& B)
 
     scalar sumDifference = 0;
 
-    for (direction dir = 0; dir < 3; dir++)
+    for (direction dir = 0; dir < 3; ++dir)
     {
         if (!tmpA.set(dir) || !tmpB.set(dir))
         {

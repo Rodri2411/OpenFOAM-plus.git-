@@ -90,7 +90,7 @@ calcEdgeLoops() const
         // Find edge not yet given a loop number.
         label currentEdgeI = -1;
 
-        for (label edgeI = nIntEdges; edgeI < patchEdges.size(); edgeI++)
+        for (label edgeI = nIntEdges; edgeI < patchEdges.size(); ++edgeI)
         {
             if (loopNumber[edgeI-nIntEdges] == -1)
             {

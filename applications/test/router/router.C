@@ -305,7 +305,7 @@ bool Foam::router::route(const labelList& path, const label pathValue)
     setWeights(0, path[0]);
 
     // Check if all endPoints can be reached
-    for (label leafI = 1; leafI < path.size(); leafI++)
+    for (label leafI = 1; leafI < path.size(); ++leafI)
     {
         if (weights_[path[leafI]] == labelMax)
         {
@@ -319,7 +319,7 @@ bool Foam::router::route(const labelList& path, const label pathValue)
     }
 
     // Search back from all endpoints to start and fix weights
-    for (label leafI = 1; leafI < path.size(); leafI++)
+    for (label leafI = 1; leafI < path.size(); ++leafI)
     {
         fixWeights
         (

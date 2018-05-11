@@ -189,7 +189,7 @@ Foam::label Foam::autoDensity::recurseAndFill
 {
     label treeDepth = 0;
 
-    for (direction i = 0; i < 8; i++)
+    for (direction i = 0; i < 8; ++i)
     {
         treeBoundBox subBB = bb.subBbox(i);
 
@@ -420,11 +420,11 @@ bool Foam::autoDensity::fillBox
 
             scalarField lineSizes(nLine, 0.0);
 
-            for (label i = 0; i < surfRes_; i++)
+            for (label i = 0; i < surfRes_; ++i)
             {
                 label lPI = 0;
 
-                for (label j = 1; j < surfRes_ - 1 ; j++)
+                for (label j = 1; j < surfRes_ - 1; ++j)
                 {
                     linePoints[lPI++] =
                         min
@@ -539,11 +539,11 @@ bool Foam::autoDensity::fillBox
 
         label pI = 0;
 
-        for (label i = 0; i < volRes_; i++)
+        for (label i = 0; i < volRes_; ++i)
         {
-            for (label j = 0; j < volRes_; j++)
+            for (label j = 0; j < volRes_; ++j)
             {
-                for (label k = 0; k < volRes_; k++)
+                for (label k = 0; k < volRes_; ++k)
                 {
                     // Perturb the points to avoid creating degenerate positions
                     // in the Delaunay tessellation.

@@ -537,7 +537,7 @@ void readSets
                 nRead = 1;
             }
 
-            for (label i = 0; i < nRead; i++)
+            for (label i = 0; i < nRead; ++i)
             {
                 label tag, nodeLeaf, component;
 
@@ -639,7 +639,7 @@ label findPatch(const List<labelHashSet>& dofGroups, const face& f)
             bool allInGroup = true;
 
             // Check rest of face
-            for (label fp = 1; fp < f.size(); fp++)
+            for (label fp = 1; fp < f.size(); ++fp)
             {
                 if (!dofGroups[patchi].found(f[fp]))
                 {

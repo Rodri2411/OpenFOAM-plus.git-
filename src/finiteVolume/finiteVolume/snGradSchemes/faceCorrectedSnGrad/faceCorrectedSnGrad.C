@@ -89,7 +89,7 @@ Foam::fv::faceCorrectedSnGrad<Type>::fullGradCorrection
 
         vector nf(Sf[facei]/magSf[facei]);
 
-        for (label pi=0; pi<fi.size(); pi++)
+        for (label pi=0; pi<fi.size(); ++pi)
         {
             // Next point index
             label pj = (pi+1)%fi.size();
@@ -150,7 +150,7 @@ Foam::fv::faceCorrectedSnGrad<Type>::correction
     );
     GeometricField<Type, fvsPatchField, surfaceMesh>& ssf = tssf.ref();
 
-    for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; cmpt++)
+    for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; ++cmpt)
     {
         ssf.replace
         (

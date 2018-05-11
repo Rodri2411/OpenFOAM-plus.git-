@@ -220,13 +220,13 @@ void FSD<CombThermoType, ThermoType>::calculateSourceNorm()
                     max(ftCell*(ftCell*(1.0 - ftCell)/ftVarc - 1.0), 0.0);
                 scalar b = max(a/ftCell - a, 0.0);
 
-                for (int i=1; i<ftDim_; i++)
+                for (int i=1; i<ftDim_; ++i)
                 {
                     scalar ft = i*deltaFt;
                     pc[celli] += pow(ft, a-1.0)*pow(1.0 - ft, b - 1.0)*deltaFt;
                 }
 
-                for (int i=1; i<ftDim_; i++)
+                for (int i=1; i<ftDim_; ++i)
                 {
                     scalar ft = i*deltaFt;
                     omegaFuelBar[celli] +=

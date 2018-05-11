@@ -210,7 +210,7 @@ int main(int argc, char *argv[])
 
                 nodeLine >> nodeI >> x >> y >> z;
 
-                for (label i = 0; i < nNodeAttr; i++)
+                for (label i = 0; i < nNodeAttr; ++i)
                 {
                     nodeLine >> dummy;
                 }
@@ -294,7 +294,7 @@ int main(int argc, char *argv[])
             label elemI;
             eleLine >> elemI;
 
-            for (label i = 0; i < 4; i++)
+            for (label i = 0; i < 4; ++i)
             {
                 label nodeI;
                 eleLine >> nodeI;
@@ -304,7 +304,7 @@ int main(int argc, char *argv[])
             cells[celli++] = cellShape(tet, tetPoints);
 
             // Skip attributes
-            for (label i = 0; i < nElemAttr; i++)
+            for (label i = 0; i < nElemAttr; ++i)
             {
                 label dummy;
 
@@ -410,7 +410,7 @@ int main(int argc, char *argv[])
 
                 // Read face and reverse orientation (Foam needs outwards
                 // pointing)
-                for (label i = 0; i < 3; i++)
+                for (label i = 0; i < 3; ++i)
                 {
                     label nodeI;
                     faceLine >> nodeI;
@@ -452,7 +452,7 @@ int main(int argc, char *argv[])
                         boundaryPatch[facei] = patchi;
 
                         // Skip remaining attributes
-                        for (label i = 1; i < nFaceAttr; i++)
+                        for (label i = 1; i < nFaceAttr; ++i)
                         {
                             faceLine >> dummy;
                         }

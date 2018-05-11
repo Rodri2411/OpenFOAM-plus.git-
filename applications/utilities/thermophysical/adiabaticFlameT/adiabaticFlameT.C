@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
     Info<< "stoichiometricAirFuelMassRatio "
         << stoichiometricAirFuelMassRatio << ';' << endl;
 
-    for (int i=0; i<300; i++)
+    for (int i=0; i<300; ++i)
     {
         scalar equiv = (i + 1)*0.01;
         scalar ft = 1/(1 + stoichiometricAirFuelMassRatio.value()/equiv);

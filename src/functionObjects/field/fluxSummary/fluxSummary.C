@@ -441,7 +441,7 @@ void Foam::functionObjects::fluxSummary::initialiseCellZoneAndDirection
     DynamicList<bool>  flips(faceIDs.size());
 
     // Internal faces
-    for (label facei = 0; facei < nInternalFaces; facei++)
+    for (label facei = 0; facei < nInternalFaces; ++facei)
     {
         const label own = cellAddr[mesh_.faceOwner()[facei]];
         const label nbr = cellAddr[mesh_.faceNeighbour()[facei]];
@@ -538,7 +538,7 @@ void Foam::functionObjects::fluxSummary::initialiseCellZoneAndDirection
         DynamicList<patchEdgeFaceRegion> changedInfo;
 
         label seedFacei = labelMax;
-        for (; oldFaceID < patch.size(); oldFaceID++)
+        for (; oldFaceID < patch.size(); ++oldFaceID)
         {
             if (allFaceInfo[oldFaceID].region() == -1)
             {

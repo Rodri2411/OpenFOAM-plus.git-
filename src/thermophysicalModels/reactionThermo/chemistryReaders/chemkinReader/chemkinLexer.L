@@ -454,7 +454,7 @@ bool finishReaction = false;
         nSpecieElements = 0;
         currentSpecieComposition.setSize(5);
 
-        for (int i=0; i<4; i++)
+        for (int i=0; i<4; ++i)
         {
             word elementName = word::validate(thermoFormula.substr(5*i, 2));
             label nAtoms = atoi(thermoFormula.substr(5*i + 2, 3).c_str());
@@ -658,7 +658,7 @@ bool finishReaction = false;
     }
 
 <readReactionsUnits>\n {
-        lineNo_++;
+        ++lineNo_;
         BEGIN(readReactionKeyword);
     }
 
@@ -711,11 +711,11 @@ bool finishReaction = false;
 
                     if (lrhsPtr == &lhs)
                     {
-                        lhsThirdBodyCounter++;
+                        ++lhsThirdBodyCounter;
                     }
                     else
                     {
-                        rhsThirdBodyCounter++;
+                        ++rhsThirdBodyCounter;
                     }
 
                     BEGIN(readReactionDelimiter);
@@ -1317,7 +1317,7 @@ bool finishReaction = false;
 
         if (lrhsPtr == &lhs)
         {
-            lhsThirdBodyCounter++;
+            ++lhsThirdBodyCounter;
         }
         else
         {
@@ -1332,7 +1332,7 @@ bool finishReaction = false;
                     << exit(FatalError);
             }
 
-            rhsThirdBodyCounter++;
+            ++rhsThirdBodyCounter;
         }
 
         if (pDependentSpecieName != "M")
@@ -1471,7 +1471,7 @@ bool finishReaction = false;
 
  /* ------------------ Ignore remaining space and \n s. --------------------- */
 
-<*>\n      { lineNo_++; }
+<*>\n      { ++lineNo_; }
 
  /* ------ Ignore remaining space and \n s.  Any other characters are errors. */
 

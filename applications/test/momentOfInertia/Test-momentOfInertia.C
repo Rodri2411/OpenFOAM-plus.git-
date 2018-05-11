@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
         meshTools::writeOBJ(str, Cf + scale*eVal.y()*eVec.y());
         meshTools::writeOBJ(str, Cf + scale*eVal.z()*eVec.z());
 
-        for (label i = nPts + 1; i < nPts + 4; i++)
+        for (label i = nPts + 1; i < nPts + 4; ++i)
         {
             str << "l " << nPts + 1 << ' ' << i + 1 << endl;
         }
@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
         meshTools::writeOBJ(str, cM + scale*eVal.y()*eVec.y());
         meshTools::writeOBJ(str, cM + scale*eVal.z()*eVec.z());
 
-        for (label i = nPts + 1; i < nPts + 4; i++)
+        for (label i = nPts + 1; i < nPts + 4; ++i)
         {
             str << "l " << nPts + 1 << ' ' << i + 1 << endl;
         }
@@ -233,7 +233,7 @@ int main(int argc, char *argv[])
         meshTools::writeOBJ(str, cC + scale*eVal.y()*eVec.y());
         meshTools::writeOBJ(str, cC + scale*eVal.z()*eVec.z());
 
-        for (label i = 1; i < 4; i++)
+        for (label i = 1; i < 4; ++i)
         {
             str << "l " << 1 << ' ' << i + 1 << endl;
         }

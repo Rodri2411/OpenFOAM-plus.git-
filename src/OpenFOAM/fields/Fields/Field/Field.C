@@ -600,7 +600,7 @@ template<class VSForm>
 VSForm Foam::Field<Type>::block(const label start) const
 {
     VSForm vs;
-    for (direction i=0; i<VSForm::nComponents; i++)
+    for (direction i=0; i<VSForm::nComponents; ++i)
     {
         vs[i] = this->operator[](start + i);
     }

@@ -173,7 +173,7 @@ void Foam::LISAAtomization<CloudType>::update
 
         scalar kOld = 0.0;
 
-        for (label i=0; i<40; i++)
+        for (label i=0; i<40; ++i)
         {
             k = kPos - (derivPos/((derivNeg - derivPos)/(kNeg - kPos)));
 

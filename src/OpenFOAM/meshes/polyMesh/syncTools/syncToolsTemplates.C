@@ -308,7 +308,7 @@ void Foam::syncTools::syncPointMap
                 (
                     int slave=Pstream::firstSlave();
                     slave<=Pstream::lastSlave();
-                    slave++
+                    ++slave
                 )
                 {
                     IPstream fromSlave(Pstream::commsTypes::scheduled, slave);
@@ -332,7 +332,7 @@ void Foam::syncTools::syncPointMap
                 (
                     int slave=Pstream::firstSlave();
                     slave<=Pstream::lastSlave();
-                    slave++
+                    ++slave
                 )
                 {
                     OPstream toSlave(Pstream::commsTypes::scheduled, slave);
@@ -628,7 +628,7 @@ void Foam::syncTools::syncEdgeMap
     // on the outside of the mesh. (though might not be on coupled patch
     // if is single edge and not on coupled face)
     // Store value (if any) on sharedEdgeValues
-    for (label facei = mesh.nInternalFaces(); facei < mesh.nFaces(); facei++)
+    for (label facei = mesh.nInternalFaces(); facei < mesh.nFaces(); ++facei)
     {
         const face& f = mesh.faces()[facei];
 
@@ -688,7 +688,7 @@ void Foam::syncTools::syncEdgeMap
             (
                 int slave=Pstream::firstSlave();
                 slave<=Pstream::lastSlave();
-                slave++
+                ++slave
             )
             {
                 IPstream fromSlave(Pstream::commsTypes::scheduled, slave);
@@ -712,7 +712,7 @@ void Foam::syncTools::syncEdgeMap
             (
                 int slave=Pstream::firstSlave();
                 slave<=Pstream::lastSlave();
-                slave++
+                ++slave
             )
             {
 
@@ -1508,7 +1508,7 @@ void Foam::syncTools::syncFaceList
                 // Owner does all.
                 const cyclicPolyPatch& nbrPatch = cycPatch.neighbPatch();
 
-                for (label i = 0; i < cycPatch.size(); i++)
+                for (label i = 0; i < cycPatch.size(); ++i)
                 {
                     label meshFace0 = cycPatch.start()+i;
                     unsigned int val0 = faceValues[meshFace0];

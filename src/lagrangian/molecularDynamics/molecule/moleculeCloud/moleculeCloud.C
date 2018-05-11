@@ -847,13 +847,13 @@ void Foam::moleculeCloud::initialiseMolecules
                             unitCellLatticePosition.z()++
                         )
                         {
-                            for (label iR = 0; iR <= 2*n -1; iR++)
+                            for (label iR = 0; iR <= 2*n -1; ++iR)
                             {
                                 unitCellLatticePosition.x() = n;
 
                                 unitCellLatticePosition.y() = -n + (iR + 1);
 
-                                for (label iK = 0; iK < 4; iK++)
+                                for (label iK = 0; iK < 4; ++iK)
                                 {
                                     forAll(latticePositions, p)
                                     {

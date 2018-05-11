@@ -418,7 +418,7 @@ Foam::labelList Foam::surfaceZonesInfo::addCellZonesToMesh
     Pstream::gatherList(allCellZones);
     Pstream::scatterList(allCellZones);
 
-    for (label proci = 1; proci < allCellZones.size(); proci++)
+    for (label proci = 1; proci < allCellZones.size(); ++proci)
     {
         if (allCellZones[proci] != allCellZones[0])
         {
@@ -503,7 +503,7 @@ Foam::labelList Foam::surfaceZonesInfo::addFaceZonesToMesh
     Pstream::gatherList(allFaceZones);
     Pstream::scatterList(allFaceZones);
 
-    for (label proci = 1; proci < allFaceZones.size(); proci++)
+    for (label proci = 1; proci < allFaceZones.size(); ++proci)
     {
         if (allFaceZones[proci] != allFaceZones[0])
         {

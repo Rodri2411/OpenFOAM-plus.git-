@@ -588,7 +588,7 @@ inline typename typeOfInnerProduct<Cmpt, Form1, Form2>::type operator&
     {
         for (direction j=0; j<Ncols2; ++j)
         {
-            for (direction k=0; k<Mrows2; k++)
+            for (direction k=0; k<Mrows2; ++k)
             {
                 result(i, j) += matrix1(i, k)*matrix2(k, j);
             }

@@ -332,7 +332,7 @@ Foam::distributedTriSurfaceMesh::distributeSegments
             label nRecv = sendSizes[proci][Pstream::myProcNo()];
             constructMap[proci].setSize(nRecv);
 
-            for (label i = 0; i < nRecv; i++)
+            for (label i = 0; i < nRecv; ++i)
             {
                 constructMap[proci][i] = segmenti++;
             }
@@ -618,7 +618,7 @@ Foam::distributedTriSurfaceMesh::calcLocalQueries
             label nRecv = sendSizes[proci][Pstream::myProcNo()];
             constructMap[proci].setSize(nRecv);
 
-            for (label i = 0; i < nRecv; i++)
+            for (label i = 0; i < nRecv; ++i)
             {
                 constructMap[proci][i] = segmenti++;
             }
@@ -774,7 +774,7 @@ Foam::distributedTriSurfaceMesh::calcLocalQueries
             label nRecv = sendSizes[proci][Pstream::myProcNo()];
             constructMap[proci].setSize(nRecv);
 
-            for (label i = 0; i < nRecv; i++)
+            for (label i = 0; i < nRecv; ++i)
             {
                 constructMap[proci][i] = segmenti++;
             }

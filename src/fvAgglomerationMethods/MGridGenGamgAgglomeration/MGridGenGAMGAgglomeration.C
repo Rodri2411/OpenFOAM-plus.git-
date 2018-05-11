@@ -230,7 +230,7 @@ Foam::MGridGenGAMGAgglomeration::MGridGenGAMGAgglomeration
         );
 
         // Adjust weights only
-        for (int i=0; i<nProcConsistencyIter; i++)
+        for (int i=0; i<nProcConsistencyIter; ++i)
         {
             const lduMesh& mesh = meshLevel(nCreatedLevels);
             const lduAddressing& addr = mesh.lduAddr();

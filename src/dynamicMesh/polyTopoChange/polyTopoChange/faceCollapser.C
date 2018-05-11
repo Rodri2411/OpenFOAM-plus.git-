@@ -423,7 +423,7 @@ void Foam::faceCollapser::setRefinement
             {
                 fpToFp1 = true;
 
-                for (label j = sorted0+1; j < sorted1; j++)
+                for (label j = sorted0+1; j < sorted1; ++j)
                 {
                     edgePoints.append(f[dist.indices()[j]]);
                 }
@@ -432,7 +432,7 @@ void Foam::faceCollapser::setRefinement
             {
                 fpToFp1 = false;
 
-                for (label j = sorted1+1; j < sorted0; j++)
+                for (label j = sorted1+1; j < sorted0; ++j)
                 {
                     edgePoints.append(f[dist.indices()[j]]);
                 }

@@ -108,7 +108,7 @@ static void splitTri
         // Split triangle along fp to fp1
         tris.append(labelledTri(f[fp2], f[fp], splitPoints[0], f.region()));
 
-        for (label i = 1; i < splitPoints.size(); i++)
+        for (label i = 1; i < splitPoints.size(); ++i)
         {
             tris.append
             (
@@ -186,7 +186,7 @@ static void splitTri
     //Pout<< "Split face " << f << " along edge " << e
     //    << " into triangles:" << endl;
     //
-    //for (label i = oldNTris; i < tris.size(); i++)
+    //for (label i = oldNTris; i < tris.size(); ++i)
     //{
     //    Pout<< "   " << tris[i] << nl;
     //}
@@ -592,7 +592,7 @@ static labelPair getSpanPoints
     {
         label v0 = outsideVerts[i];
 
-        for (label j = i+1; j < outsideVerts.size(); j++)
+        for (label j = i+1; j < outsideVerts.size(); ++j)
         {
             label v1 = outsideVerts[j];
 

@@ -85,7 +85,7 @@ bool Foam::matchPoints
                 (j < pts1MagSqr.size())
              && (pts1MagSqr[j] < 1.00001*dist0 + 2*matchDist)
             );
-            j++
+            ++j
         )
         {
             label facei = pts1MagSqr.indices()[j];
@@ -119,7 +119,7 @@ bool Foam::matchPoints
                         (j < pts1MagSqr.size())
                      && (pts1MagSqr[j] < 1.00001*dist0 + 2*matchDist)
                     );
-                    j++
+                    ++j
                 )
                 {
                     label facei = pts1MagSqr.indices()[j];
@@ -199,7 +199,7 @@ bool Foam::matchPoints
                 (j < pts1MagSqr.size())
              && (pts1MagSqr[j] < 1.00001*dist0 + 2*matchDist)
             );
-            j++
+            ++j
         )
         {
             label facei = pts1MagSqr.indices()[j];
@@ -248,7 +248,7 @@ bool Foam::matchPoints
                         (j < pts1MagSqr.size())
                      && (pts1MagSqr[j] < 1.00001*dist0 + 2*matchDist)
                     );
-                    j++
+                    ++j
                 )
                 {
                     label facei = pts1MagSqr.indices()[j];

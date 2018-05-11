@@ -31,7 +31,7 @@ labelList receptorNeigCell(mesh.nInternalFaces(), -1);
         meshParts[zoneI].setLargeCellSubset(zoneID, zoneI);
     }
 
-    for (label faceI = 0; faceI < mesh.nInternalFaces(); faceI++)
+    for (label faceI = 0; faceI < mesh.nInternalFaces(); ++faceI)
     {
         label ownType = cellTypes[mesh.faceOwner()[faceI]];
         label neiType = cellTypes[mesh.faceNeighbour()[faceI]];
@@ -45,7 +45,7 @@ labelList receptorNeigCell(mesh.nInternalFaces(), -1);
 
             const vector& fc = mesh.faceCentres()[faceI];
 
-            for (label zoneI = 0; zoneI < nZones; zoneI++)
+            for (label zoneI = 0; zoneI < nZones; ++zoneI)
             {
                 if (zoneI != zoneID[mesh.faceOwner()[faceI]])
                 {
@@ -109,7 +109,7 @@ labelList receptorNeigCell(mesh.nInternalFaces(), -1);
             isNeiInterpolatedFace.set(faceI);
 
             const vector& fc = mesh.faceCentres()[faceI];
-            for (label zoneI = 0; zoneI < nZones; zoneI++)
+            for (label zoneI = 0; zoneI < nZones; ++zoneI)
             {
                 if (zoneI != zoneID[mesh.faceNeighbour()[faceI]])
                 {
@@ -191,7 +191,7 @@ forAll(isNeiInterpolatedFace, faceI)
         // 2-D cases
         if (mesh.nSolutionD() == 2)
         {
-            for (direction cmpt=0; cmpt<vector::nComponents; cmpt++)
+            for (direction cmpt=0; cmpt<vector::nComponents; ++cmpt)
             {
                 if (mesh.geometricD()[cmpt] == -1)
                 {

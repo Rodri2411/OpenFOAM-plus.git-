@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
     Info<< "2.5*poly = " << polyCopy << nl << endl;
 
     Random rnd(123456);
-    for (int i=0; i<10; i++)
+    for (int i=0; i<10; ++i)
     {
         scalar x = rnd.sample01<scalar>()*100;
 

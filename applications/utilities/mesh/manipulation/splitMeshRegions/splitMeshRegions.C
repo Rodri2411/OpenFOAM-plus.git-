@@ -391,7 +391,7 @@ void getInterfaceSizes
             (
                 int slave=Pstream::firstSlave();
                 slave<=Pstream::lastSlave();
-                slave++
+                ++slave
             )
             {
                 IPstream fromSlave(Pstream::commsTypes::blocking, slave);
@@ -1590,7 +1590,7 @@ int main(int argc, char *argv[])
         regionToZone.setSize(nCellRegions);
         regionNames.setSize(nCellRegions);
         zoneToRegion.setSize(cellZones.size(), -1);
-        for (label regionI = 0; regionI < nCellRegions; regionI++)
+        for (label regionI = 0; regionI < nCellRegions; ++regionI)
         {
             regionToZone[regionI] = regionI;
             zoneToRegion[regionI] = regionI;
@@ -1639,7 +1639,7 @@ int main(int argc, char *argv[])
         zoneToRegion.setSize(newCellZones.size(), -1);
         regionToZone.setSize(nCellRegions);
         regionNames.setSize(nCellRegions);
-        for (label regionI = 0; regionI < nCellRegions; regionI++)
+        for (label regionI = 0; regionI < nCellRegions; ++regionI)
         {
             regionToZone[regionI] = regionI;
             zoneToRegion[regionI] = regionI;
@@ -1675,7 +1675,7 @@ int main(int argc, char *argv[])
         {
             blockedFace.setSize(mesh.nFaces(), false);
 
-            for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
+            for (label facei = 0; facei < mesh.nInternalFaces(); ++facei)
             {
                 label own = mesh.faceOwner()[facei];
                 label nei = mesh.faceNeighbour()[facei];
@@ -1896,7 +1896,7 @@ int main(int argc, char *argv[])
 
         // Check if region overlaps with existing zone. If so keep.
 
-        for (label regionI = 0; regionI < nCellRegions; regionI++)
+        for (label regionI = 0; regionI < nCellRegions; ++regionI)
         {
             label zoneI = regionToZone[regionI];
 
@@ -2068,7 +2068,7 @@ int main(int argc, char *argv[])
         else
         {
             // Split all
-            for (label regionI = 0; regionI < nCellRegions; regionI++)
+            for (label regionI = 0; regionI < nCellRegions; ++regionI)
             {
                 Info<< nl
                     << "Region " << regionI << nl

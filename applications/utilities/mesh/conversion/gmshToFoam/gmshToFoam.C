@@ -302,7 +302,7 @@ void readPoints(IFstream& inFile, pointField& points, Map<label>& mshToFoam)
     points.setSize(nVerts);
     mshToFoam.resize(2*nVerts);
 
-    for (label pointi = 0; pointi < nVerts; pointi++)
+    for (label pointi = 0; pointi < nVerts; ++pointi)
     {
         label mshLabel;
         scalar xVal, yVal, zVal;
@@ -355,7 +355,7 @@ void readPhysNames(IFstream& inFile, Map<word>& physicalNames)
 
     physicalNames.resize(nNames);
 
-    for (label i = 0; i < nNames; i++)
+    for (label i = 0; i < nNames; ++i)
     {
         label regionI;
         string regionName;
@@ -475,7 +475,7 @@ void readCells
     Map<label> physToZone;
 
 
-    for (label elemI = 0; elemI < nElems; elemI++)
+    for (label elemI = 0; elemI < nElems; ++elemI)
     {
         string line;
         inFile.getLine(line);
@@ -493,7 +493,7 @@ void readCells
             {
                 // Assume the first tag is the physical surface
                 lineStr >> regPhys;
-                for (label i = 1; i < nTags; i++)
+                for (label i = 1; i < nTags; ++i)
                 {
                     label dummy;
                     lineStr >> dummy;

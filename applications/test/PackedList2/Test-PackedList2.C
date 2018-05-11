@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 
     labelHashSet emptyHash;
     labelHashSet fullHash(1024);
-    for (label i = 0; i < n; i++)
+    for (label i = 0; i < n; ++i)
     {
         fullHash.insert(i);
     }
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
     std::unordered_set<label, Foam::Hash<label>> emptyStdHash;
     std::unordered_set<label, Foam::Hash<label>> fullStdHash;
     fullStdHash.reserve(1024);
-    for (label i = 0; i < n; i++)
+    for (label i = 0; i < n; ++i)
     {
         fullStdHash.insert(i);
     }
@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
     sum = 0;
     for (label iter = 0; iter < nIters; ++iter)
     {
-        for (unsigned int i = 0; i < stdBoolList.size(); i++)
+        for (unsigned int i = 0; i < stdBoolList.size(); ++i)
         {
             sum += stdBoolList[i];
         }
@@ -295,7 +295,7 @@ int main(int argc, char *argv[])
     // Read stl
     for (label iter = 0; iter < nIters; ++iter)
     {
-        for (unsigned int i = 0; i < stdBoolList.size(); i++)
+        for (unsigned int i = 0; i < stdBoolList.size(); ++i)
         {
             stdBoolList[i] = true;
         }

@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
     {
         sphericalJoint.newTime();
 
-        for (label i=0; i<nIter; i++)
+        for (label i=0; i<nIter; ++i)
         {
             sphericalJoint.solve(deltaT, tau, fx);
         }

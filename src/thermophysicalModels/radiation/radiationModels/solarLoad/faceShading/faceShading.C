@@ -303,7 +303,7 @@ void Foam::faceShading::calculate()
         label i = 0;
         do
         {
-            for (; i < Cfs.size(); i++)
+            for (; i < Cfs.size(); ++i)
             {
                 const point& fc = Cfs[i];
 

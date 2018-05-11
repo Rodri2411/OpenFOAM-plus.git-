@@ -129,7 +129,7 @@ Foam::PatchTools::markZones
     faceZone = -1;
 
     label zoneI = 0;
-    for (label startFacei = 0; startFacei < faceZone.size();)
+    for (label startFacei = 0; startFacei < faceZone.size(); /*nil*/)
     {
         // Find next non-visited face
         for (; startFacei < faceZone.size(); ++startFacei)
@@ -138,7 +138,7 @@ Foam::PatchTools::markZones
             {
                 faceZone[startFacei] = zoneI;
                 markZone(p, borderEdge, startFacei, zoneI, faceZone);
-                zoneI++;
+                ++zoneI;
                 break;
             }
         }

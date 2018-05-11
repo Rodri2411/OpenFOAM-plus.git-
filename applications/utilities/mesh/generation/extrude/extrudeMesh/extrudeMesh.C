@@ -546,7 +546,7 @@ int main(int argc, char *argv[])
             (
                 label patchi = mesh.boundaryMesh().size();
                 patchi < nPatches;
-                patchi++
+                ++patchi
             )
             {
                 label nbrProci = patchToNbrProc[patchi];

@@ -153,7 +153,7 @@ int USERD_get_part_elements_by_type
             label nFaced = 0;
             const cellList cells = meshPtr->cells();
 
-            for (label n=0; n<nCells; n++)
+            for (label n=0; n<nCells; ++n)
             {
                 label nFacesInCell = cells[n].size();
                 labelList points = cellShapes[n];
@@ -193,7 +193,7 @@ int USERD_get_part_elements_by_type
                 label nPoints = bMesh[patchi][n].size();
                 if (nPoints == 3)
                 {
-                    for (label i=0; i<nPoints; i++)
+                    for (label i=0; i<nPoints; ++i)
                     {
                         label ip = bMesh[patchi][n][i];
                         conn_array[nTri03][i] = ip + 1;
@@ -209,7 +209,7 @@ int USERD_get_part_elements_by_type
                 label nPoints = bMesh[patchi][n].size();
                 if (nPoints == 4)
                 {
-                    for (label i=0; i<nPoints; i++)
+                    for (label i=0; i<nPoints; ++i)
                     {
                         label ip = bMesh[patchi][n][i];
                         conn_array[nQuad04][i] = ip + 1;

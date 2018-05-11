@@ -275,7 +275,7 @@ void Foam::cellVolumeWeightMethod::setNextCells
     {
         // try to use existing seed
         bool foundNextSeed = false;
-        for (label i = startSeedI; i < srcCellIDs.size(); i++)
+        for (label i = startSeedI; i < srcCellIDs.size(); ++i)
         {
             label cellS = srcCellIDs[i];
 

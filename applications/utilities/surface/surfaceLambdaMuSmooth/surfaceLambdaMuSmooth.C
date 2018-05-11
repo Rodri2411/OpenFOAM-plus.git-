@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
             << endl;
     }
 
-    for (label iter = 0; iter < iters; iter++)
+    for (label iter = 0; iter < iters; ++iter)
     {
         // Lambda
         {

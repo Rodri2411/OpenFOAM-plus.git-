@@ -69,7 +69,7 @@ void Foam::DILUPreconditioner::calcReciprocalD
     const scalar* const __restrict__ lowerPtr = matrix.lower().begin();
 
     label nFaces = matrix.upper().size();
-    for (label face=0; face<nFaces; face++)
+    for (label face=0; face<nFaces; ++face)
     {
         rDPtr[uPtr[face]] -= upperPtr[face]*lowerPtr[face]/rDPtr[lPtr[face]];
     }
@@ -78,7 +78,7 @@ void Foam::DILUPreconditioner::calcReciprocalD
     // Calculate the reciprocal of the preconditioned diagonal
     label nCells = rD.size();
 
-    for (label cell=0; cell<nCells; cell++)
+    for (label cell=0; cell<nCells; ++cell)
     {
         rDPtr[cell] = 1.0/rDPtr[cell];
     }
@@ -112,7 +112,7 @@ void Foam::DILUPreconditioner::precondition
     label nFaces = solver_.matrix().upper().size();
     label nFacesM1 = nFaces - 1;
 
-    for (label cell=0; cell<nCells; cell++)
+    for (label cell=0; cell<nCells; ++cell)
     {
         wAPtr[cell] = rDPtr[cell]*rAPtr[cell];
     }
@@ -120,7 +120,7 @@ void Foam::DILUPreconditioner::precondition
 
     label sface;
 
-    for (label face=0; face<nFaces; face++)
+    for (label face=0; face<nFaces; ++face)
     {
         sface = losortPtr[face];
         wAPtr[uPtr[sface]] -=
@@ -162,12 +162,12 @@ void Foam::DILUPreconditioner::preconditionT
     label nFaces = solver_.matrix().upper().size();
     label nFacesM1 = nFaces - 1;
 
-    for (label cell=0; cell<nCells; cell++)
+    for (label cell=0; cell<nCells; ++cell)
     {
         wTPtr[cell] = rDPtr[cell]*rTPtr[cell];
     }
 
-    for (label face=0; face<nFaces; face++)
+    for (label face=0; face<nFaces; ++face)
     {
         wTPtr[uPtr[face]] -=
             rDPtr[uPtr[face]]*upperPtr[face]*wTPtr[lPtr[face]];

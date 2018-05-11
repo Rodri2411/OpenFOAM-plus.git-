@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     #include "createFields.H"
 
     label iCheck = 100;
-    for (label i=1; i<=nSamples; i++)
+    for (label i=1; i<=nSamples; ++i)
     {
         scalar ps = p->sample();
         label n = label((ps - xMin)*nIntervals/(xMax - xMin));

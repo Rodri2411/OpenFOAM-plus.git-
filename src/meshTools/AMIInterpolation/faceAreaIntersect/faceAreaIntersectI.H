@@ -79,7 +79,7 @@ inline void Foam::faceAreaIntersect::triangleFan
 
         labelList indices(3);
 
-        for (label i = 1; i < f.size() - 1; i++)
+        for (label i = 1; i < f.size() - 1; ++i)
         {
             indices[0] = f[v0];
             indices[1] = f[i];

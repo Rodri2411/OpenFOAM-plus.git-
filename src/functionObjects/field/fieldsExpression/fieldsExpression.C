@@ -55,7 +55,7 @@ void Foam::functionObjects::fieldsExpression::setResultName
         if (!fieldNames_.empty())
         {
             resultName_ = typeName + '(' + fieldNames_[0];
-            for (label i=1; i<fieldNames_.size(); i++)
+            for (label i=1; i<fieldNames_.size(); ++i)
             {
                 resultName_ += ',' + fieldNames_[i];
             }

@@ -94,7 +94,7 @@ void writeEdges
 
     writeObj(intStream, localPoints);
 
-    for (label edgeI = 0; edgeI < nInternalEdges; edgeI++)
+    for (label edgeI = 0; edgeI < nInternalEdges; ++edgeI)
     {
         const edge& e = edges[edgeI];
 
@@ -107,7 +107,7 @@ void writeEdges
 
     writeObj(bndStream, localPoints);
 
-    for (label edgeI = nInternalEdges; edgeI < edges.size(); edgeI++)
+    for (label edgeI = nInternalEdges; edgeI < edges.size(); ++edgeI)
     {
         const edge& e = edges[edgeI];
 

@@ -258,7 +258,7 @@ void createFaces
         // Pass 1. Do selected side of zone
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
+        for (label facei = 0; facei < mesh.nInternalFaces(); ++facei)
         {
             label zoneFacei = fZone.whichFace(facei);
 
@@ -308,7 +308,7 @@ void createFaces
         // Pass 2. Do other side of zone
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
+        for (label facei = 0; facei < mesh.nInternalFaces(); ++facei)
         {
             label zoneFacei = fZone.whichFace(facei);
 

@@ -7,7 +7,7 @@ const label maxDynListLength
     viewFactorDict.lookupOrDefault<label>("maxDynListLength", 100000)
 );
 
-for (label proci = 0; proci < Pstream::nProcs(); proci++)
+for (label proci = 0; proci < Pstream::nProcs(); ++proci)
 {
     // Shoot rays from me to proci. Note that even if processor has
     // 0 faces we still need to call findLine to keep calls synced.
@@ -33,13 +33,13 @@ for (label proci = 0; proci < Pstream::nProcs(); proci++)
     label j = 0;
     do
     {
-        for (; i < myFc.size(); i++)
+        for (; i < myFc.size(); ++i)
         {
             const point& fc = myFc[i];
             const vector& fA = myArea[i];
             const label& fAgg = myAgg[i];
 
-            for (; j < remoteFc.size(); j++)
+            for (; j < remoteFc.size(); ++j)
             {
                 if (proci != Pstream::myProcNo() || i != j)
                 {

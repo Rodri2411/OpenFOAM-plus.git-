@@ -168,7 +168,7 @@ tmp<scalarField> curvatureSeparation::calcCosAngle
             const labelList& faceCells = pbm[patchi].faceCells();
             const label sizeBy2 = pbm[patchi].size()/2;
 
-            for (label face0=0; face0<sizeBy2; face0++)
+            for (label face0=0; face0<sizeBy2; ++face0)
             {
                 label face1 = face0 + sizeBy2;
                 label cell0 = faceCells[face0];

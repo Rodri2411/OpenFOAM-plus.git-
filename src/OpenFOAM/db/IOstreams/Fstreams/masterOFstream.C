@@ -140,7 +140,7 @@ Foam::masterOFstream::~masterOFstream()
                 }
             }
 
-            for (label proci = 1; proci < Pstream::nProcs(); proci++)
+            for (label proci = 1; proci < Pstream::nProcs(); ++proci)
             {
                 UIPstream is(proci, pBufs);
                 List<char> buf(recvSizes[proci]);

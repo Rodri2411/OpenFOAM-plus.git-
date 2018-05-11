@@ -72,7 +72,7 @@ Foam::solidBodyMotionFunctions::multiMotion::transformation() const
 
     septernion TR = SBMFs_[0].transformation();
 
-    for (label i = 1; i < SBMFs_.size(); i++)
+    for (label i = 1; i < SBMFs_.size(); ++i)
     {
         TR *= SBMFs_[i].transformation();
     }

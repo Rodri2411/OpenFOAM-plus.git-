@@ -101,7 +101,7 @@ void Foam::radiation::solarLoad::updateAbsorptivity
     for (const label patchID : includePatches)
     {
         absorptivity_[patchID].setSize(nBands_);
-        for (label bandI = 0; bandI < nBands_; bandI++)
+        for (label bandI = 0; bandI < nBands_; ++bandI)
         {
             absorptivity_[patchID][bandI] =
                 boundaryRadiation.absorptivity(patchID, bandI);
@@ -132,7 +132,7 @@ void Foam::radiation::solarLoad::updateDirectHitRadiation
         {
             const vectorField n = pp.faceNormals();
 
-            for (label bandI = 0; bandI < nBands_; bandI++)
+            for (label bandI = 0; bandI < nBands_; ++bandI)
             {
                 qrBf[patchID][localFaceI] +=
                     (qPrim & n[localFaceI])
@@ -145,7 +145,7 @@ void Foam::radiation::solarLoad::updateDirectHitRadiation
             const vectorField& sf = mesh_.Sf().boundaryField()[patchID];
             const label cellI = pp.faceCells()[localFaceI];
 
-            for (label bandI = 0; bandI < nBands_; bandI++)
+            for (label bandI = 0; bandI < nBands_; ++bandI)
             {
                 Ru_[cellI] +=
                     (qPrim & sf[localFaceI])
@@ -227,7 +227,7 @@ void Foam::radiation::solarLoad::updateSkyDiffusiveRadiation
                     const label cellI = cellIds[faceI];
                     if (includeMappedPatchBasePatches[patchID])
                     {
-                        for (label bandI = 0; bandI < nBands_; bandI++)
+                        for (label bandI = 0; bandI < nBands_; ++bandI)
                         {
                             qrBf[patchID][faceI] +=
                                 (Ed + Er)
@@ -237,7 +237,7 @@ void Foam::radiation::solarLoad::updateSkyDiffusiveRadiation
                     }
                     else
                     {
-                        for (label bandI = 0; bandI < nBands_; bandI++)
+                        for (label bandI = 0; bandI < nBands_; ++bandI)
                         {
                             Ru_[cellI] +=
                                 (Ed + Er)
@@ -264,7 +264,7 @@ void Foam::radiation::solarLoad::updateSkyDiffusiveRadiation
                     const label cellI = cellIds[faceI];
                     if (includeMappedPatchBasePatches[patchID])
                     {
-                        for (label bandI = 0; bandI < nBands_; bandI++)
+                        for (label bandI = 0; bandI < nBands_; ++bandI)
                         {
                             qrBf[patchID][faceI] +=
                                 solarCalc_.diffuseSolarRad()
@@ -274,7 +274,7 @@ void Foam::radiation::solarLoad::updateSkyDiffusiveRadiation
                     }
                     else
                     {
-                        for (label bandI = 0; bandI < nBands_; bandI++)
+                        for (label bandI = 0; bandI < nBands_; ++bandI)
                         {
                             Ru_[cellI] +=
                                 (
@@ -424,7 +424,7 @@ void Foam::radiation::solarLoad::calculateQdiff
         }
 
         scalarField r(pp.size(), 0.0);
-        for (label bandI = 0; bandI < nBands_; bandI++)
+        for (label bandI = 0; bandI < nBands_; ++bandI)
         {
             const tmp<scalarField> tr =
                 spectralDistribution_[bandI]
@@ -510,7 +510,7 @@ void Foam::radiation::solarLoad::calculateQdiff
         const scalarField& sf = mesh_.magSf().boundaryField()[patchID];
 
         scalarField a(ppf.size(), 0.0);
-        for (label bandI = 0; bandI < nBands_; bandI++)
+        for (label bandI = 0; bandI < nBands_; ++bandI)
         {
             const tmp<scalarField> ta =
                 spectralDistribution_[bandI]

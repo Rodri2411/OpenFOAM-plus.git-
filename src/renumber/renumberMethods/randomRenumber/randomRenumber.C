@@ -61,7 +61,7 @@ Foam::labelList Foam::randomRenumber::renumber
 
     labelList newToOld(identity(points.size()));
 
-    for (label iter = 0; iter < 10; iter++)
+    for (label iter = 0; iter < 10; ++iter)
     {
         forAll(newToOld, i)
         {

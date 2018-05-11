@@ -35,14 +35,14 @@ void Foam::polyLine::calcParam()
     {
         param_[0] = 0.0;
 
-        for (label i=1; i < param_.size(); i++)
+        for (label i=1; i < param_.size(); ++i)
         {
             param_[i] = param_[i-1] + mag(points_[i] - points_[i-1]);
         }
 
         // Normalize on the interval 0-1
         lineLength_ = param_.last();
-        for (label i=1; i < param_.size() - 1; i++)
+        for (label i=1; i < param_.size() - 1; ++i)
         {
             param_[i] /= lineLength_;
         }

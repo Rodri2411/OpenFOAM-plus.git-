@@ -87,13 +87,13 @@ int main(int argc, char *argv[])
 
     pointField points(nPointsij, Zero);
 
-    for (direction comp = 0; comp < 2; comp++)
+    for (direction comp = 0; comp < 2; ++comp)
     {
         label p(0);
 
-        for (label j = 0; j < jPoints; j++)
+        for (label j = 0; j < jPoints; ++j)
         {
-            for (label i = 0; i < iPoints; i++)
+            for (label i = 0; i < iPoints; ++i)
             {
                 double coord;
                 plot3dFile >> coord;

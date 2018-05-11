@@ -41,7 +41,7 @@ void Foam::voxelMeshSearch::fill
     labelVector minIds(index3(bb, nDivs, subBb.min()));
     labelVector maxIds(index3(bb, nDivs, subBb.max()));
 
-    for (direction cmpt = 0; cmpt < 3; cmpt++)
+    for (direction cmpt = 0; cmpt < 3; ++cmpt)
     {
         if (maxIds[cmpt] < 0 || minIds[cmpt] >= nDivs[cmpt])
         {
@@ -52,11 +52,11 @@ void Foam::voxelMeshSearch::fill
         minIds[cmpt] = max(minIds[cmpt], 0);
     }
 
-    for (label i = minIds[0]; i <= maxIds[0]; i++)
+    for (label i = minIds[0]; i <= maxIds[0]; ++i)
     {
-        for (label j = minIds[1]; j <= maxIds[1]; j++)
+        for (label j = minIds[1]; j <= maxIds[1]; ++j)
         {
-            for (label k = minIds[2]; k <= maxIds[2]; k++)
+            for (label k = minIds[2]; k <= maxIds[2]; ++k)
             {
                 elems[i+j*nDivs.x()+k*nDivs.x()*nDivs.y()] = val;
             }
@@ -81,7 +81,7 @@ bool Foam::voxelMeshSearch::overlaps
     labelVector minIds(index3(bb, nDivs, subBb.min()));
     labelVector maxIds(index3(bb, nDivs, subBb.max()));
 
-    for (direction cmpt = 0; cmpt < 3; cmpt++)
+    for (direction cmpt = 0; cmpt < 3; ++cmpt)
     {
         if (maxIds[cmpt] < 0 || minIds[cmpt] >= nDivs[cmpt])
         {
@@ -100,11 +100,11 @@ bool Foam::voxelMeshSearch::overlaps
     }
 
 
-    for (label i = minIds[0]; i <= maxIds[0]; i++)
+    for (label i = minIds[0]; i <= maxIds[0]; ++i)
     {
-        for (label j = minIds[1]; j <= maxIds[1]; j++)
+        for (label j = minIds[1]; j <= maxIds[1]; ++j)
         {
-            for (label k = minIds[2]; k <= maxIds[2]; k++)
+            for (label k = minIds[2]; k <= maxIds[2]; ++k)
             {
                 const Type elemVal = elems[i+j*nDivs.x()+k*nDivs.x()*nDivs.y()];
                 if (isNot != (elemVal == val))
@@ -136,11 +136,11 @@ void Foam::voxelMeshSearch::write
             << exit(FatalError);
     }
 
-    for (label i = 0; i < nDivs[0]; i++)
+    for (label i = 0; i < nDivs[0]; ++i)
     {
-        for (label j = 0; j < nDivs[1]; j++)
+        for (label j = 0; j < nDivs[1]; ++j)
         {
-            for (label k = 0; k < nDivs[2]; k++)
+            for (label k = 0; k < nDivs[2]; ++k)
             {
                 const Type elemVal = elems[i+j*nDivs.x()+k*nDivs.x()*nDivs.y()];
                 if (isNot != (elemVal == val))

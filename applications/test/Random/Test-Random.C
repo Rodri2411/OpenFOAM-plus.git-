@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
                 << setw(12) << "mtwister"
                 << setw(12) << "default" << nl;
 
-            for (int i=0; i<25; i++)
+            for (int i=0; i<25; ++i)
             {
                 cout<< setw(12) << rnd()
                     << setw(12) << long(::lrand48())
@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
             cout<< setw(12) << "mtwister";
             cout<< nl;
 
-            for (int i=0; i<25; i++)
+            for (int i=0; i<25; ++i)
             {
                 cout<< setw(12) << (rnd.sample01<scalar>()*1000)
                     << setw(12) << (drand48()*1000);
@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
             << setw(12) << "lrand48()"
             << nl;
 
-        for (int i=0; i<25; i++)
+        for (int i=0; i<25; ++i)
         {
             cout<< setw(12) << (rnd1())
                 << setw(12) << (rnd2())

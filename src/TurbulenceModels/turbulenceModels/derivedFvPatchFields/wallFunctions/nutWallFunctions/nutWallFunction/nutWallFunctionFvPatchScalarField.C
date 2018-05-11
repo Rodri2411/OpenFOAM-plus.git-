@@ -157,7 +157,7 @@ Foam::scalar Foam::nutWallFunctionFvPatchScalarField::yPlusLam
 {
     scalar ypl = 11.0;
 
-    for (int i=0; i<10; i++)
+    for (int i=0; i<10; ++i)
     {
         ypl = log(max(E*ypl, 1))/kappa;
     }

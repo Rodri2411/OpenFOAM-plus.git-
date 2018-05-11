@@ -46,7 +46,7 @@ Foam::label Foam::cellDistFuncs::findIndex
     const label val
 )
 {
-    for (label i = 0; i < nElems; i++)
+    for (label i = 0; i < nElems; ++i)
     {
         if (elems[i] == val)
         {
@@ -93,7 +93,7 @@ Foam::scalar Foam::cellDistFuncs::smallestDist
     scalar minDist = GREAT;
     minFacei = -1;
 
-    for (label wallFacei = 0; wallFacei < nWallFaces; wallFacei++)
+    for (label wallFacei = 0; wallFacei < nWallFaces; ++wallFacei)
     {
         label patchFacei = wallFaces[wallFacei];
 
@@ -176,7 +176,7 @@ Foam::label Foam::cellDistFuncs::getPointNeighbours
         }
 
         // Subtract ours.
-        for (label i = 0; i < nNeighbours; i++)
+        for (label i = 0; i < nNeighbours; ++i)
         {
             label nb = neighbours[i];
 
@@ -193,7 +193,7 @@ Foam::label Foam::cellDistFuncs::getPointNeighbours
                         << patch.pointFaces()[f[fp]] << endl;
                 }
 
-                for (label i = 0; i < nNeighbours; i++)
+                for (label i = 0; i < nNeighbours; ++i)
                 {
                     SeriousErrorInFunction
                         << "fast nbr:" << neighbours[i]

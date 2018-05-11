@@ -381,7 +381,7 @@ void Foam::featurePointConformer::createMixedFeaturePoints
         (
             label ptI = feMesh.mixedStart();
             ptI < feMesh.nonFeatureStart();
-            ptI++
+            ++ptI
         )
         {
             const Foam::point& featPt = points[ptI];
@@ -490,7 +490,7 @@ void Foam::featurePointConformer::createFeaturePoints(DynamicList<Vb>& pts)
             label ptI = feMesh.convexStart();
             ptI < feMesh.mixedStart();
 //            ptI < feMesh.nonFeatureStart();
-            ptI++
+            ++ptI
         )
         {
             createMasterAndSlavePoints(feMesh, ptI, pts);
@@ -503,7 +503,7 @@ void Foam::featurePointConformer::createFeaturePoints(DynamicList<Vb>& pts)
                 //label ptI = feMesh.convexStart();
                 label ptI = feMesh.mixedStart();
                 ptI < feMesh.nonFeatureStart();
-                ptI++
+                ++ptI
             )
             {
                 pts.append

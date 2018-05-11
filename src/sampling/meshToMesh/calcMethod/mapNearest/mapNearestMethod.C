@@ -50,7 +50,7 @@ bool Foam::mapNearestMethod::findInitialSeeds
 {
     const vectorField& srcCcs = src_.cellCentres();
 
-    for (label i = startSeedI; i < srcCellIDs.size(); i++)
+    for (label i = startSeedI; i < srcCellIDs.size(); ++i)
     {
         label srcI = srcCellIDs[i];
 
@@ -156,7 +156,7 @@ void Foam::mapNearestMethod::calculateAddressing
             label srcCelli = srcCells[0];
             scalar d = magSqr(tgtC - srcCc[srcCelli]);
 
-            for (label i = 1; i < srcCells.size(); i++)
+            for (label i = 1; i < srcCells.size(); ++i)
             {
                 label srcI = srcCells[i];
                 scalar dNew = magSqr(tgtC - srcCc[srcI]);
@@ -260,7 +260,7 @@ void Foam::mapNearestMethod::setNextNearestCells
         }
     }
 
-    for (label i = startSeedI; i < srcCellIDs.size(); i++)
+    for (label i = startSeedI; i < srcCellIDs.size(); ++i)
     {
         label celli = srcCellIDs[i];
         if (mapFlag[celli])

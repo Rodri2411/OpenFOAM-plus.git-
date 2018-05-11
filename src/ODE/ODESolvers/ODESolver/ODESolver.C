@@ -149,7 +149,7 @@ void Foam::ODESolver::solve
     stepState step(dxTry);
     scalar x = xStart;
 
-    for (label nStep=0; nStep<maxSteps_; nStep++)
+    for (label nStep=0; nStep<maxSteps_; ++nStep)
     {
         // Store previous iteration dxTry
         scalar dxTry0 = step.dxTry;

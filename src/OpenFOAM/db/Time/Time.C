@@ -204,7 +204,7 @@ void Foam::Time::setControls()
         (
             precision_ = maxPrecision_;
             precision_ > oldPrecision;
-            precision_--
+            --precision_
         )
         {
             // Update the time formatting

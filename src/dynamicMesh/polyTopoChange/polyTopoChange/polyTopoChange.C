@@ -476,7 +476,7 @@ void Foam::polyTopoChange::makeCells
 
     // 1. Count faces per cell
 
-    for (label facei = 0; facei < nActiveFaces; facei++)
+    for (label facei = 0; facei < nActiveFaces; ++facei)
     {
         if (faceOwner_[facei] < 0)
         {
@@ -503,7 +503,7 @@ void Foam::polyTopoChange::makeCells
         }
         nNbrs[faceOwner_[facei]]++;
     }
-    for (label facei = 0; facei < nActiveFaces; facei++)
+    for (label facei = 0; facei < nActiveFaces; ++facei)
     {
         if (faceNeighbour_[facei] >= 0)
         {
@@ -524,14 +524,14 @@ void Foam::polyTopoChange::makeCells
     // reset the whole list to use as counter
     nNbrs = 0;
 
-    for (label facei = 0; facei < nActiveFaces; facei++)
+    for (label facei = 0; facei < nActiveFaces; ++facei)
     {
         label celli = faceOwner_[facei];
 
         cellFaces[cellFaceOffsets[celli] + nNbrs[celli]++] = facei;
     }
 
-    for (label facei = 0; facei < nActiveFaces; facei++)
+    for (label facei = 0; facei < nActiveFaces; ++facei)
     {
         label celli = faceNeighbour_[facei];
 
@@ -559,7 +559,7 @@ void Foam::polyTopoChange::makeCellCells
 
     // 1. Count neighbours (through internal faces) per cell
 
-    for (label facei = 0; facei < nActiveFaces; facei++)
+    for (label facei = 0; facei < nActiveFaces; ++facei)
     {
         if (faceNeighbour_[facei] >= 0)
         {
@@ -577,7 +577,7 @@ void Foam::polyTopoChange::makeCellCells
     // reset the whole list to use as counter
     nNbrs = 0;
 
-    for (label facei = 0; facei < nActiveFaces; facei++)
+    for (label facei = 0; facei < nActiveFaces; ++facei)
     {
         label nei = faceNeighbour_[facei];
 
@@ -742,7 +742,7 @@ void Foam::polyTopoChange::getFaceOrder
         //SortableList<label> nbr(nFaces);
         nbr.setSize(nFaces);
 
-        for (label i = 0; i < nFaces; i++)
+        for (label i = 0; i < nFaces; ++i)
         {
             label facei = cellFaces[startOfCell + i];
 
@@ -812,7 +812,7 @@ void Foam::polyTopoChange::getFaceOrder
     {
         patchStarts[0] = newFacei;
 
-        for (label facei = 0; facei < nActiveFaces; facei++)
+        for (label facei = 0; facei < nActiveFaces; ++facei)
         {
             if (region_[facei] >= 0)
             {
@@ -837,7 +837,7 @@ void Foam::polyTopoChange::getFaceOrder
 
     labelList workPatchStarts(patchStarts);
 
-    for (label facei = 0; facei < nActiveFaces; facei++)
+    for (label facei = 0; facei < nActiveFaces; ++facei)
     {
         if (region_[facei] >= 0)
         {
@@ -846,7 +846,7 @@ void Foam::polyTopoChange::getFaceOrder
     }
 
     // Retired faces.
-    for (label facei = nActiveFaces; facei < oldToNew.size(); facei++)
+    for (label facei = nActiveFaces; facei < oldToNew.size(); ++facei)
     {
         oldToNew[facei] = facei;
     }
@@ -2286,7 +2286,7 @@ void Foam::polyTopoChange::addMesh
         }
 
         // Add points in mesh order
-        for (label pointi = 0; pointi < mesh.nPoints(); pointi++)
+        for (label pointi = 0; pointi < mesh.nPoints(); ++pointi)
         {
             addPoint
             (
@@ -2344,7 +2344,7 @@ void Foam::polyTopoChange::addMesh
         }
 
         // Add cells in mesh order
-        for (label celli = 0; celli < nAllCells; celli++)
+        for (label celli = 0; celli < nAllCells; ++celli)
         {
             // Add cell from cell
             addCell(-1, -1, -1, celli, newZoneID[celli]);
@@ -2394,7 +2394,7 @@ void Foam::polyTopoChange::addMesh
         // Add faces in mesh order
 
         // 1. Internal faces
-        for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
+        for (label facei = 0; facei < mesh.nInternalFaces(); ++facei)
         {
             addFace
             (

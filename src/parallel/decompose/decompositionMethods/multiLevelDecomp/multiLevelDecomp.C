@@ -397,7 +397,7 @@ void Foam::multiLevelDecomp::decompose
             Pout<< "Decomposition at level " << currLevel << " :" << endl;
         }
 
-        for (label domainI = 0; domainI < nCurrDomains; domainI++)
+        for (label domainI = 0; domainI < nCurrDomains; ++domainI)
         {
             // Extract elements for current domain
             const labelList domainPoints(findIndices(dist, domainI));
@@ -505,7 +505,7 @@ void Foam::multiLevelDecomp::decompose
                 )
             );
 
-            for (label blockI = 0; blockI < nCurrDomains; blockI++)
+            for (label blockI = 0; blockI < nCurrDomains; ++blockI)
             {
                 // Count the number inbetween blocks of nNext size
 

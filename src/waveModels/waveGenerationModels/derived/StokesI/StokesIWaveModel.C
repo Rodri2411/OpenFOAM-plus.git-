@@ -77,7 +77,7 @@ Foam::scalar Foam::waveModels::StokesI::waveLength
     scalar L0 = mag(g_)*T*T/(2.0*mathematical::pi);
     scalar L = L0;
 
-    for (int i=1; i<=100; i++)
+    for (int i=1; i<=100; ++i)
     {
         L = L0*tanh(2.0*mathematical::pi*h/L);
     }

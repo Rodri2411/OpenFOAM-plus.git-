@@ -57,7 +57,7 @@ calcBdryPoints() const
 
     labelHashSet bp(2*e.size());
 
-    for (label edgeI = nInternalEdges_; edgeI < e.size(); edgeI++)
+    for (label edgeI = nInternalEdges_; edgeI < e.size(); ++edgeI)
     {
         const edge& curEdge = e[edgeI];
 

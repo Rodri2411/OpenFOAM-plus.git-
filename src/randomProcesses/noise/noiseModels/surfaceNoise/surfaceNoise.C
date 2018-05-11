@@ -362,7 +362,7 @@ Foam::scalar surfaceNoise::surfaceAverage
                 allData[faceI] = data[faceI];
             }
 
-            for (label procI = 1; procI < Pstream::nProcs(); procI++)
+            for (label procI = 1; procI < Pstream::nProcs(); ++procI)
             {
                 UIPstream fromProc(procI, pBufs);
                 scalarList dataSlice(fromProc);

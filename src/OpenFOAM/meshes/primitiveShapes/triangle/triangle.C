@@ -187,7 +187,7 @@ inline void Foam::triangle<Point, PointRef>::triangleOverlap
         scalar s = Foam::mag(tgt.c() - tgt.b());
         const plane pl0(tgt.b(), tgt.c(), tgt.c() + s*n);
 
-        for (label i = 0; i < insideOpA.nTris_; i++)
+        for (label i = 0; i < insideOpA.nTris_; ++i)
         {
             const triPoints& tri = insideOpA.tris_[i];
             triSliceWithPlane(pl0, tri, insideOpB, outsideOpA);
@@ -195,7 +195,7 @@ inline void Foam::triangle<Point, PointRef>::triangleOverlap
 
         //// Recut outside triangles (not necessary if only interested in
         //// intersection properties)
-        //for (label i = 0; i < outsideOpA.nTris_; i++)
+        //for (label i = 0; i < outsideOpA.nTris_; ++i)
         //{
         //    const triPoints& tri = outsideOpA.tris_[i];
         //    triSliceWithPlane(pl0, tri, outsideOpB, outsideOpB);
@@ -211,7 +211,7 @@ inline void Foam::triangle<Point, PointRef>::triangleOverlap
 
         insideOpA.nTris_ = 0;
         //outsideOpA.nTris_ = 0;
-        for (label i = 0; i < insideOpB.nTris_; i++)
+        for (label i = 0; i < insideOpB.nTris_; ++i)
         {
             const triPoints& tri = insideOpB.tris_[i];
             triSliceWithPlane(pl0, tri, insideOpA, outsideOpA);
@@ -219,7 +219,7 @@ inline void Foam::triangle<Point, PointRef>::triangleOverlap
 
         //// Recut outside triangles (not necessary if only interested in
         //// intersection properties)
-        //for (label i = 0; i < outsideOpB.nTris_; i++)
+        //for (label i = 0; i < outsideOpB.nTris_; ++i)
         //{
         //    const triPoints& tri = outsideOpB.tris_[i];
         //    triSliceWithPlane(pl0, tri, outsideOpA, outsideOpA);
@@ -227,12 +227,12 @@ inline void Foam::triangle<Point, PointRef>::triangleOverlap
     }
 
     // Transfer from A to argument
-    for (label i = 0; i < insideOpA.nTris_; i++)
+    for (label i = 0; i < insideOpA.nTris_; ++i)
     {
         insideOp(insideOpA.tris_[i]);
     }
 
-    for (label i = 0; i < outsideOpA.nTris_; i++)
+    for (label i = 0; i < outsideOpA.nTris_; ++i)
     {
         outsideOp(outsideOpA.tris_[i]);
     }

@@ -237,7 +237,7 @@ int main(int argc, char *argv[])
 
             vector tEVal = eVal;
 
-            for (label i = 0; i < 3; i++)
+            for (label i = 0; i < 3; ++i)
             {
                 tPrincipal[i] = principal[(i + permutationDelta) % 3];
 
@@ -405,7 +405,7 @@ int main(int argc, char *argv[])
     meshTools::writeOBJ(str, cM + scale*eVal.y()*eVec.y());
     meshTools::writeOBJ(str, cM + scale*eVal.z()*eVec.z());
 
-    for (label i = 1; i < 4; i++)
+    for (label i = 1; i < 4; ++i)
     {
         str << "l " << 1 << ' ' << i + 1 << endl;
     }

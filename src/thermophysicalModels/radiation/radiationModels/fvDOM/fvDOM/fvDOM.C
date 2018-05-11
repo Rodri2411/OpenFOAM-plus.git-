@@ -57,9 +57,9 @@ void Foam::radiation::fvDOM::initialise()
         scalar deltaPhi = pi/(2.0*nPhi_);
         scalar deltaTheta = pi/nTheta_;
         label i = 0;
-        for (label n = 1; n <= nTheta_; n++)
+        for (label n = 1; n <= nTheta_; ++n)
         {
-            for (label m = 1; m <= 4*nPhi_; m++)
+            for (label m = 1; m <= 4*nPhi_; ++m)
             {
                 scalar thetai = (2.0*n - 1.0)*deltaTheta/2.0;
                 scalar phii = (2.0*m - 1.0)*deltaPhi/2.0;
@@ -93,7 +93,7 @@ void Foam::radiation::fvDOM::initialise()
         IRay_.setSize(nRay_);
         scalar deltaPhi = pi/(2.0*nPhi_);
         label i = 0;
-        for (label m = 1; m <= 4*nPhi_; m++)
+        for (label m = 1; m <= 4*nPhi_; ++m)
         {
             scalar phii = (2.0*m - 1.0)*deltaPhi/2.0;
             IRay_.set
@@ -125,7 +125,7 @@ void Foam::radiation::fvDOM::initialise()
         IRay_.setSize(nRay_);
         scalar deltaPhi = pi;
         label i = 0;
-        for (label m = 1; m <= 2; m++)
+        for (label m = 1; m <= 2; ++m)
         {
             scalar phii = (2.0*m - 1.0)*deltaPhi/2.0;
             IRay_.set
@@ -498,7 +498,7 @@ Foam::radiation::fvDOM::Ru() const
 
 void Foam::radiation::fvDOM::updateBlackBodyEmission()
 {
-    for (label j=0; j < nLambda_; j++)
+    for (label j=0; j < nLambda_; ++j)
     {
         blackBody_.correct(j, absorptionEmission_->bands(j));
     }

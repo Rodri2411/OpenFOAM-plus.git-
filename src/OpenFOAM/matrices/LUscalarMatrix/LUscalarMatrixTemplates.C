@@ -57,7 +57,7 @@ void Foam::LUscalarMatrix::solve
             (
                 int slave=Pstream::firstSlave();
                 slave<=Pstream::lastSlave(comm_);
-                slave++
+                ++slave
             )
             {
                 IPstream::read
@@ -101,7 +101,7 @@ void Foam::LUscalarMatrix::solve
             (
                 int slave=Pstream::firstSlave();
                 slave<=Pstream::lastSlave(comm_);
-                slave++
+                ++slave
             )
             {
                 OPstream::write

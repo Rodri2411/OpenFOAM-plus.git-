@@ -145,7 +145,7 @@ Foam::functionObjects::energyTransport::Cp() const
     {
         tmp<volScalarField> tCp(phases_[0]*Cps_[0]);
 
-        for (label i = 1; i < phases_.size(); i++)
+        for (label i = 1; i < phases_.size(); ++i)
         {
             tCp.ref() += phases_[i]*Cps_[i];
         }
@@ -180,7 +180,7 @@ Foam::functionObjects::energyTransport::kappa() const
     {
         tmp<volScalarField> tkappa(phases_[0]*kappas_[0]);
 
-        for (label i = 1; i < phases_.size(); i++)
+        for (label i = 1; i < phases_.size(); ++i)
         {
             tkappa.ref() += phases_[i]*kappas_[i];
         }
@@ -405,7 +405,7 @@ bool Foam::functionObjects::energyTransport::execute()
         rhoCp_ = rho()*Cp();
         const surfaceScalarField rhoCpPhi(fvc::interpolate(Cp())*phi);
 
-        for (label i = 0; i <= nCorr_; i++)
+        for (label i = 0; i <= nCorr_; ++i)
         {
             fvScalarMatrix sEqn
             (
@@ -447,7 +447,7 @@ bool Foam::functionObjects::energyTransport::execute()
             )
         );
 
-        for (label i = 0; i <= nCorr_; i++)
+        for (label i = 0; i <= nCorr_; ++i)
         {
             fvScalarMatrix sEqn
             (

@@ -466,7 +466,7 @@ void Foam::mergePolyMesh::merge()
         // Note.  Re-using counter in two for loops
         label patchi = 0;
 
-        for (patchi = 0; patchi < oldPatches.size(); patchi++)
+        for (patchi = 0; patchi < oldPatches.size(); ++patchi)
         {
             newPatches[patchi] = oldPatches[patchi].clone(oldPatches).ptr();
         }
@@ -476,7 +476,7 @@ void Foam::mergePolyMesh::merge()
         label endOfLastPatch =
             oldPatches[patchi - 1].start() + oldPatches[patchi - 1].size();
 
-        for (; patchi < patchNames_.size(); patchi++)
+        for (; patchi < patchNames_.size(); ++patchi)
         {
             // Add a patch
             dictionary dict(patchDicts_[patchi]);

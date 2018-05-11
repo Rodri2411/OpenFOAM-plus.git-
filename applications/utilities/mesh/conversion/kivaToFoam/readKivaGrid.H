@@ -20,7 +20,7 @@ pointField points(nPoints);
 label i4;
 labelList idface(nPoints), fv(nPoints);
 
-for (label i=0; i<nPoints; i++)
+for (label i=0; i<nPoints; ++i)
 {
     scalar ffv;
     kivaFile
@@ -44,7 +44,7 @@ labelList i1tab(nPoints), i3tab(nPoints), i8tab(nPoints), idreg(nPoints),
 
 label nBfaces = 0;
 
-for (label i=0; i<nPoints; i++)
+for (label i=0; i<nPoints; ++i)
 {
     label i1, i3, i8;
     scalar ff, fbcl, fbcf, fbcb;
@@ -85,7 +85,7 @@ if (mTable == 0)
 
 labelList imtab(nPoints), jmtab(nPoints), kmtab(nPoints);
 
-for (label i=0; i<nPoints; i++)
+for (label i=0; i<nPoints; ++i)
 {
     label im, jm, km;
     kivaFile >> i4 >> im >> jm >> km;
@@ -115,7 +115,7 @@ forAll(pointMap, i)
 }
 
 // Initialise all cells to hex and search and set map for collocated points
-for (label i=0; i<nPoints; i++)
+for (label i=0; i<nPoints; ++i)
 {
     if (f[i] > 0.0)
     {
@@ -237,7 +237,7 @@ List<SLList<face>> pFaces[nBCs];
 face quadFace(4);
 face triFace(3);
 
-for (label i=0; i<nPoints; i++)
+for (label i=0; i<nPoints; ++i)
 {
     if (f[i] > 0)
     {
@@ -400,7 +400,7 @@ if
 
 // Count the number of non-zero sized patches
 label nPatches = 0;
-for (int bci=0; bci<nBCs; bci++)
+for (int bci=0; bci<nBCs; ++bci)
 {
     forAll(pFaces[bci], rgi)
     {
@@ -430,7 +430,7 @@ if (pFaces[WEDGE].size() && pFaces[WEDGE][0].size())
             ++iterf, ++iterb
         )
         {
-            for (direction d=0; d<4; d++)
+            for (direction d=0; d<4; ++d)
             {
                 points[iterf()[d]].y() = -tanTheta*points[iterf()[d]].x();
                 points[iterb()[d]].y() =  tanTheta*points[iterb()[d]].x();
@@ -462,7 +462,7 @@ word defaultFacesType = emptyPolyPatch::typeName;
 
 label nAddedPatches = 0;
 
-for (int bci=0; bci<nBCs; bci++)
+for (int bci=0; bci<nBCs; ++bci)
 {
     forAll(pFaces[bci], rgi)
     {

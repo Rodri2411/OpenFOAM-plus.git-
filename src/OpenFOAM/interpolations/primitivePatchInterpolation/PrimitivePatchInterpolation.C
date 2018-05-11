@@ -310,14 +310,14 @@ tmp<Field<Type>> PrimitivePatchInterpolation<Patch>::faceToEdgeInterpolate
 
     const scalarList& weights = faceToEdgeWeights();
 
-    for (label edgei = 0; edgei < patch_.nInternalEdges(); edgei++)
+    for (label edgei = 0; edgei < patch_.nInternalEdges(); ++edgei)
     {
         result[edgei] =
             weights[edgei]*pf[edgeFaces[edgei][0]]
           + (1.0 - weights[edgei])*pf[edgeFaces[edgei][1]];
     }
 
-    for (label edgei = patch_.nInternalEdges(); edgei < edges.size(); edgei++)
+    for (label edgei = patch_.nInternalEdges(); edgei < edges.size(); ++edgei)
     {
         result[edgei] = pf[edgeFaces[edgei][0]];
     }

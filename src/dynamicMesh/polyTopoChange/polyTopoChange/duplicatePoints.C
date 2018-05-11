@@ -81,7 +81,7 @@ void Foam::duplicatePoints::setRefinement
 
         duplicates_[localI].setSize(regions.size());
         duplicates_[localI][0] = pointi;
-        for (label i = 1; i < regions.size(); i++)
+        for (label i = 1; i < regions.size(); ++i)
         {
             duplicates_[localI][i] = meshMod.addPoint
             (

@@ -154,9 +154,9 @@ void Foam::functionObjects::thermoCoupleProbes::jacobian
 
     const label n = nEqns();
 
-    for (label i=0; i<n; i++)
+    for (label i=0; i<n; ++i)
     {
-        for (label j=0; j<n; j++)
+        for (label j=0; j<n; ++j)
         {
             dfdy(i, j) = 0.0;
         }

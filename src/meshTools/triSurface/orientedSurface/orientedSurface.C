@@ -540,7 +540,7 @@ bool Foam::orientedSurface::orient
     // Check intersection with one face per zone.
 
     labelList flipState(s.size(), UNVISITED);
-    for (label zoneI = 0; zoneI < nZones; zoneI++)
+    for (label zoneI = 0; zoneI < nZones; ++zoneI)
     {
         label zoneFacei = -1;
         bool isOutside;

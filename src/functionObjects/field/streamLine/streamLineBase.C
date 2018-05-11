@@ -306,7 +306,7 @@ void Foam::functionObjects::streamLineBase::trimToBox
         (
             label segmenti = 1;
             segmenti < track.size();
-            segmenti++
+            ++segmenti
         )
         {
             const point& startPt = track[segmenti-1];

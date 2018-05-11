@@ -14,12 +14,12 @@ int main(int argc, char *argv[])
 
     char *cPtr;
 
-    for (unsigned i=1;; i++)
+    for (unsigned i=1;; ++i)
     {
         cPtr = new char[nBytes];
 
         /*
-        for (int j=0; j<nBytes; j++)
+        for (int j=0; j<nBytes; ++j)
         {
             cPtr[j] = 0;
         }

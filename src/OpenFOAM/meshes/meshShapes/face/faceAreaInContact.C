@@ -93,7 +93,7 @@ Foam::scalar Foam::face::areaInContact
     List<point> newFacePoints(2*size());
     label nNewFacePoints = 0;
 
-    for (label vI = 0; vI < size() - 1; vI++)
+    for (label vI = 0; vI < size() - 1; ++vI)
     {
         if (vertexValue[vI] <= 0)
         {

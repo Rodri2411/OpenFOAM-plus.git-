@@ -256,9 +256,9 @@ void Foam::CV2D::insertGrid()
     Random rndGen(1321);
     scalar pert = meshControls().randomPerturbation()*min(deltax, deltay);
 
-    for (int i=0; i<ni; i++)
+    for (int i=0; i<ni; ++i)
     {
-        for (int j=0; j<nj; j++)
+        for (int j=0; j<nj; ++j)
         {
             point p(x0 + i*deltax, y0 + j*deltay, 0);
 
@@ -322,13 +322,13 @@ void Foam::CV2D::boundaryConform()
     (
         Triangulation::Finite_faces_iterator fit = finite_faces_begin();
         fit != finite_faces_end();
-        fit++
+        ++fit
     )
     {
         fit->faceIndex() = Fb::SAVE_CHANGED;
     }
 
-    for (label iter=1; iter<=meshControls().maxBoundaryConformingIter(); iter++)
+    for (label iter=1; iter<=meshControls().maxBoundaryConformingIter(); ++iter)
     {
         label nIntersections = insertBoundaryConformPointPairs
         (
@@ -352,7 +352,7 @@ void Foam::CV2D::boundaryConform()
         (
             Triangulation::Finite_faces_iterator fit = finite_faces_begin();
             fit != finite_faces_end();
-            fit++
+            ++fit
         )
         {
             if (fit->faceIndex() == Fb::SAVE_CHANGED)
@@ -504,7 +504,7 @@ void Foam::CV2D::newPoints()
     (
         Triangulation::Finite_edges_iterator eit = finite_edges_begin();
         eit != finite_edges_end();
-        eit++
+        ++eit
     )
     {
         Vertex_handle vA = eit->first->vertex(cw(eit->second));

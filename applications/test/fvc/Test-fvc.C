@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
     surfaceScalarField xf(mesh.Cf().component(vector::X));
     surfaceScalarField xf4(pow(xf, 4));
 
-    for (int i=1; i<xf4.size()-1; i++)
+    for (int i=1; i<xf4.size()-1; ++i)
     {
         scalar gradx4a = (xf4[i] - xf4[i-1])/(xf[i] - xf[i-1]);
         Info<< (gradx4a - gradx4[i])/gradx4a << endl;

@@ -388,7 +388,7 @@ void Foam::twoPhaseSystem::solve()
         phir += phiP;
     }
 
-    for (int acorr=0; acorr<nAlphaCorr; acorr++)
+    for (int acorr=0; acorr<nAlphaCorr; ++acorr)
     {
         volScalarField::Internal Sp
         (

@@ -261,7 +261,7 @@ void Foam::LiquidEvaporationBoil<CloudType>::calculate
                     // to the vaporisation process
                     scalar Gr = 1e-5;
 
-                    for (label i=0; i<50; i++)
+                    for (label i=0; i<50; ++i)
                     {
                         scalar GrDash = Gr;
 

@@ -60,7 +60,7 @@ Foam::Polynomial<PolySize>::Polynomial(const scalar coeffs[PolySize])
     logActive_(false),
     logCoeff_(0.0)
 {
-    for (int i=0; i<PolySize; i++)
+    for (int i=0; i<PolySize; ++i)
     {
         this->v_[i] = coeffs[i];
     }

@@ -95,7 +95,7 @@ Foam::labelList Foam::springRenumber::renumber
 
     scalar maxCo = maxCo_ * cellCells.size();
 
-    for (label iter = 0; iter < maxIter_; iter++)
+    for (label iter = 0; iter < maxIter_; ++iter)
     {
         //Pout<< "Iteration : " << iter << nl
         //    << "------------"

@@ -64,18 +64,18 @@ Foam::FDICPreconditioner::FDICPreconditioner
     label nCells = rD_.size();
     label nFaces = solver_.matrix().upper().size();
 
-    for (label face=0; face<nFaces; face++)
+    for (label face=0; face<nFaces; ++face)
     {
         rDPtr[uPtr[face]] -= sqr(upperPtr[face])/rDPtr[lPtr[face]];
     }
 
     // Generate reciprocal FDIC
-    for (label cell=0; cell<nCells; cell++)
+    for (label cell=0; cell<nCells; ++cell)
     {
         rDPtr[cell] = 1.0/rDPtr[cell];
     }
 
-    for (label face=0; face<nFaces; face++)
+    for (label face=0; face<nFaces; ++face)
     {
         rDuUpperPtr[face] = rDPtr[uPtr[face]]*upperPtr[face];
         rDlUpperPtr[face] = rDPtr[lPtr[face]]*upperPtr[face];
@@ -108,12 +108,12 @@ void Foam::FDICPreconditioner::precondition
     label nFaces = solver_.matrix().upper().size();
     label nFacesM1 = nFaces - 1;
 
-    for (label cell=0; cell<nCells; cell++)
+    for (label cell=0; cell<nCells; ++cell)
     {
         wAPtr[cell] = rDPtr[cell]*rAPtr[cell];
     }
 
-    for (label face=0; face<nFaces; face++)
+    for (label face=0; face<nFaces; ++face)
     {
         wAPtr[uPtr[face]] -= rDuUpperPtr[face]*wAPtr[lPtr[face]];
     }

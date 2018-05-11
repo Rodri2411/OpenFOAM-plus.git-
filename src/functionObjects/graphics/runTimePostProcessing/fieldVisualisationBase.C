@@ -122,7 +122,7 @@ void Foam::functionObjects::fieldVisualisationBase::setColourMap
     }
 
 
-    for (label i = 0; i < nColours; i++)
+    for (label i = 0; i < nColours; ++i)
     {
         double* c = ctf->GetColor(scalar(i)/scalar(nColours));
         lut->SetTableValue(i, c[0], c[1], c[2], 1.0);

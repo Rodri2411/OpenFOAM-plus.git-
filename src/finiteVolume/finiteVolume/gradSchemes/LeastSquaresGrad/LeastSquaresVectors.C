@@ -73,7 +73,7 @@ void Foam::fv::LeastSquaresVectors<Stencil>::calcLeastSquaresVectors()
 
         // The current cell is 0 in the stencil
         // Calculate the deltas and sum the weighted dd
-        for (label j=1; j<lsvi.size(); j++)
+        for (label j=1; j<lsvi.size(); ++j)
         {
             lsvi[j] = lsvi[j] - lsvi[0];
             scalar magSqrLsvi = magSqr(lsvi[j]);
@@ -89,7 +89,7 @@ void Foam::fv::LeastSquaresVectors<Stencil>::calcLeastSquaresVectors()
 
         // Finalize the gradient weighting vectors
         lsvi[0] = Zero;
-        for (label j=1; j<lsvi.size(); j++)
+        for (label j=1; j<lsvi.size(); ++j)
         {
             lsvi[j] = dd & lsvi[j];
             lsvi[0] -= lsvi[j];

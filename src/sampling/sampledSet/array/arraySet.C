@@ -68,11 +68,11 @@ void Foam::arraySet::calcSamples
     const scalar deltaz = spanBox_.z()/(pointsDensity_.z() + 1);
 
     label p(0);
-    for (label k=1; k<=pointsDensity_.z(); k++)
+    for (label k=1; k<=pointsDensity_.z(); ++k)
     {
-        for (label j=1; j<=pointsDensity_.y(); j++)
+        for (label j=1; j<=pointsDensity_.y(); ++j)
         {
-            for (label i=1; i<=pointsDensity_.x(); i++)
+            for (label i=1; i<=pointsDensity_.x(); ++i)
             {
                 vector t(deltax*i , deltay*j, deltaz*k);
                 sampleCoords[p] = coordSys_.origin() + t;

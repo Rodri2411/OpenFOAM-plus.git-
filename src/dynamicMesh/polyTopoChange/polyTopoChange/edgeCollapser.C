@@ -1155,7 +1155,7 @@ void Foam::edgeCollapser::filterFace
 
     newFp = 2;
 
-    for (label fp = 2; fp < size; fp++)
+    for (label fp = 2; fp < size; ++fp)
     {
         label fp1 = fp-1;
         label fp2 = fp-2;

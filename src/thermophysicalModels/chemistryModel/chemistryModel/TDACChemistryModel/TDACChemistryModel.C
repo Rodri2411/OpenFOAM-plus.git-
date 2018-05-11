@@ -222,7 +222,7 @@ Foam::scalar Foam::TDACChemistryModel<CompType, ThermoType>::omega
     lRef = R.lhs()[slRef].index;
 
     pf = kf;
-    for (label s=1; s<Nl; s++)
+    for (label s=1; s<Nl; ++s)
     {
         const label si = R.lhs()[s].index;
 
@@ -265,7 +265,7 @@ Foam::scalar Foam::TDACChemistryModel<CompType, ThermoType>::omega
 
     // Find the matrix element and element position for the rhs
     pr = kr;
-    for (label s=1; s<Nr; s++)
+    for (label s=1; s<Nr; ++s)
     {
         const label si = R.rhs()[s].index;
         if (c[si] < c[rRef])
@@ -329,14 +329,14 @@ void Foam::TDACChemistryModel<CompType, ThermoType>::derivatives
         // Update the concentration of the species in the simplified mechanism
         // the other species remain the same and are used only for third-body
         // efficiencies
-        for (label i=0; i<NsDAC_; i++)
+        for (label i=0; i<NsDAC_; ++i)
         {
             this->c_[simplifiedToCompleteIndex_[i]] = max(0.0, c[i]);
         }
     }
     else
     {
-        for (label i=0; i<this->nSpecie(); i++)
+        for (label i=0; i<this->nSpecie(); ++i)
         {
             this->c_[i] = max(0.0, c[i]);
         }
@@ -347,14 +347,14 @@ void Foam::TDACChemistryModel<CompType, ThermoType>::derivatives
     // Constant pressure
     // dT/dt = ...
     scalar rho = 0;
-    for (label i=0; i<this->c_.size(); i++)
+    for (label i=0; i<this->c_.size(); ++i)
     {
         const scalar W = this->specieThermo_[i].W();
         rho += W*this->c_[i];
     }
 
     scalar cp = 0;
-    for (label i=0; i<this->c_.size(); i++)
+    for (label i=0; i<this->c_.size(); ++i)
     {
         // cp function returns [J/(kmol K)]
         cp += this->c_[i]*this->specieThermo_[i].cp(p, T);
@@ -365,7 +365,7 @@ void Foam::TDACChemistryModel<CompType, ThermoType>::derivatives
     // dT is computed on the reduced set since dcdt is null
     // for species not involved in the simplified mechanism
     scalar dT = 0;
-    for (label i=0; i<this->nSpecie_; i++)
+    for (label i=0; i<this->nSpecie_; ++i)
     {
         label si;
         if (reduced)
@@ -665,7 +665,7 @@ Foam::scalar Foam::TDACChemistryModel<CompType, ThermoType>::solve
         scalar pi = p[celli];
         scalar Ti = T[celli];
 
-        for (label i=0; i<this->nSpecie_; i++)
+        for (label i=0; i<this->nSpecie_; ++i)
         {
             const volScalarField& Yi = this->Y_[i];
             c[i] = rhoi*Yi[celli]/this->specieThermo_[i].W();

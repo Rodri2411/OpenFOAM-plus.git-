@@ -118,7 +118,7 @@ bool Foam::fileFormats::OFFsurfaceFormat<Face>::read
             {
                 // simple face triangulation about f[0]
                 // cannot use face::triangulation (points may be incomplete)
-                for (label fp1 = 1; fp1 < f.size() - 1; fp1++)
+                for (label fp1 = 1; fp1 < f.size() - 1; ++fp1)
                 {
                     label fp2 = f.fcIndex(fp1);
 

@@ -55,7 +55,7 @@ Foam::tmp<Foam::surfaceScalarField> Foam::phaseSystem::calcPhi
         )
     );
 
-    for (label phasei=1; phasei<phaseModels.size(); phasei++)
+    for (label phasei=1; phasei<phaseModels.size(); ++phasei)
     {
         tmpPhi.ref() +=
             fvc::interpolate(phaseModels[phasei])*phaseModels[phasei].phi();
@@ -193,7 +193,7 @@ Foam::tmp<Foam::volScalarField> Foam::phaseSystem::rho() const
         phaseModels_[0]*phaseModels_[0].rho()
     );
 
-    for (label phasei=1; phasei<phaseModels_.size(); phasei++)
+    for (label phasei=1; phasei<phaseModels_.size(); ++phasei)
     {
         tmpRho.ref() += phaseModels_[phasei]*phaseModels_[phasei].rho();
     }
@@ -209,7 +209,7 @@ Foam::tmp<Foam::volVectorField> Foam::phaseSystem::U() const
         phaseModels_[0]*phaseModels_[0].U()
     );
 
-    for (label phasei=1; phasei<phaseModels_.size(); phasei++)
+    for (label phasei=1; phasei<phaseModels_.size(); ++phasei)
     {
         tmpU.ref() += phaseModels_[phasei]*phaseModels_[phasei].U();
     }

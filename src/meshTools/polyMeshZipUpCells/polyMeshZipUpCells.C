@@ -449,7 +449,7 @@ bool Foam::polyMeshZipUpCells(polyMesh& mesh)
 
                 vector dir = Points[unorderedEdge.last()] - startPoint;
 
-                for (label i = 1; i < dist.size(); i++)
+                for (label i = 1; i < dist.size(); ++i)
                 {
                     dist[i] = (Points[unorderedEdge[i]] - startPoint) & dir;
                 }
@@ -489,7 +489,7 @@ bool Foam::polyMeshZipUpCells(polyMesh& mesh)
                     (
                         label checkJ = checkI + 1;
                         checkJ < orderedEdge.size();
-                        checkJ++
+                        ++checkJ
                     )
                     {
                         if (orderedEdge[checkI] == orderedEdge[checkJ])
@@ -636,7 +636,7 @@ bool Foam::polyMeshZipUpCells(polyMesh& mesh)
                                         (
                                             label i = 0;
                                             i < orderedEdge.size() - 1;
-                                            i++
+                                            ++i
                                         )
                                         {
                                             newFace[nNewFacePoints] =
@@ -651,7 +651,7 @@ bool Foam::polyMeshZipUpCells(polyMesh& mesh)
                                         (
                                             label i = orderedEdge.size() - 1;
                                             i > 0;
-                                            i--
+                                            --i
                                         )
                                         {
                                             newFace[nNewFacePoints] =
@@ -683,7 +683,7 @@ bool Foam::polyMeshZipUpCells(polyMesh& mesh)
                                 (
                                     label checkJ = checkI + 1;
                                     checkJ < newFace.size();
-                                    checkJ++
+                                    ++checkJ
                                 )
                                 {
                                     if (newFace[checkI] == newFace[checkJ])

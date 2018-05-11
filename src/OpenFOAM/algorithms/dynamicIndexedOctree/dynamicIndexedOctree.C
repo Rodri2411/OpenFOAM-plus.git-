@@ -48,7 +48,7 @@ bool Foam::dynamicIndexedOctree<Type>::overlaps
     // Find nearest point on bb.
     scalar distSqr = 0;
 
-    for (direction dir = 0; dir < vector::nComponents; dir++)
+    for (direction dir = 0; dir < vector::nComponents; ++dir)
     {
         scalar d0 = p0[dir] - sample[dir];
         scalar d1 = p1[dir] - sample[dir];
@@ -142,7 +142,7 @@ void Foam::dynamicIndexedOctree<Type>::divide
     contentListList& result
 ) const
 {
-    for (direction octant = 0; octant < 8; octant++)
+    for (direction octant = 0; octant < 8; ++octant)
     {
         result.append
         (
@@ -155,7 +155,7 @@ void Foam::dynamicIndexedOctree<Type>::divide
 
     // Precalculate bounding boxes.
     FixedList<treeBoundBox, 8> subBbs;
-    for (direction octant = 0; octant < 8; octant++)
+    for (direction octant = 0; octant < 8; ++octant)
     {
         subBbs[octant] = bb.subBbox(octant);
     }
@@ -164,7 +164,7 @@ void Foam::dynamicIndexedOctree<Type>::divide
     {
         label shapeI = indices()[i];
 
-        for (direction octant = 0; octant < 8; octant++)
+        for (direction octant = 0; octant < 8; ++octant)
         {
             if (shapes_.overlaps(shapeI, subBbs[octant]))
             {
@@ -212,7 +212,7 @@ Foam::dynamicIndexedOctree<Type>::divide
     // Append the rest.
     bool replaced = false;
 
-    for (direction octant = 0; octant < dividedIndices.size(); octant++)
+    for (direction octant = 0; octant < dividedIndices.size(); ++octant)
     {
         autoPtr<DynamicList<label>>& subIndices = dividedIndices[octant];
 
@@ -292,7 +292,7 @@ void Foam::dynamicIndexedOctree<Type>::recursiveSubDivision
 
         // Recursively divide the contents until maxLevels_ is
         // reached or the content sizes are less than minSize_
-        for (direction subOct = 0; subOct < 8; subOct++)
+        for (direction subOct = 0; subOct < 8; ++subOct)
         {
             const labelBits& subNodeLabel = nod.subNodes_[subOct];
 
@@ -332,7 +332,7 @@ Foam::volumeType Foam::dynamicIndexedOctree<Type>::calcVolumeType
 
     volumeType myType = volumeType::UNKNOWN;
 
-    for (direction octant = 0; octant < nod.subNodes_.size(); octant++)
+    for (direction octant = 0; octant < nod.subNodes_.size(); ++octant)
     {
         volumeType subType;
 
@@ -484,7 +484,7 @@ void Foam::dynamicIndexedOctree<Type>::findNearest
     nod.bb_.searchOrder(sample, octantOrder);
 
     // Go into all suboctants (one containing sample first) and update nearest.
-    for (direction i = 0; i < 8; i++)
+    for (direction i = 0; i < 8; ++i)
     {
         direction octant = octantOrder[i];
 
@@ -557,7 +557,7 @@ void Foam::dynamicIndexedOctree<Type>::findNearest
     nod.bb_.searchOrder(ln.centre(), octantOrder);
 
     // Go into all suboctants (one containing sample first) and update nearest.
-    for (direction i = 0; i < 8; i++)
+    for (direction i = 0; i < 8; ++i)
     {
         direction octant = octantOrder[i];
 
@@ -648,7 +648,7 @@ Foam::point Foam::dynamicIndexedOctree<Type>::pushPoint
 
     if (pushInside)
     {
-        for (direction dir = 0; dir < vector::nComponents; dir++)
+        for (direction dir = 0; dir < vector::nComponents; ++dir)
         {
             if (mag(pt[dir]-bb.min()[dir]) < mag(perturbVec[dir]))
             {
@@ -666,7 +666,7 @@ Foam::point Foam::dynamicIndexedOctree<Type>::pushPoint
     }
     else
     {
-        for (direction dir = 0; dir < vector::nComponents; dir++)
+        for (direction dir = 0; dir < vector::nComponents; ++dir)
         {
             if (mag(pt[dir]-bb.min()[dir]) < mag(perturbVec[dir]))
             {
@@ -909,7 +909,7 @@ Foam::point Foam::dynamicIndexedOctree<Type>::pushPointIntoFace
         keepFaceID = faceIndices[0];
         scalar maxInproduct = mag(treeBoundBox::faceNormals[keepFaceID] & dir);
 
-        for (direction i = 1; i < nFaces; i++)
+        for (direction i = 1; i < nFaces; ++i)
         {
             direction face = faceIndices[i];
             scalar s = mag(treeBoundBox::faceNormals[face] & dir);
@@ -1024,7 +1024,7 @@ bool Foam::dynamicIndexedOctree<Type>::walkToParent
     // Find octant nodeI is in.
     parentOctant = 255;
 
-    for (direction i = 0; i < parentNode.subNodes_.size(); i++)
+    for (direction i = 0; i < parentNode.subNodes_.size(); ++i)
     {
         labelBits index = parentNode.subNodes_[i];
 
@@ -1555,7 +1555,7 @@ Foam::pointIndexHit Foam::dynamicIndexedOctree<Type>::findLine
 
     //while (true)
     label i = 0;
-    for (; i < 100000; i++)
+    for (; i < 100000; ++i)
     {
         // Ray-trace to end of current node. Updates point (either on triangle
         // in case of hit or on node bounding box in case of miss)
@@ -1793,7 +1793,7 @@ void Foam::dynamicIndexedOctree<Type>::findBox
     const node& nod = nodes_[nodeI];
     const treeBoundBox& nodeBb = nod.bb_;
 
-    for (direction octant = 0; octant < nod.subNodes_.size(); octant++)
+    for (direction octant = 0; octant < nod.subNodes_.size(); ++octant)
     {
         labelBits index = nod.subNodes_[octant];
 
@@ -1841,7 +1841,7 @@ void Foam::dynamicIndexedOctree<Type>::findSphere
     const node& nod = nodes_[nodeI];
     const treeBoundBox& nodeBb = nod.bb_;
 
-    for (direction octant = 0; octant < nod.subNodes_.size(); octant++)
+    for (direction octant = 0; octant < nod.subNodes_.size(); ++octant)
     {
         labelBits index = nod.subNodes_[octant];
 
@@ -1909,7 +1909,7 @@ void Foam::dynamicIndexedOctree<Type>::findNear
             {
                 const node& nod2 = tree2.nodes()[tree2.getNode(index2)];
 
-                for (direction i2 = 0; i2 < nod2.subNodes_.size(); i2++)
+                for (direction i2 = 0; i2 < nod2.subNodes_.size(); ++i2)
                 {
                     labelBits subIndex2 = nod2.subNodes_[i2];
                     const treeBoundBox subBb2
@@ -1937,7 +1937,7 @@ void Foam::dynamicIndexedOctree<Type>::findNear
         else if (tree2.isContent(index2))
         {
             // index2 is leaf, index1 not yet.
-            for (direction i1 = 0; i1 < nod1.subNodes_.size(); i1++)
+            for (direction i1 = 0; i1 < nod1.subNodes_.size(); ++i1)
             {
                 labelBits subIndex1 = nod1.subNodes_[i1];
                 const treeBoundBox subBb1
@@ -1977,7 +1977,7 @@ void Foam::dynamicIndexedOctree<Type>::findNear
 
             if (bb2.overlaps(searchBox))
             {
-                for (direction i2 = 0; i2 < nod2.subNodes_.size(); i2++)
+                for (direction i2 = 0; i2 < nod2.subNodes_.size(); ++i2)
                 {
                     labelBits subIndex2 = nod2.subNodes_[i2];
                     const treeBoundBox subBb2
@@ -2066,7 +2066,7 @@ Foam::label Foam::dynamicIndexedOctree<Type>::countElements
 
         const node& nod = nodes_[nodeI];
 
-        for (direction octant = 0; octant < nod.subNodes_.size(); octant++)
+        for (direction octant = 0; octant < nod.subNodes_.size(); ++octant)
         {
             nElems += countElements(nod.subNodes_[octant]);
         }
@@ -2551,7 +2551,7 @@ bool Foam::dynamicIndexedOctree<Type>::insertIndex
 {
     bool shapeInserted = false;
 
-    for (direction octant = 0; octant < 8; octant++)
+    for (direction octant = 0; octant < 8; ++octant)
     {
         const labelBits& subNodeLabel = nodes_[nodIndex].subNodes_[octant];
 
@@ -2641,7 +2641,7 @@ Foam::label Foam::dynamicIndexedOctree<Type>::removeIndex
 {
     label totalContents = 0;
 
-    for (direction octant = 0; octant < 8; octant++)
+    for (direction octant = 0; octant < 8; ++octant)
     {
         const labelBits& subNodeLabel = nodes_[nodIndex].subNodes_[octant];
 
@@ -2730,7 +2730,7 @@ void Foam::dynamicIndexedOctree<Type>::print
         << "parent:" << nod.parent_ << nl
         << "n:" << countElements(nodePlusOctant(nodeI, 0)) << nl;
 
-    for (direction octant = 0; octant < nod.subNodes_.size(); octant++)
+    for (direction octant = 0; octant < nod.subNodes_.size(); ++octant)
     {
         const treeBoundBox subBb(bb.subBbox(octant));
 

@@ -70,7 +70,7 @@ pyrolysisModelCollection::pyrolysisModelCollection(const fvMesh& mesh)
 
     setSize(regions.size());
 
-    for (label i = 0; i < regions.size(); i++)
+    for (label i = 0; i < regions.size(); ++i)
     {
         set
         (

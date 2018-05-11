@@ -89,13 +89,13 @@ Foam::faceList Foam::extrudedMesh::extrudedFaces
     label facei = 0;
 
     // Internal faces
-    for (label layer=0; layer<nLayers; layer++)
+    for (label layer=0; layer<nLayers; ++layer)
     {
         label currentLayerOffset = layer*surfacePoints.size();
         label nextLayerOffset = currentLayerOffset + surfacePoints.size();
 
         // Vertical faces from layer to layer+1
-        for (label edgeI=0; edgeI<nInternalEdges; edgeI++)
+        for (label edgeI=0; edgeI<nInternalEdges; ++edgeI)
         {
             const edge& e = surfaceEdges[edgeI];
             const labelList& edgeFaces = extrudePatch.edgeFaces()[edgeI];
@@ -139,13 +139,13 @@ Foam::faceList Foam::extrudedMesh::extrudedFaces
     }
 
     // External side faces
-    for (label layer=0; layer<nLayers; layer++)
+    for (label layer=0; layer<nLayers; ++layer)
     {
         label currentLayerOffset = layer*surfacePoints.size();
         label nextLayerOffset = currentLayerOffset + surfacePoints.size();
 
         // Side faces across layer
-        for (label edgeI=nInternalEdges; edgeI<surfaceEdges.size(); edgeI++)
+        for (label edgeI=nInternalEdges; edgeI<surfaceEdges.size(); ++edgeI)
         {
             const edge& e = surfaceEdges[edgeI];
             const labelList& edgeFaces = extrudePatch.edgeFaces()[edgeI];
@@ -212,7 +212,7 @@ Foam::cellList Foam::extrudedMesh::extrudedCells
     {
         const face& f = surfaceFaces[i];
 
-        for (label layer=0; layer<nLayers; layer++)
+        for (label layer=0; layer<nLayers; ++layer)
         {
             eCells[i + layer*surfaceFaces.size()].setSize(f.size() + 2);
         }
@@ -224,10 +224,10 @@ Foam::cellList Foam::extrudedMesh::extrudedCells
 
     label facei = 0;
 
-    for (label layer=0; layer<nLayers; layer++)
+    for (label layer=0; layer<nLayers; ++layer)
     {
         // Side faces from layer to layer+1
-        for (label i=0; i<nInternalEdges; i++)
+        for (label i=0; i<nInternalEdges; ++i)
         {
             // Get patch faces using edge
             const labelList& edgeFaces = extrudePatch.edgeFaces()[i];
@@ -259,10 +259,10 @@ Foam::cellList Foam::extrudedMesh::extrudedCells
     }
 
     // External side faces
-    for (label layer=0; layer<nLayers; layer++)
+    for (label layer=0; layer<nLayers; ++layer)
     {
         // Side faces across layer
-        for (label i=nInternalEdges; i<surfaceEdges.size(); i++)
+        for (label i=nInternalEdges; i<surfaceEdges.size(); ++i)
         {
             // Get patch faces using edge
             const labelList& edgeFaces = extrudePatch.edgeFaces()[i];

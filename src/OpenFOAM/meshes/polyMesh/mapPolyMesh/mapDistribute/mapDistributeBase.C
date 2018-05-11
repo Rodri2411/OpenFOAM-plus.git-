@@ -81,7 +81,7 @@ Foam::List<Foam::labelPair> Foam::mapDistributeBase::schedule
         (
             int slave=Pstream::firstSlave();
             slave<=Pstream::lastSlave();
-            slave++
+            ++slave
         )
         {
             IPstream fromSlave(Pstream::commsTypes::scheduled, slave, 0, tag);
@@ -102,7 +102,7 @@ Foam::List<Foam::labelPair> Foam::mapDistributeBase::schedule
         (
             int slave=Pstream::firstSlave();
             slave<=Pstream::lastSlave();
-            slave++
+            ++slave
         )
         {
             OPstream toSlave(Pstream::commsTypes::scheduled, slave, 0, tag);
@@ -853,7 +853,7 @@ void Foam::mapDistributeBase::compact(const boolList& elemIsUsed, const int tag)
 
         List<boolList> recvFields(Pstream::nProcs());
 
-        for (label domain = 0; domain < Pstream::nProcs(); domain++)
+        for (label domain = 0; domain < Pstream::nProcs(); ++domain)
         {
             const labelList& map = subMap_[domain];
 
@@ -874,7 +874,7 @@ void Foam::mapDistributeBase::compact(const boolList& elemIsUsed, const int tag)
 
         List<boolList> sendFields(Pstream::nProcs());
 
-        for (label domain = 0; domain < Pstream::nProcs(); domain++)
+        for (label domain = 0; domain < Pstream::nProcs(); ++domain)
         {
             const labelList& map = constructMap_[domain];
 
@@ -931,7 +931,7 @@ void Foam::mapDistributeBase::compact(const boolList& elemIsUsed, const int tag)
 
 
         // Compact out all submap entries that are referring to unused elements
-        for (label domain = 0; domain < Pstream::nProcs(); domain++)
+        for (label domain = 0; domain < Pstream::nProcs(); ++domain)
         {
             const labelList& map = subMap_[domain];
 
@@ -960,7 +960,7 @@ void Foam::mapDistributeBase::compact(const boolList& elemIsUsed, const int tag)
 
     label maxConstructIndex = -1;
 
-    for (label domain = 0; domain < Pstream::nProcs(); domain++)
+    for (label domain = 0; domain < Pstream::nProcs(); ++domain)
     {
         const labelList& map = constructMap_[domain];
 
@@ -1020,7 +1020,7 @@ void Foam::mapDistributeBase::compact
 
         List<boolList> recvFields(Pstream::nProcs());
 
-        for (label domain = 0; domain < Pstream::nProcs(); domain++)
+        for (label domain = 0; domain < Pstream::nProcs(); ++domain)
         {
             const labelList& map = subMap_[domain];
 
@@ -1041,7 +1041,7 @@ void Foam::mapDistributeBase::compact
 
         List<boolList> sendFields(Pstream::nProcs());
 
-        for (label domain = 0; domain < Pstream::nProcs(); domain++)
+        for (label domain = 0; domain < Pstream::nProcs(); ++domain)
         {
             const labelList& map = constructMap_[domain];
 
@@ -1103,7 +1103,7 @@ void Foam::mapDistributeBase::compact
 
             boolList sendElemIsUsed(localSize, false);
 
-            for (label domain = 0; domain < Pstream::nProcs(); domain++)
+            for (label domain = 0; domain < Pstream::nProcs(); ++domain)
             {
                 const labelList& map = subMap_[domain];
                 forAll(map, i)
@@ -1132,7 +1132,7 @@ void Foam::mapDistributeBase::compact
 
 
         // Compact out all submap entries that are referring to unused elements
-        for (label domain = 0; domain < Pstream::nProcs(); domain++)
+        for (label domain = 0; domain < Pstream::nProcs(); ++domain)
         {
             const labelList& map = subMap_[domain];
 
@@ -1182,7 +1182,7 @@ void Foam::mapDistributeBase::compact
         }
     }
 
-    for (label domain = 0; domain < Pstream::nProcs(); domain++)
+    for (label domain = 0; domain < Pstream::nProcs(); ++domain)
     {
         const labelList& map = constructMap_[domain];
 

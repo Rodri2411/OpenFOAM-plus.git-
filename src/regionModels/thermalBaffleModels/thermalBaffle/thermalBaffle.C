@@ -289,7 +289,7 @@ void thermalBaffle::preEvolveRegion()
 
 void thermalBaffle::evolveRegion()
 {
-    for (int nonOrth=0; nonOrth<=nNonOrthCorr_; nonOrth++)
+    for (int nonOrth=0; nonOrth<=nNonOrthCorr_; ++nonOrth)
     {
         solveEnergy();
     }

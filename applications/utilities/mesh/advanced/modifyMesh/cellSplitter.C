@@ -206,7 +206,7 @@ void Foam::cellSplitter::setRefinement
         newCells[0] = celli;
 
         // Add other pyramids
-        for (label i = 1; i < cFaces.size(); i++)
+        for (label i = 1; i < cFaces.size(); ++i)
         {
             label addedCelli =
                 meshMod.setAction

@@ -178,7 +178,7 @@ void Foam::GAMGSolver::Vcycle
 
 
     // Residual restriction (going to coarser levels)
-    for (label leveli = 0; leveli < coarsestLevel; leveli++)
+    for (label leveli = 0; leveli < coarsestLevel; ++leveli)
     {
         if (coarseSources.set(leveli + 1))
         {

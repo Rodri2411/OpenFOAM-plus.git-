@@ -473,7 +473,7 @@ void Foam::topoSet::invert(const label maxLen)
     clear();
     resize(2*(maxLen - currentSet.size()));
 
-    for (label celli = 0; celli < maxLen; celli++)
+    for (label celli = 0; celli < maxLen; ++celli)
     {
         if (!currentSet.found(celli))
         {

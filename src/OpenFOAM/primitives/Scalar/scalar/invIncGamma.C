@@ -88,7 +88,7 @@ static scalar Sn(const scalar a, const scalar x)
     scalar Sn = 1;
     scalar Si = 1;
 
-    for (int i=1; i<100; i++)
+    for (int i=1; i<100; ++i)
     {
         Si *= x/(a + i);
         Sn += Si;

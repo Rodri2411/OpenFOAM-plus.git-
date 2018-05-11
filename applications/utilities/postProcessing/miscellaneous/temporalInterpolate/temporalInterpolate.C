@@ -114,7 +114,7 @@ void fieldInterpolator::interpolate()
 
                 scalar deltaT = (ti1_.value() - ti_.value())/(divisions_ + 1);
 
-                for (int j=0; j<divisions_; j++)
+                for (int j=0; j<divisions_; ++j)
                 {
                     instant timej = instant(ti_.value() + (j + 1)*deltaT);
 
@@ -268,7 +268,7 @@ int main(int argc, char *argv[])
 
     Info<< "Interpolating fields for times:" << endl;
 
-    for (label timei = 0; timei < timeDirs.size() - 1; timei++)
+    for (label timei = 0; timei < timeDirs.size() - 1; ++timei)
     {
         runTime.setTime(timeDirs[timei], timei);
 

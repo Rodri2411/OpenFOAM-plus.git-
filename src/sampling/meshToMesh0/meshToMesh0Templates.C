@@ -105,7 +105,7 @@ void Foam::meshToMesh0::interpolateField
 
             Type f = fromVf[adr[celli]]*w[0];
 
-            for (label ni = 1; ni < w.size(); ni++)
+            for (label ni = 1; ni < w.size(); ++ni)
             {
                 f += fromVf[neighbours[ni - 1]]*w[ni];
             }

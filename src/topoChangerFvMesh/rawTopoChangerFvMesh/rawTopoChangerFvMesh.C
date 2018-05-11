@@ -93,14 +93,14 @@ bool Foam::rawTopoChangerFvMesh::update()
         const label nOldInternal = topoChangeMap().oldPatchStarts()[0];
 
         const labelList& faceMap = topoChangeMap().faceMap();
-        for (label facei = 0; facei < nInternalFaces(); facei++)
+        for (label facei = 0; facei < nInternalFaces(); ++facei)
         {
             if (faceMap[facei] >= 0)
             {
                 mappedFace.set(facei);
             }
         }
-        for (label facei = nInternalFaces(); facei < nFaces(); facei++)
+        for (label facei = nInternalFaces(); facei < nFaces(); ++facei)
         {
             if (faceMap[facei] >= 0 && faceMap[facei] >= nOldInternal)
             {

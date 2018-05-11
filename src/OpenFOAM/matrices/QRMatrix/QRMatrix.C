@@ -54,11 +54,11 @@ void Foam::QRMatrix<MatrixType>::decompose(const MatrixType& M)
     QMatrixType Rk(m);
     Field<cmptType> uk(m);
 
-    for (label k=0; k<n; k++)
+    for (label k=0; k<n; ++k)
     {
         // alpha = -|column k of Rk|
         cmptType alpha = Zero;
-        for (label bi=k; bi<m; bi++)
+        for (label bi=k; bi<m; ++bi)
         {
             alpha += sqr(R_(bi, k));
         }
@@ -73,7 +73,7 @@ void Foam::QRMatrix<MatrixType>::decompose(const MatrixType& M)
         // rSumSqrUk = 2/sum(sqr(uk))
         uk[k] = R_(k, k) - alpha;
         cmptType rSumSqrUk = sqr(uk[k]);
-        for (label bi=k+1; bi<m; bi++)
+        for (label bi=k+1; bi<m; ++bi)
         {
             uk[bi] = R_(bi, k);
             rSumSqrUk += sqr(uk[bi]);
@@ -81,9 +81,9 @@ void Foam::QRMatrix<MatrixType>::decompose(const MatrixType& M)
         rSumSqrUk = 2/rSumSqrUk;
 
         // Qk = I - 2*u*uT/sum(sqr(uk))
-        for (label bi=k; bi<m; bi++)
+        for (label bi=k; bi<m; ++bi)
         {
-            for (label bj=k; bj<m; bj++)
+            for (label bj=k; bj<m; ++bj)
             {
                 Qk(bi, bj) = -rSumSqrUk*uk[bi]*uk[bj];
             }
@@ -91,12 +91,12 @@ void Foam::QRMatrix<MatrixType>::decompose(const MatrixType& M)
         }
 
         // Rk = Qk*R
-        for (label bi=k; bi<m; bi++)
+        for (label bi=k; bi<m; ++bi)
         {
-            for (label bk=k; bk<n; bk++)
+            for (label bk=k; bk<n; ++bk)
             {
                 Rk(bi, bk) = Zero;
-                for (label bj=k; bj<n; bj++)
+                for (label bj=k; bj<n; ++bj)
                 {
                     Rk(bi, bk) += Qk(bi, bj)*R_(bj, bk);
                 }
@@ -108,13 +108,13 @@ void Foam::QRMatrix<MatrixType>::decompose(const MatrixType& M)
         {
             // R = -Rk
             // Q = -Q
-            for (label bi=k; bi<m; bi++)
+            for (label bi=k; bi<m; ++bi)
             {
-                for (label bj=k; bj<n; bj++)
+                for (label bj=k; bj<n; ++bj)
                 {
                     R_(bi, bj) = -Rk(bi, bj);
                 }
-                for (label bj=k; bj<m; bj++)
+                for (label bj=k; bj<m; ++bj)
                 {
                     Q_(bi, bj) = -Q_(bi, bj);
                 }
@@ -123,9 +123,9 @@ void Foam::QRMatrix<MatrixType>::decompose(const MatrixType& M)
         else
         {
             // R = Rk
-            for (label bi=k; bi<m; bi++)
+            for (label bi=k; bi<m; ++bi)
             {
-                for (label bj=k; bj<n; bj++)
+                for (label bj=k; bj<n; ++bj)
                 {
                     R_(bi, bj) = Rk(bi, bj);
                 }
@@ -133,20 +133,20 @@ void Foam::QRMatrix<MatrixType>::decompose(const MatrixType& M)
         }
 
         // Q = Q*Qk (using Rk as temporary storage)
-        for (label bi=0; bi<m; bi++)
+        for (label bi=0; bi<m; ++bi)
         {
-            for (label bk=k; bk<m; bk++)
+            for (label bk=k; bk<m; ++bk)
             {
                 Rk(bi, bk) = Zero;
-                for (label bj=k; bj<m; bj++)
+                for (label bj=k; bj<m; ++bj)
                 {
                     Rk(bi, bk) += Q_(bi, bj)*Qk(bj, bk);
                 }
             }
         }
-        for (label bi=0; bi<m; bi++)
+        for (label bi=0; bi<m; ++bi)
         {
-            for (label bj=k; bj<n; bj++)
+            for (label bj=k; bj<n; ++bj)
             {
                 Q_(bi, bj) = Rk(bi, bj);
             }
@@ -167,7 +167,7 @@ void Foam::QRMatrix<MatrixType>::solvex
     {
         cmptType sum = x[i];
 
-        for (label j=i+1; j<n; j++)
+        for (label j=i+1; j<n; ++j)
         {
             sum -= x[j]*R_(i, j);
         }
@@ -194,10 +194,10 @@ void Foam::QRMatrix<MatrixType>::solve
     const label m = Q_.m();
 
     // x = Q_.T()*source;
-    for (label i=0; i<m; i++)
+    for (label i=0; i<m; ++i)
     {
         x[i] = 0;
-        for (label j=0; j<m; j++)
+        for (label j=0; j<m; ++j)
         {
             x[i] += Q_(j, i)*source[j];
         }
@@ -232,9 +232,9 @@ Foam::QRMatrix<MatrixType>::inv() const
     Field<cmptType> x(m);
     QMatrixType inv(m);
 
-    for (label i=0; i<m; i++)
+    for (label i=0; i<m; ++i)
     {
-        for (label j=0; j<m; j++)
+        for (label j=0; j<m; ++j)
         {
             x[j] = Q_(i, j);
         }

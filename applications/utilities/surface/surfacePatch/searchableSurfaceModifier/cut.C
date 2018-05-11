@@ -65,7 +65,7 @@ void Foam::searchableSurfaceModifiers::cut::triangulate
     {
         const face& f = fcs[i];
         // Triangulate around vertex 0
-        for (label fp = 1; fp < f.size()-1; fp++)
+        for (label fp = 1; fp < f.size()-1; ++fp)
         {
             tris.append(labelledTri(f[0], f[fp], f[f.fcIndex(fp)], i));
         }
@@ -144,7 +144,7 @@ bool Foam::searchableSurfaceModifiers::cut::intersectSurfaces
     bool hasMoved1 = false;
     bool hasMoved2 = false;
 
-    for (label iter = 0; iter < 10; iter++)
+    for (label iter = 0; iter < 10; ++iter)
     {
         Info<< "Determining intersections of surf1 edges with surf2"
             << " faces" << endl;

@@ -959,7 +959,7 @@ Foam::label Foam::MeshedSurface<Face>::triangulate
 
             label nTmp = 0;
             f.triangles(this->points(), nTmp, tmpTri);
-            for (label triI = 0; triI < nTmp; triI++)
+            for (label triI = 0; triI < nTmp; ++triI)
             {
                 newFaces[nTri] = Face
                 (

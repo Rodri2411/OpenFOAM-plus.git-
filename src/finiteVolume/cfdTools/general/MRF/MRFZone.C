@@ -74,7 +74,7 @@ void Foam::MRFZone::setMRFFaces()
 
     label nZoneFaces = 0;
 
-    for (label facei = 0; facei < mesh_.nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh_.nInternalFaces(); ++facei)
     {
         if (zoneCell[own[facei]] || zoneCell[nei[facei]])
         {
@@ -131,7 +131,7 @@ void Foam::MRFZone::setMRFFaces()
     internalFaces_.setSize(mesh_.nFaces());
     label nInternal = 0;
 
-    for (label facei = 0; facei < mesh_.nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh_.nInternalFaces(); ++facei)
     {
         if (faceType[facei] == 1)
         {

@@ -12,7 +12,7 @@ int USERD_get_part_node_ids
 
     if (part_number == 1)
     {
-        for (label indx=0; indx<Num_global_nodes; indx++)
+        for (label indx=0; indx<Num_global_nodes; ++indx)
         {
             nodeid_array[indx] = indx + 1;
         }
@@ -26,7 +26,7 @@ int USERD_get_part_node_ids
 
         label nPoints = points.size();
 
-        for (label indx=0; indx<nPoints; indx++)
+        for (label indx=0; indx<nPoints; ++indx)
         {
             nodeid_array[indx] = indx + 1;
         }

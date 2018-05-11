@@ -59,7 +59,7 @@ bool Foam::uniformSet::nextSample
     samplePt += offset;
     sampleI++;
 
-    for (; sampleI < nPoints_; sampleI++)
+    for (; sampleI < nPoints_; ++sampleI)
     {
         scalar s = (samplePt - currentPt) & normOffset;
 

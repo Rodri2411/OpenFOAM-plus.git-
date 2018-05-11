@@ -120,12 +120,12 @@ bool Foam::functionObjects::specieReactionRates<ChemistryModelType>::write()
     // Region volume
     const scalar V = this->V();
 
-    for (label ri=0; ri<nReaction; ri++)
+    for (label ri=0; ri<nReaction; ++ri)
     {
         writeTime(file());
         file() << token::TAB << ri;
 
-        for (label si=0; si<nSpecie; si++)
+        for (label si=0; si<nSpecie; ++si)
         {
             volScalarField::Internal RR
             (

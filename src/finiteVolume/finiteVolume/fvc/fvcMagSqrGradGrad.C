@@ -51,7 +51,7 @@ tmp<volScalarField> magSqrGradGrad
     );
 
     // Loop over other vector field components
-    for (direction cmpt = 1; cmpt < pTraits<Type>::nComponents; cmpt++)
+    for (direction cmpt = 1; cmpt < pTraits<Type>::nComponents; ++cmpt)
     {
         tMagSqrGradGrad.ref() +=
             magSqr(fvc::grad(fvc::grad(vf.component(cmpt))))();

@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
             << " times from GaussNormal distribution."
             << endl;
 
-        for (label i = 0; i < randomDistributionTestSize; i++)
+        for (label i = 0; i < randomDistributionTestSize; ++i)
         {
             dS.add(2.5*R.GaussNormal<scalar>() + 8.5);
         }
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
             << " times from GaussNormal distribution."
             << endl;
 
-        for (label i = 0; i < randomDistributionTestSize; i++)
+        for (label i = 0; i < randomDistributionTestSize; ++i)
         {
             dS2.add(1.5*R.GaussNormal<scalar>() -6.0);
         }
@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
             << " times from uniform distribution."
             << endl;
 
-        for (label i = 0; i < randomDistributionTestSize; i++)
+        for (label i = 0; i < randomDistributionTestSize; ++i)
         {
             dS.add(R.sample01<scalar>() + 10*Pstream::myProcNo());
         }
@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
             << " times from uniform and GaussNormal distribution."
             << endl;
 
-        for (label i = 0; i < randomDistributionTestSize; i++)
+        for (label i = 0; i < randomDistributionTestSize; ++i)
         {
             dV.add(R.sample01<vector>());
 
@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
     //         << " times from uniform distribution."
     //         << endl;
 
-    //     for (label i = 0; i < randomDistributionTestSize; i++)
+    //     for (label i = 0; i < randomDistributionTestSize; ++i)
     //     {
     //         dLV.add
     //         (
@@ -223,7 +223,7 @@ int main(int argc, char *argv[])
             << " times from uniform distribution."
             << endl;
 
-        for (label i = 0; i < randomDistributionTestSize; i++)
+        for (label i = 0; i < randomDistributionTestSize; ++i)
         {
             dT.add(R.sample01<tensor>());
         }
@@ -247,7 +247,7 @@ int main(int argc, char *argv[])
             << " times from uniform distribution."
             << endl;
 
-        for (label i = 0; i < randomDistributionTestSize; i++)
+        for (label i = 0; i < randomDistributionTestSize; ++i)
         {
             dSyT.add(R.sample01<symmTensor>());
         }
@@ -271,7 +271,7 @@ int main(int argc, char *argv[])
             << " times from uniform distribution."
             << endl;
 
-        for (label i = 0; i < randomDistributionTestSize; i++)
+        for (label i = 0; i < randomDistributionTestSize; ++i)
         {
             dSpT.add(R.sample01<sphericalTensor>());
         }

@@ -22,7 +22,7 @@ int USERD_get_gold_part_build_info
     label nCells = cells.size();
 
     // all parts are unstructured
-    for (label n = 0; n<Numparts_available; n++)
+    for (label n = 0; n<Numparts_available; ++n)
     {
         part_numbers[n] = n + 1;
         part_types[n]   = Z_UNSTRUCTURED;
@@ -30,7 +30,7 @@ int USERD_get_gold_part_build_info
 
     strncpy(part_descriptions[0], meshName, Z_BUFL);
 
-    for (label i=0; i<nPatches; i++)
+    for (label i=0; i<nPatches; ++i)
     {
         word patchName(meshPtr->boundary()[i].name());
         strncpy(part_descriptions[i+1], patchName.c_str(), Z_BUFL);
@@ -42,7 +42,7 @@ int USERD_get_gold_part_build_info
     label nTet04 = 0;
     label nFaced = 0;
 
-    for (label n=0; n<nCells; n++)
+    for (label n=0; n<nCells; ++n)
     {
         label nFacesInCell = cells[n].size();
         labelList points = cellShapes[n];
@@ -76,9 +76,9 @@ int USERD_get_gold_part_build_info
         }
     }
 
-    for (label n=0; n < Z_MAXTYPE; n++)
+    for (label n=0; n < Z_MAXTYPE; ++n)
     {
-        for (label i=0; i<Numparts_available; i++)
+        for (label i=0; i<Numparts_available; ++i)
         {
             number_of_elements[i][n] = 0;
         }
@@ -102,7 +102,7 @@ int USERD_get_gold_part_build_info
 
     const polyBoundaryMesh& bMesh = meshPtr->boundaryMesh();
 
-    for (label i=0; i<nPatches; i++)
+    for (label i=0; i<nPatches; ++i)
     {
         label nTri03 = 0;
         label nQuad04 = 0;

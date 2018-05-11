@@ -191,7 +191,7 @@ Type Foam::Distribution<Type>::mean() const
 {
     Type meanValue(Zero);
 
-    for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; cmpt++)
+    for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; ++cmpt)
     {
         const List<scalar>& cmptDistribution = (*this)[cmpt];
 
@@ -222,7 +222,7 @@ Type Foam::Distribution<Type>::median() const
 
     List<List<Pair<scalar>>> normDistribution = normalised();
 
-    for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; cmpt++)
+    for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; ++cmpt)
     {
         List<Pair<scalar>>& normDist = normDistribution[cmpt];
 
@@ -308,7 +308,7 @@ void Foam::Distribution<Type>::add
     const Type& weight
 )
 {
-    for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; cmpt++)
+    for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; ++cmpt)
     {
         List<scalar>& cmptDistribution = (*this)[cmpt];
 
@@ -329,7 +329,7 @@ Distribution<Type>::normalised() const
 {
     List<List<Pair<scalar>>> normDistribution(pTraits<Type>::nComponents);
 
-    for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; cmpt++)
+    for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; ++cmpt)
     {
         const List<scalar>& cmptDistribution = (*this)[cmpt];
 
@@ -352,7 +352,7 @@ Distribution<Type>::normalised() const
         (
             label k = limits.first(), i = 0;
             k <= limits.second();
-            k++, i++
+            ++k, ++i
         )
         {
             label key = cmptKeys[k];
@@ -377,7 +377,7 @@ Distribution<Type>::raw() const
 {
     List<List<Pair<scalar>>> rawDistribution(pTraits<Type>::nComponents);
 
-    for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; cmpt++)
+    for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; ++cmpt)
     {
         const List<scalar>& cmptDistribution = (*this)[cmpt];
 
@@ -398,7 +398,7 @@ Distribution<Type>::raw() const
         (
             label k = limits.first(), i = 0;
             k <= limits.second();
-            k++, i++
+            ++k, ++i
         )
         {
             label key = cmptKeys[k];
@@ -422,7 +422,7 @@ Distribution<Type>::cumulativeNormalised() const
     List<List<Pair<scalar>>> cumulativeNormalisedDistribution =
         normalisedDistribution;
 
-    for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; cmpt++)
+    for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; ++cmpt)
     {
         const List<Pair<scalar>>& normalisedCmpt =
             normalisedDistribution[cmpt];
@@ -457,7 +457,7 @@ Distribution<Type>::cumulativeRaw() const
 
     List<List<Pair<scalar>>> cumulativeRawDistribution = rawDistribution;
 
-    for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; cmpt++)
+    for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; ++cmpt)
     {
         const List<Pair<scalar>>& rawCmpt = rawDistribution[cmpt];
 
@@ -484,7 +484,7 @@ Distribution<Type>::cumulativeRaw() const
 template<class Type>
 void Foam::Distribution<Type>::clear()
 {
-    for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; cmpt++)
+    for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; ++cmpt)
     {
         (*this)[cmpt].clear();
 
@@ -500,7 +500,7 @@ void Foam::Distribution<Type>::write(const fileName& filePrefix) const
 
     List<List<Pair<scalar>>> normDistribution = normalised();
 
-    for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; cmpt++)
+    for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; ++cmpt)
     {
         const List<Pair<scalar>>& rawPairs = rawDistribution[cmpt];
 
@@ -523,7 +523,7 @@ void Foam::Distribution<Type>::write(const fileName& filePrefix) const
 
     List<List<Pair<scalar>>> normCumDist = cumulativeNormalised();
 
-    for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; cmpt++)
+    for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; ++cmpt)
     {
         const List<Pair<scalar>>& rawPairs = rawCumDist[cmpt];
 
@@ -624,7 +624,7 @@ Foam::Distribution<Type> Foam::operator+
 
     forAll(rawDists, rDI)
     {
-        for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; cmpt++)
+        for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; ++cmpt)
         {
             List<scalar>& cmptDistribution = d[cmpt];
 

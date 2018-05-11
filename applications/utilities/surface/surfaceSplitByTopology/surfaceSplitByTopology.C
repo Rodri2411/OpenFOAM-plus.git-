@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
         labelList faceMap;
 
 
-        for (label z = 0; z < nZones; z++)
+        for (label z = 0; z < nZones; ++z)
         {
             bool keepZone = true;
 
@@ -187,7 +187,7 @@ int main(int argc, char *argv[])
 
     Info<< "Splitting remaining multiply connected parts" << endl;
 
-    for (label z = 0; z < nZones; z++)
+    for (label z = 0; z < nZones; ++z)
     {
 
         boolList include(faceZone.size(), false);

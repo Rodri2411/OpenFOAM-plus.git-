@@ -72,7 +72,7 @@ void Foam::patchToFace::combine(topoSet& set, const bool add) const
         (
             label facei = pp.start();
             facei < pp.start() + pp.size();
-            facei++
+            ++facei
         )
         {
             addOrDelete(set, facei, add);

@@ -117,7 +117,7 @@ gaussLaplacianScheme<Type, GType>::gammaSnGradCorr
     );
     tgammaSnGradCorr.ref().oriented() = SfGammaCorr.oriented();
 
-    for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; cmpt++)
+    for (direction cmpt = 0; cmpt < pTraits<Type>::nComponents; ++cmpt)
     {
         tgammaSnGradCorr.ref().replace
         (

@@ -82,7 +82,7 @@ void Foam::lduPrimitiveMesh::checkUpperTriangular
         }
     }
 
-    for (label facei=1; facei < l.size(); facei++)
+    for (label facei=1; facei < l.size(); ++facei)
     {
         if (l[facei-1] > l[facei])
         {
@@ -174,7 +174,7 @@ Foam::labelList Foam::lduPrimitiveMesh::upperTriOrder
 
     label newFacei = 0;
 
-    for (label celli = 0; celli < nCells; celli++)
+    for (label celli = 0; celli < nCells; ++celli)
     {
         label startOfCell = offsets[celli];
         label nNbr = offsets[celli+1] - startOfCell;
@@ -337,7 +337,7 @@ Foam::lduPrimitiveMesh::lduPrimitiveMesh
     // Cells get added in order.
     cellOffsets.setSize(nMeshes+1);
     cellOffsets[0] = 0;
-    for (label procMeshI = 0; procMeshI < nMeshes; procMeshI++)
+    for (label procMeshI = 0; procMeshI < nMeshes; ++procMeshI)
     {
         const lduMesh& procMesh = mesh(myMesh, otherMeshes, procMeshI);
 
@@ -350,7 +350,7 @@ Foam::lduPrimitiveMesh::lduPrimitiveMesh
     // Faces initially get added in order, sorted later
     labelList internalFaceOffsets(nMeshes+1);
     internalFaceOffsets[0] = 0;
-    for (label procMeshI = 0; procMeshI < nMeshes; procMeshI++)
+    for (label procMeshI = 0; procMeshI < nMeshes; ++procMeshI)
     {
         const lduMesh& procMesh = mesh(myMesh, otherMeshes, procMeshI);
 
@@ -379,7 +379,7 @@ Foam::lduPrimitiveMesh::lduPrimitiveMesh
     label nOtherInterfaces = 0;
     labelList nCoupledFaces(nMeshes, 0);
 
-    for (label procMeshI = 0; procMeshI < nMeshes; procMeshI++)
+    for (label procMeshI = 0; procMeshI < nMeshes; ++procMeshI)
     {
         const lduInterfacePtrsList interfaces =
             mesh(myMesh, otherMeshes, procMeshI).interfaces();
@@ -560,7 +560,7 @@ Foam::lduPrimitiveMesh::lduPrimitiveMesh
     faceOffsets.setSize(nMeshes+1);
     faceOffsets[0] = 0;
     faceMap.setSize(nMeshes);
-    for (label procMeshI = 0; procMeshI < nMeshes; procMeshI++)
+    for (label procMeshI = 0; procMeshI < nMeshes; ++procMeshI)
     {
         const lduMesh& procMesh = mesh(myMesh, otherMeshes, procMeshI);
         label nInternal = procMesh.lduAddr().lowerAddr().size();
@@ -587,7 +587,7 @@ Foam::lduPrimitiveMesh::lduPrimitiveMesh
     // Old internal faces and resolved coupled interfaces
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    for (label procMeshI = 0; procMeshI < nMeshes; procMeshI++)
+    for (label procMeshI = 0; procMeshI < nMeshes; ++procMeshI)
     {
         const lduMesh& procMesh = mesh(myMesh, otherMeshes, procMeshI);
 
@@ -983,7 +983,7 @@ void Foam::lduPrimitiveMesh::gather
         otherMeshes.setSize(procIDs.size()-1);
 
         // Slave meshes
-        for (label i = 1; i < procIDs.size(); i++)
+        for (label i = 1; i < procIDs.size(); ++i)
         {
             //Pout<< "on master :"
             //    << " receiving from slave " << procIDs[i] << endl;

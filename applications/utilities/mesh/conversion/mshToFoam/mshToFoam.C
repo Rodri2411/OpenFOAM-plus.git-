@@ -95,9 +95,9 @@ int main(int argc, char *argv[])
 
     if (readHex)
     {
-        for (label celli = 0; celli < nCells; celli++)
+        for (label celli = 0; celli < nCells; ++celli)
         {
-            for (label cp = 0; cp < 8; cp++)
+            for (label cp = 0; cp < 8; ++cp)
             {
                 mshStream >> hexPoints[cp];
             }
@@ -106,9 +106,9 @@ int main(int argc, char *argv[])
     }
     else
     {
-        for (label celli = 0; celli < nCells; celli++)
+        for (label celli = 0; celli < nCells; ++celli)
         {
-            for (label cp = 0; cp < 4; cp++)
+            for (label cp = 0; cp < 4; ++cp)
             {
                 mshStream >> tetPoints[cp];
             }
@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
     pointField points(nPoints);
 
 
-    for (label pointi = 0; pointi < nPoints; pointi++)
+    for (label pointi = 0; pointi < nPoints; ++pointi)
     {
         scalar x, y, z;
 

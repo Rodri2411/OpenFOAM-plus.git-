@@ -182,7 +182,7 @@ Foam::radiation::wideBandAbsorptionEmission::aCont(const label bandi) const
     {
         const List<scalar>& species = lookUpTable_.lookUp(ft[i]);
 
-        for (label n=0; n<nSpecies; n++)
+        for (label n=0; n<nSpecies; ++n)
         {
             label l = 0;
             scalar Yipi = 0.0;
@@ -289,7 +289,7 @@ void Foam::radiation::wideBandAbsorptionEmission::correct
 {
     a = dimensionedScalar(dimless/dimLength, Zero);
 
-    for (label j=0; j<nBands_; j++)
+    for (label j=0; j<nBands_; ++j)
     {
         aLambda[j].primitiveFieldRef() = this->a(j);
 

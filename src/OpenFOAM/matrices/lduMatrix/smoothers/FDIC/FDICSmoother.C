@@ -74,18 +74,18 @@ Foam::FDICSmoother::FDICSmoother
     label nCells = rD_.size();
     label nFaces = matrix_.upper().size();
 
-    for (label face=0; face<nFaces; face++)
+    for (label face=0; face<nFaces; ++face)
     {
         rDPtr[uPtr[face]] -= sqr(upperPtr[face])/rDPtr[lPtr[face]];
     }
 
     // Generate reciprocal FDIC
-    for (label cell=0; cell<nCells; cell++)
+    for (label cell=0; cell<nCells; ++cell)
     {
         rDPtr[cell] = 1.0/rDPtr[cell];
     }
 
-    for (label face=0; face<nFaces; face++)
+    for (label face=0; face<nFaces; ++face)
     {
         rDuUpperPtr[face] = rDPtr[uPtr[face]]*upperPtr[face];
         rDlUpperPtr[face] = rDPtr[lPtr[face]]*upperPtr[face];
@@ -115,7 +115,7 @@ void Foam::FDICSmoother::smooth
     scalarField rA(rD_.size());
     scalar* __restrict__ rAPtr = rA.begin();
 
-    for (label sweep=0; sweep<nSweeps; sweep++)
+    for (label sweep=0; sweep<nSweeps; ++sweep)
     {
         matrix_.residual
         (
@@ -130,7 +130,7 @@ void Foam::FDICSmoother::smooth
         rA *= rD_;
 
         label nFaces = matrix_.upper().size();
-        for (label face=0; face<nFaces; face++)
+        for (label face=0; face<nFaces; ++face)
         {
             rAPtr[uPtr[face]] -= rDuUpperPtr[face]*rAPtr[lPtr[face]];
         }

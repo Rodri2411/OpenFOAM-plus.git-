@@ -159,7 +159,7 @@ bool Foam::functionObjects::externalCoupled::readData
                 (
                     direction cmpt = 0;
                     cmpt < pTraits<Type>::nComponents;
-                    cmpt++
+                    ++cmpt
                 )
                 {
                     refValue.replace(cmpt, data[columni++]);
@@ -169,7 +169,7 @@ bool Foam::functionObjects::externalCoupled::readData
                 (
                     direction cmpt = 0;
                     cmpt < pTraits<Type>::nComponents;
-                    cmpt++
+                    ++cmpt
                 )
                 {
                     refGrad.replace(cmpt, data[columni++]);
@@ -201,7 +201,7 @@ bool Foam::functionObjects::externalCoupled::readData
                 (
                     direction cmpt = 0;
                     cmpt < pTraits<Type>::nComponents;
-                    cmpt++
+                    ++cmpt
                 )
                 {
                     gradient.replace
@@ -236,7 +236,7 @@ bool Foam::functionObjects::externalCoupled::readData
                 (
                     direction cmpt = 0;
                     cmpt < pTraits<Type>::nComponents;
-                    cmpt++
+                    ++cmpt
                 )
                 {
                     value.replace(cmpt, data[cmpt]);
@@ -410,7 +410,7 @@ bool Foam::functionObjects::externalCoupled::writeData
                     }
                     masterFilePtr() << os.str().c_str();
 
-                    for (label proci = 1; proci < Pstream::nProcs(); proci++)
+                    for (label proci = 1; proci < Pstream::nProcs(); ++proci)
                     {
                         IPstream fromSlave
                         (

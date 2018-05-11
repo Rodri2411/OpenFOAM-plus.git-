@@ -88,7 +88,7 @@ void Foam::cellCellStencils::cellVolumeWeight::walkFront
         const labelList& own = mesh_.faceOwner();
         const labelList& nei = mesh_.faceNeighbour();
 
-        for (label faceI = 0; faceI < mesh_.nInternalFaces(); faceI++)
+        for (label faceI = 0; faceI < mesh_.nInternalFaces(); ++faceI)
         {
             label ownType = allCellTypes[own[faceI]];
             label neiType = allCellTypes[nei[faceI]];
@@ -111,7 +111,7 @@ void Foam::cellCellStencils::cellVolumeWeight::walkFront
         (
             label faceI = mesh_.nInternalFaces();
             faceI < mesh_.nFaces();
-            faceI++
+            ++faceI
         )
         {
             label ownType = allCellTypes[own[faceI]];
@@ -223,7 +223,7 @@ void Foam::cellCellStencils::cellVolumeWeight::findHoles
 
 
     boolList isBlockedFace(mesh.nFaces(), false);
-    for (label faceI = 0; faceI < mesh.nInternalFaces(); faceI++)
+    for (label faceI = 0; faceI < mesh.nInternalFaces(); ++faceI)
     {
         label ownType = cellTypes[own[faceI]];
         label neiType = cellTypes[nei[faceI]];
@@ -240,7 +240,7 @@ void Foam::cellCellStencils::cellVolumeWeight::findHoles
     labelList nbrCellTypes;
     syncTools::swapBoundaryCellList(mesh, cellTypes, nbrCellTypes);
 
-    for (label faceI = mesh.nInternalFaces(); faceI < mesh.nFaces(); faceI++)
+    for (label faceI = mesh.nInternalFaces(); faceI < mesh.nFaces(); ++faceI)
     {
         label ownType = cellTypes[own[faceI]];
         label neiType = nbrCellTypes[faceI-mesh.nInternalFaces()];
@@ -276,7 +276,7 @@ void Foam::cellCellStencils::cellVolumeWeight::findHoles
     // See if any regions borders blockage. Note: isBlockedFace is already
     // parallel synchronised.
     {
-        for (label faceI = 0; faceI < mesh.nInternalFaces(); faceI++)
+        for (label faceI = 0; faceI < mesh.nInternalFaces(); ++faceI)
         {
             if (isBlockedFace[faceI])
             {
@@ -314,7 +314,7 @@ void Foam::cellCellStencils::cellVolumeWeight::findHoles
         (
             label faceI = mesh.nInternalFaces();
             faceI < mesh.nFaces();
-            faceI++
+            ++faceI
         )
         {
             if (isBlockedFace[faceI])
@@ -770,12 +770,12 @@ bool Foam::cellCellStencils::cellVolumeWeight::update()
     globalIndex globalCells(mesh_.nCells());
 
 
-    for (label srcI = 0; srcI < meshParts.size()-1; srcI++)
+    for (label srcI = 0; srcI < meshParts.size()-1; ++srcI)
     {
         const fvMesh& srcMesh = meshParts[srcI].subMesh();
         const labelList& srcCellMap = meshParts[srcI].cellMap();
 
-        for (label tgtI = srcI+1; tgtI < meshParts.size(); tgtI++)
+        for (label tgtI = srcI+1; tgtI < meshParts.size(); ++tgtI)
         {
             const fvMesh& tgtMesh = meshParts[tgtI].subMesh();
             const labelList& tgtCellMap = meshParts[tgtI].cellMap();

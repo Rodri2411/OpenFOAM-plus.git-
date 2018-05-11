@@ -101,7 +101,7 @@ inline Foam::SquareMatrix<Type>::SquareMatrix
 :
     Matrix<SquareMatrix<Type>, Type>(n, n, Zero)
 {
-    for (label i=0; i<n; i++)
+    for (label i=0; i<n; ++i)
     {
         this->operator()(i, i) = Type(I);
     }
@@ -181,7 +181,7 @@ template<class Type>
 void Foam::SquareMatrix<Type>::operator=(const Identity<Type>)
 {
     Matrix<SquareMatrix<Type>, Type>::operator=(Zero);
-    for (label i=0; i<this->n(); i++)
+    for (label i=0; i<this->n(); ++i)
     {
         this->operator()(i, i) = Type(I);
     }
@@ -204,9 +204,9 @@ inline Foam::SquareMatrix<Type> symmOuter
 {
     SquareMatrix<Type> f1f2T(f1.size());
 
-    for (label i=0; i<f1f2T.m(); i++)
+    for (label i=0; i<f1f2T.m(); ++i)
     {
-        for (label j=0; j<f1f2T.n(); j++)
+        for (label j=0; j<f1f2T.n(); ++j)
         {
             f1f2T(i, j) = f1[i]*f2[j];
         }

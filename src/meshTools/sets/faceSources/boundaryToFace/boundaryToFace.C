@@ -58,7 +58,7 @@ void Foam::boundaryToFace::combine(topoSet& set, const bool add) const
     (
         label facei = mesh().nInternalFaces();
         facei < mesh().nFaces();
-        facei++
+        ++facei
     )
     {
         addOrDelete(set, facei, add);

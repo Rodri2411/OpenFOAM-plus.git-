@@ -88,7 +88,7 @@ void Foam::dynamicRefineFvMesh::calculateProtectedCells
     // Get neighbouring cell level
     labelList neiLevel(nFaces()-nInternalFaces());
 
-    for (label facei = nInternalFaces(); facei < nFaces(); facei++)
+    for (label facei = nInternalFaces(); facei < nFaces(); ++facei)
     {
         neiLevel[facei-nInternalFaces()] = cellLevel[faceOwner()[facei]];
     }
@@ -117,7 +117,7 @@ void Foam::dynamicRefineFvMesh::calculateProtectedCells
                 seedFace[facei] = true;
             }
         }
-        for (label facei = nInternalFaces(); facei < nFaces(); facei++)
+        for (label facei = nInternalFaces(); facei < nFaces(); ++facei)
         {
             label own = faceOwner()[facei];
             bool ownProtected = unrefineableCell.test(own);
@@ -137,7 +137,7 @@ void Foam::dynamicRefineFvMesh::calculateProtectedCells
         // Extend unrefineableCell
         bool hasExtended = false;
 
-        for (label facei = 0; facei < nInternalFaces(); facei++)
+        for (label facei = 0; facei < nInternalFaces(); ++facei)
         {
             if (seedFace[facei])
             {
@@ -154,7 +154,7 @@ void Foam::dynamicRefineFvMesh::calculateProtectedCells
                 }
             }
         }
-        for (label facei = nInternalFaces(); facei < nFaces(); facei++)
+        for (label facei = nInternalFaces(); facei < nFaces(); ++facei)
         {
             if (seedFace[facei])
             {
@@ -231,7 +231,7 @@ Foam::dynamicRefineFvMesh::refine
     if (debug)
     {
         // Check map.
-        for (label facei = 0; facei < nInternalFaces(); facei++)
+        for (label facei = 0; facei < nInternalFaces(); ++facei)
         {
             label oldFacei = map.faceMap()[facei];
 
@@ -348,7 +348,7 @@ Foam::dynamicRefineFvMesh::refine
             );
 
             // Recalculate new internal faces.
-            for (label facei = 0; facei < nInternalFaces(); facei++)
+            for (label facei = 0; facei < nInternalFaces(); ++facei)
             {
                 label oldFacei = faceMap[facei];
 
@@ -761,7 +761,7 @@ Foam::labelList Foam::dynamicRefineFvMesh::selectRefineCells
     else
     {
         // Sort by error? For now just truncate.
-        for (label level = 0; level < maxRefinement; level++)
+        for (label level = 0; level < maxRefinement; ++level)
         {
             forAll(candidateCell, celli)
             {
@@ -931,7 +931,7 @@ void Foam::dynamicRefineFvMesh::extendMarkedCells
     syncTools::syncFaceList(*this, markedFace, orEqOp<bool>());
 
     // Update cells using any markedFace
-    for (label facei = 0; facei < nInternalFaces(); facei++)
+    for (label facei = 0; facei < nInternalFaces(); ++facei)
     {
         if (markedFace[facei])
         {
@@ -939,7 +939,7 @@ void Foam::dynamicRefineFvMesh::extendMarkedCells
             markedCell.set(faceNeighbour()[facei]);
         }
     }
-    for (label facei = nInternalFaces(); facei < nFaces(); facei++)
+    for (label facei = nInternalFaces(); facei < nFaces(); ++facei)
     {
         if (markedFace[facei])
         {
@@ -1061,11 +1061,11 @@ Foam::dynamicRefineFvMesh::dynamicRefineFvMesh(const IOobject& io)
     {
         labelList neiLevel(nFaces());
 
-        for (label facei = 0; facei < nInternalFaces(); facei++)
+        for (label facei = 0; facei < nInternalFaces(); ++facei)
         {
             neiLevel[facei] = cellLevel[faceNeighbour()[facei]];
         }
-        for (label facei = nInternalFaces(); facei < nFaces(); facei++)
+        for (label facei = nInternalFaces(); facei < nFaces(); ++facei)
         {
             neiLevel[facei] = cellLevel[faceOwner()[facei]];
         }
@@ -1103,7 +1103,7 @@ Foam::dynamicRefineFvMesh::dynamicRefineFvMesh(const IOobject& io)
 
         syncTools::syncFaceList(*this, protectedFace, orEqOp<bool>());
 
-        for (label facei = 0; facei < nInternalFaces(); facei++)
+        for (label facei = 0; facei < nInternalFaces(); ++facei)
         {
             if (protectedFace[facei])
             {
@@ -1113,7 +1113,7 @@ Foam::dynamicRefineFvMesh::dynamicRefineFvMesh(const IOobject& io)
                 nProtected++;
             }
         }
-        for (label facei = nInternalFaces(); facei < nFaces(); facei++)
+        for (label facei = nInternalFaces(); facei < nFaces(); ++facei)
         {
             if (protectedFace[facei])
             {
@@ -1340,7 +1340,7 @@ bool Foam::dynamicRefineFvMesh::update()
 
                 // Extend with a buffer layer to prevent neighbouring points
                 // being unrefined.
-                for (label i = 0; i < nBufferLayers; i++)
+                for (label i = 0; i < nBufferLayers; ++i)
                 {
                     extendMarkedCells(refineCell);
                 }

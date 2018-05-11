@@ -144,13 +144,13 @@ int main(int argc, char *argv[])
     label pointi = 0;
 
     point pt;
-    for( int k = 0 ; k < mc.size_z() ; k++ )
+    for (int k = 0; k < mc.size_z(); ++k)
     {
         pt.z() = bb.min().z() + k*d.z();
-        for( int j = 0 ; j < mc.size_y() ; j++ )
+        for (int j = 0; j < mc.size_y(); ++j)
         {
             pt.y() = bb.min().y() + j*d.y();
-            for( int i = 0 ; i < mc.size_x() ; i++ )
+            for (int i = 0; i < mc.size_x(); ++i)
             {
                 pt.x() = bb.min().x() + i*d.x();
                 points[pointi++] = pt;
@@ -182,11 +182,11 @@ int main(int argc, char *argv[])
 
     // Fill elements
     pointi = 0;
-    for( int k = 0 ; k < mc.size_z() ; k++ )
+    for (int k = 0; k < mc.size_z(); ++k)
     {
-        for( int j = 0 ; j < mc.size_y() ; j++ )
+        for (int j = 0; j < mc.size_y(); ++j)
         {
-            for( int i = 0 ; i < mc.size_x() ; i++ )
+            for (int i = 0; i < mc.size_x(); ++i)
             {
                 mc.set_data(float(signedDist[pointi++]), i, j, k);
             }

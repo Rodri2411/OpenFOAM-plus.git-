@@ -60,7 +60,7 @@ Gather<T0>::Gather(const T0& localData, const bool redistribute)
             (
                 int slave = Pstream::firstSlave(), procIndex = 1;
                 slave <= Pstream::lastSlave();
-                slave++, procIndex++
+                ++slave, ++procIndex
             )
             {
                 IPstream fromSlave(Pstream::commsTypes::scheduled, slave);
@@ -72,7 +72,7 @@ Gather<T0>::Gather(const T0& localData, const bool redistribute)
             (
                 int slave = Pstream::firstSlave(), procIndex = 1;
                 slave <= Pstream::lastSlave();
-                slave++, procIndex++
+                ++slave, ++procIndex
             )
             {
                 OPstream toSlave(Pstream::commsTypes::scheduled, slave);

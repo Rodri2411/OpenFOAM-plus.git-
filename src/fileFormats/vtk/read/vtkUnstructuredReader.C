@@ -475,7 +475,7 @@ Foam::wordList Foam::vtkUnstructuredReader::readFieldArray
     {
         Pout<< "numArrays:" << numArrays << endl;
     }
-    for (label i = 0; i < numArrays; i++)
+    for (label i = 0; i < numArrays; ++i)
     {
         word arrayName(inFile);
         label numComp(readLabel(inFile));
@@ -668,7 +668,7 @@ void Foam::vtkUnstructuredReader::read(ISstream& inFile)
             lineMap_.setSize(lines_.size());
 
             label elemI = 0;
-            for (label i = 0; i < nLines; i++)
+            for (label i = 0; i < nLines; ++i)
             {
                 lineMap_[lineI] = lineI;
                 labelList& f = lines_[lineI];
@@ -698,7 +698,7 @@ void Foam::vtkUnstructuredReader::read(ISstream& inFile)
             faceMap_.setSize(faces_.size());
 
             label elemI = 0;
-            for (label i = 0; i < nFaces; i++)
+            for (label i = 0; i < nFaces; ++i)
             {
                 faceMap_[facei] = facei;
                 face& f = faces_[facei];
@@ -871,7 +871,7 @@ void Foam::vtkUnstructuredReader::read(ISstream& inFile)
             // Count number of triangles
             label elemI = 0;
             label nTris = 0;
-            for (label i = 0; i < nStrips; i++)
+            for (label i = 0; i < nStrips; ++i)
             {
                 label nVerts = faceVerts[elemI++];
                 nTris += nVerts-2;
@@ -884,7 +884,7 @@ void Foam::vtkUnstructuredReader::read(ISstream& inFile)
             faces_.setSize(facei+nTris);
             faceMap_.setSize(faces_.size());
             elemI = 0;
-            for (label i = 0; i < nStrips; i++)
+            for (label i = 0; i < nStrips; ++i)
             {
                 label nVerts = faceVerts[elemI++];
                 label nTris = nVerts-2;
@@ -896,7 +896,7 @@ void Foam::vtkUnstructuredReader::read(ISstream& inFile)
                 f[0] = faceVerts[elemI++];
                 f[1] = faceVerts[elemI++];
                 f[2] = faceVerts[elemI++];
-                for (label triI = 1; triI < nTris; triI++)
+                for (label triI = 1; triI < nTris; ++triI)
                 {
                     faceMap_[facei] = facei;
                     face& f = faces_[facei++];

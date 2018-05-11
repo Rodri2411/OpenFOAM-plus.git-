@@ -306,7 +306,7 @@ bool Foam::fileName::clean(std::string& str)
     // Remove trailing slash
     if (nChar > 1 && str[nChar-1] == '/')
     {
-        nChar--;
+        --nChar;
     }
 
     str.resize(nChar);

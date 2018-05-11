@@ -1259,7 +1259,7 @@ void Foam::conformalVoronoiMesh::insertFeaturePoints(bool distribute)
 //        (
 //            label ptI = feMesh.convexStart();
 //            ptI < feMesh.mixedStart();
-//            ptI++
+//            ++ptI
 //        )
 //        {
 //            const Foam::point& apex = feMesh.points()[ptI];

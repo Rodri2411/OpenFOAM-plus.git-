@@ -44,7 +44,7 @@ void Foam::vtkTools::swapWord(label& word32)
 
 void Foam::vtkTools::swapWords(const label nWords, label* words32)
 {
-    for (label i = 0; i < nWords; i++)
+    for (label i = 0; i < nWords; ++i)
     {
         swapWord(words32[i]);
     }

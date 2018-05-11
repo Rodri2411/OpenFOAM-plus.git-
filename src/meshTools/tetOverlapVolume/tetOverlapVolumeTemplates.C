@@ -92,7 +92,7 @@ void Foam::tetOverlapVolume::tetTetOverlap
         plane pl1(tetBTet.tri(1).a(), n, false);
 
         nInside = 0;
-        for (label i = 0; i < nCutInside; i++)
+        for (label i = 0; i < nCutInside; ++i)
         {
             const tetPointRef t = cutInsideTets[i].tet();
             t.sliceWithPlane(pl1, inside, outside);
@@ -109,7 +109,7 @@ void Foam::tetOverlapVolume::tetTetOverlap
         plane pl2(tetBTet.tri(2).a(), n, false);
 
         nCutInside = 0;
-        for (label i = 0; i < nInside; i++)
+        for (label i = 0; i < nInside; ++i)
         {
             const tetPointRef t = insideTets[i].tet();
             t.sliceWithPlane(pl2, cutInside, outside);
@@ -124,7 +124,7 @@ void Foam::tetOverlapVolume::tetTetOverlap
     {
         vector n = tetBFaceAreas[3]/Foam::sqrt(tetBMag2FaceAreas[3]);
         plane pl3(tetBTet.tri(3).a(), n, false);
-        for (label i = 0; i < nCutInside; i++)
+        for (label i = 0; i < nCutInside; ++i)
         {
             const tetPointRef t = cutInsideTets[i].tet();
             t.sliceWithPlane(pl3, insideOp, outside);
@@ -168,7 +168,7 @@ void Foam::tetOverlapVolume::cellCellOverlapMinDecomp
 
         const point& tetBasePtA = meshA.points()[fA[tetBasePtAI]];
 
-        for (label tetPtI = 1; tetPtI < fA.size() - 1; tetPtI++)
+        for (label tetPtI = 1; tetPtI < fA.size() - 1; ++tetPtI)
         {
             label facePtAI = (tetPtI + tetBasePtAI) % fA.size();
             label otherFacePtAI = fA.fcIndex(facePtAI);
@@ -214,7 +214,7 @@ void Foam::tetOverlapVolume::cellCellOverlapMinDecomp
 
                 const point& tetBasePtB = meshB.points()[fB[tetBasePtBI]];
 
-                for (label tetPtI = 1; tetPtI < fB.size() - 1; tetPtI++)
+                for (label tetPtI = 1; tetPtI < fB.size() - 1; ++tetPtI)
                 {
                     label facePtBI = (tetPtI + tetBasePtBI) % fB.size();
                     label otherFacePtBI = fB.fcIndex(facePtBI);

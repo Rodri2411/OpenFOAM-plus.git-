@@ -135,7 +135,7 @@ void Foam::nonBlockingGaussSeidelSmoother::smooth
     // sign of the contribution.
 
 
-    for (label sweep=0; sweep<nSweeps; sweep++)
+    for (label sweep=0; sweep<nSweeps; ++sweep)
     {
         bPrime = source;
 
@@ -153,7 +153,7 @@ void Foam::nonBlockingGaussSeidelSmoother::smooth
         label fStart;
         label fEnd = ownStartPtr[0];
 
-        for (label celli=0; celli<blockStart; celli++)
+        for (label celli=0; celli<blockStart; ++celli)
         {
             // Start and end of this row
             fStart = fEnd;
@@ -163,7 +163,7 @@ void Foam::nonBlockingGaussSeidelSmoother::smooth
             curPsi = bPrimePtr[celli];
 
             // Accumulate the owner product side
-            for (label curFace=fStart; curFace<fEnd; curFace++)
+            for (label curFace=fStart; curFace<fEnd; ++curFace)
             {
                 curPsi -= upperPtr[curFace]*psiPtr[uPtr[curFace]];
             }
@@ -172,7 +172,7 @@ void Foam::nonBlockingGaussSeidelSmoother::smooth
             curPsi /= diagPtr[celli];
 
             // Distribute the neighbour side using current psi
-            for (label curFace=fStart; curFace<fEnd; curFace++)
+            for (label curFace=fStart; curFace<fEnd; ++curFace)
             {
                 bPrimePtr[uPtr[curFace]] -= lowerPtr[curFace]*curPsi;
             }
@@ -191,7 +191,7 @@ void Foam::nonBlockingGaussSeidelSmoother::smooth
         );
 
         // Update rest of the cells
-        for (label celli=blockStart; celli < nCells; celli++)
+        for (label celli=blockStart; celli < nCells; ++celli)
         {
             // Start and end of this row
             fStart = fEnd;
@@ -201,7 +201,7 @@ void Foam::nonBlockingGaussSeidelSmoother::smooth
             curPsi = bPrimePtr[celli];
 
             // Accumulate the owner product side
-            for (label curFace=fStart; curFace<fEnd; curFace++)
+            for (label curFace=fStart; curFace<fEnd; ++curFace)
             {
                 curPsi -= upperPtr[curFace]*psiPtr[uPtr[curFace]];
             }
@@ -210,7 +210,7 @@ void Foam::nonBlockingGaussSeidelSmoother::smooth
             curPsi /= diagPtr[celli];
 
             // Distribute the neighbour side using current psi
-            for (label curFace=fStart; curFace<fEnd; curFace++)
+            for (label curFace=fStart; curFace<fEnd; ++curFace)
             {
                 bPrimePtr[uPtr[curFace]] -= lowerPtr[curFace]*curPsi;
             }

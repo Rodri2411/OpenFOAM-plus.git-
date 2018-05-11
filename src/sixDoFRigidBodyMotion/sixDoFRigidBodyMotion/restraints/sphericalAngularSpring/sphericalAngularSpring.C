@@ -82,7 +82,7 @@ void Foam::sixDoFRigidBodyMotionRestraints::sphericalAngularSpring::restrain
 {
     restraintMoment = Zero;
 
-    for (direction cmpt=0; cmpt<vector::nComponents; cmpt++)
+    for (direction cmpt=0; cmpt<vector::nComponents; ++cmpt)
     {
         vector axis = Zero;
         axis[cmpt] = 1;

@@ -40,7 +40,7 @@ Description
         // Set desired displacement:
         meshMover.displacement() = ..
 
-        for (label iter = 0; iter < maxIter; iter++)
+        for (label iter = 0; iter < maxIter; ++iter)
         {
             if (meshMover.scaleMesh(true))
             {

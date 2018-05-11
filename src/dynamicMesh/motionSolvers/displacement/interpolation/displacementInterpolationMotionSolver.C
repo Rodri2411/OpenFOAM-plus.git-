@@ -122,7 +122,7 @@ void Foam::displacementInterpolationMotionSolver::calcInterpolation()
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Done in all three directions.
 
-    for (direction dir = 0; dir < vector::nComponents; dir++)
+    for (direction dir = 0; dir < vector::nComponents; ++dir)
     {
         // min and max coordinates of all faceZones
         SortableList<scalar> zoneCoordinates(2*faceZoneToTable.size());
@@ -258,7 +258,7 @@ void Foam::displacementInterpolationMotionSolver::calcInterpolation()
 
         if (debug)
         {
-            for (label rangeI = 0; rangeI < rangeToCoord.size()-1; rangeI++)
+            for (label rangeI = 0; rangeI < rangeToCoord.size()-1; ++rangeI)
             {
                 // Get the two zones bounding the range
                 Pout<< "direction " << dir << " : "
@@ -367,13 +367,13 @@ Foam::displacementInterpolationMotionSolver::curPoints() const
 
 
     // Interpolate the point location
-    for (direction dir = 0; dir < vector::nComponents; dir++)
+    for (direction dir = 0; dir < vector::nComponents; ++dir)
     {
         const labelList& rangeZone = rangeToZone_[dir];
         const labelListList& rangePoints = rangeToPoints_[dir];
         const List<scalarField>& rangeWeights = rangeToWeights_[dir];
 
-        for (label rangeI = 0; rangeI < rangeZone.size()-1; rangeI++)
+        for (label rangeI = 0; rangeI < rangeZone.size()-1; ++rangeI)
         {
             const labelList& rPoints = rangePoints[rangeI];
             const scalarField& rWeights = rangeWeights[rangeI];

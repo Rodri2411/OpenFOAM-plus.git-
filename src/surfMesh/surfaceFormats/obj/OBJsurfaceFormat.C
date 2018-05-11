@@ -181,7 +181,7 @@ bool Foam::fileFormats::OBJsurfaceFormat<Face>::read
             {
                 // simple face triangulation about f[0]
                 // points may be incomplete
-                for (label fp1 = 1; fp1 < f.size() - 1; fp1++)
+                for (label fp1 = 1; fp1 < f.size() - 1; ++fp1)
                 {
                     const label fp2 = f.fcIndex(fp1);
 

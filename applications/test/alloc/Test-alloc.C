@@ -11,7 +11,7 @@ int main()
 
     cerr << "allocating ints\n";
 
-    for (int i=0; i<500000; i++)
+    for (int i=0; i<500000; ++i)
     {
         ptrs[i] = new int[1];
         delete[] ptrs[i];

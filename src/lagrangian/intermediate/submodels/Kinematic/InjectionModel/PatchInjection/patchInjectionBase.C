@@ -125,7 +125,7 @@ void Foam::patchInjectionBase::updateMesh(const polyMesh& mesh)
     Pstream::listCombineGather(sumTriMagSf_, maxEqOp<scalar>());
     Pstream::listCombineScatter(sumTriMagSf_);
 
-    for (label i = 1; i < triMagSf.size(); i++)
+    for (label i = 1; i < triMagSf.size(); ++i)
     {
         triMagSf[i] += triMagSf[i-1];
     }
@@ -136,7 +136,7 @@ void Foam::patchInjectionBase::updateMesh(const polyMesh& mesh)
     triCumulativeMagSf_.transfer(triMagSf);
 
     // Convert sumTriMagSf_ into cumulative sum of areas per proc
-    for (label i = 1; i < sumTriMagSf_.size(); i++)
+    for (label i = 1; i < sumTriMagSf_.size(); ++i)
     {
         sumTriMagSf_[i] += sumTriMagSf_[i-1];
     }
@@ -229,7 +229,7 @@ void Foam::patchInjectionBase::setPositionAndCell
 
                 // Construct cell tet volume fractions
                 scalarList cTetVFrac(cellTetIs.size(), 0.0);
-                for (label teti=1; teti<cellTetIs.size()-1; teti++)
+                for (label teti=1; teti<cellTetIs.size()-1; ++teti)
                 {
                     cTetVFrac[teti] =
                         cTetVFrac[teti-1]

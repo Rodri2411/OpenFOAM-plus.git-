@@ -397,7 +397,7 @@ void Foam::globalMeshData::calcSharedEdges() const
             (
                 int slave=Pstream::firstSlave();
                 slave<=Pstream::lastSlave();
-                slave++
+                ++slave
             )
             {
                 // Receive the edges using shared points from the slave.
@@ -446,7 +446,7 @@ void Foam::globalMeshData::calcSharedEdges() const
             (
                 int slave=Pstream::firstSlave();
                 slave<=Pstream::lastSlave();
-                slave++
+                ++slave
             )
             {
                 // Receive the edges using shared points from the slave.
@@ -1047,7 +1047,7 @@ void Foam::globalMeshData::calcGlobalEdgeSlaves() const
                 label nonTransformI = 0;
                 label transformI = 0;
 
-                for (label i = 1; i < edgeInfo.size(); i++)
+                for (label i = 1; i < edgeInfo.size(); ++i)
                 {
                     const labelPair& info = edgeInfo[i];
                     label proci = transforms.processor(info);
@@ -1127,7 +1127,7 @@ void Foam::globalMeshData::calcGlobalEdgeOrientation() const
         masterPoint.setSize(map.constructSize());
         masterPoint = labelMax;
 
-        for (label pointi = 0; pointi < coupledPatch().nPoints(); pointi++)
+        for (label pointi = 0; pointi < coupledPatch().nPoints(); ++pointi)
         {
             masterPoint[pointi] = globalPoints.toGlobal(pointi);
         }
@@ -1154,7 +1154,7 @@ void Foam::globalMeshData::calcGlobalEdgeOrientation() const
         labelPairList masterEdgeVerts(map.constructSize());
         masterEdgeVerts = labelPair(labelMax, labelMax);
 
-        for (label edgeI = 0; edgeI < coupledPatch().nEdges(); edgeI++)
+        for (label edgeI = 0; edgeI < coupledPatch().nEdges(); ++edgeI)
         {
             if
             (
@@ -1919,7 +1919,7 @@ Foam::pointField Foam::globalMeshData::sharedPoints() const
         (
             int slave=Pstream::firstSlave();
             slave<=Pstream::lastSlave();
-            slave++
+            ++slave
         )
         {
             IPstream fromSlave(Pstream::commsTypes::blocking, slave);
@@ -1941,7 +1941,7 @@ Foam::pointField Foam::globalMeshData::sharedPoints() const
         (
             int slave=Pstream::firstSlave();
             slave<=Pstream::lastSlave();
-            slave++
+            ++slave
         )
         {
             OPstream toSlave

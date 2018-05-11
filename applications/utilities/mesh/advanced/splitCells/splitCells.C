@@ -606,7 +606,7 @@ int main(int argc, char *argv[])
         if (!readSet)
         {
             // Try all cells for cutting
-            for (label celli = 0; celli < mesh.nCells(); celli++)
+            for (label celli = 0; celli < mesh.nCells(); ++celli)
             {
                 cellsToCut.insert(celli);
             }

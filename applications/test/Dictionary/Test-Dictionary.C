@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
     Dictionary<ent>* dictPtr = new Dictionary<ent>;
     Dictionary<ent>& dict = *dictPtr;
 
-    for (int i = 0; i<10; i++)
+    for (int i = 0; i<10; ++i)
     {
         ent* ePtr = new ent(word("ent") + name(i), i);
         dict.append(ePtr->keyword(), ePtr);
@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
 
     Dictionary<ent> dict2;
 
-    for (int i = 0; i<10; i++)
+    for (int i = 0; i<10; ++i)
     {
         ent* ePtr = new ent(word("ent") + name(i), i);
         dict2.append(ePtr->keyword(), ePtr);
@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
 
 
     PtrDictionary<Scalar> scalarDict;
-    for (int i = 0; i<10; i++)
+    for (int i = 0; i<10; ++i)
     {
         word key("ent" + name(i));
         scalarDict.insert(key, new Scalar(1.3*i));
@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
     }
 
     PtrDictionary<Scalar> scalarDict2;
-    for (int i = 8; i<15; i++)
+    for (int i = 8; i<15; ++i)
     {
         word key("ent" + name(i));
         scalarDict2.insert(key, new Scalar(1.3*i));

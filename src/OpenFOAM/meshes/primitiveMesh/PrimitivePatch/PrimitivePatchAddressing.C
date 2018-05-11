@@ -195,7 +195,7 @@ calcAddressing() const
         // an edge will come first.
 
         // Add the faces in the increasing order of neighbours
-        for (label neiSearch = 0; neiSearch < nNeighbours; neiSearch++)
+        for (label neiSearch = 0; neiSearch < nNeighbours; ++neiSearch)
         {
             // Find the lowest neighbour which is still valid
             label nextNei = -1;

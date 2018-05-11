@@ -150,7 +150,7 @@ void Foam::functionObjects::forces::writeBinHeader
     writeHeader(os, "");
     writeCommented(os, "Time");
 
-    for (label j = 0; j < nBin_; j++)
+    for (label j = 0; j < nBin_; ++j)
     {
         const word jn(Foam::name(j) + ':');
         os  << tab << jn << "(total_x total_y total_z)"
@@ -669,7 +669,7 @@ void Foam::functionObjects::forces::writeBinnedForceMoment
 
     if (binCumulative_)
     {
-        for (label i = 1; i < f[0].size(); i++)
+        for (label i = 1; i < f[0].size(); ++i)
         {
             f[0][i] += f[0][i-1];
             f[1][i] += f[1][i-1];

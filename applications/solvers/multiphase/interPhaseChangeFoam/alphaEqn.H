@@ -42,7 +42,7 @@
 
     volScalarField alpha10("alpha10", alpha1);
 
-    for (int aCorr=0; aCorr<nAlphaCorr; aCorr++)
+    for (int aCorr=0; aCorr<nAlphaCorr; ++aCorr)
     {
         tmp<surfaceScalarField> talphaPhiCorr
         (

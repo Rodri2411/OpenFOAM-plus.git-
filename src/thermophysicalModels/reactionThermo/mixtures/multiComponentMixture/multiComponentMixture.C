@@ -52,7 +52,7 @@ void Foam::multiComponentMixture<ThermoType>::correctMassFractions()
     // Multiplication by 1.0 changes Yt patches to "calculated"
     volScalarField Yt("Yt", 1.0*Y_[0]);
 
-    for (label n=1; n<Y_.size(); n++)
+    for (label n=1; n<Y_.size(); ++n)
     {
         Yt += Y_[n];
     }
@@ -134,7 +134,7 @@ const ThermoType& Foam::multiComponentMixture<ThermoType>::cellMixture
 {
     mixture_ = Y_[0][celli]*speciesData_[0];
 
-    for (label n=1; n<Y_.size(); n++)
+    for (label n=1; n<Y_.size(); ++n)
     {
         mixture_ += Y_[n][celli]*speciesData_[n];
     }
@@ -152,7 +152,7 @@ const ThermoType& Foam::multiComponentMixture<ThermoType>::patchFaceMixture
 {
     mixture_ = Y_[0].boundaryField()[patchi][facei]*speciesData_[0];
 
-    for (label n=1; n<Y_.size(); n++)
+    for (label n=1; n<Y_.size(); ++n)
     {
         mixture_ += Y_[n].boundaryField()[patchi][facei]*speciesData_[n];
     }
@@ -178,7 +178,7 @@ const ThermoType& Foam::multiComponentMixture<ThermoType>::cellVolMixture
     mixtureVol_ =
         Y_[0][celli]/speciesData_[0].rho(p, T)/rhoInv*speciesData_[0];
 
-    for (label n=1; n<Y_.size(); n++)
+    for (label n=1; n<Y_.size(); ++n)
     {
         mixtureVol_ +=
             Y_[n][celli]/speciesData_[n].rho(p, T)/rhoInv*speciesData_[n];
@@ -209,7 +209,7 @@ patchFaceVolMixture
         Y_[0].boundaryField()[patchi][facei]/speciesData_[0].rho(p, T)/rhoInv
       * speciesData_[0];
 
-    for (label n=1; n<Y_.size(); n++)
+    for (label n=1; n<Y_.size(); ++n)
     {
         mixtureVol_ +=
             Y_[n].boundaryField()[patchi][facei]/speciesData_[n].rho(p,T)

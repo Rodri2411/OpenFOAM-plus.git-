@@ -204,7 +204,7 @@ Foam::scalar Foam::correlationFunction<Type>::integral() const
 
     scalar cFIntegral = 0.0;
 
-    for (label v = 0; v < averageCF.size() - 1; v++)
+    for (label v = 0; v < averageCF.size() - 1; ++v)
     {
         cFIntegral +=
             0.5

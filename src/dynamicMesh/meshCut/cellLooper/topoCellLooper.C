@@ -72,7 +72,7 @@ void Foam::topoCellLooper::subsetList
     {
         // Shift elements down
         label newI = 0;
-        for (label elemI = startI; elemI < freeI; elemI++)
+        for (label elemI = startI; elemI < freeI; ++elemI)
         {
             lst[newI++] = lst[elemI];
         }

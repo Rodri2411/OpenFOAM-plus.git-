@@ -73,7 +73,7 @@ Type Foam::face::average
     point centrePoint = Zero;
     Type cf = Zero;
 
-    for (label pI=0; pI<nPoints; pI++)
+    for (label pI=0; pI<nPoints; ++pI)
     {
         centrePoint += meshPoints[operator[](pI)];
         cf += fld[operator[](pI)];
@@ -85,7 +85,7 @@ Type Foam::face::average
     scalar sumA = 0;
     Type sumAf = Zero;
 
-    for (label pI=0; pI<nPoints; pI++)
+    for (label pI=0; pI<nPoints; ++pI)
     {
         // Calculate 3*triangle centre field value
         Type ttcf  =

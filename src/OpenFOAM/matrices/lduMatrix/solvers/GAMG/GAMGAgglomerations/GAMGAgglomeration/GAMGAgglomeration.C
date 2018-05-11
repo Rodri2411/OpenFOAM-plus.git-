@@ -126,7 +126,7 @@ void Foam::GAMGAgglomeration::compactLevels(const label nCreatedLevels)
             //<< "    "
             << nl;
 
-        for (label levelI = 0; levelI <= size(); levelI++)
+        for (label levelI = 0; levelI <= size(); ++levelI)
         {
             label nProcs = 0;
             label nCells = 0;
@@ -661,7 +661,7 @@ bool Foam::GAMGAgglomeration::checkRestriction
             labelList& newCoarse = coarseToNewCoarse[coarseI];
             newCoarse.setSize(masters.size());
             newCoarse[0] = coarseI;
-            for (label i=1; i<newCoarse.size(); i++)
+            for (label i=1; i<newCoarse.size(); ++i)
             {
                 newCoarse[i] = nNewCoarse++;
             }

@@ -292,12 +292,12 @@ Foam::label Foam::eddy::writeSurfaceOBJ
     x[nEddyPoints - 1] = - axisDir*s[dir1_];
 
     label eddyPtI = 1;
-    for (label axisI = 1; axisI < nFaceAxis; axisI++)
+    for (label axisI = 1; axisI < nFaceAxis; ++axisI)
     {
         scalar z = s[dir1_]*cos(axisI*dPhi);
         scalar r = sqrt(sqr(s[dir2])*(1 - sqr(z)/sqr(s[dir1_])));
 
-        for (label thetaI = 0; thetaI < nFaceTheta; thetaI++)
+        for (label thetaI = 0; thetaI < nFaceTheta; ++thetaI)
         {
             scalar theta = thetaI*dTheta;
             point& p = x[eddyPtI++];
@@ -315,7 +315,7 @@ Foam::label Foam::eddy::writeSurfaceOBJ
     }
 
     // Write the end cap tri faces
-    for (label faceI = 0; faceI < nFaceTheta; faceI++)
+    for (label faceI = 0; faceI < nFaceTheta; ++faceI)
     {
         label p1 = pointI + 1;
         label p2 = p1 + faceI + 1;
@@ -331,9 +331,9 @@ Foam::label Foam::eddy::writeSurfaceOBJ
     }
 
     // Write quad faces
-    for (label axisI = 1; axisI < nFaceAxis - 1; axisI++)
+    for (label axisI = 1; axisI < nFaceAxis - 1; ++axisI)
     {
-        for (label thetaI = 0; thetaI < nFaceTheta; thetaI++)
+        for (label thetaI = 0; thetaI < nFaceTheta; ++thetaI)
         {
             label p1 = pointI + 1 + (axisI - 1)*nFaceTheta + thetaI + 1;
             label p2 = p1 + nFaceTheta;

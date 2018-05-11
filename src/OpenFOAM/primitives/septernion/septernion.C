@@ -78,7 +78,7 @@ Foam::septernion Foam::average
 {
     septernion sa(w[0]*ss[0]);
 
-    for (label i=1; i<ss.size(); i++)
+    for (label i=1; i<ss.size(); ++i)
     {
         sa.t() += w[i]*ss[i].t();
 

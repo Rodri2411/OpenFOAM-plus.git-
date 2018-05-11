@@ -120,7 +120,7 @@ void Foam::CPCCellToCellStencil::calcCellStencil
     // Do remaining points cells
     labelHashSet pointGlobals;
 
-    for (label pointi = 0; pointi < mesh().nPoints(); pointi++)
+    for (label pointi = 0; pointi < mesh().nPoints(); ++pointi)
     {
         labelList pGlobals
         (

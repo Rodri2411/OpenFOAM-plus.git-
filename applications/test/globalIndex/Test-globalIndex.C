@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
     }
 
     // convert from local to global and back.
-    for (label celli = 0; celli < mesh.nCells(); celli++)
+    for (label celli = 0; celli < mesh.nCells(); ++celli)
     {
         // to global index
         label globalCelli = globalNumbering.toGlobal(celli);

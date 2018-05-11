@@ -120,7 +120,7 @@ void Foam::CentredFitSnGradData<Polynomial>::calcFit
     }
 
     // Additional weighting for constant and linear terms
-    for (label i = 0; i < B.m(); i++)
+    for (label i = 0; i < B.m(); ++i)
     {
         B(i, 0) *= wts[0];
         B(i, 1) *= wts[0];
@@ -131,12 +131,12 @@ void Foam::CentredFitSnGradData<Polynomial>::calcFit
     coeffsi.setSize(stencilSize);
 
     bool goodFit = false;
-    for (int iIt = 0; iIt < 8 && !goodFit; iIt++)
+    for (int iIt = 0; iIt < 8 && !goodFit; ++iIt)
     {
         SVD svd(B, SMALL);
         scalarRectangularMatrix invB(svd.VSinvUt());
 
-        for (label i=0; i<stencilSize; i++)
+        for (label i=0; i<stencilSize; ++i)
         {
             coeffsi[i] = wts[1]*wts[i]*invB(1, i)/scale;
         }
@@ -173,13 +173,13 @@ void Foam::CentredFitSnGradData<Polynomial>::calcFit
             wts[0] *= 10;
             wts[1] *= 10;
 
-            for (label j = 0; j < B.n(); j++)
+            for (label j = 0; j < B.n(); ++j)
             {
                 B(0, j) *= 10;
                 B(1, j) *= 10;
             }
 
-            for (label i = 0; i < B.m(); i++)
+            for (label i = 0; i < B.m(); ++i)
             {
                 B(i, 0) *= 10;
                 B(i, 1) *= 10;
@@ -221,7 +221,7 @@ void Foam::CentredFitSnGradData<Polynomial>::calcFit()
     const surfaceScalarField& w = mesh.surfaceInterpolation::weights();
     const surfaceScalarField& dC = mesh.nonOrthDeltaCoeffs();
 
-    for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh.nInternalFaces(); ++facei)
     {
         calcFit
         (

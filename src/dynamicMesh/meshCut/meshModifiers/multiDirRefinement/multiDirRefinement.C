@@ -59,7 +59,7 @@ void Foam::multiDirRefinement::addCells
 
     refCells.setSize(newRefI + splitMap.size());
 
-    for (label refI = 0; refI < oldSize; refI++)
+    for (label refI = 0; refI < oldSize; ++refI)
     {
         const refineCell& refCell = refCells[refI];
 

@@ -163,7 +163,7 @@ Foam::label Foam::CV2D::insertBoundaryConformPointPairs
     (
         Triangulation::Finite_vertices_iterator vit = finite_vertices_begin();
         vit != finite_vertices_end();
-        vit++
+        ++vit
     )
     {
         // Consider only those points part of point-pairs or near boundary
@@ -233,7 +233,7 @@ Foam::label Foam::CV2D::insertBoundaryConformPointPairs
             // Twice the area of the dual-cell
             scalar areaT2 = 0;
 
-            for (int vi=0; vi<nVerts; vi++)
+            for (int vi=0; vi<nVerts; ++vi)
             {
                 vector2D edge(vertices[vi+1] - vertices[vi]);
                 perimeter += mag(edge);
@@ -290,7 +290,7 @@ void Foam::CV2D::markNearBoundaryPoints()
     (
         Triangulation::Finite_vertices_iterator vit = finite_vertices_begin();
         vit != finite_vertices_end();
-        vit++
+        ++vit
     )
     {
         if (vit->internalPoint())

@@ -85,7 +85,7 @@ bool Foam::snappySnapDriver::isFeaturePoint
         {
             nFeatEdges++;
 
-            for (label j = i+1; j < pEdges.size(); j++)
+            for (label j = i+1; j < pEdges.size(); ++j)
             {
                 if (isFeatureEdge[pEdges[j]])
                 {
@@ -137,7 +137,7 @@ void Foam::snappySnapDriver::smoothAndConstrain
 {
     const fvMesh& mesh = meshRefiner_.mesh();
 
-    for (label avgIter = 0; avgIter < 20; avgIter++)
+    for (label avgIter = 0; avgIter < 20; ++avgIter)
     {
         // Calculate average displacement of neighbours
         // - unconstrained (i.e. surface) points use average of all
@@ -733,7 +733,7 @@ Foam::pointIndexHit Foam::snappySnapDriver::findMultiPatchPoint
     {
         label patch0 = patchIDs[0];
 
-        for (label i = 1; i < patchIDs.size(); i++)
+        for (label i = 1; i < patchIDs.size(); ++i)
         {
             if (patchIDs[i] != patch0)
             {
@@ -794,7 +794,7 @@ Foam::pointIndexHit Foam::snappySnapDriver::findMultiPatchPoint
     // Detect single patch situation (to avoid allocation)
     label patch0 = patchIDs[0];
 
-    for (label i = 1; i < patchIDs.size(); i++)
+    for (label i = 1; i < patchIDs.size(); ++i)
     {
         if (patchIDs[i] != patch0)
         {
@@ -1541,7 +1541,7 @@ Foam::labelPair Foam::snappySnapDriver::findDiagonalAttraction
 
     if (f.size() >= 4)
     {
-        for (label startFp = 0; startFp < f.size()-2; startFp++)
+        for (label startFp = 0; startFp < f.size()-2; ++startFp)
         {
             label minFp = f.rcIndex(startFp);
 
@@ -1549,7 +1549,7 @@ Foam::labelPair Foam::snappySnapDriver::findDiagonalAttraction
             (
                 label endFp = f.fcIndex(f.fcIndex(startFp));
                 endFp < f.size() && endFp != minFp;
-                endFp++
+                ++endFp
             )
             {
                 if
@@ -1692,7 +1692,7 @@ Foam::labelPair Foam::snappySnapDriver::findDiagonalAttraction
         //const labelList& cPoints = mesh.cellPoints(celli);
         //
         //point cc(mesh.points()[meshF[0]]);
-        //for (label i = 1; i < meshF.size(); i++)
+        //for (label i = 1; i < meshF.size(); ++i)
         //{
         //    cc += mesh.points()[meshF[i]]+patchAttr[localF[i]];
         //}
@@ -1718,7 +1718,7 @@ Foam::labelPair Foam::snappySnapDriver::findDiagonalAttraction
         face f0(3);
         face f1(3);
 
-        for (label startFp = 0; startFp < localF.size()-2; startFp++)
+        for (label startFp = 0; startFp < localF.size()-2; ++startFp)
         {
             label minFp = localF.rcIndex(startFp);
 
@@ -1726,7 +1726,7 @@ Foam::labelPair Foam::snappySnapDriver::findDiagonalAttraction
             (
                 label endFp = localF.fcIndex(localF.fcIndex(startFp));
                 endFp < localF.size() && endFp != minFp;
-                endFp++
+                ++endFp
             )
             {
                 label startPti = localF[startFp];
@@ -1775,7 +1775,7 @@ Foam::labelPair Foam::snappySnapDriver::findDiagonalAttraction
 
                     f0.setSize(endFp-startFp+1);
                     label i0 = 0;
-                    for (label fp = startFp; fp <= endFp; fp++)
+                    for (label fp = startFp; fp <= endFp; ++fp)
                     {
                         f0[i0++] = localF[fp];
                     }
@@ -1784,7 +1784,7 @@ Foam::labelPair Foam::snappySnapDriver::findDiagonalAttraction
                     const face compact0(identity(f0.size()));
                     points0.clear();
                     points0.append(localPts[f0[0]] + patchAttr[f0[0]]);
-                    for (label fp=1; fp < f0.size()-1; fp++)
+                    for (label fp=1; fp < f0.size()-1; ++fp)
                     {
                         label pi = f0[fp];
                         points0.append(localPts[pi] + nearestAttr[pi]);
@@ -1815,7 +1815,7 @@ Foam::labelPair Foam::snappySnapDriver::findDiagonalAttraction
                     const face compact1(identity(f1.size()));
                     points1.clear();
                     points1.append(localPts[f1[0]] + patchAttr[f1[0]]);
-                    for (label fp=1; fp < f1.size()-1; fp++)
+                    for (label fp=1; fp < f1.size()-1; ++fp)
                     {
                         label pi = f1[fp];
                         points1.append(localPts[pi] + nearestAttr[pi]);
@@ -3177,7 +3177,7 @@ void Foam::snappySnapDriver::reverseAttractMeshPoints
             false
         );
 
-        for (label nGrow = 0; nGrow < 1; nGrow++)
+        for (label nGrow = 0; nGrow < 1; ++nGrow)
         {
             boolList newIsFeatureEdgeOrPoint(isFeatureEdgeOrPoint);
 
@@ -3700,7 +3700,7 @@ void Foam::snappySnapDriver::preventFaceSqueeze
         {
             points.setSize(f.size());
             singleF.setSize(f.size());
-            for (label i = 0; i < f.size(); i++)
+            for (label i = 0; i < f.size(); ++i)
             {
                 singleF[i] = i;
             }

@@ -212,7 +212,7 @@ Foam::tmp<Foam::pointScalarField> Foam::functionObjects::streamFunction::calc
         {
             finished = true;
 
-            for (label facei = nInternalFaces; facei<faces.size(); facei++)
+            for (label facei = nInternalFaces; facei<faces.size(); ++facei)
             {
                 const labelList& curBPoints = faces[facei];
                 bool bPointFound = false;
@@ -320,7 +320,7 @@ Foam::tmp<Foam::pointScalarField> Foam::functionObjects::streamFunction::calc
                 }
             }
 
-            for (label facei=0; facei<nInternalFaces; facei++)
+            for (label facei=0; facei<nInternalFaces; ++facei)
             {
                 // Get the list of point labels for the face
                 const labelList& curPoints = faces[facei];

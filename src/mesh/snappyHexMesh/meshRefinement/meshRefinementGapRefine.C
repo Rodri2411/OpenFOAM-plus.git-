@@ -238,7 +238,7 @@ Foam::label Foam::meshRefinement::markSurfaceGapRefinement
                         rayEnd2,
                         gapSize2
                     );
-                    for (label j = 0; j < nRays; j++)
+                    for (label j = 0; j < nRays; ++j)
                     {
                         cellMap.append(own);
                         compactMap.append(i);
@@ -286,7 +286,7 @@ Foam::label Foam::meshRefinement::markSurfaceGapRefinement
                             rayEnd2,
                             gapSize2
                         );
-                        for (label j = 0; j < nRays; j++)
+                        for (label j = 0; j < nRays; ++j)
                         {
                             cellMap.append(nei);
                             compactMap.append(i);
@@ -340,7 +340,7 @@ Foam::label Foam::meshRefinement::markSurfaceGapRefinement
                             rayEnd2,
                             gapSize2
                         );
-                        for (label j = 0; j < nRays; j++)
+                        for (label j = 0; j < nRays; ++j)
                         {
                             cellMap.append(-1); // See above.
                             compactMap.append(i);
@@ -1228,7 +1228,7 @@ Foam::label Foam::meshRefinement::markInternalGapRefinement
                 if (nRays > 0)
                 {
                     nTestCells++;
-                    for (label j = 0; j < nRays; j++)
+                    for (label j = 0; j < nRays; ++j)
                     {
                         map.append(i);
                     }
@@ -1323,7 +1323,7 @@ Foam::label Foam::meshRefinement::markInternalGapRefinement
 
             DynamicList<label> frontFaces(mesh_.nFaces());
             DynamicList<transportData> frontData(mesh_.nFaces());
-            for (label faceI = 0; faceI < mesh_.nInternalFaces(); faceI++)
+            for (label faceI = 0; faceI < mesh_.nInternalFaces(); ++faceI)
             {
                 label own = mesh_.faceOwner()[faceI];
                 label nei = mesh_.faceNeighbour()[faceI];
@@ -1352,7 +1352,7 @@ Foam::label Foam::meshRefinement::markInternalGapRefinement
             (
                 label faceI = mesh_.nInternalFaces();
                 faceI < mesh_.nFaces();
-                faceI++
+                ++faceI
             )
             {
                 label own = mesh_.faceOwner()[faceI];
@@ -1603,7 +1603,7 @@ Foam::label Foam::meshRefinement::markSmallFeatureRefinement
                     if (nRays > 0)
                     {
                         nTestCells++;
-                        for (label j = 0; j < nRays; j++)
+                        for (label j = 0; j < nRays; ++j)
                         {
                             cellMap.append(cellI);
                             map.append(i);

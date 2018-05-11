@@ -131,7 +131,7 @@ autoPtr<faceCoupleInfo> determineCoupledFaces
                 (
                     label proci=meshToAddProcStart;
                     proci<meshToAddProcEnd;
-                    proci++
+                    ++proci
                 )
                 {
                     const string toProcString("to" + name(proci));
@@ -177,14 +177,14 @@ autoPtr<faceCoupleInfo> determineCoupledFaces
                 (
                     label mergedProci=masterMeshProcStart;
                     !isConnected && (mergedProci < masterMeshProcEnd);
-                    mergedProci++
+                    ++mergedProci
                 )
                 {
                     for
                     (
                         label proci = meshToAddProcStart;
                         proci < meshToAddProcEnd;
-                        proci++
+                        ++proci
                     )
                     {
                         const word fromProcString
@@ -638,7 +638,7 @@ int main(int argc, char *argv[])
             // fvMesh** masterMesh = new fvMesh*[nProcs];
             PtrList<fvMesh> masterMesh(nProcs);
 
-            for (label proci=0; proci<nProcs; proci++)
+            for (label proci=0; proci<nProcs; ++proci)
             {
                 masterMesh.set
                 (
@@ -734,7 +734,7 @@ int main(int argc, char *argv[])
                     );
 
                     // Processors that were already in masterMesh
-                    for (label mergedI=proci; mergedI<next; mergedI++)
+                    for (label mergedI=proci; mergedI<next; ++mergedI)
                     {
                         renumber
                         (
@@ -767,7 +767,7 @@ int main(int argc, char *argv[])
                     (
                         label addedI=next;
                         addedI<min(proci+step, nProcs);
-                        addedI++
+                        ++addedI
                     )
                     {
                         renumber
@@ -799,7 +799,7 @@ int main(int argc, char *argv[])
                 }
             }
 
-            for (label proci=0; proci<nProcs; proci++)
+            for (label proci=0; proci<nProcs; ++proci)
             {
                 Info<< "Reading mesh to add from "
                     << databases[proci].caseName()

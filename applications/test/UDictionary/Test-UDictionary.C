@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
     UDictionary<ent>* dictPtr = new UDictionary<ent>;
     UDictionary<ent>& dict = *dictPtr;
 
-    for (int i = 0; i<10; i++)
+    for (int i = 0; i<10; ++i)
     {
         ent* ePtr = new ent(word("ent") + name(i), i);
         dict.append(ePtr->keyword(), ePtr);
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
     dictPtr = new UDictionary<ent>;
     UDictionary<ent>& dict2 = *dictPtr;
 
-    for (int i = 0; i<10; i++)
+    for (int i = 0; i<10; ++i)
     {
         ent* ePtr = new ent(word("ent") + name(i), i);
         dict2.append(ePtr->keyword(), ePtr);

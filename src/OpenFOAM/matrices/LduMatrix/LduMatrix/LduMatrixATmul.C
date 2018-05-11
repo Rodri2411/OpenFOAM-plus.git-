@@ -89,14 +89,14 @@ void Foam::LduMatrix<Type, DType, LUType>::Amul
     );
 
     const label nCells = diag().size();
-    for (label cell=0; cell<nCells; cell++)
+    for (label cell=0; cell<nCells; ++cell)
     {
         ApsiPtr[cell] = dot(diagPtr[cell], psiPtr[cell]);
     }
 
 
     const label nFaces = upper().size();
-    for (label face=0; face<nFaces; face++)
+    for (label face=0; face<nFaces; ++face)
     {
         ApsiPtr[uPtr[face]] += dot(lowerPtr[face], psiPtr[lPtr[face]]);
         ApsiPtr[lPtr[face]] += dot(upperPtr[face], psiPtr[uPtr[face]]);
@@ -145,13 +145,13 @@ void Foam::LduMatrix<Type, DType, LUType>::Tmul
     );
 
     const label nCells = diag().size();
-    for (label cell=0; cell<nCells; cell++)
+    for (label cell=0; cell<nCells; ++cell)
     {
         TpsiPtr[cell] = dot(diagPtr[cell], psiPtr[cell]);
     }
 
     const label nFaces = upper().size();
-    for (label face=0; face<nFaces; face++)
+    for (label face=0; face<nFaces; ++face)
     {
         TpsiPtr[uPtr[face]] += dot(upperPtr[face], psiPtr[lPtr[face]]);
         TpsiPtr[lPtr[face]] += dot(lowerPtr[face], psiPtr[uPtr[face]]);
@@ -189,12 +189,12 @@ void Foam::LduMatrix<Type, DType, LUType>::sumA
     const label nCells = diag().size();
     const label nFaces = upper().size();
 
-    for (label cell=0; cell<nCells; cell++)
+    for (label cell=0; cell<nCells; ++cell)
     {
         sumAPtr[cell] = dot(diagPtr[cell], pTraits<Type>::one);
     }
 
-    for (label face=0; face<nFaces; face++)
+    for (label face=0; face<nFaces; ++face)
     {
         sumAPtr[uPtr[face]] += dot(lowerPtr[face], pTraits<Type>::one);
         sumAPtr[lPtr[face]] += dot(upperPtr[face], pTraits<Type>::one);
@@ -251,14 +251,14 @@ void Foam::LduMatrix<Type, DType, LUType>::residual
     );
 
     const label nCells = diag().size();
-    for (label cell=0; cell<nCells; cell++)
+    for (label cell=0; cell<nCells; ++cell)
     {
         rAPtr[cell] = sourcePtr[cell] - dot(diagPtr[cell], psiPtr[cell]);
     }
 
 
     const label nFaces = upper().size();
-    for (label face=0; face<nFaces; face++)
+    for (label face=0; face<nFaces; ++face)
     {
         rAPtr[uPtr[face]] -= dot(lowerPtr[face], psiPtr[lPtr[face]]);
         rAPtr[lPtr[face]] -= dot(upperPtr[face], psiPtr[uPtr[face]]);

@@ -134,7 +134,7 @@ Foam::label Foam::bufferedAccumulator<Type>::addToBuffers
 {
     label bufferToRefill = -1;
 
-    for (label b = 0; b < nBuffers(); b++)
+    for (label b = 0; b < nBuffers(); ++b)
     {
         Field<Type>& buf((*this)[b]);
 

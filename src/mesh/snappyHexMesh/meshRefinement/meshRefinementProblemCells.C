@@ -930,7 +930,7 @@ Foam::labelList Foam::meshRefinement::markFacesOnProblemCells
 
 
     // Find faces with all edges on the boundary and make them baffles
-    for (label facei = 0; facei < mesh_.nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh_.nInternalFaces(); ++facei)
     {
         if (facePatch[facei] == -1)
         {

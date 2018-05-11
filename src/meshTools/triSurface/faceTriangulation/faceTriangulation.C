@@ -222,7 +222,7 @@ void Foam::faceTriangulation::findDiagonal
     label minIndex = -1;
     scalar minPosOnEdge = GREAT;
 
-    for (label i = 0; i < f.size() - 2; i++)
+    for (label i = 0; i < f.size() - 2; ++i)
     {
         scalar posOnEdge;
         pointHit inter =
@@ -296,7 +296,7 @@ void Foam::faceTriangulation::findDiagonal
 
     // all vertices except for startIndex and ones to left and right of it.
     faceVertI = f.fcIndex(f.fcIndex(startIndex));
-    for (label i = 0; i < f.size() - 3; i++)
+    for (label i = 0; i < f.size() - 3; ++i)
     {
         const point& pt = points[f[faceVertI]];
 
@@ -503,7 +503,7 @@ bool Foam::faceTriangulation::split
 
                 label fp = f.fcIndex(maxIndex);
 
-                for (label i = 0; i < size-2; i++)
+                for (label i = 0; i < size-2; ++i)
                 {
                     label nextFp = f.fcIndex(fp);
 
@@ -563,7 +563,7 @@ bool Foam::faceTriangulation::split
         face face1(nPoints1);
 
         label faceVertI = index1;
-        for (int i = 0; i < nPoints1; i++)
+        for (int i = 0; i < nPoints1; ++i)
         {
             face1[i] = f[faceVertI];
             faceVertI = f.fcIndex(faceVertI);
@@ -573,7 +573,7 @@ bool Foam::faceTriangulation::split
         face face2(nPoints2);
 
         faceVertI = index2;
-        for (int i = 0; i < nPoints2; i++)
+        for (int i = 0; i < nPoints2; ++i)
         {
             face2[i] = f[faceVertI];
             faceVertI = f.fcIndex(faceVertI);

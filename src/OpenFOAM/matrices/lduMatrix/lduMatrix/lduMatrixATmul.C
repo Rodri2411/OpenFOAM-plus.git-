@@ -65,7 +65,7 @@ void Foam::lduMatrix::Amul
     );
 
     const label nCells = diag().size();
-    for (label cell=0; cell<nCells; cell++)
+    for (label cell=0; cell<nCells; ++cell)
     {
         ApsiPtr[cell] = diagPtr[cell]*psiPtr[cell];
     }
@@ -73,7 +73,7 @@ void Foam::lduMatrix::Amul
 
     const label nFaces = upper().size();
 
-    for (label face=0; face<nFaces; face++)
+    for (label face=0; face<nFaces; ++face)
     {
         ApsiPtr[uPtr[face]] += lowerPtr[face]*psiPtr[lPtr[face]];
         ApsiPtr[lPtr[face]] += upperPtr[face]*psiPtr[uPtr[face]];
@@ -128,13 +128,13 @@ void Foam::lduMatrix::Tmul
     );
 
     const label nCells = diag().size();
-    for (label cell=0; cell<nCells; cell++)
+    for (label cell=0; cell<nCells; ++cell)
     {
         TpsiPtr[cell] = diagPtr[cell]*psiPtr[cell];
     }
 
     const label nFaces = upper().size();
-    for (label face=0; face<nFaces; face++)
+    for (label face=0; face<nFaces; ++face)
     {
         TpsiPtr[uPtr[face]] += upperPtr[face]*psiPtr[lPtr[face]];
         TpsiPtr[lPtr[face]] += lowerPtr[face]*psiPtr[uPtr[face]];
@@ -175,12 +175,12 @@ void Foam::lduMatrix::sumA
     const label nCells = diag().size();
     const label nFaces = upper().size();
 
-    for (label cell=0; cell<nCells; cell++)
+    for (label cell=0; cell<nCells; ++cell)
     {
         sumAPtr[cell] = diagPtr[cell];
     }
 
-    for (label face=0; face<nFaces; face++)
+    for (label face=0; face<nFaces; ++face)
     {
         sumAPtr[uPtr[face]] += lowerPtr[face];
         sumAPtr[lPtr[face]] += upperPtr[face];
@@ -249,7 +249,7 @@ void Foam::lduMatrix::residual
     );
 
     const label nCells = diag().size();
-    for (label cell=0; cell<nCells; cell++)
+    for (label cell=0; cell<nCells; ++cell)
     {
         rAPtr[cell] = sourcePtr[cell] - diagPtr[cell]*psiPtr[cell];
     }
@@ -257,7 +257,7 @@ void Foam::lduMatrix::residual
 
     const label nFaces = upper().size();
 
-    for (label face=0; face<nFaces; face++)
+    for (label face=0; face<nFaces; ++face)
     {
         rAPtr[uPtr[face]] -= lowerPtr[face]*psiPtr[lPtr[face]];
         rAPtr[lPtr[face]] -= upperPtr[face]*psiPtr[uPtr[face]];
@@ -312,7 +312,7 @@ Foam::tmp<Foam::scalarField > Foam::lduMatrix::H1() const
 
         const label nFaces = upper().size();
 
-        for (label face=0; face<nFaces; face++)
+        for (label face=0; face<nFaces; ++face)
         {
             H1Ptr[uPtr[face]] -= lowerPtr[face];
             H1Ptr[lPtr[face]] -= upperPtr[face];

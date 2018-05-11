@@ -136,7 +136,7 @@ void Foam::cellZoneSet::invert(const label maxLen)
     // Count
     label n = 0;
 
-    for (label celli = 0; celli < maxLen; celli++)
+    for (label celli = 0; celli < maxLen; ++celli)
     {
         if (!found(celli))
         {
@@ -148,7 +148,7 @@ void Foam::cellZoneSet::invert(const label maxLen)
     addressing_.setSize(n);
     n = 0;
 
-    for (label celli = 0; celli < maxLen; celli++)
+    for (label celli = 0; celli < maxLen; ++celli)
     {
         if (!found(celli))
         {

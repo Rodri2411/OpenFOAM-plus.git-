@@ -51,7 +51,7 @@ Foam::labelList Foam::fvMeshAdder::calcPatchMap
     label newStart = newPatch.start();
     label newSize = newPatch.size();
 
-    for (label i = 0; i < oldSize; i++)
+    for (label i = 0; i < oldSize; ++i)
     {
         label newFacei = oldToNew[oldStart+i];
 

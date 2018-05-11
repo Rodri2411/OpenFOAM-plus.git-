@@ -74,7 +74,7 @@ void Foam::CellZoneInjection<CloudType>::setPositions
 
         // Construct cell tet volume fractions
         scalarList cTetVFrac(cellTetIs.size(), 0.0);
-        for (label tetI = 1; tetI < cellTetIs.size() - 1; tetI++)
+        for (label tetI = 1; tetI < cellTetIs.size() - 1; ++tetI)
         {
             cTetVFrac[tetI] =
                 cTetVFrac[tetI-1] + cellTetIs[tetI].tet(mesh).mag()/V[celli];
@@ -82,7 +82,7 @@ void Foam::CellZoneInjection<CloudType>::setPositions
         cTetVFrac.last() = 1.0;
 
         // Set new particle position and cellId
-        for (label pI = 0; pI < addParticles; pI++)
+        for (label pI = 0; pI < addParticles; ++pI)
         {
             const scalar volFrac = rnd.sample01<scalar>();
             label tetI = 0;

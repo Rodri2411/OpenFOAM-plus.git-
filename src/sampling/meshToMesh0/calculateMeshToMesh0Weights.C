@@ -119,7 +119,7 @@ void Foam::meshToMesh0::calculateInverseDistanceWeights() const
                 V_ +=
                     invDistCoeffs[celli][0]
                    *fromMesh_.V()[cellAddressing_[celli]];
-                for (label i = 1; i < invDistCoeffs[celli].size(); i++)
+                for (label i = 1; i < invDistCoeffs[celli].size(); ++i)
                 {
                     V_ +=
                         invDistCoeffs[celli][i]*fromMesh_.V()[neighbours[i-1]];

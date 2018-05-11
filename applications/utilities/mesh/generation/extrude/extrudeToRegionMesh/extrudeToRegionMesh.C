@@ -1089,7 +1089,7 @@ void addInterZonePatches
     {
         forAll(zoneZonePatch_min, minZone)
         {
-            for (label maxZone = minZone; maxZone < zoneNames.size(); maxZone++)
+            for (label maxZone = minZone; maxZone < zoneNames.size(); ++maxZone)
             {
                 label index = minZone*zoneNames.size()+maxZone;
 
@@ -2140,7 +2140,7 @@ int main(int argc, char *argv[])
 //        //(
 //        //    label patchi = nOldPatches;
 //        //    patchi < mesh.boundary().size();
-//        //    patchi++
+//        //    ++patchi
 //        //)
 //        //{
 //        //    Pout<< "ADDing calculated to patch " << patchi
@@ -2443,7 +2443,7 @@ int main(int argc, char *argv[])
             point pt = extrudePatch.localPoints()[pointi];
             const vector& n = localRegionNormals[regionI];
 
-            for (label layerI = 1; layerI <= model().nLayers(); layerI++)
+            for (label layerI = 1; layerI <= model().nLayers(); ++layerI)
             {
                 newPoints[meshPointi++] = model()(pt, n, layerI);
             }

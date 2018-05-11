@@ -424,7 +424,7 @@ Foam::refinementSurfaces::refinementSurfaces
         label nRegions = allGeometry_[surfaces_[surfI]].regions().size();
 
         // Initialise to global (i.e. per surface)
-        for (label i = 0; i < nRegions; i++)
+        for (label i = 0; i < nRegions; ++i)
         {
             label globalRegionI = regionOffset_[surfI] + i;
             minLevel_[globalRegionI] = globalMinLevel[surfI];

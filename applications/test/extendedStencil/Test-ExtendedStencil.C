@@ -536,7 +536,7 @@ int main(int argc, char *argv[])
 //        vf,
 //        stencilData
 //    );
-//    for (label faci = 0; faci < mesh.nInternalFaces(); faci++)
+//    for (label faci = 0; faci < mesh.nInternalFaces(); ++faci)
 //    {
 //        const scalarList& stData = stencilData[facei];
 //        const scalarList& stWeight = fit[facei];

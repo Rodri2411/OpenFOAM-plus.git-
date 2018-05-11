@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
             10.0        // duplicity
         );
 
-        for (label i = 0; i < nReps - 1 ; i++)
+        for (label i = 0; i < nReps - 1; ++i)
         {
             if ((i % 100) == 0)
             {
@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
     }
 
     {
-        for (label i = 0; i < nReps - 1 ; i++)
+        for (label i = 0; i < nReps - 1; ++i)
         {
             if ((i % 100) == 0)
             {

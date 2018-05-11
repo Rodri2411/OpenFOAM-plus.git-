@@ -285,7 +285,7 @@ Foam::polyBoundaryMesh::neighbourEdges() const
             (
                 label edgei = pp.nInternalEdges();
                 edgei < edges.size();
-                edgei++
+                ++edgei
             )
             {
                 // Edge in patch local points

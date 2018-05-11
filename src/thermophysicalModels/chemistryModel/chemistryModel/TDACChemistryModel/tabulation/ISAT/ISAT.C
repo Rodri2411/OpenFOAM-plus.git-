@@ -143,7 +143,7 @@ void Foam::chemistryTabulationMethods::ISAT<CompType, ThermoType>::addToMRU
 
         // First search if the chemPoint is already in the list
         bool isInList = false;
-        for ( ; iter != MRUList_.end(); ++iter)
+        for (; iter != MRUList_.end(); ++iter)
         {
             if (iter() == phi0)
             {
@@ -215,7 +215,7 @@ void Foam::chemistryTabulationMethods::ISAT<CompType, ThermoType>::calcNewC
             // The species is active
             if (si != -1)
             {
-                for (label j=0; j<nEqns-2; j++)
+                for (label j=0; j<nEqns-2; ++j)
                 {
                     label sj = completeToSimplified[j];
                     if (sj != -1)

@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
         label masterPatch, slavePatch;
         label dirIndex1, dirIndex2, dirIndex3, joinNumber;
 
-        for (label glueI = 0; glueI < nglue; glueI++)
+        for (label glueI = 0; glueI < nglue; ++glueI)
         {
             cfxFile >> masterPatch >> slavePatch;
             cfxFile >> dirIndex1 >> dirIndex2 >> dirIndex3 >> joinNumber;
@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
     label nMeshPoints = blocks[0].nBlockPoints();
     label nMeshCells = blocks[0].nBlockCells();
 
-    for (label blockI = 1; blockI < nblock; blockI++)
+    for (label blockI = 1; blockI < nblock; ++blockI)
     {
         nMeshPoints += blocks[blockI].nBlockPoints();
         nMeshCells +=  blocks[blockI].nBlockCells();
@@ -589,7 +589,7 @@ int main(int argc, char *argv[])
             // Check if this name has been already created
             label existingPatch = -1;
 
-            for (label oldPatchi = 0; oldPatchi < nCreatedPatches; oldPatchi++)
+            for (label oldPatchi = 0; oldPatchi < nCreatedPatches; ++oldPatchi)
             {
                 if (patchNames[oldPatchi] == cfxPatchNames[patchi])
                 {

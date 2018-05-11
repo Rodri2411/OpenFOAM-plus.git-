@@ -1656,7 +1656,7 @@ bool Foam::medialAxisMeshMover::shrinkMesh
 
     bool meshOk = false;
 
-    for (label iter = 0; iter < 2*nSnap ; iter++)
+    for (label iter = 0; iter < 2*nSnap ; ++iter)
     {
         Info<< typeName
             << " : Iteration " << iter << endl;

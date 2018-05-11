@@ -203,7 +203,7 @@ Foam::faceList Foam::blockMesh::createPatchFaces
                     (
                         label facePointLabel = 1;
                         facePointLabel < 4;
-                        facePointLabel++
+                        ++facePointLabel
                     )
                     {
                         quadFace[nUnique] =

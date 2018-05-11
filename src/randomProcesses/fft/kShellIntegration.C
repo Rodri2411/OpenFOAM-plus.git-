@@ -96,7 +96,7 @@ Foam::graph Foam::kShellMean
     {
         scalar kmag = mag(K[l]);
 
-        for (label a=0; a<NoSubintervals; a++)
+        for (label a=0; a<NoSubintervals; ++a)
         {
             if
             (
@@ -122,7 +122,7 @@ Foam::graph Foam::kShellMean
         }
     }
 
-    for (label a=0; a<NoSubintervals; a++)
+    for (label a=0; a<NoSubintervals; ++a)
     {
         if (EWeight[a] > 0)
         {

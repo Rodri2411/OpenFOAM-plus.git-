@@ -81,7 +81,7 @@ void Foam::isoCutFace::calcSubFaceCentreAndArea()
         vector sumAc = vector::zero;
         const point fCentre = sum(subFacePoints_)/scalar(nPoints);
 
-        for (label pi = 0; pi < nPoints; pi++)
+        for (label pi = 0; pi < nPoints; ++pi)
         {
             const point& nextPoint = subFacePoints_[subFacePoints_.fcIndex(pi)];
 
@@ -225,7 +225,7 @@ void Foam::isoCutFace::subFacePoints
         subFacePoints_.append(surfacePoints_[pi]);
     }
 
-    for (label pi = 0; pi < nFullySubmergedPoints_; pi++)
+    for (label pi = 0; pi < nFullySubmergedPoints_; ++pi)
     {
         subFacePoints_.append
         (

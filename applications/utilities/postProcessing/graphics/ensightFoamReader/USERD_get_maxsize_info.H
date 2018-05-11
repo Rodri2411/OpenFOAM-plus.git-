@@ -24,7 +24,6 @@ int USERD_get_maxsize_info
 
     for (label timeI=1; timeI < timeDirs.size(); ++timeI)
     {
-
         label nPen06 = 0;
         label nHex08 = 0;
         label nPyr05 = 0;
@@ -41,26 +40,26 @@ int USERD_get_maxsize_info
 
         maxNPoints = max(maxNPoints, nPoints);
 
-        for (label n=0; n<nCells;n++)
+        for (label n=0; n<nCells; ++n)
         {
             label nFaces = cells[n].nFaces();
             const labelList& points = cells[n];
 
             if ((nFaces == 6) && (points.size() == 8))
             {
-                nHex08++;
+                ++nHex08;
             }
             else if ((nFaces == 5) && (points.size() == 6))
             {
-                nPen06++;
+                ++nPen06;
             }
             else if ((nFaces == 5) && (points.size() == 5))
             {
-                nPyr05++;
+                ++nPyr05;
             }
             else if ((nFaces == 4) && (points.size() == 4))
             {
-                nTet04++;
+                ++nTet04;
             }
         }
 

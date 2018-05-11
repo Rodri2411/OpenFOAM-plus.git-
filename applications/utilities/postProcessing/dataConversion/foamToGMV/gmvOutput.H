@@ -1,4 +1,4 @@
-for (label i=0; i < nTypes; i++)
+for (label i=0; i < nTypes; ++i)
 {
     wordList fieldNames = objects.names(fieldTypes[i]);
 
@@ -24,7 +24,7 @@ for (label i=0; i < nTypes; i++)
         {
             volScalarField fld(fieldObject, mesh);
             gmvFile << fieldName << " 0" << nl;
-            for (label indx=0;indx<mesh.nCells();indx++)
+            for (label indx=0; indx<mesh.nCells(); ++indx)
             {
                 gmvFile << fld[indx] << " ";
             }
@@ -37,15 +37,15 @@ for (label i=0; i < nTypes; i++)
             {
                 volVectorField fld(fieldObject, mesh);
                 gmvFile << "velocity 0" << nl;
-                for (label indx=0;indx<mesh.nCells();indx++)
+                for (label indx=0; indx<mesh.nCells(); ++indx)
                 {
                     gmvFile << fld[indx].x() << " ";
                 }
-                for (label indx=0;indx<mesh.nCells();indx++)
+                for (label indx=0; indx<mesh.nCells(); ++indx)
                 {
                     gmvFile << fld[indx].y() << " ";
                 }
-                for (label indx=0;indx<mesh.nCells();indx++)
+                for (label indx=0; indx<mesh.nCells(); ++indx)
                 {
                     gmvFile << fld[indx].z() << " ";
                 }

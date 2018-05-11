@@ -39,7 +39,7 @@ Foam::VectorSpace<Form, Cmpt, Ncmpts>::VectorSpace
     // Read beginning of VectorSpace<Cmpt>
     is.readBegin("VectorSpace<Form, Cmpt, Ncmpts>");
 
-    for (direction i=0; i<Ncmpts; i++)
+    for (direction i=0; i<Ncmpts; ++i)
     {
         is >> v_[i];
     }
@@ -62,7 +62,7 @@ Foam::word Foam::name
 
     buf << '(' << vs.v_[0];
 
-    for (direction i=1; i<Ncmpts; i++)
+    for (direction i=1; i<Ncmpts; ++i)
     {
         buf << ',' << vs.v_[i];
     }
@@ -85,7 +85,7 @@ Foam::Istream& Foam::operator>>
     // Read beginning of VectorSpace<Cmpt, Ncmpts>
     is.readBegin("VectorSpace<Form, Cmpt, Ncmpts>");
 
-    for (direction i=0; i<Ncmpts; i++)
+    for (direction i=0; i<Ncmpts; ++i)
     {
         is >> vs.v_[i];
     }
@@ -109,7 +109,7 @@ Foam::Ostream& Foam::operator<<
 {
     os << token::BEGIN_LIST << vs.v_[0];
 
-    for (direction i=1; i<Ncmpts; i++)
+    for (direction i=1; i<Ncmpts; ++i)
     {
         os << token::SPACE << vs.v_[i];
     }

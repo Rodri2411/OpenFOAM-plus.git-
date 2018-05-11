@@ -310,7 +310,7 @@ Foam::autoPtr<Foam::ISstream> Foam::decomposedBlockData::readBlock
             fmt = headerStream.format();
         }
 
-        for (label i = 1; i < blocki+1; i++)
+        for (label i = 1; i < blocki+1; ++i)
         {
             // Read data, override old data
             is >> data;
@@ -729,7 +729,7 @@ void Foam::decomposedBlockData::gatherSlaveData
 
         int totalSize = 0;
         label proci = startProc;
-        for (label i = 0; i < nProcs; i++)
+        for (label i = 0; i < nProcs; ++i)
         {
             sliceSizes[proci] = int(recvSizes[proci]);
             sliceOffsets[proci] = totalSize;

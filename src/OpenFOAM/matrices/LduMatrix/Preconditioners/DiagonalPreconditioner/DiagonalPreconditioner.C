@@ -43,7 +43,7 @@ Foam::DiagonalPreconditioner<Type, DType, LUType>::DiagonalPreconditioner
     label nCells = rD.size();
 
     // Generate inverse (reciprocal for scalar) diagonal
-    for (label cell=0; cell<nCells; cell++)
+    for (label cell=0; cell<nCells; ++cell)
     {
         rDPtr[cell] = inv(DPtr[cell]);
     }
@@ -70,7 +70,7 @@ void Foam::DiagonalPreconditioner<Type, DType, LUType>::precondition
 
     label nCells = wA.size();
 
-    for (label cell=0; cell<nCells; cell++)
+    for (label cell=0; cell<nCells; ++cell)
     {
         wAPtr[cell] = dot(rDPtr[cell], rAPtr[cell]);
     }

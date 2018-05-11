@@ -203,7 +203,7 @@ int main(int argc, char *argv[])
     }
 
     // Add new ones with empty size.
-    for (label patchi = newPatchi; patchi < patches.size(); patchi++)
+    for (label patchi = newPatchi; patchi < patches.size(); ++patchi)
     {
         const boundaryPatch& bp = patches[patchi];
 

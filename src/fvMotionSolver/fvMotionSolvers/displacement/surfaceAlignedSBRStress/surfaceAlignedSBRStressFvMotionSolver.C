@@ -142,7 +142,7 @@ void Foam::surfaceAlignedSBRStressFvMotionSolver::calculateCellRot()
     const vectorField& Cc = fvMesh_.cellCentres();
     const polyBoundaryMesh& pbm = fvMesh_.boundaryMesh();
 
-    for (label faceI = 0; faceI < fvMesh_.nInternalFaces(); faceI++)
+    for (label faceI = 0; faceI < fvMesh_.nInternalFaces(); ++faceI)
     {
         start[faceI] = Cc[fvMesh_.faceOwner()[faceI]];
         end[faceI] = Cc[fvMesh_.faceNeighbour()[faceI]];
@@ -393,7 +393,7 @@ void Foam::surfaceAlignedSBRStressFvMotionSolver::solve()
 
     const volTensorField gradCd(fvc::grad(cellDisp));
 
-    for (int nonOrth=0; nonOrth<=nNonOrthogonalCorr_; nonOrth++)
+    for (int nonOrth=0; nonOrth<=nNonOrthogonalCorr_; ++nonOrth)
     {
         fvVectorMatrix DEqn
         (

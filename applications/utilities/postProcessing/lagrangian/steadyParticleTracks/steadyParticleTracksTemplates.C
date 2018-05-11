@@ -93,7 +93,7 @@ template<class Type>
 void Foam::writeVTK(OFstream& os, const Type& value)
 {
     os  << value.component(0);
-    for (label i=1; i<pTraits<Type>::nComponents; i++)
+    for (label i=1; i<pTraits<Type>::nComponents; ++i)
     {
         os  << ' ' << value.component(i);
     }

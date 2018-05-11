@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
             (
                 int slave=Pstream::firstSlave();
                 slave<=Pstream::lastSlave();
-                slave++
+                ++slave
             )
             {
                 Perr << "master receiving from slave " << slave << endl;
@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
             (
                 int slave=Pstream::firstSlave();
                 slave<=Pstream::lastSlave();
-                slave++
+                ++slave
             )
             {
                 Perr << "master sending to slave " << slave << endl;
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
     {
         PstreamBuffers pBufs(Pstream::commsTypes::nonBlocking);
 
-        for (label proci = 0; proci < Pstream::nProcs(); proci++)
+        for (label proci = 0; proci < Pstream::nProcs(); ++proci)
         {
             UOPstream toProc(proci, pBufs);
             toProc << Pstream::myProcNo();
@@ -161,7 +161,7 @@ int main(int argc, char *argv[])
         pBufs.finishedSends();
 
         // Consume
-        for (label proci = 0; proci < Pstream::nProcs(); proci++)
+        for (label proci = 0; proci < Pstream::nProcs(); ++proci)
         {
             UIPstream fromProc(proci, pBufs);
             label data;

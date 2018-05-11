@@ -101,7 +101,7 @@ void Foam::EulerImplicit<ChemistryModel>::solve
     const label nSpecie = this->nSpecie();
     simpleMatrix<scalar> RR(nSpecie, 0, 0);
 
-    for (label i=0; i<nSpecie; i++)
+    for (label i=0; i<nSpecie; ++i)
     {
         c[i] = max(0, c[i]);
     }
@@ -112,7 +112,7 @@ void Foam::EulerImplicit<ChemistryModel>::solve
     (
         (this->specieThermo_[0].W()*c[0])*this->specieThermo_[0]
     );
-    for (label i=1; i<nSpecie; i++)
+    for (label i=1; i<nSpecie; ++i)
     {
         mixture += (this->specieThermo_[i].W()*c[i])*this->specieThermo_[i];
     }
@@ -146,10 +146,10 @@ void Foam::EulerImplicit<ChemistryModel>::solve
     // Calculate the stable/accurate time-step
     scalar tMin = GREAT;
 
-    for (label i=0; i<nSpecie; i++)
+    for (label i=0; i<nSpecie; ++i)
     {
         scalar d = 0;
-        for (label j=0; j<nSpecie; j++)
+        for (label j=0; j<nSpecie; ++j)
         {
             d -= RR(i, j)*c[j];
         }
@@ -170,7 +170,7 @@ void Foam::EulerImplicit<ChemistryModel>::solve
     deltaT = min(deltaT, subDeltaT);
 
     // Add the diagonal and source contributions from the time-derivative
-    for (label i=0; i<nSpecie; i++)
+    for (label i=0; i<nSpecie; ++i)
     {
         RR(i, i) += 1/deltaT;
         RR.source()[i] = c[i]/deltaT;
@@ -180,14 +180,14 @@ void Foam::EulerImplicit<ChemistryModel>::solve
     c = RR.LUsolve();
 
     // Limit the composition
-    for (label i=0; i<nSpecie; i++)
+    for (label i=0; i<nSpecie; ++i)
     {
         c[i] = max(0, c[i]);
     }
 
     // Update the temperature
     mixture = (this->specieThermo_[0].W()*c[0])*this->specieThermo_[0];
-    for (label i=1; i<nSpecie; i++)
+    for (label i=1; i<nSpecie; ++i)
     {
         mixture += (this->specieThermo_[i].W()*c[i])*this->specieThermo_[i];
     }

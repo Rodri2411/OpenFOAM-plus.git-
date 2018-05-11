@@ -496,7 +496,7 @@ Foam::scalar Foam::isoAdvection::timeIntegratedFaceFlux
             scalarField pTimes_tri(3);
             fPts_tri[0] = mesh_.faceCentres()[facei];
             pTimes_tri[0] = ((fPts_tri[0] - x0) & n0)/Un0;
-            for (label pi = 0; pi < nPoints; pi++)
+            for (label pi = 0; pi < nPoints; ++pi)
             {
                 fPts_tri[1] = fPts[pi];
                 pTimes_tri[1] = pTimes[pi];
@@ -611,7 +611,7 @@ void Foam::isoAdvection::limitFluxes()
     cellIsBounded_ = false;
 
     // Loop number of bounding steps
-    for (label n = 0; n < nAlphaBounds_; n++)
+    for (label n = 0; n < nAlphaBounds_; ++n)
     {
         Info<< "isoAdvection: bounding iteration " << n + 1 << endl;
 

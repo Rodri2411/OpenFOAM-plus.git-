@@ -386,7 +386,7 @@ bool Foam::fileOperations::masterUncollatedFileOperation::uniformFile
 {
     const fileName& object0 = filePaths[0];
 
-    for (label i = 1; i < filePaths.size(); i++)
+    for (label i = 1; i < filePaths.size(); ++i)
     {
         if (filePaths[i] != object0)
         {
@@ -1177,7 +1177,7 @@ Foam::fileOperations::masterUncollatedFileOperation::readStream
             }
 
             // Read slave files
-            for (label proci = 1; proci < Pstream::nProcs(); proci++)
+            for (label proci = 1; proci < Pstream::nProcs(); ++proci)
             {
                 if (debug)
                 {
@@ -1559,7 +1559,7 @@ Foam::fileOperations::masterUncollatedFileOperation::NewIFstream
                 );
 
                 labelList procs(Pstream::nProcs()-1);
-                for (label proci = 1; proci < Pstream::nProcs(); proci++)
+                for (label proci = 1; proci < Pstream::nProcs(); ++proci)
                 {
                     procs[proci-1] = proci;
                 }
@@ -1568,7 +1568,7 @@ Foam::fileOperations::masterUncollatedFileOperation::NewIFstream
             }
             else
             {
-                for (label proci = 1; proci < Pstream::nProcs(); proci++)
+                for (label proci = 1; proci < Pstream::nProcs(); ++proci)
                 {
                     IOstream::compressionType cmp
                     (

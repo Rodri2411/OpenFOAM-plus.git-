@@ -117,19 +117,19 @@ Foam::List<Foam::surfaceFeatures::edgeStatus> Foam::surfaceFeatures::toStatus()
     List<edgeStatus> edgeStat(surf_.nEdges(), NONE);
 
     // Region edges first
-    for (label i = 0; i < externalStart_; i++)
+    for (label i = 0; i < externalStart_; ++i)
     {
         edgeStat[featureEdges_[i]] = REGION;
     }
 
     // External edges
-    for (label i = externalStart_; i < internalStart_; i++)
+    for (label i = externalStart_; i < internalStart_; ++i)
     {
         edgeStat[featureEdges_[i]] = EXTERNAL;
     }
 
     // Internal edges
-    for (label i = internalStart_; i < featureEdges_.size(); i++)
+    for (label i = internalStart_; i < featureEdges_.size(); ++i)
     {
         edgeStat[featureEdges_[i]] = INTERNAL;
     }
@@ -560,7 +560,7 @@ Foam::surfaceFeatures::surfaceFeatures::checkFlatRegionEdge
             forAll(eFaces, i)
             {
                 const vector& ni = surf.faceNormals()[eFaces[i]];
-                for (label j=i+1; j<eFaces.size(); j++)
+                for (label j=i+1; j<eFaces.size(); ++j)
                 {
                     const vector& nj = surf.faceNormals()[eFaces[j]];
                     if (mag(ni & nj) < minCos)
@@ -841,7 +841,7 @@ Foam::labelList Foam::surfaceFeatures::selectFeatureEdges
     {
         selectedEdges.setCapacity(selectedEdges.size() + nRegionEdges());
 
-        for (label i = 0; i < externalStart_; i++)
+        for (label i = 0; i < externalStart_; ++i)
         {
             selectedEdges.append(featureEdges_[i]);
         }
@@ -851,7 +851,7 @@ Foam::labelList Foam::surfaceFeatures::selectFeatureEdges
     {
         selectedEdges.setCapacity(selectedEdges.size() + nExternalEdges());
 
-        for (label i = externalStart_; i < internalStart_; i++)
+        for (label i = externalStart_; i < internalStart_; ++i)
         {
             selectedEdges.append(featureEdges_[i]);
         }
@@ -861,7 +861,7 @@ Foam::labelList Foam::surfaceFeatures::selectFeatureEdges
     {
         selectedEdges.setCapacity(selectedEdges.size() + nInternalEdges());
 
-        for (label i = internalStart_; i < featureEdges_.size(); i++)
+        for (label i = internalStart_; i < featureEdges_.size(); ++i)
         {
             selectedEdges.append(featureEdges_[i]);
         }
@@ -922,7 +922,7 @@ Foam::labelList Foam::surfaceFeatures::trimFeatures
     do
     {
         // Find unset featureline
-        for (; startEdgeI < edgeStat.size(); startEdgeI++)
+        for (; startEdgeI < edgeStat.size(); ++startEdgeI)
         {
             if
             (
@@ -1174,7 +1174,7 @@ void Foam::surfaceFeatures::writeObj(const fileName& prefix) const
     Pout<< "Writing region edges to " << regionStr.name() << endl;
 
     label verti = 0;
-    for (label i = 0; i < externalStart_; i++)
+    for (label i = 0; i < externalStart_; ++i)
     {
         const edge& e = surf_.edges()[featureEdges_[i]];
 
@@ -1188,7 +1188,7 @@ void Foam::surfaceFeatures::writeObj(const fileName& prefix) const
     Pout<< "Writing external edges to " << externalStr.name() << endl;
 
     verti = 0;
-    for (label i = externalStart_; i < internalStart_; i++)
+    for (label i = externalStart_; i < internalStart_; ++i)
     {
         const edge& e = surf_.edges()[featureEdges_[i]];
 
@@ -1201,7 +1201,7 @@ void Foam::surfaceFeatures::writeObj(const fileName& prefix) const
     Pout<< "Writing internal edges to " << internalStr.name() << endl;
 
     verti = 0;
-    for (label i = internalStart_; i < featureEdges_.size(); i++)
+    for (label i = internalStart_; i < featureEdges_.size(); ++i)
     {
         const edge& e = surf_.edges()[featureEdges_[i]];
 

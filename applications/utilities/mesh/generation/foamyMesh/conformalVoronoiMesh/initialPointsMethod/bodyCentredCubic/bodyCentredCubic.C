@@ -104,9 +104,9 @@ List<Vb::Point> bodyCentredCubic::initialPoints() const
 
     DynamicList<Vb::Point> initialPoints(ni*nj*nk/10);
 
-    for (label i = 0; i < ni; i++)
+    for (label i = 0; i < ni; ++i)
     {
-        for (label j = 0; j < nj; j++)
+        for (label j = 0; j < nj; ++j)
         {
             // Generating, testing and adding points one line at a time to
             // reduce the memory requirement for cases with bounding boxes that
@@ -116,7 +116,7 @@ List<Vb::Point> bodyCentredCubic::initialPoints() const
 
             pointField points(2*nk);
 
-            for (label k = 0; k < nk; k++)
+            for (label k = 0; k < nk; ++k)
             {
                 point pA
                 (

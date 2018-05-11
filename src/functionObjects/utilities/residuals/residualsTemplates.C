@@ -45,7 +45,7 @@ void Foam::functionObjects::residuals::writeFileHeader
             mesh_.validComponents<Type>()
         );
 
-        for (direction cmpt=0; cmpt<pTraits<Type>::nComponents; cmpt++)
+        for (direction cmpt=0; cmpt<pTraits<Type>::nComponents; ++cmpt)
         {
             if (component(validComponents, cmpt) != -1)
             {
@@ -83,7 +83,7 @@ void Foam::functionObjects::residuals::writeResidual(const word& fieldName)
                 mesh_.validComponents<Type>()
             );
 
-            for (direction cmpt=0; cmpt<pTraits<Type>::nComponents; cmpt++)
+            for (direction cmpt=0; cmpt<pTraits<Type>::nComponents; ++cmpt)
             {
                 if (component(validComponents, cmpt) != -1)
                 {

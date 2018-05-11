@@ -139,7 +139,7 @@ Foam::solverPerformance Foam::PCG::solve
 
             if (solverPerf.nIterations() == 0)
             {
-                for (label cell=0; cell<nCells; cell++)
+                for (label cell=0; cell<nCells; ++cell)
                 {
                     pAPtr[cell] = wAPtr[cell];
                 }
@@ -148,7 +148,7 @@ Foam::solverPerformance Foam::PCG::solve
             {
                 scalar beta = wArA/wArAold;
 
-                for (label cell=0; cell<nCells; cell++)
+                for (label cell=0; cell<nCells; ++cell)
                 {
                     pAPtr[cell] = wAPtr[cell] + beta*pAPtr[cell];
                 }
@@ -169,7 +169,7 @@ Foam::solverPerformance Foam::PCG::solve
 
             scalar alpha = wArA/wApA;
 
-            for (label cell=0; cell<nCells; cell++)
+            for (label cell=0; cell<nCells; ++cell)
             {
                 psiPtr[cell] += alpha*pAPtr[cell];
                 rAPtr[cell] -= alpha*wAPtr[cell];

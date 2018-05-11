@@ -42,7 +42,7 @@ const char* const Foam::pTraits<uint32_t>::typeName = "uint32";
 Foam::uLabel Foam::pow(uLabel a, uLabel b)
 {
     uLabel ans = 1;
-    for (uLabel i=0; i<b; i++)
+    for (uLabel i=0; i<b; ++i)
     {
         ans *= a;
     }

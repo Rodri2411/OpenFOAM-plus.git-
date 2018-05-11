@@ -1304,7 +1304,7 @@ void Foam::conformalVoronoiMesh::writeCellCentres
     Info<< "Writing components of cellCentre positions to volScalarFields"
         << " ccx, ccy, ccz in " <<  runTime_.timeName() << endl;
 
-    for (direction i=0; i<vector::nComponents; i++)
+    for (direction i=0; i<vector::nComponents; ++i)
     {
         volScalarField cci
         (

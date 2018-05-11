@@ -91,9 +91,9 @@ void Foam::blockFaces::projectFace::calcLambdas
     lambdaJ.setSize(points.size());
     lambdaJ = 0.0;
 
-    for (label i = 1; i < n.first(); i++)
+    for (label i = 1; i < n.first(); ++i)
     {
-        for (label j = 1; j < n.second(); j++)
+        for (label j = 1; j < n.second(); ++j)
         {
             label ij = index(n, labelPair(i, j));
             label iMin1j = index(n, labelPair(i-1, j));
@@ -104,19 +104,19 @@ void Foam::blockFaces::projectFace::calcLambdas
         }
     }
 
-    for (label i = 1; i < n.first(); i++)
+    for (label i = 1; i < n.first(); ++i)
     {
         label ijLast = index(n, labelPair(i, n.second()-1));
-        for (label j = 1; j < n.second(); j++)
+        for (label j = 1; j < n.second(); ++j)
         {
             label ij = index(n, labelPair(i, j));
             lambdaJ[ij] /= lambdaJ[ijLast];
         }
     }
-    for (label j = 1; j < n.second(); j++)
+    for (label j = 1; j < n.second(); ++j)
     {
         label iLastj = index(n, labelPair(n.first()-1, j));
-        for (label i = 1; i < n.first(); i++)
+        for (label i = 1; i < n.first(); ++i)
         {
             label ij = index(n, labelPair(i, j));
             lambdaI[ij] /= lambdaI[iLastj];
@@ -211,7 +211,7 @@ void Foam::blockFaces::projectFace::project
     scalar iResidual = 0.0;
     scalar jResidual = 0.0;
 
-    for (label iter = 0; iter < maxIter;  iter++)
+    for (label iter = 0; iter < maxIter; ++iter)
     {
         // Do projection
         {
@@ -256,12 +256,12 @@ void Foam::blockFaces::projectFace::project
         // Work arrays for interpolation
         labelList indices;
         scalarField weights;
-        for (label j = 1; j < n.second()-1; j++)
+        for (label j = 1; j < n.second()-1; ++j)
         {
             // Calculate actual lamdba along constant j line
             scalarField projLambdas(n.first());
             projLambdas[0] = 0.0;
-            for (label i = 1; i < n.first(); i++)
+            for (label i = 1; i < n.first(); ++i)
             {
                 label ij = index(n, labelPair(i, j));
                 label iMin1j = index(n, labelPair(i-1, j));
@@ -273,7 +273,7 @@ void Foam::blockFaces::projectFace::project
 
             linearInterpolationWeights interpolator(projLambdas);
 
-            for (label i = 1; i < n.first()-1; i++)
+            for (label i = 1; i < n.first()-1; ++i)
             {
                 label ij = index(n, labelPair(i, j));
 
@@ -307,12 +307,12 @@ void Foam::blockFaces::projectFace::project
 
         // Predict along j
         residual = vector::zero;
-        for (label i = 1; i < n.first()-1; i++)
+        for (label i = 1; i < n.first()-1; ++i)
         {
             // Calculate actual lamdba along constant i line
             scalarField projLambdas(n.second());
             projLambdas[0] = 0.0;
-            for (label j = 1; j < n.second(); j++)
+            for (label j = 1; j < n.second(); ++j)
             {
                 label ij = index(n, labelPair(i, j));
                 label ijMin1 = index(n, labelPair(i, j-1));
@@ -325,7 +325,7 @@ void Foam::blockFaces::projectFace::project
 
             linearInterpolationWeights interpolator(projLambdas);
 
-            for (label j = 1; j < n.second()-1; j++)
+            for (label j = 1; j < n.second()-1; ++j)
             {
                 label ij = index(n, labelPair(i, j));
 

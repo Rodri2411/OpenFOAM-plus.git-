@@ -353,7 +353,7 @@ void Foam::layerAdditionRemoval::addCellLayer
         mesh.faceZones()[faceZoneID_.index()].meshEdges();
 
     // Do all internal edges
-    for (label curEdgeID = 0; curEdgeID < nInternalEdges; curEdgeID++)
+    for (label curEdgeID = 0; curEdgeID < nInternalEdges; ++curEdgeID)
     {
         face newFace(4);
 
@@ -407,7 +407,7 @@ void Foam::layerAdditionRemoval::addCellLayer
     (
         label curEdgeID = nInternalEdges;
         curEdgeID < zoneLocalEdges.size();
-        curEdgeID++
+        ++curEdgeID
     )
     {
         face newFace(4);

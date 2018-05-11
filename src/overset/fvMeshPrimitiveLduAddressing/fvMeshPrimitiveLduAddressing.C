@@ -92,7 +92,7 @@ Foam::label Foam::fvMeshPrimitiveLduAddressing::triIndex
 
     const labelUList& neighbour = addr.upperAddr();
 
-    for (label i = startLabel; i < endLabel; i++)
+    for (label i = startLabel; i < endLabel; ++i)
     {
         if (neighbour[i] == nbr)
         {
@@ -225,12 +225,7 @@ Foam::labelList Foam::fvMeshPrimitiveLduAddressing::addAddressing
 
     //if (debug)
     //{
-    //    for
-    //    (
-    //        label i = addr.upperAddr().size();
-    //        i < oldToNew.size();
-    //        i++
-    //    )
+    //    for (label i = addr.upperAddr().size(); i < oldToNew.size(); ++i)
     //    {
     //        label faceI = oldToNew[i];
     //        Pout<< "new face:" << faceI << endl

@@ -302,7 +302,7 @@ void Foam::FreeStream<CloudType>::inflow()
 
                 scalar mass = cloud.constProps(typeId).mass();
 
-                for (label i = 0; i < nI; i++)
+                for (label i = 0; i < nI; ++i)
                 {
                     // Choose a triangle to insert on, based on their relative
                     // area

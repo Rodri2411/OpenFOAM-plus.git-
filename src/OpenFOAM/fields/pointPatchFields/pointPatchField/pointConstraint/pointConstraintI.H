@@ -173,7 +173,7 @@ inline void Foam::pointConstraint::unconstrainedDirections
     }
 
     // Knock out remaining vectors
-    for (direction dir = n; dir < vecs.size(); dir++)
+    for (direction dir = n; dir < vecs.size(); ++dir)
     {
         vecs[dir] = Zero;
     }

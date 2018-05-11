@@ -59,7 +59,7 @@ scalar sumReduce
             (
                 int slave=Pstream::firstSlave();
                 slave<=Pstream::lastSlave(comm);
-                slave++
+                ++slave
             )
             {
                 scalar slaveValue;
@@ -82,7 +82,7 @@ scalar sumReduce
             (
                 int slave=UPstream::firstSlave();
                 slave<=UPstream::lastSlave(comm);
-                slave++
+                ++slave
             )
             {
                 UOPstream::write
@@ -141,11 +141,11 @@ int main(int argc, char *argv[])
     DynamicList<label> bottom;
     DynamicList<label> top;
 
-    for (label i = 0; i < n/2; i++)
+    for (label i = 0; i < n/2; ++i)
     {
         bottom.append(i);
     }
-    for (label i = n/2; i < n; i++)
+    for (label i = n/2; i < n; ++i)
     {
         top.append(i);
     }

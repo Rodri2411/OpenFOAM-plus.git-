@@ -185,7 +185,7 @@ updateCoeffs()
     /*
     scalarField Ir = dom.IRay(0).qin().boundaryField()[patchi];
 
-    for (label rayI=1; rayI < dom.nRay(); rayI++)
+    for (label rayI=1; rayI < dom.nRay(); ++rayI)
     {
         Ir += dom.IRay(rayI).qin().boundaryField()[patchi];
     }
@@ -195,7 +195,7 @@ updateCoeffs()
     scalarField Ir(patch().size(), 0.0);
     forAll(Iw, facei)
     {
-        for (label rayi=0; rayi < dom.nRay(); rayi++)
+        for (label rayi=0; rayi < dom.nRay(); ++rayi)
         {
             const vector& d = dom.IRay(rayi).d();
 

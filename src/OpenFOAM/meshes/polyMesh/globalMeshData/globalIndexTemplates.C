@@ -52,7 +52,7 @@ void Foam::globalIndex::gather
          || commsType == Pstream::commsTypes::blocking
         )
         {
-            for (label i = 1; i < procIDs.size(); i++)
+            for (label i = 1; i < procIDs.size(); ++i)
             {
                 SubList<Type> procSlot(allFld, off[i+1]-off[i], off[i]);
 
@@ -96,7 +96,7 @@ void Foam::globalIndex::gather
             label startOfRequests = Pstream::nRequests();
 
             // Set up reads
-            for (label i = 1; i < procIDs.size(); i++)
+            for (label i = 1; i < procIDs.size(); ++i)
             {
                 SubList<Type> procSlot(allFld, off[i+1]-off[i], off[i]);
 
@@ -223,7 +223,7 @@ void Foam::globalIndex::scatter
          || commsType == Pstream::commsTypes::blocking
         )
         {
-            for (label i = 1; i < procIDs.size(); i++)
+            for (label i = 1; i < procIDs.size(); ++i)
             {
                 const SubList<Type> procSlot
                 (
@@ -272,7 +272,7 @@ void Foam::globalIndex::scatter
             label startOfRequests = Pstream::nRequests();
 
             // Set up writes
-            for (label i = 1; i < procIDs.size(); i++)
+            for (label i = 1; i < procIDs.size(); ++i)
             {
                 const SubList<Type> procSlot
                 (

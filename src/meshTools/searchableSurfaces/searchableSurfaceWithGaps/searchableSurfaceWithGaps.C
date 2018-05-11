@@ -62,7 +62,7 @@ Foam::Pair<Foam::vector> Foam::searchableSurfaceWithGaps::offsetVecs
         scalar minMag = GREAT;
         direction minCmpt = 0;
 
-        for (direction cmpt = 0; cmpt < vector::nComponents; cmpt++)
+        for (direction cmpt = 0; cmpt < vector::nComponents; ++cmpt)
         {
             if (mag(n[cmpt]) < minMag)
             {

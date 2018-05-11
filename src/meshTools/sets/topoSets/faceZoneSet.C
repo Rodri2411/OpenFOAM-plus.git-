@@ -144,7 +144,7 @@ void Foam::faceZoneSet::invert(const label maxLen)
     // Count
     label n = 0;
 
-    for (label facei = 0; facei < maxLen; facei++)
+    for (label facei = 0; facei < maxLen; ++facei)
     {
         if (!found(facei))
         {
@@ -157,7 +157,7 @@ void Foam::faceZoneSet::invert(const label maxLen)
     flipMap_.setSize(n);
     n = 0;
 
-    for (label facei = 0; facei < maxLen; facei++)
+    for (label facei = 0; facei < maxLen; ++facei)
     {
         if (!found(facei))
         {
@@ -402,7 +402,7 @@ void Foam::faceZoneSet::sync(const polyMesh& mesh)
         }
     }
 
-    for (label facei = mesh.nInternalFaces(); facei < mesh.nFaces(); facei++)
+    for (label facei = mesh.nInternalFaces(); facei < mesh.nFaces(); ++facei)
     {
         label myStat = myZoneFace[facei-mesh.nInternalFaces()];
         label neiStat = neiZoneFace[facei-mesh.nInternalFaces()];

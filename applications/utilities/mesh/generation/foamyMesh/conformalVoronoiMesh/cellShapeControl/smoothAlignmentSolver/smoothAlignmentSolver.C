@@ -335,7 +335,7 @@ void Foam::smoothAlignmentSolver::smoothAlignments
     Info<< nl << "Smoothing alignments" << endl;
 
 
-    for (label iter = 0; iter < maxSmoothingIterations; iter++)
+    for (label iter = 0; iter < maxSmoothingIterations; ++iter)
     {
         Info<< "Iteration " << iter;
 
@@ -366,7 +366,7 @@ void Foam::smoothAlignmentSolver::smoothAlignments
 
                 triad tmpTriad = alignments[adjPointIndex];
 
-                for (direction dir = 0; dir < 3; dir++)
+                for (direction dir = 0; dir < 3; ++dir)
                 {
                     if (tmpTriad.set(dir))
                     {

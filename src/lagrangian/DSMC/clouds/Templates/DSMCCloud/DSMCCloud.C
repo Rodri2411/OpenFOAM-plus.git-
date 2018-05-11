@@ -157,7 +157,7 @@ void Foam::DSMCCloud<ParcelType>::initialise
                     nParticlesToInsert++;
                 }
 
-                for (label pI = 0; pI < nParticlesToInsert; pI++)
+                for (label pI = 0; pI < nParticlesToInsert; ++pI)
                 {
                     point p = tet.randomPoint(rndGen_);
 
@@ -266,7 +266,7 @@ void Foam::DSMCCloud<ParcelType>::collisions()
             collisionSelectionRemainder_[celli] = selectedPairs - nCandidates;
             collisionCandidates += nCandidates;
 
-            for (label c = 0; c < nCandidates; c++)
+            for (label c = 0; c < nCandidates; ++c)
             {
                 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 // subCell candidate selection procedure

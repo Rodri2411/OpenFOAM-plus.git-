@@ -181,7 +181,7 @@ Foam::tmp<Foam::scalarField> Foam::primitiveMeshTools::faceSkewness
     // Boundary faces: consider them to have only skewness error.
     // (i.e. treat as if mirror cell on other side)
 
-    for (label facei = mesh.nInternalFaces(); facei < mesh.nFaces(); facei++)
+    for (label facei = mesh.nInternalFaces(); facei < mesh.nFaces(); ++facei)
     {
         skew[facei] = boundaryFaceSkewness
         (
@@ -273,7 +273,7 @@ void Foam::primitiveMeshTools::cellClosedness
 
 
     label nDims = 0;
-    for (direction dir = 0; dir < vector::nComponents; dir++)
+    for (direction dir = 0; dir < vector::nComponents; ++dir)
     {
         if (meshD[dir] == 1)
         {
@@ -290,7 +290,7 @@ void Foam::primitiveMeshTools::cellClosedness
     {
         scalar maxOpenness = 0;
 
-        for (direction cmpt=0; cmpt<vector::nComponents; cmpt++)
+        for (direction cmpt=0; cmpt<vector::nComponents; ++cmpt)
         {
             maxOpenness = max
             (
@@ -305,7 +305,7 @@ void Foam::primitiveMeshTools::cellClosedness
         // aspect ratio to the total area hydraulic area aspect ratio
         scalar minCmpt = VGREAT;
         scalar maxCmpt = -VGREAT;
-        for (direction dir = 0; dir < vector::nComponents; dir++)
+        for (direction dir = 0; dir < vector::nComponents; ++dir)
         {
             if (meshD[dir] == 1)
             {
@@ -461,7 +461,7 @@ Foam::tmp<Foam::scalarField> Foam::primitiveMeshTools::cellDeterminant
     // Determine number of dimensions and (for 2D) missing dimension
     label nDims = 0;
     label twoD = -1;
-    for (direction dir = 0; dir < vector::nComponents; dir++)
+    for (direction dir = 0; dir < vector::nComponents; ++dir)
     {
         if (meshD[dir] == 1)
         {

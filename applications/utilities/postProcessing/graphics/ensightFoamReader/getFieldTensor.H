@@ -41,7 +41,7 @@ if (which_type == Z_HEX08)
     //const cellModel& wedge = cellModel::ref(cellModel::WEDGE);
 
     label counter = 1;
-    for (label n=0; n<nCells; n++)
+    for (label n=0; n<nCells; ++n)
     {
         const cellShape& cellShape = cellShapes[n];
         const cellModel& cellModel = cellShape.model();
@@ -59,7 +59,7 @@ if (which_type == Z_PEN06)
     const cellModel& prism = cellModel::ref(cellModel::PRISM);
 
     label counter = 1;
-    for (label n=0; n<nCells; n++)
+    for (label n=0; n<nCells; ++n)
     {
         const cellShape& cellShape = cellShapes[n];
         const cellModel& cellModel = cellShape.model();
@@ -77,7 +77,7 @@ if (which_type == Z_PYR05)
     const cellModel& pyr = cellModel::ref(cellModel::PYR);
 
     label counter = 1;
-    for (label n=0; n<nCells; n++)
+    for (label n=0; n<nCells; ++n)
     {
         const cellShape& cellShape = cellShapes[n];
         const cellModel& cellModel = cellShape.model();
@@ -97,7 +97,7 @@ if (which_type == Z_TET04)
 
     label counter = 1;
 
-    for (label n=0; n<nCells; n++)
+    for (label n=0; n<nCells; ++n)
     {
         const cellShape& cellShape = cellShapes[n];
         const cellModel& cellModel = cellShape.model();
@@ -114,7 +114,7 @@ if (which_type == Z_NFACED)
     const cellList& cells = meshPtr->cells();
 
     label counter = 1;
-    for (label n=0; n<nCells; n++)
+    for (label n=0; n<nCells; ++n)
     {
         const labelList& points = cellShapes[n];
         label nFacesInCell = cells[n].size();

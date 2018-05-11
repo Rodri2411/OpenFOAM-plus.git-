@@ -42,7 +42,7 @@ Foam::direction Foam::searchablePlate::calcNormal(const point& span)
 {
     direction normalDir = 3;
 
-    for (direction dir = 0; dir < vector::nComponents; dir++)
+    for (direction dir = 0; dir < vector::nComponents; ++dir)
     {
         if (span[dir] < 0)
         {
@@ -96,7 +96,7 @@ Foam::pointIndexHit Foam::searchablePlate::findNearest
     info.rawPoint()[normalDir_] = origin_[normalDir_];
 
     // Clip to edges if outside
-    for (direction dir = 0; dir < vector::nComponents; dir++)
+    for (direction dir = 0; dir < vector::nComponents; ++dir)
     {
         if (dir != normalDir_)
         {
@@ -158,7 +158,7 @@ Foam::pointIndexHit Foam::searchablePlate::findLine
             info.rawPoint()[normalDir_] = origin_[normalDir_];
 
             // Clip to edges
-            for (direction dir = 0; dir < vector::nComponents; dir++)
+            for (direction dir = 0; dir < vector::nComponents; ++dir)
             {
                 if (dir != normalDir_)
                 {

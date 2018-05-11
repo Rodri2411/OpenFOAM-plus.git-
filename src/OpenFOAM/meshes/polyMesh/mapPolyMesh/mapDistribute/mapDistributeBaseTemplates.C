@@ -165,7 +165,7 @@ void Foam::mapDistributeBase::distribute
         // received data.
 
         // Send sub field to neighbour
-        for (label domain = 0; domain < Pstream::nProcs(); domain++)
+        for (label domain = 0; domain < Pstream::nProcs(); ++domain)
         {
             const labelList& map = subMap[domain];
 
@@ -213,7 +213,7 @@ void Foam::mapDistributeBase::distribute
         );
 
         // Receive sub field from neighbour
-        for (label domain = 0; domain < Pstream::nProcs(); domain++)
+        for (label domain = 0; domain < Pstream::nProcs(); ++domain)
         {
             const labelList& map = constructMap[domain];
 
@@ -395,7 +395,7 @@ void Foam::mapDistributeBase::distribute
             PstreamBuffers pBufs(Pstream::commsTypes::nonBlocking, tag);
 
             // Stream data into buffer
-            for (label domain = 0; domain < Pstream::nProcs(); domain++)
+            for (label domain = 0; domain < Pstream::nProcs(); ++domain)
             {
                 const labelList& map = subMap[domain];
 
@@ -458,7 +458,7 @@ void Foam::mapDistributeBase::distribute
             Pstream::waitRequests(nOutstanding);
 
             // Consume
-            for (label domain = 0; domain < Pstream::nProcs(); domain++)
+            for (label domain = 0; domain < Pstream::nProcs(); ++domain)
             {
                 const labelList& map = constructMap[domain];
 
@@ -487,7 +487,7 @@ void Foam::mapDistributeBase::distribute
 
             List<List<T>> sendFields(Pstream::nProcs());
 
-            for (label domain = 0; domain < Pstream::nProcs(); domain++)
+            for (label domain = 0; domain < Pstream::nProcs(); ++domain)
             {
                 const labelList& map = subMap[domain];
 
@@ -521,7 +521,7 @@ void Foam::mapDistributeBase::distribute
 
             List<List<T>> recvFields(Pstream::nProcs());
 
-            for (label domain = 0; domain < Pstream::nProcs(); domain++)
+            for (label domain = 0; domain < Pstream::nProcs(); ++domain)
             {
                 const labelList& map = constructMap[domain];
 
@@ -589,7 +589,7 @@ void Foam::mapDistributeBase::distribute
 
             // Collect neighbour fields
 
-            for (label domain = 0; domain < Pstream::nProcs(); domain++)
+            for (label domain = 0; domain < Pstream::nProcs(); ++domain)
             {
                 const labelList& map = constructMap[domain];
 
@@ -668,7 +668,7 @@ void Foam::mapDistributeBase::distribute
         // received data.
 
         // Send sub field to neighbour
-        for (label domain = 0; domain < Pstream::nProcs(); domain++)
+        for (label domain = 0; domain < Pstream::nProcs(); ++domain)
         {
             const labelList& map = subMap[domain];
 
@@ -708,7 +708,7 @@ void Foam::mapDistributeBase::distribute
         flipAndCombine(map, constructHasFlip, subField, cop, negOp, field);
 
         // Receive sub field from neighbour
-        for (label domain = 0; domain < Pstream::nProcs(); domain++)
+        for (label domain = 0; domain < Pstream::nProcs(); ++domain)
         {
             const labelList& map = constructMap[domain];
 
@@ -893,7 +893,7 @@ void Foam::mapDistributeBase::distribute
             PstreamBuffers pBufs(Pstream::commsTypes::nonBlocking, tag);
 
             // Stream data into buffer
-            for (label domain = 0; domain < Pstream::nProcs(); domain++)
+            for (label domain = 0; domain < Pstream::nProcs(); ++domain)
             {
                 const labelList& map = subMap[domain];
 
@@ -959,7 +959,7 @@ void Foam::mapDistributeBase::distribute
             Pstream::waitRequests(nOutstanding);
 
             // Consume
-            for (label domain = 0; domain < Pstream::nProcs(); domain++)
+            for (label domain = 0; domain < Pstream::nProcs(); ++domain)
             {
                 const labelList& map = constructMap[domain];
 
@@ -988,7 +988,7 @@ void Foam::mapDistributeBase::distribute
 
             List<List<T>> sendFields(Pstream::nProcs());
 
-            for (label domain = 0; domain < Pstream::nProcs(); domain++)
+            for (label domain = 0; domain < Pstream::nProcs(); ++domain)
             {
                 const labelList& map = subMap[domain];
 
@@ -1022,7 +1022,7 @@ void Foam::mapDistributeBase::distribute
 
             List<List<T>> recvFields(Pstream::nProcs());
 
-            for (label domain = 0; domain < Pstream::nProcs(); domain++)
+            for (label domain = 0; domain < Pstream::nProcs(); ++domain)
             {
                 const labelList& map = constructMap[domain];
 
@@ -1089,7 +1089,7 @@ void Foam::mapDistributeBase::distribute
 
             // Collect neighbour fields
 
-            for (label domain = 0; domain < Pstream::nProcs(); domain++)
+            for (label domain = 0; domain < Pstream::nProcs(); ++domain)
             {
                 const labelList& map = constructMap[domain];
 
@@ -1126,7 +1126,7 @@ void Foam::mapDistributeBase::send(PstreamBuffers& pBufs, const List<T>& field)
 const
 {
     // Stream data into buffer
-    for (label domain = 0; domain < Pstream::nProcs(); domain++)
+    for (label domain = 0; domain < Pstream::nProcs(); ++domain)
     {
         const labelList& map = subMap_[domain];
 
@@ -1162,7 +1162,7 @@ const
     // Consume
     field.setSize(constructSize_);
 
-    for (label domain = 0; domain < Pstream::nProcs(); domain++)
+    for (label domain = 0; domain < Pstream::nProcs(); ++domain)
     {
         const labelList& map = constructMap_[domain];
 

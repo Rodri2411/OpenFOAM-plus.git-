@@ -301,7 +301,7 @@ void Foam::extendedFeatureEdgeMesh::sortPointsAndEdges
     DynamicList<label>& concavePts(allPts[1]);
     DynamicList<label>& mixedPts(allPts[2]);
 
-    for (label i = 0; i < nonFeatureStart_; i++)
+    for (label i = 0; i < nonFeatureStart_; ++i)
     {
         pointStatus ptStatus = classifyFeaturePoint(i);
 
@@ -370,7 +370,7 @@ void Foam::extendedFeatureEdgeMesh::sortPointsAndEdges
 
     labelListList featurePointNormals(nonFeatureStart_);
 
-    for (label i = 0; i < nonFeatureStart_; i++)
+    for (label i = 0; i < nonFeatureStart_; ++i)
     {
         DynamicList<label> tmpFtPtNorms;
 

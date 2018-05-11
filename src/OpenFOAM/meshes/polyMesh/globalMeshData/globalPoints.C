@@ -1030,7 +1030,7 @@ void Foam::globalPoints::calculateSharedPoints
                 label nonTransformI = 0;
                 label transformI = 0;
 
-                for (label i = 1; i < pointInfo.size(); i++)
+                for (label i = 1; i < pointInfo.size(); ++i)
                 {
                     const labelPair& info = pointInfo[i];
                     label proci = globalTransforms_.processor(info);

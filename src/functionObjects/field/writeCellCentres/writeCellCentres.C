@@ -96,7 +96,7 @@ bool Foam::functionObjects::writeCellCentres::write()
 
     C.write();
 
-    for (direction i=0; i<vector::nComponents; i++)
+    for (direction i=0; i<vector::nComponents; ++i)
     {
         volScalarField Ci
         (

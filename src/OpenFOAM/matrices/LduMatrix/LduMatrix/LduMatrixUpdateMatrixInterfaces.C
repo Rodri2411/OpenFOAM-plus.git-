@@ -69,7 +69,7 @@ void Foam::LduMatrix<Type, DType, LUType>::initMatrixInterfaces
         (
             label interfacei=patchSchedule.size()/2;
             interfacei<interfaces_.size();
-            interfacei++
+            ++interfacei
         )
         {
             if (interfaces_.set(interfacei))
@@ -178,7 +178,7 @@ void Foam::LduMatrix<Type, DType, LUType>::updateMatrixInterfaces
         (
             label interfacei=patchSchedule.size()/2;
             interfacei<interfaces_.size();
-            interfacei++
+            ++interfacei
         )
         {
             if (interfaces_.set(interfacei))

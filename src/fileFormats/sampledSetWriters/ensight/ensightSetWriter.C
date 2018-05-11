@@ -121,7 +121,7 @@ void Foam::ensightSetWriter<Type>::write
             << "coordinates" << nl
             << setw(10) << points.size() << nl;
 
-        for (direction cmpt = 0; cmpt < vector::nComponents; cmpt++)
+        for (direction cmpt = 0; cmpt < vector::nComponents; ++cmpt)
         {
             forAll(points, pointi)
             {
@@ -242,7 +242,7 @@ void Foam::ensightSetWriter<Type>::write
                 << "coordinates" << nl
                 << setw(10) << points.size() << nl;
 
-            for (direction cmpt = 0; cmpt < vector::nComponents; cmpt++)
+            for (direction cmpt = 0; cmpt < vector::nComponents; ++cmpt)
             {
                 forAll(points, pointi)
                 {
@@ -262,7 +262,7 @@ void Foam::ensightSetWriter<Type>::write
             {
                 os  << "bar2" << nl
                     << setw(10) << points.size()-1 << nl;
-                for (label i = 0; i < points.size()-1; i++)
+                for (label i = 0; i < points.size()-1; ++i)
                 {
                     os  << setw(10) << i+1
                         << setw(10) << i+2

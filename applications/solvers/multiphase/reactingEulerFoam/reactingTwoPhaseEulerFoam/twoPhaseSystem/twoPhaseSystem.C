@@ -252,7 +252,7 @@ void Foam::twoPhaseSystem::solve()
         phir += DbyA*fvc::snGrad(alpha1, "bounded")*mesh_.magSf();
     }
 
-    for (int acorr=0; acorr<nAlphaCorr; acorr++)
+    for (int acorr=0; acorr<nAlphaCorr; ++acorr)
     {
         volScalarField::Internal Sp
         (

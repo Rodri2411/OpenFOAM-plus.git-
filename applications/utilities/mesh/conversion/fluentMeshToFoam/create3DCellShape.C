@@ -173,7 +173,7 @@ cellShape create3DCellShape
             << abort(FatalError);
     }
 
-    for (label modelFacei = 1; modelFacei < modelFaces.size(); modelFacei++)
+    for (label modelFacei = 1; modelFacei < modelFaces.size(); ++modelFacei)
     {
         // get the next model face
         const labelList& curModelFace =
@@ -198,7 +198,7 @@ cellShape create3DCellShape
                 (
                     label rotation = 0;
                     rotation < meshFaceLabels.size();
-                    rotation++
+                    ++rotation
                 )
                 {
                     // try matching the face
@@ -240,7 +240,7 @@ cellShape create3DCellShape
                         // No match found. Rotate face
                         label firstLabel = meshFaceLabels[0];
 
-                        for (label i = 1; i < meshFaceLabels.size(); i++)
+                        for (label i = 1; i < meshFaceLabels.size(); ++i)
                         {
                             meshFaceLabels[i - 1] = meshFaceLabels[i];
                         }

@@ -316,7 +316,7 @@ bool Foam::OFstreamCollator::write
     off_t totalSize = 0;
     label maxLocalSize = 0;
     {
-        for (label proci = 0; proci < recvSizes.size(); proci++)
+        for (label proci = 0; proci < recvSizes.size(); ++proci)
         {
             totalSize += recvSizes[proci];
             maxLocalSize = max(maxLocalSize, recvSizes[proci]);

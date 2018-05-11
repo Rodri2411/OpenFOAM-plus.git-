@@ -218,7 +218,7 @@ void Foam::isoCutCell::calcIsoFaceCentreAndArea()
     {
         const DynamicList<point>& edgePoints = isoFaceEdges_[ei];
         const label nPoints = edgePoints.size();
-        for (label pi = 0; pi < nPoints-1; pi++)
+        for (label pi = 0; pi < nPoints-1; ++pi)
         {
             const point& nextPoint = edgePoints[pi + 1];
 
@@ -302,7 +302,7 @@ void Foam::isoCutCell::calcIsoFacePointsFromEdges()
     labelList order(unsortedIsoFacePointAngles.size());
     Foam::sortedOrder(unsortedIsoFacePointAngles, order);
     isoFacePoints_.append(unsortedIsoFacePoints[order[0]]);
-    for (label pi = 1; pi < order.size(); pi++)
+    for (label pi = 1; pi < order.size(); ++pi)
     {
         if
         (

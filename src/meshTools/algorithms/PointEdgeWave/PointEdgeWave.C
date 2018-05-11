@@ -772,7 +772,7 @@ Foam::label Foam::PointEdgeWave<Type, TrackingData>::edgeToPoint()
     (
         label changedEdgeI = 0;
         changedEdgeI < nChangedEdges_;
-        changedEdgeI++
+        ++changedEdgeI
     )
     {
         label edgeI = changedEdges_[changedEdgeI];
@@ -850,7 +850,7 @@ Foam::label Foam::PointEdgeWave<Type, TrackingData>::pointToEdge()
     (
         label changedPointi = 0;
         changedPointi < nChangedPoints_;
-        changedPointi++
+        ++changedPointi
     )
     {
         label pointi = changedPoints_[changedPointi];

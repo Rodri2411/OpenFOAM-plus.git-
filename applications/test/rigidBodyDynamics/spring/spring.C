@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
     {
         spring.newTime();
 
-        for (label i=0; i<nIter; i++)
+        for (label i=0; i<nIter; ++i)
         {
             spring.solve(deltaT, tau, fx);
         }

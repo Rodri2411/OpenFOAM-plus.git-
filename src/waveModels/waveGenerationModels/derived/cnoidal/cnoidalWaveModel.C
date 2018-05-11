@@ -146,7 +146,7 @@ Foam::scalar Foam::waveModels::cnoidal::etaMeanSq
     scalar eta = 0;
     scalar etaSumSq = 0;
 
-    for (int i=0; i<1000; i++)
+    for (int i=0; i<1000; ++i)
     {
         eta = eta1D(H, m, i*T/(1000.0), T);
         etaSumSq += eta*eta;

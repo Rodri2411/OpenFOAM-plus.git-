@@ -89,7 +89,7 @@ Foam::Histogram<List>::Histogram
 
     bins[0] = min;
 
-    for (label i = 1; i < nBins; i++)
+    for (label i = 1; i < nBins; ++i)
     {
         bins[i] = bins[i-1] + span;
     }

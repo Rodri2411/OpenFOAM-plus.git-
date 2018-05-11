@@ -146,7 +146,7 @@
     }
 
 
-    for (int aCorr=0; aCorr<nAlphaCorr; aCorr++)
+    for (int aCorr=0; aCorr<nAlphaCorr; ++aCorr)
     {
         #include "alphaSuSp.H"
 

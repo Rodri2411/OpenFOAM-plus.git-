@@ -20,7 +20,7 @@ int USERD_get_nfaced_nodes_per_face
 
         label nCells = cellShapes.size();
         label nFaced = 0;
-        for (label n=0; n<nCells; n++)
+        for (label n=0; n<nCells; ++n)
         {
             label nFacesInCell = cells[n].size();
             labelList points = cellShapes[n];
@@ -38,7 +38,7 @@ int USERD_get_nfaced_nodes_per_face
                 {}
                 else
                 {
-                    for (label i=0; i<nFacesInCell; i++)
+                    for (label i=0; i<nFacesInCell; ++i)
                     {
                         label facei = cells[n][i];
                         label nFacePoints = faces[facei].size();
@@ -48,7 +48,7 @@ int USERD_get_nfaced_nodes_per_face
             }
             else
             {
-                for (label i=0; i<nFacesInCell; i++)
+                for (label i=0; i<nFacesInCell; ++i)
                 {
                     label facei = cells[n][i];
                     label nFacePoints = faces[facei].size();

@@ -135,7 +135,7 @@ Foam::PBiCCCG<Type, DType, LUType>::solve
 
             if (nIter == 0)
             {
-                for (label cell=0; cell<nCells; cell++)
+                for (label cell=0; cell<nCells; ++cell)
                 {
                     pAPtr[cell] = wAPtr[cell];
                     pTPtr[cell] = wTPtr[cell];
@@ -145,7 +145,7 @@ Foam::PBiCCCG<Type, DType, LUType>::solve
             {
                 scalar beta = wArT/wArTold;
 
-                for (label cell=0; cell<nCells; cell++)
+                for (label cell=0; cell<nCells; ++cell)
                 {
                     pAPtr[cell] = wAPtr[cell] + (beta* pAPtr[cell]);
                     pTPtr[cell] = wTPtr[cell] + (beta* pTPtr[cell]);
@@ -176,7 +176,7 @@ Foam::PBiCCCG<Type, DType, LUType>::solve
 
             scalar alpha = wArT/wApT;
 
-            for (label cell=0; cell<nCells; cell++)
+            for (label cell=0; cell<nCells; ++cell)
             {
                 psiPtr[cell] += (alpha* pAPtr[cell]);
                 rAPtr[cell] -= (alpha* wAPtr[cell]);

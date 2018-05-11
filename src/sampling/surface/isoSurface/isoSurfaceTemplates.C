@@ -513,7 +513,7 @@ Foam::label Foam::isoSurface::generateFaceTriPoints
 
     // Every three triPoints is a triangle
     label nTris = (triPoints.size()-oldNPoints)/3;
-    for (label i = 0; i < nTris; i++)
+    for (label i = 0; i < nTris; ++i)
     {
         triMeshCells.append(own);
     }

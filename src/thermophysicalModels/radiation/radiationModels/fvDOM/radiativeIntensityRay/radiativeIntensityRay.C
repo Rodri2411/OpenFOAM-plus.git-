@@ -144,7 +144,7 @@ Foam::radiation::radiativeIntensityRay::radiativeIntensityRay
         }
         else
         {
-            for (direction cmpt=0; cmpt<vector::nComponents; cmpt++)
+            for (direction cmpt=0; cmpt<vector::nComponents; ++cmpt)
             {
                 if (mesh_.geometricD()[cmpt] == -1)
                 {
@@ -168,7 +168,7 @@ Foam::radiation::radiativeIntensityRay::radiativeIntensityRay
         }
         else
         {
-            for (direction cmpt=0; cmpt<vector::nComponents; cmpt++)
+            for (direction cmpt=0; cmpt<vector::nComponents; ++cmpt)
             {
                 if (mesh_.geometricD()[cmpt] == 1)
                 {

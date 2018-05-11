@@ -273,7 +273,7 @@ int main(int argc, char *argv[])
     Info<< endl;
 
     const label nRegion = solver.nRegion();
-    for (label regionI = 0; regionI < nRegion; regionI++)
+    for (label regionI = 0; regionI < nRegion; ++regionI)
     {
         const word& regionName = solver.regionName(regionI);
 

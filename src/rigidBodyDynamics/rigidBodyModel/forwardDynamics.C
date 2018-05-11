@@ -71,7 +71,7 @@ void Foam::RBD::rigidBodyModel::forwardDynamics
 
     v_[0] = Zero;
 
-    for (label i=1; i<nBodies(); i++)
+    for (label i=1; i<nBodies(); ++i)
     {
         const joint& jnt = joints()[i];
         jnt.jcalc(J, q, qDot);
@@ -172,7 +172,7 @@ void Foam::RBD::rigidBodyModel::forwardDynamics
 
     a_[0] = spatialVector(Zero, -g_);
 
-    for (label i=1; i<nBodies(); i++)
+    for (label i=1; i<nBodies(); ++i)
     {
         const joint& jnt = joints()[i];
         const label qi = jnt.qIndex();
@@ -220,7 +220,7 @@ void Foam::RBD::rigidBodyModel::forwardDynamicsCorrection
     v_[0] = Zero;
     a_[0] = spatialVector(Zero, -g_);
 
-    for (label i=1; i<nBodies(); i++)
+    for (label i=1; i<nBodies(); ++i)
     {
         const joint& jnt = joints()[i];
         const label qi = jnt.qIndex();

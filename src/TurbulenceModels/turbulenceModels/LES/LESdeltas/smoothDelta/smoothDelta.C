@@ -49,7 +49,7 @@ void Foam::LESModels::smoothDelta::setChangedFaces
     DynamicList<deltaData>& changedFacesInfo
 )
 {
-    for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh.nInternalFaces(); ++facei)
     {
         scalar ownDelta = delta[mesh.faceOwner()[facei]];
 

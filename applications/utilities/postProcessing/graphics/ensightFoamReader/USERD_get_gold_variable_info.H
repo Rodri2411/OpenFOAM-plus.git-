@@ -22,7 +22,7 @@ int USERD_get_gold_variable_info
     label offset = Num_variables - nSprayVariables;
 
     // scalars first ...
-    for (label n=0; n<offset; n++)
+    for (label n=0; n<offset; ++n)
     {
         if (isScalar[var2field[n]])
         {
@@ -40,7 +40,7 @@ int USERD_get_gold_variable_info
     }
 
     // ... and then vectors
-    for (label n=0; n<offset; n++)
+    for (label n=0; n<offset; ++n)
     {
         if (isVector[var2field[n]])
         {
@@ -58,7 +58,7 @@ int USERD_get_gold_variable_info
     }
 
     // ... and tensors (NB! all tensors are treated as asymmetric)
-    for (label n=0; n<offset; n++)
+    for (label n=0; n<offset; ++n)
     {
         if (isTensor[var2field[n]])
         {
@@ -80,7 +80,7 @@ int USERD_get_gold_variable_info
 
         label Ns = lagrangianScalarNames.size();
 
-        for (label n=0; n<Ns; n++)
+        for (label n=0; n<Ns; ++n)
         {
             var_type[offset + n] = Z_SCALAR;
             var_classify[offset + n] = Z_PER_ELEM;

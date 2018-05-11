@@ -133,7 +133,7 @@ void Foam::functionObjects::forceCoeffs::writeBinHeader
     writeHeader(os, "");
     writeCommented(os, "Time");
 
-    for (label j = 0; j < nBin_; j++)
+    for (label j = 0; j < nBin_; ++j)
     {
         word jn(Foam::name(j) + ':');
         writeTabbed(os, jn + "total");
@@ -188,7 +188,7 @@ void Foam::functionObjects::forceCoeffs::writeBinData
 {
     writeTime(os);
 
-    for (label bini = 0; bini < nBin_; bini++)
+    for (label bini = 0; bini < nBin_; ++bini)
     {
         scalar total = coeffs[0][bini] + coeffs[1][bini] + coeffs[2][bini];
 
@@ -369,7 +369,7 @@ bool Foam::functionObjects::forceCoeffs::execute()
             {
                 forAll(liftCoeffs, i)
                 {
-                    for (label bini = 1; bini < nBin_; bini++)
+                    for (label bini = 1; bini < nBin_; ++bini)
                     {
                         liftCoeffs[i][bini] += liftCoeffs[i][bini-1];
                         dragCoeffs[i][bini] += dragCoeffs[i][bini-1];

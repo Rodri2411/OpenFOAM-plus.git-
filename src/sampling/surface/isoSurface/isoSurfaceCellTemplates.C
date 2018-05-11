@@ -379,7 +379,7 @@ void Foam::isoSurfaceCell::generateTriPoints
                     }
 
                     label fp = f.fcIndex(fp0);
-                    for (label i = 2; i < f.size(); i++)
+                    for (label i = 2; i < f.size(); ++i)
                     {
                         label nextFp = f.fcIndex(fp);
                         triFace tri(f[fp0], f[fp], f[nextFp]);
@@ -445,7 +445,7 @@ void Foam::isoSurfaceCell::generateTriPoints
 
             // Every three triPoints is a cell
             label nCells = (triPoints.size()-oldNPoints)/3;
-            for (label i = 0; i < nCells; i++)
+            for (label i = 0; i < nCells; ++i)
             {
                 triMeshCells.append(celli);
             }

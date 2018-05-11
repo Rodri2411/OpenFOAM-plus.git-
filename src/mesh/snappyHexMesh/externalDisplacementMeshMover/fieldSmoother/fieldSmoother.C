@@ -97,7 +97,7 @@ void Foam::fieldSmoother::smoothNormals
     );
 
     vectorField average;
-    for (label iter = 0; iter < nIter; iter++)
+    for (label iter = 0; iter < nIter; ++iter)
     {
         meshRefinement::weightedSum
         (
@@ -166,7 +166,7 @@ void Foam::fieldSmoother::smoothPatchNormals
 
 
     vectorField average;
-    for (label iter = 0; iter < nIter; iter++)
+    for (label iter = 0; iter < nIter; ++iter)
     {
         meshRefinement::weightedSum
         (
@@ -238,7 +238,7 @@ void Foam::fieldSmoother::smoothLambdaMuDisplacement
 
     vectorField average;
 
-    for (label iter = 0; iter < nIter; iter++)
+    for (label iter = 0; iter < nIter; ++iter)
     {
         meshRefinement::weightedSum
         (

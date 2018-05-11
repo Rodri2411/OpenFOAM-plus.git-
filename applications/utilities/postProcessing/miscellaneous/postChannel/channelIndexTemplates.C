@@ -69,7 +69,7 @@ Foam::Field<T> Foam::channelIndex::collapse
 
         if (asymmetric)
         {
-            for (label j=0; j<nlb2; j++)
+            for (label j=0; j<nlb2; ++j)
             {
                 regionField[j] =
                     0.5
@@ -81,7 +81,7 @@ Foam::Field<T> Foam::channelIndex::collapse
         }
         else
         {
-            for (label j=0; j<nlb2; j++)
+            for (label j=0; j<nlb2; ++j)
             {
                 regionField[j] =
                     0.5

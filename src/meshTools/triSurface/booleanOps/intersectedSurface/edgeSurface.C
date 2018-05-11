@@ -185,7 +185,7 @@ Foam::edgeSurface::edgeSurface
                 )
             );
 
-            for (label extraI = 1; extraI < extraVerts.size(); extraI++)
+            for (label extraI = 1; extraI < extraVerts.size(); ++extraI)
             {
                 allEdges.append
                 (
@@ -211,7 +211,7 @@ Foam::edgeSurface::edgeSurface
         // Add each edge label to all face neighbours of edgeI
         const labelList& myFaces = surf.edgeFaces()[edgeI];
 
-        for (label eI = freeNewEdgeI; eI < allEdges.size(); eI++)
+        for (label eI = freeNewEdgeI; eI < allEdges.size(); ++eI)
         {
             allParentEdges.append(edgeI);
 
@@ -298,7 +298,7 @@ Foam::edgeSurface::edgeSurface
         labelList edgeLabels(edges_.size() - nSurfaceEdges_);
 
         label i = 0;
-        for (label edgeI = nSurfaceEdges_; edgeI < edges_.size(); edgeI++)
+        for (label edgeI = nSurfaceEdges_; edgeI < edges_.size(); ++edgeI)
         {
             edgeLabels[i++] = edgeI;
         }

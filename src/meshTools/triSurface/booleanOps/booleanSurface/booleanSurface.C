@@ -836,7 +836,7 @@ Foam::booleanSurface::booleanSurface
     (
         label pointi = 0;
         pointi < cutSurf2.nSurfacePoints();
-        pointi++
+        ++pointi
     )
     {
         combinedPoints[combinedPointi++] = cutSurf2.points()[pointi];

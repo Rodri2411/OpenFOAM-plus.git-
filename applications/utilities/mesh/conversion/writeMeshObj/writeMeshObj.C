@@ -316,7 +316,7 @@ void writePatchBoundaryEdges
             writeOBJ(pp.localPoints()[pointi], patchEdgeStream);
         }
 
-        for (label edgeI = pp.nInternalEdges(); edgeI < pp.nEdges(); edgeI++)
+        for (label edgeI = pp.nInternalEdges(); edgeI < pp.nEdges(); ++edgeI)
         {
             if (pp.edgeFaces()[edgeI].size() == 1)
             {

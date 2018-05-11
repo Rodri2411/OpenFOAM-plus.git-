@@ -117,7 +117,7 @@ bool intersectSurfaces
 {
     bool hasMoved = false;
 
-    for (label iter = 0; iter < 10; iter++)
+    for (label iter = 0; iter < 10; ++iter)
     {
         Info<< "Determining intersections of surface edges with itself" << endl;
 
@@ -189,7 +189,7 @@ bool intersectSurfaces
     bool hasMoved1 = false;
     bool hasMoved2 = false;
 
-    for (label iter = 0; iter < 10; iter++)
+    for (label iter = 0; iter < 10; ++iter)
     {
         Info<< "Determining intersections of surf1 edges with surf2"
             << " faces" << endl;
@@ -486,7 +486,7 @@ label dupNonManifoldPoints(triSurface& s, labelList& pointMap)
 
         label nZones = 0;
         label index = 0;
-        for (; index < pFacesZone.size(); index++)
+        for (; index < pFacesZone.size(); ++index)
         {
             if (pFacesZone[index] == -1)
             {
@@ -522,7 +522,7 @@ label dupNonManifoldPoints(triSurface& s, labelList& pointMap)
         // Subset
         if (nZones > 1)
         {
-            for (label zoneI = 1; zoneI < nZones; zoneI++)
+            for (label zoneI = 1; zoneI < nZones; ++zoneI)
             {
                 label newPointI = newPoints.size();
                 newPointMap.append(s.meshPoints()[pointI]);
@@ -741,7 +741,7 @@ labelPair edgeIntersectionsAndShuffleCGAL
     // Update surface1 points until no longer intersecting
     pointField surf1Points(surf1.points());
 
-    for (label iter = 0; iter < 5; iter++)
+    for (label iter = 0; iter < 5; ++iter)
     {
         // See which edges of 1 intersect 2
         Info<< "Determining intersections of " << surf1.nEdges()
@@ -928,7 +928,7 @@ void calcEdgeCutsCGAL
         labelPair cuts1;
         labelPair cuts2;
 
-        for (label iter = 0; iter < 10; iter++)
+        for (label iter = 0; iter < 10; ++iter)
         {
             // Find intersections of surf1 edges with surf2 triangles
             cuts1 = edgeIntersectionsAndShuffleCGAL
@@ -1018,7 +1018,7 @@ void calcEdgeCutsBitsCGAL
         );
 
 
-        for (label zone1I = 0; zone1I < nZones1; zone1I++)
+        for (label zone1I = 0; zone1I < nZones1; ++zone1I)
         {
             // Generate sub surface for zone1I
             boolList includeMap1(surf1.size(), false);
@@ -1066,7 +1066,7 @@ void calcEdgeCutsBitsCGAL
             );
 
 
-            for (label zone2I = 0; zone2I < nZones2; zone2I++)
+            for (label zone2I = 0; zone2I < nZones2; ++zone2I)
             {
                 // Generate sub surface for zone2I
                 boolList includeMap2(surf2.size(), false);

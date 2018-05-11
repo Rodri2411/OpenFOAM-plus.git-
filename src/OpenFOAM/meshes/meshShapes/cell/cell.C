@@ -63,7 +63,7 @@ Foam::labelList Foam::cell::labels(const faceUList& f) const
     // go through the rest of the faces. For each vertex, check if the point is
     // already inserted (up to maxVert, which now carries the number of real
     // points. If not, add it at the end of the list.
-    for (label facei = 1; facei < faces.size(); facei++)
+    for (label facei = 1; facei < faces.size(); ++facei)
     {
         const labelList& curFace = f[faces[facei]];
 
@@ -73,7 +73,7 @@ Foam::labelList Foam::cell::labels(const faceUList& f) const
 
             bool found = false;
 
-            for (label checkI = 0; checkI < maxVert; checkI++)
+            for (label checkI = 0; checkI < maxVert; ++checkI)
             {
                 if (curPoint == p[checkI])
                 {
@@ -144,7 +144,7 @@ Foam::edgeList Foam::cell::edges(const faceUList& f) const
 
             bool edgeFound = false;
 
-            for (label addedEdgeI = 0; addedEdgeI < nEdges; addedEdgeI++)
+            for (label addedEdgeI = 0; addedEdgeI < nEdges; ++addedEdgeI)
             {
                 if (allEdges[addedEdgeI] == curEdge)
                 {

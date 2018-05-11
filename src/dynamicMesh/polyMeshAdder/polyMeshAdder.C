@@ -622,7 +622,7 @@ void Foam::polyMeshAdder::mergePrimitives
     from1ToAllFaces = -1;
 
     // Copy mesh0 internal faces (always uncoupled)
-    for (label facei = 0; facei < mesh0.nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh0.nInternalFaces(); ++facei)
     {
         allFaces[allFacei] = renumber(from0ToAllPoints, mesh0.faces()[facei]);
         allOwner[allFacei] = mesh0.faceOwner()[facei];
@@ -673,7 +673,7 @@ void Foam::polyMeshAdder::mergePrimitives
     }
 
     // Copy mesh1 internal faces (always uncoupled)
-    for (label facei = 0; facei < mesh1.nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh1.nInternalFaces(); ++facei)
     {
         allFaces[allFacei] = renumber(from1ToAllPoints, mesh1.faces()[facei]);
         allOwner[allFacei] = mesh1.faceOwner()[facei] + mesh0.nCells();
@@ -684,7 +684,7 @@ void Foam::polyMeshAdder::mergePrimitives
     nInternalFaces = allFacei;
 
     // Copy (unmarked/uncoupled) external faces in new order.
-    for (label allPatchi = 0; allPatchi < nAllPatches; allPatchi++)
+    for (label allPatchi = 0; allPatchi < nAllPatches; ++allPatchi)
     {
         if (allPatchi < patches0.size())
         {

@@ -681,11 +681,11 @@ void Foam::InteractionLists<ParticleType>::findExtendedProcBbsInRange
             label& j = permutationIndices[1];
             label& k = permutationIndices[2];
 
-            for (i = -1; i <= 1; i++)
+            for (i = -1; i <= 1; ++i)
             {
-                for (j = -1; j <= 1; j++)
+                for (j = -1; j <= 1; ++j)
                 {
-                    for (k = -1; k <= 1; k++)
+                    for (k = -1; k <= 1; ++k)
                     {
                         if
                         (
@@ -736,9 +736,9 @@ void Foam::InteractionLists<ParticleType>::findExtendedProcBbsInRange
             label& i = permutationIndices[0];
             label& j = permutationIndices[1];
 
-            for (i = -1; i <= 1; i++)
+            for (i = -1; i <= 1; ++i)
             {
-                for (j = -1; j <= 1; j++)
+                for (j = -1; j <= 1; ++j)
                 {
                     if (i == 0 && j == 0 && proci == Pstream::myProcNo())
                     {
@@ -781,7 +781,7 @@ void Foam::InteractionLists<ParticleType>::findExtendedProcBbsInRange
         {
             label& i = permutationIndices[0];
 
-            for (i = -1; i <= 1; i++)
+            for (i = -1; i <= 1; ++i)
             {
                 if (i == 0 && proci == Pstream::myProcNo())
                 {
@@ -891,7 +891,7 @@ void Foam::InteractionLists<ParticleType>::buildMap
 
             constructMap[proci].setSize(nRecv);
 
-            for (label i = 0; i < nRecv; i++)
+            for (label i = 0; i < nRecv; ++i)
             {
                 constructMap[proci][i] = constructSize++;
             }
@@ -1168,7 +1168,7 @@ void Foam::InteractionLists<ParticleType>::sendReferredData
 
     prepareParticlesToRefer(cellOccupancy);
 
-    for (label domain = 0; domain < Pstream::nProcs(); domain++)
+    for (label domain = 0; domain < Pstream::nProcs(); ++domain)
     {
         const labelList& subMap = cellMap().subMap()[domain];
 
@@ -1207,7 +1207,7 @@ void Foam::InteractionLists<ParticleType>::receiveReferredData
 
     referredParticles_.setSize(cellMap().constructSize());
 
-    for (label domain = 0; domain < Pstream::nProcs(); domain++)
+    for (label domain = 0; domain < Pstream::nProcs(); ++domain)
     {
         const labelList& constructMap = cellMap().constructMap()[domain];
 

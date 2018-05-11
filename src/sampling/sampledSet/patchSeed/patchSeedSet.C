@@ -223,7 +223,7 @@ void Foam::patchSeedSet::calcSamples
             label(scalar(patchFaces.size())/totalSize*maxPoints_);
 
         labelList subset = identity(patchFaces.size());
-        for (label iter = 0; iter < 4; iter++)
+        for (label iter = 0; iter < 4; ++iter)
         {
             forAll(subset, i)
             {

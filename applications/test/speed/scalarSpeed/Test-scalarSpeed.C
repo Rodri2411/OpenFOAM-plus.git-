@@ -26,7 +26,7 @@ int main()
     label*  redAddr = new label[size];
     label*  redAddr2 = new label[size];
 
-    for (label i=0; i<size; i++)
+    for (label i=0; i<size; ++i)
     {
         f1[i] = 1.0;
         f2[i] = 1.0;
@@ -41,7 +41,7 @@ int main()
         addr[i] = rndGen.position<label>(0, size-1);
     }
 
-    for (label i=0; i<redSize; i++)
+    for (label i=0; i<redSize; ++i)
     {
         fr[i] = 1.0;
     }
@@ -54,9 +54,9 @@ int main()
 
         cpuTime executionTime;
 
-        for (int j=0; j<nIter; j++)
+        for (int j=0; j<nIter; ++j)
         {
-            for (label i=0; i<size; i++)
+            for (label i=0; i<size; ++i)
             {
                 f4[i] = f1[i] + f2[i] - f3[i];
             }
@@ -75,9 +75,9 @@ int main()
 
         cpuTime executionTime;
 
-        for (int j=0; j<nIter; j++)
+        for (int j=0; j<nIter; ++j)
         {
-            for (label i=0; i<size; i++)
+            for (label i=0; i<size; ++i)
             {
                 f4[addr[i]] = f1[addr[i]] + f2[addr[i]] - f3[addr[i]];
             }
@@ -97,9 +97,9 @@ int main()
         cpuTime executionTime;
         label redOffset = (size - 1)/redFac;
 
-        for (int j=0; j<nIter; j++)
+        for (int j=0; j<nIter; ++j)
         {
-            for (label i=0; i<size; i++)
+            for (label i=0; i<size; ++i)
             {
                 label j = i/redFac;
                 fr[j] += f1[i];
@@ -120,9 +120,9 @@ int main()
 
         cpuTime executionTime;
 
-        for (int j=0; j<nIter; j++)
+        for (int j=0; j<nIter; ++j)
         {
-            for (label i=0; i<size; i++)
+            for (label i=0; i<size; ++i)
             {
                 fr[redAddr[i]] += f1[i];
                 fr[redAddr2[i]] -= f2[i];
@@ -141,17 +141,17 @@ int main()
 
         cpuTime executionTime;
 
-        for (int j=0; j<nIter; j++)
+        for (int j=0; j<nIter; ++j)
         {
-            for (label i=0; i<size; i++)
+            for (label i=0; i<size; ++i)
             {
                 f4[i] = f1[i];
             }
-            for (label i=0; i<size; i++)
+            for (label i=0; i<size; ++i)
             {
                 f4[i] += f2[i];
             }
-            for (label i=0; i<size; i++)
+            for (label i=0; i<size; ++i)
             {
                 f4[i] -= f3[i];
             }
@@ -175,7 +175,7 @@ int main()
 
         cpuTime executionTime;
 
-        for (int j=0; j<nIter; j++)
+        for (int j=0; j<nIter; ++j)
         {
             //sf4 = sf1 + sf2 - sf3;
             sf4 = sf1;

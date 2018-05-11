@@ -226,7 +226,7 @@ void Foam::searchableSurfacesQueries::findAllIntersections
     if (surfacesToTest.size() > 1)
     {
         // Test the other surfaces and merge (according to distance from start).
-        for (label testI = 1; testI < surfacesToTest.size(); testI++)
+        for (label testI = 1; testI < surfacesToTest.size(); ++testI)
         {
             List<List<pointIndexHit>> surfHits;
             allSurfaces[surfacesToTest[testI]].findLineAll
@@ -502,7 +502,7 @@ void Foam::searchableSurfacesQueries::findNearest
         vectorField normal1;
 
         label surfi = 1;
-        for (label iter = 0; iter < nIter; iter++)
+        for (label iter = 0; iter < nIter; ++iter)
         {
             // Find nearest on next surface
             const searchableSurface& s = allSurfaces[surfacesToTest[surfi]];

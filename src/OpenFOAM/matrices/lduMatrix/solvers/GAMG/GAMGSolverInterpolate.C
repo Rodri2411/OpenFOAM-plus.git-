@@ -60,7 +60,7 @@ void Foam::GAMGSolver::interpolate
     );
 
     const label nFaces = m.upper().size();
-    for (label face=0; face<nFaces; face++)
+    for (label face=0; face<nFaces; ++face)
     {
         ApsiPtr[uPtr[face]] += lowerPtr[face]*psiPtr[lPtr[face]];
         ApsiPtr[lPtr[face]] += upperPtr[face]*psiPtr[uPtr[face]];
@@ -77,7 +77,7 @@ void Foam::GAMGSolver::interpolate
     );
 
     const label nCells = m.diag().size();
-    for (label celli=0; celli<nCells; celli++)
+    for (label celli=0; celli<nCells; ++celli)
     {
         psiPtr[celli] = -ApsiPtr[celli]/(diagPtr[celli]);
     }
@@ -119,18 +119,18 @@ void Foam::GAMGSolver::interpolate
     scalarField diagC(nCCells, 0);
     scalar* __restrict__ diagCPtr = diagC.begin();
 
-    for (label celli=0; celli<nCells; celli++)
+    for (label celli=0; celli<nCells; ++celli)
     {
         corrCPtr[restrictAddressing[celli]] += diagPtr[celli]*psiPtr[celli];
         diagCPtr[restrictAddressing[celli]] += diagPtr[celli];
     }
 
-    for (label ccelli=0; ccelli<nCCells; ccelli++)
+    for (label ccelli=0; ccelli<nCCells; ++ccelli)
     {
         corrCPtr[ccelli] = psiCPtr[ccelli] - corrCPtr[ccelli]/diagCPtr[ccelli];
     }
 
-    for (label celli=0; celli<nCells; celli++)
+    for (label celli=0; celli<nCells; ++celli)
     {
         psiPtr[celli] += corrCPtr[restrictAddressing[celli]];
     }

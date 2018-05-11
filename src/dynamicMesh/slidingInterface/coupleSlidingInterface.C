@@ -1403,7 +1403,7 @@ void Foam::slidingInterface::coupleInterface(polyTopoChange& ref) const
                                 (
                                     label passI = 0;
                                     passI < edgePointWeights.size();
-                                    passI++
+                                    ++passI
                                 )
                                 {
                                     // Max weight can only be one, so
@@ -1690,7 +1690,7 @@ void Foam::slidingInterface::coupleInterface(polyTopoChange& ref) const
                                 (
                                     label passI = 0;
                                     passI < edgePointWeights.size();
-                                    passI++
+                                    ++passI
                                 )
                                 {
                                     // Max weight can only be one, so

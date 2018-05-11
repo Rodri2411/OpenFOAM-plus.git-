@@ -321,7 +321,7 @@ Foam::label Foam::checkTopology
     {
         labelList nInternalFaces(mesh.nCells(), 0);
 
-        for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
+        for (label facei = 0; facei < mesh.nInternalFaces(); ++facei)
         {
             nInternalFaces[mesh.faceOwner()[facei]]++;
             nInternalFaces[mesh.faceNeighbour()[facei]]++;
@@ -479,7 +479,7 @@ Foam::label Foam::checkTopology
 
             // write cellSet for each region
             PtrList<cellSet> cellRegions(rs.nRegions());
-            for (label i = 0; i < rs.nRegions(); i++)
+            for (label i = 0; i < rs.nRegions(); ++i)
             {
                 cellRegions.set
                 (
@@ -498,7 +498,7 @@ Foam::label Foam::checkTopology
                 cellRegions[rs[i]].insert(i);
             }
 
-            for (label i = 0; i < rs.nRegions(); i++)
+            for (label i = 0; i < rs.nRegions(); ++i)
             {
                 Info<< "  <<Writing region " << i;
                 if (allTopology)

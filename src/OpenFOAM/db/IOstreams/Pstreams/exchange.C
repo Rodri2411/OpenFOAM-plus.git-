@@ -279,7 +279,7 @@ void Foam::Pstream::exchange
             labelList nSend(sendBufs.size());
             labelList startSend(sendBufs.size(), 0);
 
-            for (label iter = 0; iter < nIter; iter++)
+            for (label iter = 0; iter < nIter; ++iter)
             {
                 forAll(sendBufs, proci)
                 {

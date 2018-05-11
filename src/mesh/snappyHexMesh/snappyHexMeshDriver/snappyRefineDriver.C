@@ -94,7 +94,7 @@ Foam::label Foam::snappyRefineDriver::featureEdgeRefine
 
     if (meshRefiner_.features().size() && maxIter > 0)
     {
-        for (; iter < maxIter; iter++)
+        for (; iter < maxIter; ++iter)
         {
             Info<< nl
                 << "Feature refinement iteration " << iter << nl
@@ -219,7 +219,7 @@ Foam::label Foam::snappyRefineDriver::smallFeatureRefine
         return iter;
     }
 
-    for (; iter < maxIter; iter++)
+    for (; iter < maxIter; ++iter)
     {
         Info<< nl
             << "Small surface feature refinement iteration " << iter << nl
@@ -342,7 +342,7 @@ Foam::label Foam::snappyRefineDriver::surfaceOnlyRefine
     label overallMaxLevel = max(meshRefiner_.surfaces().maxLevel());
 
     label iter;
-    for (iter = 0; iter < maxIter; iter++)
+    for (iter = 0; iter < maxIter; ++iter)
     {
         Info<< nl
             << "Surface refinement iteration " << iter << nl
@@ -486,7 +486,7 @@ Foam::label Foam::snappyRefineDriver::gapOnlyRefine
         return iter;
     }
 
-    for (iter = 0; iter < maxIter; iter++)
+    for (iter = 0; iter < maxIter; ++iter)
     {
         Info<< nl
             << "Gap refinement iteration " << iter << nl
@@ -538,12 +538,12 @@ Foam::label Foam::snappyRefineDriver::gapOnlyRefine
                 isCandidateCell[candidateCells[i]] = true;
             }
 
-            for (label i=0; i<1; i++)
+            for (label i=0; i<1; ++i)
             {
                 boolList newIsCandidateCell(isCandidateCell);
 
                 // Internal faces
-                for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
+                for (label facei = 0; facei < mesh.nInternalFaces(); ++facei)
                 {
                     label own = mesh.faceOwner()[facei];
                     label nei = mesh.faceNeighbour()[facei];
@@ -569,7 +569,7 @@ Foam::label Foam::snappyRefineDriver::gapOnlyRefine
                 (
                     label facei = mesh.nInternalFaces();
                     facei < mesh.nFaces();
-                    facei++
+                    ++facei
                 )
                 {
                     label own = mesh.faceOwner()[facei];
@@ -720,7 +720,7 @@ Foam::label Foam::snappyRefineDriver::bigGapOnlyRefine
     }
 
 
-    for (; iter < maxIter; iter++)
+    for (; iter < maxIter; ++iter)
     {
         Info<< nl
             << "Big gap refinement iteration " << iter << nl
@@ -857,7 +857,7 @@ Foam::label Foam::snappyRefineDriver::danglingCellRefine
     const fvMesh& mesh = meshRefiner_.mesh();
 
     label iter;
-    for (iter = 0; iter < maxIter; iter++)
+    for (iter = 0; iter < maxIter; ++iter)
     {
         Info<< nl
             << "Dangling coarse cells refinement iteration " << iter << nl
@@ -1013,7 +1013,7 @@ Foam::label Foam::snappyRefineDriver::refinementInterfaceRefine
 
     if (refineParams.interfaceRefine())
     {
-        for (;iter < maxIter; iter++)
+        for (;iter < maxIter; ++iter)
         {
             Info<< nl
                 << "Refinement transition refinement iteration " << iter << nl
@@ -1169,7 +1169,7 @@ Foam::label Foam::snappyRefineDriver::refinementInterfaceRefine
                 //    }
                 //
                 //    // Check if we picked up any opposite differing level
-                //    for (direction dir = 0; dir < vector::nComponents; dir++)
+                //    for (direction dir = 0; dir < vector::nComponents; ++dir)
                 //    {
                 //        if
                 //        (
@@ -1427,7 +1427,7 @@ Foam::label Foam::snappyRefineDriver::shellRefine
     label overallMaxShellLevel = meshRefiner_.shells().maxLevel();
 
     label iter;
-    for (iter = 0; iter < maxIter; iter++)
+    for (iter = 0; iter < maxIter; ++iter)
     {
         Info<< nl
             << "Shell refinement iteration " << iter << nl

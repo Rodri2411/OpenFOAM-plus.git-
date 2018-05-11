@@ -103,7 +103,7 @@ Foam::PatchTools::sortedEdgeFaces
             // e0 is reference so angle is 0
             faceAngles[0] = 0;
 
-            for (label nbI = 1; nbI < faceNbs.size(); nbI++)
+            for (label nbI = 1; nbI < faceNbs.size(); ++nbI)
             {
                 // Get the vertex on face that forms a vector with the first
                 // edge point that has the largest angle with the edge

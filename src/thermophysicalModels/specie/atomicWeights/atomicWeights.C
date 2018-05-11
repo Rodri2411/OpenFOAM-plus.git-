@@ -141,7 +141,7 @@ Foam::atomicWeightTable::atomicWeights[atomicWeightTable::nElements] =
 
 Foam::atomicWeightTable::atomicWeightTable()
 {
-    for (int i=0; i<nElements; i++)
+    for (int i=0; i<nElements; ++i)
     {
         insert(word(atomicWeights[i].name), atomicWeights[i].weight);
     }

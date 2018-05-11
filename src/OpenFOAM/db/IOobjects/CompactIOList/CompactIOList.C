@@ -276,7 +276,7 @@ Foam::Ostream& Foam::operator<<
         labelList start(L.size()+1);
 
         start[0] = 0;
-        for (label i = 1; i < start.size(); i++)
+        for (label i = 1; i < start.size(); ++i)
         {
             const label prev = start[i-1];
             start[i] = prev+L[i-1].size();

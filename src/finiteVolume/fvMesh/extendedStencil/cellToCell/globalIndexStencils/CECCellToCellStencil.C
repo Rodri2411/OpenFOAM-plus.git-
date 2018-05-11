@@ -146,7 +146,7 @@ void Foam::CECCellToCellStencil::calcCellStencil
     // Do remaining edges cells
     labelHashSet edgeGlobals;
 
-    for (label edgeI = 0; edgeI < mesh().nEdges(); edgeI++)
+    for (label edgeI = 0; edgeI < mesh().nEdges(); ++edgeI)
     {
         labelList eGlobals
         (

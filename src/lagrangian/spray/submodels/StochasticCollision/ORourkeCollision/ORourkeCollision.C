@@ -58,7 +58,7 @@ void Foam::ORourkeCollision<CloudType>::collide
         pInCell(iter().cell(), occupancy[iter().cell()]++) = &iter();
     }
 
-    for (label celli=0; celli<this->owner().mesh().nCells(); celli++)
+    for (label celli=0; celli<this->owner().mesh().nCells(); ++celli)
     {
         UList<parcelType*> pInCelli(pInCell[celli]);
 
@@ -66,7 +66,7 @@ void Foam::ORourkeCollision<CloudType>::collide
         {
             forAll(pInCelli, i)
             {
-                for (label j=i+1; j<pInCelli.size(); j++)
+                for (label j=i+1; j<pInCelli.size(); ++j)
                 {
                     parcelType& p1 = *pInCelli[i];
                     parcelType& p2 = *pInCelli[j];

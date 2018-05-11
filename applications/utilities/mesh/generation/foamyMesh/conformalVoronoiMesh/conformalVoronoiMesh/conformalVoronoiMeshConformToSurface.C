@@ -291,7 +291,7 @@ void Foam::conformalVoronoiMesh::buildSurfaceConformation()
         (
             Delaunay::Finite_vertices_iterator vit = finite_vertices_begin();
             vit != finite_vertices_end();
-            vit++
+            ++vit
         )
         {
             if (vit->nearBoundary())
@@ -1445,7 +1445,7 @@ void Foam::conformalVoronoiMesh::reportProcessorOccupancy()
     (
         Delaunay::Finite_vertices_iterator vit = finite_vertices_begin();
         vit != finite_vertices_end();
-        vit++
+        ++vit
     )
     {
         if (vit->real())
@@ -1472,7 +1472,7 @@ void Foam::conformalVoronoiMesh::reportProcessorOccupancy()
 //    (
 //        Delaunay::Finite_vertices_iterator vit = finite_vertices_begin();
 //        vit != finite_vertices_end();
-//        vit++
+//        ++vit
 //    )
 //    {
 //        if (vit->internalOrBoundaryPoint())
@@ -1507,7 +1507,7 @@ void Foam::conformalVoronoiMesh::reportProcessorOccupancy()
 //        (
 //            Delaunay::Finite_vertices_iterator vit = finite_vertices_begin();
 //            vit != finite_vertices_end();
-//            vit++
+//            ++vit
 //        )
 //        {
 //            if (vit->ppMaster())
@@ -2222,7 +2222,7 @@ void Foam::conformalVoronoiMesh::storeSurfaceConformation()
     (
         Delaunay::Finite_vertices_iterator vit = finite_vertices_begin();
         vit != finite_vertices_end();
-        vit++
+        ++vit
     )
     {
         // Store points that are not referred, part of a pair, but not feature

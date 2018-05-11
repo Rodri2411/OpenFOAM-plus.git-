@@ -51,7 +51,7 @@ namespace Foam
 
 void Foam::polyMesh::calcDirections() const
 {
-    for (direction cmpt=0; cmpt<vector::nComponents; cmpt++)
+    for (direction cmpt=0; cmpt<vector::nComponents; ++cmpt)
     {
         solutionD_[cmpt] = 1;
     }
@@ -96,7 +96,7 @@ void Foam::polyMesh::calcDirections() const
 
         emptyDirVec /= mag(emptyDirVec);
 
-        for (direction cmpt=0; cmpt<vector::nComponents; cmpt++)
+        for (direction cmpt=0; cmpt<vector::nComponents; ++cmpt)
         {
             if (emptyDirVec[cmpt] > 1e-6)
             {
@@ -120,7 +120,7 @@ void Foam::polyMesh::calcDirections() const
 
         wedgeDirVec /= mag(wedgeDirVec);
 
-        for (direction cmpt=0; cmpt<vector::nComponents; cmpt++)
+        for (direction cmpt=0; cmpt<vector::nComponents; ++cmpt)
         {
             if (wedgeDirVec[cmpt] > 1e-6)
             {
@@ -1396,7 +1396,7 @@ bool Foam::polyMesh::pointInCell
                 label facei = cFaces[cFacei];
                 const face& f = faces_[facei];
 
-                for (label tetPti = 1; tetPti < f.size() - 1; tetPti++)
+                for (label tetPti = 1; tetPti < f.size() - 1; ++tetPti)
                 {
                     // Get tetIndices of face triangle
                     tetIndices faceTetIs(celli, facei, tetPti);
@@ -1497,7 +1497,7 @@ Foam::label Foam::polyMesh::findCell
         {
             // Point is not in the nearest cell so search all cells
 
-            for (label celli = 0; celli < nCells(); celli++)
+            for (label celli = 0; celli < nCells(); ++celli)
             {
                 if (pointInCell(p, celli, decompMode))
                 {

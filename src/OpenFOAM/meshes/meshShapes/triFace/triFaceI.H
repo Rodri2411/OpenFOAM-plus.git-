@@ -108,17 +108,17 @@ inline Foam::label Foam::triFace::collapse()
     if (operator[](0) == operator[](1) || operator[](1) == -1)
     {
         operator[](1) = -1;
-        n--;
+        --n;
     }
     else if (operator[](1) == operator[](2) || operator[](2) == -1)
     {
         operator[](2) = -1;
-        n--;
+        --n;
     }
     if (operator[](0) == operator[](2))
     {
         operator[](2) = -1;
-        n--;
+        --n;
     }
 
     return n;

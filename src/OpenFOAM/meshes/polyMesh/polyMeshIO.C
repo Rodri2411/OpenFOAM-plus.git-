@@ -310,7 +310,7 @@ Foam::polyMesh::readUpdateState Foam::polyMesh::readUpdate()
         // Extend with extra ones
         pointZones_.setSize(newPointZones.size());
 
-        for (label czI = oldSize; czI < newPointZones.size(); czI++)
+        for (label czI = oldSize; czI < newPointZones.size(); ++czI)
         {
             pointZones_.set(czI, newPointZones[czI].clone(pointZones_));
         }
@@ -351,7 +351,7 @@ Foam::polyMesh::readUpdateState Foam::polyMesh::readUpdate()
         // Extend with extra ones
         faceZones_.setSize(newFaceZones.size());
 
-        for (label fzI = oldSize; fzI < newFaceZones.size(); fzI++)
+        for (label fzI = oldSize; fzI < newFaceZones.size(); ++fzI)
         {
             faceZones_.set(fzI, newFaceZones[fzI].clone(faceZones_));
         }
@@ -388,7 +388,7 @@ Foam::polyMesh::readUpdateState Foam::polyMesh::readUpdate()
         // Extend with extra ones
         cellZones_.setSize(newCellZones.size());
 
-        for (label czI = oldSize; czI < newCellZones.size(); czI++)
+        for (label czI = oldSize; czI < newCellZones.size(); ++czI)
         {
             cellZones_.set(czI, newCellZones[czI].clone(cellZones_));
         }

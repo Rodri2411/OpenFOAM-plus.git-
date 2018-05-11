@@ -259,7 +259,7 @@ bool Foam::procFacesGAMGProcAgglomeration::agglomerate()
         (
             label fineLevelIndex = 2;
             fineLevelIndex < agglom_.size();
-            fineLevelIndex++
+            ++fineLevelIndex
         )
         {
             if (agglom_.hasMeshLevel(fineLevelIndex))

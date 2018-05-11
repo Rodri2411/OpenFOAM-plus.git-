@@ -87,7 +87,7 @@ Foam::LUscalarMatrix::LUscalarMatrix
             (
                 int slave=Pstream::firstSlave();
                 slave<=Pstream::lastSlave(comm_);
-                slave++
+                ++slave
             )
             {
                 lduMatrices.set
@@ -156,14 +156,14 @@ Foam::LUscalarMatrix::LUscalarMatrix
         if (debug)
         {
             Pout<< "LUscalarMatrix : size:" << mRows << endl;
-            for (label rowI = 0; rowI < mRows; rowI++)
+            for (label rowI = 0; rowI < mRows; ++rowI)
             {
                 const scalar* row = operator[](rowI);
 
                 Pout<< "cell:" << rowI << " diagCoeff:" << row[rowI] << endl;
 
                 Pout<< "    connects to upper cells :";
-                for (label columnI = rowI+1; columnI < nColumns; columnI++)
+                for (label columnI = rowI+1; columnI < nColumns; ++columnI)
                 {
                     if (mag(row[columnI]) > SMALL)
                     {
@@ -173,7 +173,7 @@ Foam::LUscalarMatrix::LUscalarMatrix
                 }
                 Pout<< endl;
                 Pout<< "    connects to lower cells :";
-                for (label columnI = 0; columnI < rowI; columnI++)
+                for (label columnI = 0; columnI < rowI; ++columnI)
                 {
                     if (mag(row[columnI]) > SMALL)
                     {
@@ -211,12 +211,12 @@ void Foam::LUscalarMatrix::convert
     const label nCells = ldum.diag().size();
     const label nFaces = ldum.upper().size();
 
-    for (label cell=0; cell<nCells; cell++)
+    for (label cell=0; cell<nCells; ++cell)
     {
         operator[](cell)[cell] = diagPtr[cell];
     }
 
-    for (label face=0; face<nFaces; face++)
+    for (label face=0; face<nFaces; ++face)
     {
         label uCell = uPtr[face];
         label lCell = lPtr[face];
@@ -246,7 +246,7 @@ void Foam::LUscalarMatrix::convert
 
             label inFaces = interface.faceCells().size();
 
-            for (label face=0; face<inFaces; face++)
+            for (label face=0; face<inFaces; ++face)
             {
                 label uCell = lPtr[face];
                 label lCell = uPtr[face];
@@ -286,13 +286,13 @@ void Foam::LUscalarMatrix::convert
         const label nCells = lduMatrixi.size();
         const label nFaces = lduMatrixi.upper_.size();
 
-        for (label cell=0; cell<nCells; cell++)
+        for (label cell=0; cell<nCells; ++cell)
         {
             label globalCell = cell + offset;
             operator[](globalCell)[globalCell] = diagPtr[cell];
         }
 
-        for (label face=0; face<nFaces; face++)
+        for (label face=0; face<nFaces; ++face)
         {
             label uCell = uPtr[face] + offset;
             label lCell = lPtr[face] + offset;
@@ -317,7 +317,7 @@ void Foam::LUscalarMatrix::convert
 
                 label inFaces = interface.faceCells_.size()/2;
 
-                for (label face=0; face<inFaces; face++)
+                for (label face=0; face<inFaces; ++face)
                 {
                     label uCell = ulPtr[face] + offset;
                     label lCell = ulPtr[face + inFaces] + offset;
@@ -373,7 +373,7 @@ void Foam::LUscalarMatrix::convert
                 label inFaces = interface.faceCells_.size();
                 label neiOffset = procOffsets_[interface.neighbProcNo_];
 
-                for (label face=0; face<inFaces; face++)
+                for (label face=0; face<inFaces; ++face)
                 {
                     label uCell = uPtr[face] + offset;
                     label lCell = lPtr[face] + neiOffset;
@@ -389,10 +389,10 @@ void Foam::LUscalarMatrix::convert
 
 void Foam::LUscalarMatrix::printDiagonalDominance() const
 {
-    for (label i=0; i<m(); i++)
+    for (label i=0; i<m(); ++i)
     {
         scalar sum = 0.0;
-        for (label j=0; j<m(); j++)
+        for (label j=0; j<m(); ++j)
         {
             if (i != j)
             {
@@ -416,12 +416,12 @@ void Foam::LUscalarMatrix::inv(scalarSquareMatrix& M) const
 {
     scalarField source(m());
 
-    for (label j=0; j<m(); j++)
+    for (label j=0; j<m(); ++j)
     {
         source = Zero;
         source[j] = 1;
         LUBacksubstitute(*this, pivotIndices_, source);
-        for (label i=0; i<m(); i++)
+        for (label i=0; i<m(); ++i)
         {
             M(i, j) = source[i];
         }

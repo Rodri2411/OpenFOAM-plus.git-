@@ -152,7 +152,7 @@ Foam::vectorField Foam::meshTools::calcBoxPointNormals(const primitivePatch& pp)
 
             label mask = 1;
 
-            for (label octant = 0; octant < 8; octant++)
+            for (label octant = 0; octant < 8; ++octant)
             {
                 if (visOctant & mask)
                 {
@@ -618,7 +618,7 @@ Foam::label Foam::meshTools::walkFace
 
     label vertI = startVertI;
 
-    for (label iter = 0; iter < nEdges; iter++)
+    for (label iter = 0; iter < nEdges; ++iter)
     {
         edgeI = otherEdge(mesh, fEdges, edgeI, vertI);
 
@@ -640,7 +640,7 @@ void Foam::meshTools::constrainToMeshCentre
     const point& min = mesh.bounds().min();
     const point& max = mesh.bounds().max();
 
-    for (direction cmpt=0; cmpt<vector::nComponents; cmpt++)
+    for (direction cmpt=0; cmpt<vector::nComponents; ++cmpt)
     {
         if (dirs[cmpt] == -1)
         {
@@ -662,7 +662,7 @@ void Foam::meshTools::constrainToMeshCentre
     const point& max = mesh.bounds().max();
 
     bool isConstrained = false;
-    for (direction cmpt=0; cmpt<vector::nComponents; cmpt++)
+    for (direction cmpt=0; cmpt<vector::nComponents; ++cmpt)
     {
         if (dirs[cmpt] == -1)
         {
@@ -675,7 +675,7 @@ void Foam::meshTools::constrainToMeshCentre
     {
         forAll(pts, i)
         {
-            for (direction cmpt=0; cmpt<vector::nComponents; cmpt++)
+            for (direction cmpt=0; cmpt<vector::nComponents; ++cmpt)
             {
                 if (dirs[cmpt] == -1)
                 {
@@ -694,7 +694,7 @@ void Foam::meshTools::constrainDirection
     vector& d
 )
 {
-    for (direction cmpt=0; cmpt<vector::nComponents; cmpt++)
+    for (direction cmpt=0; cmpt<vector::nComponents; ++cmpt)
     {
         if (dirs[cmpt] == -1)
         {
@@ -712,7 +712,7 @@ void Foam::meshTools::constrainDirection
 )
 {
     bool isConstrained = false;
-    for (direction cmpt=0; cmpt<vector::nComponents; cmpt++)
+    for (direction cmpt=0; cmpt<vector::nComponents; ++cmpt)
     {
         if (dirs[cmpt] == -1)
         {
@@ -725,7 +725,7 @@ void Foam::meshTools::constrainDirection
     {
         forAll(d, i)
         {
-            for (direction cmpt=0; cmpt<vector::nComponents; cmpt++)
+            for (direction cmpt=0; cmpt<vector::nComponents; ++cmpt)
             {
                 if (dirs[cmpt] == -1)
                 {
@@ -783,7 +783,7 @@ Foam::vector Foam::meshTools::edgeToCutDir
 
     label facei = -1;
 
-    for (label i = 0; i < 3; i++)
+    for (label i = 0; i < 3; ++i)
     {
         // Step to next face, next edge
         facei = meshTools::otherFace(mesh, celli, facei, edgeI);
@@ -830,7 +830,7 @@ Foam::label Foam::meshTools::cutDirToEdge
     scalar maxCos = -GREAT;
     label maxEdgeI = -1;
 
-    for (label i = 0; i < 4; i++)
+    for (label i = 0; i < 4; ++i)
     {
         forAll(cEdges, cEdgeI)
         {

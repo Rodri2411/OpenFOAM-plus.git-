@@ -276,7 +276,7 @@ void Foam::ptscotchDecomp::check(const int retVal, const char* str)
 //    globalIndex globalCells(initxadj.size()-1);
 //
 //    bool hasZeroDomain = false;
-//    for (label proci = 0; proci < Pstream::nProcs(); proci++)
+//    for (label proci = 0; proci < Pstream::nProcs(); ++proci)
 //    {
 //        if (globalCells.localSize(proci) == 0)
 //        {
@@ -524,14 +524,14 @@ Foam::label Foam::ptscotchDecomp::decompose
         label baseval = 0;
         // 100*hasVertlabels+10*hasEdgeWeights+1*hasVertWeighs
         str << baseval << ' ' << "000" << nl;
-        for (label celli = 0; celli < xadjSize-1; celli++)
+        for (label celli = 0; celli < xadjSize-1; ++celli)
         {
             const label start = xadj[celli];
             const label end = xadj[celli+1];
 
             str << end-start; // size
 
-            for (label i = start; i < end; i++)
+            for (label i = start; i < end; ++i)
             {
                 str << ' ' << adjncy[i];
             }

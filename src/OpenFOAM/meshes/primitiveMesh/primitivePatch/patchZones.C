@@ -172,7 +172,7 @@ Foam::patchZones::patchZones
     while (true)
     {
         // Find first non-visited face
-        for (; facei < pp_.size(); facei++)
+        for (; facei < pp_.size(); ++facei)
         {
             if (operator[](facei) == -1)
             {

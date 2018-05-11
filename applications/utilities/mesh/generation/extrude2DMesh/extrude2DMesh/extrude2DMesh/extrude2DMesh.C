@@ -56,7 +56,7 @@ void Foam::extrude2DMesh::check2D() const
 //{
 //    scalar minRange = GREAT;
 
-//    for (direction dir = 0; dir < 3; dir++)
+//    for (direction dir = 0; dir < 3; ++dir)
 //    {
 //        scalarField cmpts(mesh_.points().component(dir));
 
@@ -262,7 +262,7 @@ void Foam::extrude2DMesh::setRefinement
         label currentLayerOffset = layer * mesh_.nPoints();
         label nextLayerOffset = currentLayerOffset + mesh_.nPoints();
 
-        for (label facei = 0; facei < mesh_.nInternalFaces(); facei++)
+        for (label facei = 0; facei < mesh_.nInternalFaces(); ++facei)
         {
             label zoneID = mesh_.faceZones().whichZone(facei);
             bool zoneFlip = false;
@@ -325,7 +325,7 @@ void Foam::extrude2DMesh::setRefinement
 
     forAll(patches, patchi)
     {
-        for (label layer=0; layer < nLayers; layer++)
+        for (label layer=0; layer < nLayers; ++layer)
         {
             label currentLayerOffset = layer*mesh_.nPoints();
             label nextLayerOffset = currentLayerOffset + mesh_.nPoints();
@@ -333,7 +333,7 @@ void Foam::extrude2DMesh::setRefinement
             label startFacei = patches[patchi].start();
             label endFacei = startFacei + patches[patchi].size();
 
-            for (label facei = startFacei; facei < endFacei; facei++)
+            for (label facei = startFacei; facei < endFacei; ++facei)
             {
                 label zoneID = mesh_.faceZones().whichZone(facei);
                 bool zoneFlip = false;
@@ -403,7 +403,7 @@ void Foam::extrude2DMesh::setRefinement
         }
 
 
-        for (label i = 1; i < frontFace.size(); i++)
+        for (label i = 1; i < frontFace.size(); ++i)
         {
             frontFace[i] = nextPointi;
 
@@ -499,7 +499,7 @@ void Foam::extrude2DMesh::setRefinement
         }
 
 
-        for (label i = 1; i < frontFace.size(); i++)
+        for (label i = 1; i < frontFace.size(); ++i)
         {
             frontFace[i] = nextPointi;
 

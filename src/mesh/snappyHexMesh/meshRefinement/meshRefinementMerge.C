@@ -400,7 +400,7 @@ Foam::label Foam::meshRefinement::mergePatchFacesUndo
             write();
         }
 
-        for (label iteration = 0; iteration < 100; iteration++)
+        for (label iteration = 0; iteration < 100; ++iteration)
         {
             Info<< nl
                 << "Undo iteration " << iteration << nl
@@ -889,7 +889,7 @@ Foam::label Foam::meshRefinement::mergeEdgesUndo
         doRemovePoints(pointRemover, pointCanBeDeleted);
 
 
-        for (label iteration = 0; iteration < 100; iteration++)
+        for (label iteration = 0; iteration < 100; ++iteration)
         {
             Info<< nl
                 << "Undo iteration " << iteration << nl

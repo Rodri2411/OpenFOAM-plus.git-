@@ -117,7 +117,7 @@ void Foam::searchableSurfaceToFaceZone::applyToSet
         const pointField& cc = mesh_.cellCentres();
 
         // Internal faces
-        for (label facei = 0; facei < mesh_.nInternalFaces(); facei++)
+        for (label facei = 0; facei < mesh_.nInternalFaces(); ++facei)
         {
             start[facei] = cc[mesh_.faceOwner()[facei]];
             end[facei] = cc[mesh_.faceNeighbour()[facei]];

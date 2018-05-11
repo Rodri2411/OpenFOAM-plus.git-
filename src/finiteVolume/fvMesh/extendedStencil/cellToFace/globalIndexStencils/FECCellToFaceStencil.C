@@ -159,7 +159,7 @@ void Foam::FECCellToFaceStencil::calcFaceStencil
     DynamicList<label> eFacesSet;
     labelHashSet faceStencilSet;
 
-    for (label facei = 0; facei < mesh().nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh().nInternalFaces(); ++facei)
     {
         label globalOwn = globalNumbering().toGlobal(own[facei]);
         label globalNei = globalNumbering().toGlobal(nei[facei]);
@@ -344,7 +344,7 @@ void Foam::FECCellToFaceStencil::calcFaceStencil
     }
 
 
-    for (label facei = 0; facei < mesh().nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh().nInternalFaces(); ++facei)
     {
         label globalOwn = globalNumbering().toGlobal(own[facei]);
         if (faceStencil[facei][0] != globalOwn)

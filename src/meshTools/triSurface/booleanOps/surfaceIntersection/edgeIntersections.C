@@ -542,7 +542,7 @@ Foam::label Foam::edgeIntersections::removeDegenerates
 
     label iter = 0;
 
-    for (; iter < nIters; iter++)
+    for (; iter < nIters; ++iter)
     {
         // Go through all edges to (re)test and perturb points if they are
         // degenerate hits. Mark off edges that need to be recalculated.
@@ -705,7 +705,7 @@ void Foam::edgeIntersections::merge
             const pointIndexHit& subHit = subHits[i];
 
             bool foundFace = false;
-            for (label interI = 0; interI < sz; interI++)
+            for (label interI = 0; interI < sz; ++interI)
             {
                 if (intersections[interI].index() == faceMap[subHit.index()])
                 {
@@ -729,7 +729,7 @@ void Foam::edgeIntersections::merge
             const pointIndexHit& subHit = subHits[i];
 
             bool foundFace = false;
-            for (label interI = 0; interI < sz; interI++)
+            for (label interI = 0; interI < sz; ++interI)
             {
                 if (intersections[interI].index() == faceMap[subHit.index()])
                 {

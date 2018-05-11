@@ -50,7 +50,7 @@ void Foam::distributionModels::general::initialise()
 
     // Normalize the cumulative distribution
     integral_[0] = 0.0;
-    for (label i = 1; i < nEntries; i++)
+    for (label i = 1; i < nEntries; ++i)
     {
         scalar k = (xy_[i][1] - xy_[i-1][1])/(xy_[i][0] - xy_[i-1][0] + eps);
         scalar d = xy_[i-1][1] - k*xy_[i-1][0];
@@ -65,7 +65,7 @@ void Foam::distributionModels::general::initialise()
 
     meanValue_ = sumArea/(maxValue() - minValue() + eps);
 
-    for (label i=0; i < nEntries; i++)
+    for (label i=0; i < nEntries; ++i)
     {
         xy_[i][1] /= sumArea + eps;
         integral_[i] /= sumArea + eps;

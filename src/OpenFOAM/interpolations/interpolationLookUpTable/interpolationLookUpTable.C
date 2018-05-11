@@ -38,7 +38,7 @@ Foam::label Foam::interpolationLookUpTable<Type>::index
     forAll(dim_, i)
     {
         label dim = 1;
-        for (int j = i + 1; j < dim_.size(); j++)
+        for (int j = i + 1; j < dim_.size(); ++j)
         {
             dim *= dim_[j] + 1;
         }
@@ -308,12 +308,12 @@ void Foam::interpolationLookUpTable<Type>::check() const
     // check order in the first dimension.
     scalar prevValue = List<scalarField>::operator[](0).operator[](0);
     label dim = 1;
-    for (int j = 1; j < dim_.size(); j++)
+    for (int j = 1; j < dim_.size(); ++j)
     {
         dim *= dim_[j] + 1;
     }
 
-    for (label i = 1; i < dim_[0]; i++)
+    for (label i = 1; i < dim_[0]; ++i)
     {
         label index = i*dim;
         const scalar currValue =

@@ -90,7 +90,7 @@ Foam::labelList Foam::removeCells::getExposedFaces
     // Count cells using face.
     labelList nCellsUsingFace(mesh_.nFaces(), 0);
 
-    for (label facei = 0; facei < mesh_.nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh_.nInternalFaces(); ++facei)
     {
         label own = faceOwner[facei];
         label nei = faceNeighbour[facei];
@@ -105,7 +105,7 @@ Foam::labelList Foam::removeCells::getExposedFaces
         }
     }
 
-    for (label facei = mesh_.nInternalFaces(); facei < mesh_.nFaces(); facei++)
+    for (label facei = mesh_.nInternalFaces(); facei < mesh_.nFaces(); ++facei)
     {
         label own = faceOwner[facei];
 
@@ -147,7 +147,7 @@ Foam::labelList Foam::removeCells::getExposedFaces
 
     DynamicList<label> exposedFaces(mesh_.nFaces()/10);
 
-    for (label facei = 0; facei < mesh_.nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh_.nInternalFaces(); ++facei)
     {
         if (nCellsUsingFace[facei] == 1)
         {
@@ -275,7 +275,7 @@ void Foam::removeCells::setRefinement
     }
 
 
-    for (label facei = 0; facei < mesh_.nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh_.nInternalFaces(); ++facei)
     {
         const face& f = faces[facei];
         label own = faceOwner[facei];

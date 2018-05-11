@@ -85,7 +85,7 @@ void writeProcStats
         if (bbs.size())
         {
             Info<< "\tMesh bounds          : " << bbs[0] << nl;
-            for (label i = 1; i < bbs.size(); i++)
+            for (label i = 1; i < bbs.size(); ++i)
             {
                 Info<< "\t                       " << bbs[i]<< nl;
             }

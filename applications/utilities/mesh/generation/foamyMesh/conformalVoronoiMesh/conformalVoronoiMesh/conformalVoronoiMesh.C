@@ -595,7 +595,7 @@ void Foam::conformalVoronoiMesh::setVertexSizeAndAlignment()
     (
         Delaunay::Finite_vertices_iterator vit = finite_vertices_begin();
         vit != finite_vertices_end();
-        vit++
+        ++vit
     )
     {
         if (vit->internalOrBoundaryPoint())

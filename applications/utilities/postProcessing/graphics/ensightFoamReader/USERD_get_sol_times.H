@@ -13,7 +13,7 @@ int USERD_get_sol_times
     Info<< "Entering: USERD_get_sol_times\n" << timeDirs << endl;
 #endif
 
-    for (label n=0; n<Num_time_steps;n++)
+    for (label n=0; n<Num_time_steps; ++n)
     {
         solution_times[n] = timeDirs[n+1].value();
     }
@@ -25,7 +25,7 @@ int USERD_get_sol_times
         {
             addCAD += 360.0;
         }
-        for (label n=0; n<Num_time_steps;n++)
+        for (label n=0; n<Num_time_steps; ++n)
         {
             solution_times[n] += addCAD;
 

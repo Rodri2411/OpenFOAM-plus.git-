@@ -74,7 +74,7 @@ Foam::pointHit Foam::face::ray
 
     point nextPoint = ctr;
 
-    for (label pI = 0; pI < nPoints; pI++)
+    for (label pI = 0; pI < nPoints; ++pI)
     {
         nextPoint = meshPoints[f[fcIndex(pI)]];
 
@@ -240,7 +240,7 @@ Foam::pointHit Foam::face::nearestPointClassify
 
     point nextPoint = ctr;
 
-    for (label pI = 0; pI < nPoints; pI++)
+    for (label pI = 0; pI < nPoints; ++pI)
     {
         nextPoint = meshPoints[f[fcIndex(pI)]];
 

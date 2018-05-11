@@ -310,7 +310,7 @@ void Foam::cellShapeControl::cellSizeAndAlignment
         }
     }
 
-    for (label dir = 0; dir < 3; dir++)
+    for (label dir = 0; dir < 3; ++dir)
     {
         triad v = alignment;
 

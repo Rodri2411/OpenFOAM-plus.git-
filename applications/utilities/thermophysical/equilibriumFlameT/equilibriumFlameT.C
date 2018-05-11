@@ -178,13 +178,13 @@ int main(int argc, char *argv[])
 
 
     // Loop over equivalence ratios
-    for (int i=0; i<16; i++)
+    for (int i=0; i<16; ++i)
     {
         scalar equiv = 0.6 + i*0.05;
         scalar ft = 1/(1 + stoichiometricAirFuelMassRatio.value()/equiv);
 
     // Loop over initial temperatures
-    for (int j=0; j<28; j++)
+    for (int j=0; j<28; ++j)
     {
         scalar T0 = 300.0 + j*100.0;
 
@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
 
 
         // Iteration loop for adiabatic flame temperature
-        for (int j=0; j<20; j++)
+        for (int j=0; j<20; ++j)
         {
             if (j > 0)
             {

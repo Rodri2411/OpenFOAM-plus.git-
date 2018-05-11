@@ -105,7 +105,7 @@ Foam::autoPtr<Foam::mapDistribute> Foam::backgroundMeshDecomposition::buildMap
 
             constructMap[proci].setSize(nRecv);
 
-            for (label i = 0; i < nRecv; i++)
+            for (label i = 0; i < nRecv; ++i)
             {
                 constructMap[proci][i] = constructSize++;
             }
@@ -470,7 +470,7 @@ void Foam::backgroundMeshDecomposition::printMeshData
 
     // globalIndex globalBoundaryFaces(mesh.nFaces()-mesh.nInternalFaces());
 
-    for (label proci = 0; proci < Pstream::nProcs(); proci++)
+    for (label proci = 0; proci < Pstream::nProcs(); ++proci)
     {
         Info<< "Processor " << proci << " "
             << "Number of cells = " << globalCells.localSize(proci)
@@ -538,11 +538,11 @@ bool Foam::backgroundMeshDecomposition::refineCell
 //
 //        label pI = 0;
 //
-//        for (label i = 0; i < volRes_; i++)
+//        for (label i = 0; i < volRes_; ++i)
 //        {
-//            for (label j = 0; j < volRes_; j++)
+//            for (label j = 0; j < volRes_; ++j)
 //            {
-//                for (label k = 0; k < volRes_; k++)
+//                for (label k = 0; k < volRes_; ++k)
 //                {
 //                    samplePoints[pI++] =
 //                        cellBb.min()

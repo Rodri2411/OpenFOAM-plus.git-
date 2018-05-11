@@ -8,7 +8,7 @@ main()
 
     cerr << "allocating ints\n";
 
-    for (int i=0; i<500000; i++)
+    for (int i=0; i<500000; ++i)
     {
         ptrs[i] = (int*)malloc(sizeof(int));
     }
@@ -17,7 +17,7 @@ main()
 
     cerr << "deallocating ints\n";
 
-    for (i=0; i<500000; i++)
+    for (i=0; i<500000; ++i)
     {
         free(ptrs[i]);
     }

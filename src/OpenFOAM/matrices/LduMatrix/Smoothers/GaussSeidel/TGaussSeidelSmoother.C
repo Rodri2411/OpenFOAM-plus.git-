@@ -45,7 +45,7 @@ Foam::TGaussSeidelSmoother<Type, DType, LUType>::TGaussSeidelSmoother
     const DType* const __restrict__ diagPtr = matrix.diag().begin();
     DType* __restrict__ rDPtr = rD_.begin();
 
-    for (label celli=0; celli<nCells; celli++)
+    for (label celli=0; celli<nCells; ++celli)
     {
         rDPtr[celli] = inv(diagPtr[celli]);
     }
@@ -91,7 +91,7 @@ void Foam::TGaussSeidelSmoother<Type, DType, LUType>::smooth
     // Note: there is a change of sign in the coupled
     // interface update to add the contibution to the r.h.s.
 
-    for (label sweep=0; sweep<nSweeps; sweep++)
+    for (label sweep=0; sweep<nSweeps; ++sweep)
     {
         bPrime = matrix_.source();
 
@@ -115,7 +115,7 @@ void Foam::TGaussSeidelSmoother<Type, DType, LUType>::smooth
         label fStart;
         label fEnd = ownStartPtr[0];
 
-        for (label celli=0; celli<nCells; celli++)
+        for (label celli=0; celli<nCells; ++celli)
         {
             // Start and end of this row
             fStart = fEnd;
@@ -125,7 +125,7 @@ void Foam::TGaussSeidelSmoother<Type, DType, LUType>::smooth
             curPsi = bPrimePtr[celli];
 
             // Accumulate the owner product side
-            for (label curFace=fStart; curFace<fEnd; curFace++)
+            for (label curFace=fStart; curFace<fEnd; ++curFace)
             {
                 curPsi -= dot(upperPtr[curFace], psiPtr[uPtr[curFace]]);
             }
@@ -134,7 +134,7 @@ void Foam::TGaussSeidelSmoother<Type, DType, LUType>::smooth
             curPsi = dot(rDPtr[celli], curPsi);
 
             // Distribute the neighbour side using current psi
-            for (label curFace=fStart; curFace<fEnd; curFace++)
+            for (label curFace=fStart; curFace<fEnd; ++curFace)
             {
                 bPrimePtr[uPtr[curFace]] -= dot(lowerPtr[curFace], curPsi);
             }

@@ -83,7 +83,7 @@ void Foam::waveMethod::calculate
             changedFacesInfo.clear();
 
             // Search for starting seed
-            for (; startCelli < src.nCells(); startCelli++)
+            for (; startCelli < src.nCells(); ++startCelli)
             {
                 if (!cellData[startCelli].valid(td))
                 {

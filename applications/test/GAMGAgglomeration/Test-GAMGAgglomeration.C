@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
     }
 
 
-    for (label level = 0; level < agglom.size(); level++)
+    for (label level = 0; level < agglom.size(); ++level)
     {
         runTime++;
 

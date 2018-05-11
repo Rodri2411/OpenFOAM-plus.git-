@@ -96,7 +96,7 @@ Foam::lineDivide::lineDivide
             // Calculate the spacing
             if (expRatio == 1.0)
             {
-                for (label i = secnStart; i < secnEnd; i++)
+                for (label i = secnStart; i < secnEnd; ++i)
                 {
                     divisions_[i] =
                         secStart
@@ -108,7 +108,7 @@ Foam::lineDivide::lineDivide
                 // Calculate geometric expansion factor from the expansion ratio
                 const scalar expFact = calcGexp(expRatio, secnDiv);
 
-                for (label i = secnStart; i < secnEnd; i++)
+                for (label i = secnStart; i < secnEnd; ++i)
                 {
                     divisions_[i] =
                         secStart
@@ -124,7 +124,7 @@ Foam::lineDivide::lineDivide
     // Otherwise mesh uniformly
     else
     {
-        for (label i=1; i < nDiv; i++)
+        for (label i=1; i < nDiv; ++i)
         {
             divisions_[i] = scalar(i)/nDiv;
         }

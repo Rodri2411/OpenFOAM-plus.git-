@@ -88,7 +88,7 @@ void Foam::binaryNode<CompType, ThermoType>::calcV
     scalar epsTol = elementLeft->tolerance();
 
     // v = LT.T()*LT*phiDif
-    for (label i=0; i<elementLeft->completeSpaceSize(); i++)
+    for (label i=0; i<elementLeft->completeSpaceSize(); ++i)
     {
         label si = i;
         bool outOfIndexI = true;
@@ -110,7 +110,7 @@ void Foam::binaryNode<CompType, ThermoType>::calcV
         if (!mechReductionActive || (mechReductionActive && !(outOfIndexI)))
         {
             v[i] = 0;
-            for (label j=0; j<elementLeft->completeSpaceSize(); j++)
+            for (label j=0; j<elementLeft->completeSpaceSize(); ++j)
             {
                 label sj = j;
                 bool outOfIndexJ = true;
@@ -140,7 +140,7 @@ void Foam::binaryNode<CompType, ThermoType>::calcV
                 )
                 {
                     // Since L is a lower triangular matrix k=0->min(i, j)
-                    for (label k=0; k<=min(si, sj); k++)
+                    for (label k=0; k<=min(si, sj); ++k)
                     {
                         v[i] += LT(k, si)*LT(k, sj)*phiDif[j];
                     }

@@ -58,15 +58,15 @@ static Pair<int> faceFaceRotMap[6][6][4];
 // Generate the face-face-rotation direction correspondence map
 void genFaceFaceRotMap()
 {
-    for(int facePi=0; facePi<6; facePi++)
+    for (int facePi=0; facePi<6; ++facePi)
     {
-        for(int faceNi=0; faceNi<6; faceNi++)
+        for (int faceNi=0; faceNi<6; ++faceNi)
         {
-            for(int rot=0; rot<4; rot++)
+            for (int rot=0; rot<4; ++rot)
             {
                 Pair<int>& map = faceFaceRotMap[facePi][faceNi][rot];
 
-                for(int Pp=0; Pp<2; Pp++)
+                for (int Pp=0; Pp<2; ++Pp)
                 {
                     int Pdir = faceEdgeDirs[facePi][Pp];
                     int Np = (3 - Pp + rot)%4;
@@ -95,7 +95,7 @@ Pair<int> faceMap
 )
 {
     // Search for the point on faceN corresponding to the 0-point on faceP
-    for(int rot=0; rot<4; rot++)
+    for (int rot=0; rot<4; ++rot)
     {
         if (faceN[rot] == faceP[0])
         {
@@ -131,7 +131,7 @@ void setBlockFaceCorrespondence
         (
             topoPfacei = 0;
             topoPfacei < topoPfaces.size();
-            topoPfacei++
+            ++topoPfacei
         )
         {
             if (topoPfaces[topoPfacei] == topoFacei)
@@ -425,9 +425,9 @@ void Foam::blockMesh::calcMergeInfoFast()
         // Accumulate the maximum merge distance for diagnostics
         scalar maxSqrDist = 0;
 
-        for (label j=0; j<Pnij.second(); j++)
+        for (label j=0; j<Pnij.second(); ++j)
         {
-            for (label i=0; i<Pnij.first(); i++)
+            for (label i=0; i<Pnij.first(); ++i)
             {
                 label blockPpointi =
                     facePoint(blockPfacei, blocks[blockPi], i, j);
@@ -517,9 +517,9 @@ void Foam::blockMesh::calcMergeInfoFast()
 
             Pair<label> Pnij(faceNij(blockPfacei, blocks[blockPi]));
 
-            for (label j=0; j<Pnij.second(); j++)
+            for (label j=0; j<Pnij.second(); ++j)
             {
-                for (label i=0; i<Pnij.first(); i++)
+                for (label i=0; i<Pnij.first(); ++i)
                 {
                     label blockPpointi =
                         facePoint(blockPfacei, blocks[blockPi], i, j);

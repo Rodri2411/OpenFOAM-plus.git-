@@ -69,7 +69,7 @@ linearNormal::linearNormal(const dictionary& dict)
     {
         layerPoints_[0] = firstCellThickness_;
 
-        for (label layerI = 1; layerI < nLayers_; layerI++)
+        for (label layerI = 1; layerI < nLayers_; ++layerI)
         {
             layerPoints_[layerI] =
                 (thickness_ - layerPoints_[0])
@@ -78,7 +78,7 @@ linearNormal::linearNormal(const dictionary& dict)
     }
     else
     {
-        for (label layerI = 0; layerI < nLayers_; layerI++)
+        for (label layerI = 0; layerI < nLayers_; ++layerI)
         {
             layerPoints_[layerI] = thickness_*sumThickness(layerI + 1);
         }

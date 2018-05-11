@@ -660,7 +660,7 @@ void Foam::combineFaces::setRefinement
         // Delete all non-master faces
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        for (label i = 1; i < setFaces.size(); i++)
+        for (label i = 1; i < setFaces.size(); ++i)
         {
             meshMod.setAction(polyRemoveFace(setFaces[i]));
         }
@@ -953,7 +953,7 @@ void Foam::combineFaces::setUnrefinement
         restoredFaces.insert(masterFacei, masterFacei);
 
         // Add the previously removed faces
-        for (label i = 1; i < faces.size(); i++)
+        for (label i = 1; i < faces.size(); ++i)
         {
             //Pout<< "Restoring removed face with vertices " << faces[i]
             //    << endl;

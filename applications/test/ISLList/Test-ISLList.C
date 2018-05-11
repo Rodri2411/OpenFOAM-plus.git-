@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
 {
     ISLList<Scalar> myList(new Scalar(0));
 
-    for (int i = 0; i<10; i++)
+    for (int i = 0; i<10; ++i)
     {
         myList.append(new Scalar(1.3*i));
     }

@@ -179,7 +179,7 @@ void writeParts
     const fileName& surfFileNameBase
 )
 {
-    for (label zone = 0; zone < nFaceZones; zone++)
+    for (label zone = 0; zone < nFaceZones; ++zone)
     {
         boolList includeMap(surf.size(), false);
 
@@ -584,7 +584,7 @@ int main(int argc, char *argv[])
 
         label nClose = 0;
 
-        for (label i = 1; i < sortedMag.size(); i++)
+        for (label i = 1; i < sortedMag.size(); ++i)
         {
             label pti = sortedMag.indices()[i];
 

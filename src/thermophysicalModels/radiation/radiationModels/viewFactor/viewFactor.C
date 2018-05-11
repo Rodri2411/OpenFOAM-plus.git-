@@ -142,7 +142,7 @@ void Foam::radiation::viewFactor::initialise()
                 << "Insert elements in the matrix..." << endl;
         }
 
-        for (label procI = 0; procI < Pstream::nProcs(); procI++)
+        for (label procI = 0; procI < Pstream::nProcs(); ++procI)
         {
             insertMatrixElements
             (
@@ -164,16 +164,16 @@ void Foam::radiation::viewFactor::initialise()
                     << "Smoothing the matrix..." << endl;
             }
 
-            for (label i=0; i<totalNCoarseFaces_; i++)
+            for (label i=0; i<totalNCoarseFaces_; ++i)
             {
                 scalar sumF = 0.0;
-                for (label j=0; j<totalNCoarseFaces_; j++)
+                for (label j=0; j<totalNCoarseFaces_; ++j)
                 {
                     sumF += Fmatrix_()(i, j);
                 }
 
                 const scalar delta = sumF - 1.0;
-                for (label j=0; j<totalNCoarseFaces_; j++)
+                for (label j=0; j<totalNCoarseFaces_; ++j)
                 {
                     Fmatrix_()(i, j) *= (1.0 - delta/(sumF + 0.001));
                 }
@@ -484,7 +484,7 @@ void Foam::radiation::viewFactor::calculate()
 
     labelList localGlobalIds(nLocalCoarseFaces_);
 
-    for(label k = 0; k < nLocalCoarseFaces_; k++)
+    for (label k = 0; k < nLocalCoarseFaces_; ++k)
     {
         localGlobalIds[k] = globalNumbering.toGlobal(Pstream::myProcNo(), k);
     }
@@ -528,9 +528,9 @@ void Foam::radiation::viewFactor::calculate()
         {
             scalarSquareMatrix C(totalNCoarseFaces_, 0.0);
 
-            for (label i=0; i<totalNCoarseFaces_; i++)
+            for (label i=0; i<totalNCoarseFaces_; ++i)
             {
-                for (label j=0; j<totalNCoarseFaces_; j++)
+                for (label j=0; j<totalNCoarseFaces_; ++j)
                 {
                     const scalar invEj = 1.0/E[j];
                     const scalar sigmaT4 = physicoChemical::sigma.value()*T4[j];
@@ -559,9 +559,9 @@ void Foam::radiation::viewFactor::calculate()
             // Initial iter calculates CLU and caches it
             if (iterCounter_ == 0)
             {
-                for (label i=0; i<totalNCoarseFaces_; i++)
+                for (label i=0; i<totalNCoarseFaces_; ++i)
                 {
-                    for (label j=0; j<totalNCoarseFaces_; j++)
+                    for (label j=0; j<totalNCoarseFaces_; ++j)
                     {
                         const scalar invEj = 1.0/E[j];
                         if (i==j)
@@ -584,9 +584,9 @@ void Foam::radiation::viewFactor::calculate()
                 LUDecompose(CLU_(), pivotIndices_);
             }
 
-            for (label i=0; i<totalNCoarseFaces_; i++)
+            for (label i=0; i<totalNCoarseFaces_; ++i)
             {
-                for (label j=0; j<totalNCoarseFaces_; j++)
+                for (label j=0; j<totalNCoarseFaces_; ++j)
                 {
                     const scalar sigmaT4 =
                         constant::physicoChemical::sigma.value()*T4[j];

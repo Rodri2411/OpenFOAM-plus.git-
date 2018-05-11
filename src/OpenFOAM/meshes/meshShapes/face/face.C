@@ -213,7 +213,7 @@ Foam::label Foam::face::split
         label minIndex = index;
         scalar minDiff = constant::mathematical::pi;
 
-        for (label i = 0; i < size() - 3; i++)
+        for (label i = 0; i < size() - 3; ++i)
         {
             vector splitEdge
             (
@@ -260,7 +260,7 @@ Foam::label Foam::face::split
         face face1(nPoints1);
 
         index = startIndex;
-        for (label i = 0; i < nPoints1; i++)
+        for (label i = 0; i < nPoints1; ++i)
         {
             face1[i] = operator[](index);
             index = fcIndex(index);
@@ -270,7 +270,7 @@ Foam::label Foam::face::split
         face face2(nPoints2);
 
         index = minIndex;
-        for (label i = 0; i < nPoints2; i++)
+        for (label i = 0; i < nPoints2; ++i)
         {
             face2[i] = operator[](index);
             index = fcIndex(index);
@@ -444,7 +444,7 @@ Foam::label Foam::face::collapse()
     if (size() > 1)
     {
         label ci = 0;
-        for (label i=1; i<size(); i++)
+        for (label i=1; i<size(); ++i)
         {
             if (operator[](i) != operator[](ci))
             {

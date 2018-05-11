@@ -58,7 +58,7 @@ void Foam::GAMGSolver::scale
     scalar scalingFactorNum = 0.0;
     scalar scalingFactorDenom = 0.0;
 
-    for (label i=0; i<nCells; i++)
+    for (label i=0; i<nCells; ++i)
     {
         scalingFactorNum += sourcePtr[i]*fieldPtr[i];
         scalingFactorDenom += AcfPtr[i]*fieldPtr[i];
@@ -77,7 +77,7 @@ void Foam::GAMGSolver::scale
     const scalarField& D = A.diag();
     const scalar* const __restrict__ DPtr = D.begin();
 
-    for (label i=0; i<nCells; i++)
+    for (label i=0; i<nCells; ++i)
     {
         fieldPtr[i] = sf*fieldPtr[i] + (sourcePtr[i] - sf*AcfPtr[i])/DPtr[i];
     }

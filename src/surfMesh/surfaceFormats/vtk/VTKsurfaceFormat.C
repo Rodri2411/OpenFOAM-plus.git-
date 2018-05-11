@@ -204,7 +204,7 @@ bool Foam::fileFormats::VTKsurfaceFormat<Face>::read
         forAll(faces, facei)
         {
             const face& f = faces[facei];
-            for (label fp1 = 1; fp1 < f.size() - 1; fp1++)
+            for (label fp1 = 1; fp1 < f.size() - 1; ++fp1)
             {
                 const label fp2 = f.fcIndex(fp1);
 

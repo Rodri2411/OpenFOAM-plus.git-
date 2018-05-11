@@ -39,7 +39,7 @@ bool Foam::functionObjects::components::calcFieldComponents()
 
     bool stored = true;
 
-    for (direction i=0; i<Type::nComponents; i++)
+    for (direction i=0; i<Type::nComponents; ++i)
     {
         resultName_ = fieldName_ + word(Type::componentNames[i]);
         resultNames_[i] = resultName_;

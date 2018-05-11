@@ -434,7 +434,7 @@ bool Foam::functionObjects::regionSizeDistribution::write()
     label nBlocked = 0;
 
     {
-        for (label facei = 0; facei < mesh_.nInternalFaces(); facei++)
+        for (label facei = 0; facei < mesh_.nInternalFaces(); ++facei)
         {
             scalar ownVal = alpha[mesh_.faceOwner()[facei]];
             scalar neiVal = alpha[mesh_.faceNeighbour()[facei]];
@@ -908,7 +908,7 @@ bool Foam::functionObjects::regionSizeDistribution::write()
 
                 // Components
 
-                for (direction cmp = 0; cmp < vector::nComponents; cmp++)
+                for (direction cmp = 0; cmp < vector::nComponents; ++cmp)
                 {
                     writeGraphs
                     (

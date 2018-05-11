@@ -289,7 +289,7 @@ void Foam::meshStructure::correct
                 const face& f = mesh.faces()[facei];
 
                 label levelI = pointLayer_[f[0]];
-                for (label fp = 1; fp < f.size(); fp++)
+                for (label fp = 1; fp < f.size(); ++fp)
                 {
                     if (pointLayer_[f[fp]] != levelI)
                     {

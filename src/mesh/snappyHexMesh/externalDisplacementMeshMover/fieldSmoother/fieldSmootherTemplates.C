@@ -54,7 +54,7 @@ void Foam::fieldSmoother::minSmoothField
     // Get smoothly varying patch field.
     Info<< typeName << " : Smoothing field ..." << endl;
 
-    for (label iter = 0; iter < nIter; iter++)
+    for (label iter = 0; iter < nIter; ++iter)
     {
         Field<Type> average(adaptPatch.nPoints());
         meshRefinement::weightedSum

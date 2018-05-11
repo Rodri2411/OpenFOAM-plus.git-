@@ -240,7 +240,7 @@ Foam::autoPtr<Foam::mapDistribute> Foam::meshToMesh::calcProcMap
         label nRecv = sendSizes[proci][Pstream::myProcNo()];
         constructMap[proci].setSize(nRecv);
 
-        for (label i = 0; i < nRecv; i++)
+        for (label i = 0; i < nRecv; ++i)
         {
             constructMap[proci][i] = segmentI++;
         }
@@ -283,7 +283,7 @@ void Foam::meshToMesh::distributeCells
     procLocalFaceIDs.setSize(Pstream::nProcs());;
 
 
-    for (label domain = 0; domain < Pstream::nProcs(); domain++)
+    for (label domain = 0; domain < Pstream::nProcs(); ++domain)
     {
         const labelList& sendElems = map.subMap()[domain];
 
@@ -463,7 +463,7 @@ void Foam::meshToMesh::distributeCells
     pBufs.finishedSends();
 
     // Consume
-    for (label domain = 0; domain < Pstream::nProcs(); domain++)
+    for (label domain = 0; domain < Pstream::nProcs(); ++domain)
     {
         const labelList& recvElems = map.constructMap()[domain];
 

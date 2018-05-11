@@ -169,7 +169,7 @@ void Foam::mappedPatchBase::collectSamples
         label sampleI = 0;
         forAll(nPerProc, proci)
         {
-            for (label i = 0; i < nPerProc[proci]; i++)
+            for (label i = 0; i < nPerProc[proci]; ++i)
             {
                 patchFaceProcs[sampleI++] = proci;
             }
@@ -1320,7 +1320,7 @@ Foam::pointIndexHit Foam::mappedPatchBase::facePoint
             const point& basePoint = p[f[fp0]];
 
             label fp = f.fcIndex(fp0);
-            for (label i = 2; i < f.size(); i++)
+            for (label i = 2; i < f.size(); ++i)
             {
                 const point& thisPoint = p[f[fp]];
                 label nextFp = f.fcIndex(fp);

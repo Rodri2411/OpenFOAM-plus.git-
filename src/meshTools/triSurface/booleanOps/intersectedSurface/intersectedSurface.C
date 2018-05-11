@@ -1174,14 +1174,14 @@ Foam::intersectedSurface::intersectedSurface
     // Construct mapping back into original surface
     faceMap_.setSize(size());
 
-    for (label facei = 0; facei < surf.size()-1; facei++)
+    for (label facei = 0; facei < surf.size()-1; ++facei)
     {
-        for (label trii = startTrii[facei]; trii < startTrii[facei+1]; trii++)
+        for (label trii = startTrii[facei]; trii < startTrii[facei+1]; ++trii)
         {
             faceMap_[trii] = facei;
         }
     }
-    for (label trii = startTrii[surf.size()-1]; trii < size(); trii++)
+    for (label trii = startTrii[surf.size()-1]; trii < size(); ++trii)
     {
         faceMap_[trii] = surf.size()-1;
     }
@@ -1198,7 +1198,7 @@ Foam::intersectedSurface::intersectedSurface
     (
         label edgei = eSurf.nSurfaceEdges();
         edgei < eSurf.edges().size();
-        edgei++
+        ++edgei
     )
     {
         // Get edge vertices in triSurface local numbering

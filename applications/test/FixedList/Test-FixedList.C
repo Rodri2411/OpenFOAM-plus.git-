@@ -264,7 +264,7 @@ int main(int argc, char *argv[])
             (
                 int slave = Pstream::firstSlave();
                 slave <= Pstream::lastSlave();
-                slave++
+                ++slave
             )
             {
                 Serr << "master receiving from slave " << slave << endl;

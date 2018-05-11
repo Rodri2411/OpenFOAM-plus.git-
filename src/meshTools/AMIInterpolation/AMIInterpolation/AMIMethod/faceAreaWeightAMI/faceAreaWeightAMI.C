@@ -234,7 +234,7 @@ void Foam::faceAreaWeightAMI<SourcePatch, TargetPatch>::setNextFaces
     {
         // try to use existing seed
         bool foundNextSeed = false;
-        for (label facei = startSeedI; facei < mapFlag.size(); facei++)
+        for (label facei = startSeedI; facei < mapFlag.size(); ++facei)
         {
             if (mapFlag[facei])
             {
@@ -262,7 +262,7 @@ void Foam::faceAreaWeightAMI<SourcePatch, TargetPatch>::setNextFaces
         }
 
         foundNextSeed = false;
-        for (label facei = startSeedI; facei < mapFlag.size(); facei++)
+        for (label facei = startSeedI; facei < mapFlag.size(); ++facei)
         {
             if (mapFlag[facei])
             {

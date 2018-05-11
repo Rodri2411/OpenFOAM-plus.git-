@@ -41,7 +41,7 @@ inline Foam::LangmuirHinshelwoodReactionRate::LangmuirHinshelwoodReactionRate
     c3h6_(c3h6),
     no_(no)
 {
-    for (int i=0; i<n_; i++)
+    for (int i=0; i<n_; ++i)
     {
         A_[i] = A[i];
         Ta_[i] = Ta[i];

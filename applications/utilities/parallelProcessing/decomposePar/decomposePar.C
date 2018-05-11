@@ -1301,7 +1301,7 @@ int main(int argc, char *argv[])
                     Info << endl;
 
                     // Split the fields over processors
-                    for (label procI = 0; procI < mesh.nProcs(); procI++)
+                    for (label procI = 0; procI < mesh.nProcs(); ++procI)
                     {
                         Info<< "Processor " << procI
                             << ": finite area field transfer" << endl;

@@ -133,7 +133,7 @@ complexVectorField ComplexField
 {
     complexVectorField cvf(re.size());
 
-    for (direction cmpt=0; cmpt<vector::nComponents; cmpt++)
+    for (direction cmpt=0; cmpt<vector::nComponents; ++cmpt)
     {
         forAll(cvf, i)
         {
@@ -150,7 +150,7 @@ complexVectorField ReComplexField(const UList<vector>& vf)
 {
     complexVectorField cvf(vf.size());
 
-    for (direction cmpt=0; cmpt<vector::nComponents; cmpt++)
+    for (direction cmpt=0; cmpt<vector::nComponents; ++cmpt)
     {
         forAll(cvf, i)
         {
@@ -167,7 +167,7 @@ complexVectorField ImComplexField(const UList<vector>& vf)
 {
     complexVectorField cvf(vf.size());
 
-    for (direction cmpt=0; cmpt<vector::nComponents; cmpt++)
+    for (direction cmpt=0; cmpt<vector::nComponents; ++cmpt)
     {
         forAll(cvf, i)
         {
@@ -184,7 +184,7 @@ vectorField ReImSum(const UList<complexVector>& cvf)
 {
     vectorField vf(cvf.size());
 
-    for (direction cmpt=0; cmpt<vector::nComponents; cmpt++)
+    for (direction cmpt=0; cmpt<vector::nComponents; ++cmpt)
     {
         forAll(cvf, i)
         {
@@ -201,7 +201,7 @@ vectorField Re(const UList<complexVector>& cvf)
 {
     vectorField vf(cvf.size());
 
-    for (direction cmpt=0; cmpt<vector::nComponents; cmpt++)
+    for (direction cmpt=0; cmpt<vector::nComponents; ++cmpt)
     {
         forAll(cvf, i)
         {
@@ -217,7 +217,7 @@ vectorField Im(const UList<complexVector>& cvf)
 {
     vectorField vf(cvf.size());
 
-    for (direction cmpt=0; cmpt<vector::nComponents; cmpt++)
+    for (direction cmpt=0; cmpt<vector::nComponents; ++cmpt)
     {
         forAll(cvf, i)
         {

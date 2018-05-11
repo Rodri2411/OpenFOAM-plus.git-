@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
     SLList<scalar> myList{2.1, 3.4};
     myList = {2.1, 3.4, 4.3};
 
-    for (int i = 0; i<10; i++)
+    for (int i = 0; i<10; ++i)
     {
         myList.append(1.3*i);
     }
@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
         Info<< " => " << flatOutput(myList) << nl;
     }
 
-    for (int i = 0; i<10; i++)
+    for (int i = 0; i<10; ++i)
     {
         myList.append(1.3*i);
     }
@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
     {
         SLList<List<label>> labList;
 
-        for (int i = 0; i<5; i++)
+        for (int i = 0; i<5; ++i)
         {
             labList.append(identity(6));
         }

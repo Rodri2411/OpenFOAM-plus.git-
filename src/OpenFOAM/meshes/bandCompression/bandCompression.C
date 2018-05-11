@@ -158,7 +158,7 @@ Foam::labelList Foam::bandCompression
         label start = offsets[celli];
         label end = offsets[celli+1];
 
-        for (label facei = start; facei < end; facei++)
+        for (label facei = start; facei < end; ++facei)
         {
             numNbrs[celli]++;
             numNbrs[cellCells[facei]]++;
@@ -245,7 +245,7 @@ Foam::labelList Foam::bandCompression
                 label start = offsets[currentCell];
                 label end = offsets[currentCell+1];
 
-                for (label facei = start; facei < end; facei++)
+                for (label facei = start; facei < end; ++facei)
                 {
                     label nbr = cellCells[facei];
                     if (!visited[nbr])

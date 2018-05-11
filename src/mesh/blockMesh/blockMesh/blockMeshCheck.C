@@ -36,7 +36,7 @@ void Foam::blockMesh::check(const polyMesh& bm, const dictionary& dict) const
     // Check for duplicate curved edge definitions
     forAll(edges_, cei)
     {
-        for (label cej=cei+1; cej<edges_.size(); cej++)
+        for (label cej=cei+1; cej<edges_.size(); ++cej)
         {
             if (edges_[cei].compare(edges_[cej]) != 0)
             {
@@ -88,7 +88,7 @@ void Foam::blockMesh::check(const polyMesh& bm, const dictionary& dict) const
     // Check for duplicate curved face definitions
     forAll(faces_, cfi)
     {
-        for (label cfj=cfi+1; cfj<faces_.size(); cfj++)
+        for (label cfj=cfi+1; cfj<faces_.size(); ++cfj)
         {
             if (faces_[cfi].compare(faces_[cfj]) != 0)
             {

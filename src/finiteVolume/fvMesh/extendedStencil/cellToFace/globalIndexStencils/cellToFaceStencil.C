@@ -376,7 +376,7 @@ void Foam::cellToFaceStencil::calcFaceStencil
 
     labelHashSet faceStencilSet;
 
-    for (label facei = 0; facei < mesh_.nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh_.nInternalFaces(); ++facei)
     {
         faceStencilSet.clear();
 

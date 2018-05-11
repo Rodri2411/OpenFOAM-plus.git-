@@ -64,7 +64,7 @@ void Foam::shapeToCell::combine(topoSet& set, const bool add) const
 {
     if (type_ == "splitHex")
     {
-        for (label celli = 0; celli < mesh_.nCells(); celli++)
+        for (label celli = 0; celli < mesh_.nCells(); ++celli)
         {
             cellFeatures superCell(mesh_, featureCos, celli);
 

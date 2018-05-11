@@ -64,7 +64,7 @@ Foam::label Foam::cellCuts::findPartIndex
     const label val
 )
 {
-    for (label i = 0; i < nElems; i++)
+    for (label i = 0; i < nElems; ++i)
     {
         if (elems[i] == val)
         {
@@ -496,7 +496,7 @@ void Foam::cellCuts::calcFaceCuts() const
     faceCutsPtr_.reset(new labelListList(mesh().nFaces()));
     labelListList& faceCuts = faceCutsPtr_();
 
-    for (label facei = 0; facei < mesh().nFaces(); facei++)
+    for (label facei = 0; facei < mesh().nFaces(); ++facei)
     {
         const face& f = faces[facei];
 
@@ -893,7 +893,7 @@ bool Foam::cellCuts::walkFace
     if (fCuts[0] == cut)
     {
         // Walk forward
-        for (label i = 0; i < fCuts.size()-1; i++)
+        for (label i = 0; i < fCuts.size()-1; ++i)
         {
             if (!addCut(celli, fCuts[i], nVisited, visited))
             {
@@ -1255,7 +1255,7 @@ void Foam::cellCuts::calcCellLoops(const labelList& cutCells)
 
                 loop.setSize(nVisited);
 
-                for (label i = 0; i < nVisited; i++)
+                for (label i = 0; i < nVisited; ++i)
                 {
                     loop[i] = visited[i];
                 }

@@ -450,7 +450,7 @@ void Foam::enrichedPatch::calcCutFaces() const
                             (
                                 label pointi = 1;
                                 pointi < cutFaceGlobal.size();
-                                pointi++
+                                ++pointi
                             )
                             {
                                 const auto mpfAddrPointIter =
@@ -570,7 +570,7 @@ void Foam::enrichedPatch::calcCutFaces() const
                             (
                                 label checkJ = checkI + 1;
                                 checkJ < cutFaceGlobalPoints.size();
-                                checkJ++
+                                ++checkJ
                             )
                             {
                                 if

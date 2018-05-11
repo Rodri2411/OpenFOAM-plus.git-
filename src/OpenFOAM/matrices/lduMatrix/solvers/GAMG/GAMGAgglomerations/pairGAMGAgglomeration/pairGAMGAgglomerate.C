@@ -98,10 +98,10 @@ void Foam::pairGAMGAgglomeration::agglomerate
         }
         else
         {
-            nCreatedLevels++;
+            ++nCreatedLevels;
         }
 
-        nPairLevels++;
+        ++nPairLevels;
     }
 
     // Shrink the storage of the levels to those created
@@ -186,7 +186,7 @@ Foam::tmp<Foam::labelField> Foam::pairGAMGAgglomeration::agglomerate
     nCoarseCells = 0;
     label celli;
 
-    for (label cellfi=0; cellfi<nFineCells; cellfi++)
+    for (label cellfi=0; cellfi<nFineCells; ++cellfi)
     {
         // Change cell ordering depending on direction for this level
         celli = forward_ ? cellfi : nFineCells - cellfi - 1;
@@ -201,7 +201,7 @@ Foam::tmp<Foam::labelField> Foam::pairGAMGAgglomeration::agglomerate
             (
                 label faceOs=cellFaceOffsets[celli];
                 faceOs<cellFaceOffsets[celli+1];
-                faceOs++
+                ++faceOs
             )
             {
                 label facei = cellFaces[faceOs];
@@ -239,7 +239,7 @@ Foam::tmp<Foam::labelField> Foam::pairGAMGAgglomeration::agglomerate
                 (
                     label faceOs=cellFaceOffsets[celli];
                     faceOs<cellFaceOffsets[celli+1];
-                    faceOs++
+                    ++faceOs
                 )
                 {
                     label facei = cellFaces[faceOs];
@@ -266,7 +266,7 @@ Foam::tmp<Foam::labelField> Foam::pairGAMGAgglomeration::agglomerate
 
     // Check that all cells are part of clusters,
     // if not create single-cell "clusters" for each
-    for (label cellfi=0; cellfi<nFineCells; cellfi++)
+    for (label cellfi=0; cellfi<nFineCells; ++cellfi)
     {
         // Change cell ordering depending on direction for this level
         celli = forward_ ? cellfi : nFineCells - cellfi - 1;
@@ -274,20 +274,20 @@ Foam::tmp<Foam::labelField> Foam::pairGAMGAgglomeration::agglomerate
         if (coarseCellMap[celli] < 0)
         {
             coarseCellMap[celli] = nCoarseCells;
-            nCoarseCells++;
+            ++nCoarseCells;
         }
     }
 
     if (!forward_)
     {
-        nCoarseCells--;
+        --nCoarseCells;
 
         forAll(coarseCellMap, celli)
         {
             coarseCellMap[celli] = nCoarseCells - coarseCellMap[celli];
         }
 
-        nCoarseCells++;
+        ++nCoarseCells;
     }
 
     // Reverse the map ordering for the next level

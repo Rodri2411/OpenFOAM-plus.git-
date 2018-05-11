@@ -181,7 +181,7 @@ Foam::surfaceInterpolationScheme<Type>::interpolate
 
     Field<Type>& sfi = sf.primitiveFieldRef();
 
-    for (label fi=0; fi<P.size(); fi++)
+    for (label fi=0; fi<P.size(); ++fi)
     {
         sfi[fi] = lambda[fi]*vfi[P[fi]] + y[fi]*vfi[N[fi]];
     }
@@ -275,7 +275,7 @@ Foam::surfaceInterpolationScheme<Type>::dotInterpolate
 
     const typename SFType::Internal& Sfi = Sf();
 
-    for (label fi=0; fi<P.size(); fi++)
+    for (label fi=0; fi<P.size(); ++fi)
     {
         sfi[fi] = Sfi[fi] & (lambda[fi]*(vfi[P[fi]] - vfi[N[fi]]) + vfi[N[fi]]);
     }

@@ -162,7 +162,7 @@ void Foam::csvSetWriter<Type>::writeHeader
 
     forAll(valueSetNames, i)
     {
-        for (label j=0; j<Type::nComponents; j++)
+        for (label j=0; j<Type::nComponents; ++j)
         {
             if (i>0 || j>0)
             {

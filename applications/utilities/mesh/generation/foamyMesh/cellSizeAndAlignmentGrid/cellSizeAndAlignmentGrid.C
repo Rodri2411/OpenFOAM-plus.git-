@@ -508,7 +508,7 @@ int main(int argc, char *argv[])
 
     Info<< nl << "Smoothing alignments" << endl;
 
-    for (label iter = 0; iter < maxSmoothingIterations; iter++)
+    for (label iter = 0; iter < maxSmoothingIterations; ++iter)
     {
         Info<< "Iteration " << iter;
 
@@ -544,7 +544,7 @@ int main(int argc, char *argv[])
 
                 triad tmpTriad = alignments[adjPointIndex];
 
-                for (direction dir = 0; dir < 3; dir++)
+                for (direction dir = 0; dir < 3; ++dir)
                 {
                     if (tmpTriad.set(dir))
                     {

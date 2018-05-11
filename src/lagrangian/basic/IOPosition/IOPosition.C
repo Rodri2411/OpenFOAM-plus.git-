@@ -106,7 +106,7 @@ void Foam::IOPosition<CloudType>::readData(Istream& is, CloudType& c)
         // Read beginning of contents
         is.readBeginList(FUNCTION_NAME);
 
-        for (label i=0; i<s; i++)
+        for (label i=0; i<s; ++i)
         {
             // Read position only
             c.append

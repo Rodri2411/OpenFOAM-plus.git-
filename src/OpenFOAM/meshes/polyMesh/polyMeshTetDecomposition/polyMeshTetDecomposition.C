@@ -246,7 +246,7 @@ Foam::labelList Foam::polyMeshTetDecomposition::findFaceBasePts
     (
         label fI = nInternalFaces, bFI = 0;
         fI < mesh.nFaces();
-        fI++, bFI++
+        ++fI, ++bFI
     )
     {
         label patchi = mesh.boundaryMesh().patchID()[bFI];
@@ -300,7 +300,7 @@ Foam::labelList Foam::polyMeshTetDecomposition::findFaceBasePts
     (
         label fI = nInternalFaces, bFI = 0;
         fI < mesh.nFaces();
-        fI++, bFI++
+        ++fI, ++bFI
     )
     {
         label& bFTetBasePtI = boundaryFaceTetBasePtIs[bFI];

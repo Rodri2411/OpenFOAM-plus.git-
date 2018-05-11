@@ -74,18 +74,18 @@ void Foam::simpleGeomDecomp::assignToProcessorGroup
 
     // assign cells to the first few processor groups (those with
     // one extra cell each
-    for (j=0; j<fstProcessorGroup; j++)
+    for (j=0; j<fstProcessorGroup; ++j)
     {
-        for (label k=0; k<jumpb; k++)
+        for (label k=0; k<jumpb; ++k)
         {
             processorGroup[ind++] = j;
         }
     }
 
     // and now to the `normal' processor groups
-    for (; j<nProcGroup; j++)
+    for (; j<nProcGroup; ++j)
     {
-        for (label k=0; k<jump; k++)
+        for (label k=0; k<jump; ++k)
         {
             processorGroup[ind++] = j;
         }
@@ -119,7 +119,7 @@ void Foam::simpleGeomDecomp::assignToProcessorGroup
     label j = 0;
 
     // assign cells to all except last group.
-    for (j=0; j<nProcGroupM1; j++)
+    for (j=0; j<nProcGroupM1; ++j)
     {
         const scalar limit = jump*scalar(j + 1);
         while (sumWeights < limit)

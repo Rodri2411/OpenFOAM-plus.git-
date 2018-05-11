@@ -58,7 +58,7 @@ splineInterpolationWeights::splineInterpolationWeights
     if (checkEqualDistance && samples_.size() > 2)
     {
         const scalar interval = samples_[1]-samples[0];
-        for (label i = 2; i < samples_.size(); i++)
+        for (label i = 2; i < samples_.size(); ++i)
         {
             scalar d = samples_[i]-samples[i-1];
 

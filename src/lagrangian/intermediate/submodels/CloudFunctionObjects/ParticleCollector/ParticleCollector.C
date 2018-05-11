@@ -218,7 +218,7 @@ void Foam::ParticleCollector<CloudType>::initConcentricCircles()
     {
         label pointOffset = radI*nPointPerRadius + 1;
 
-        for (label i = 0; i < nPointPerRadius; i++)
+        for (label i = 0; i < nPointPerRadius; ++i)
         {
             label pI = i + pointOffset;
             point pCyl(radius_[radI], degToRad(i*dTheta), 0.0);
@@ -232,14 +232,14 @@ void Foam::ParticleCollector<CloudType>::initConcentricCircles()
     {
         if (radI == 0)
         {
-            for (label secI = 0; secI < nS; secI++)
+            for (label secI = 0; secI < nS; ++secI)
             {
                 facePts.clear();
 
                 // Append origin point
                 facePts.append(0);
 
-                for (label ptI = 0; ptI < nPointPerSector; ptI++)
+                for (label ptI = 0; ptI < nPointPerSector; ++ptI)
                 {
                     label i = ptI + secI*(nPointPerSector - 1);
                     label id = ptIDs.fcIndex(i - 1) + 1;
@@ -254,13 +254,13 @@ void Foam::ParticleCollector<CloudType>::initConcentricCircles()
         }
         else
         {
-            for (label secI = 0; secI < nS; secI++)
+            for (label secI = 0; secI < nS; ++secI)
             {
                 facePts.clear();
 
                 label offset = (radI - 1)*nPointPerRadius + 1;
 
-                for (label ptI = 0; ptI < nPointPerSector; ptI++)
+                for (label ptI = 0; ptI < nPointPerSector; ++ptI)
                 {
                     label i = ptI + secI*(nPointPerSector - 1);
                     label id = offset + ptIDs.fcIndex(i - 1);

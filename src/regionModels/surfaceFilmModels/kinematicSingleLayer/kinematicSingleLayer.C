@@ -286,7 +286,7 @@ void kinematicSingleLayer::solveContinuity()
 void kinematicSingleLayer::updateSurfaceVelocities()
 {
     // Push boundary film velocity values into internal field
-    for (label i=0; i<intCoupledPatchIDs_.size(); i++)
+    for (label i=0; i<intCoupledPatchIDs_.size(); ++i)
     {
         label patchi = intCoupledPatchIDs_[i];
         const polyPatch& pp = regionMesh().boundaryMesh()[patchi];
@@ -403,7 +403,7 @@ void kinematicSingleLayer::solveThickness
 
     regionMesh().setFluxRequired(delta_.name());
 
-    for (int nonOrth=0; nonOrth<=nNonOrthCorr_; nonOrth++)
+    for (int nonOrth=0; nonOrth<=nNonOrthCorr_; ++nonOrth)
     {
         // Film thickness equation
         fvScalarMatrix deltaEqn
@@ -914,7 +914,7 @@ void kinematicSingleLayer::evolveRegion()
     // Implicit pressure source coefficient - constant
     tmp<volScalarField> tpp(this->pp());
 
-    for (int oCorr=1; oCorr<=nOuterCorr_; oCorr++)
+    for (int oCorr=1; oCorr<=nOuterCorr_; ++oCorr)
     {
         // Explicit pressure source contribution - varies with delta_
         tmp<volScalarField> tpu(this->pu());
@@ -923,7 +923,7 @@ void kinematicSingleLayer::evolveRegion()
         tmp<fvVectorMatrix> UEqn = solveMomentum(tpu(), tpp());
 
         // Film thickness correction loop
-        for (int corr=1; corr<=nCorr_; corr++)
+        for (int corr=1; corr<=nCorr_; ++corr)
         {
             // Solve thickness for delta_
             solveThickness(tpu(), tpp(), UEqn());

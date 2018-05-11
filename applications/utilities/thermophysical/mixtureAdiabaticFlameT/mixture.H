@@ -71,7 +71,7 @@ public:
         {
             scalar volTot = 0;
 
-            for (label i = 0; i < size(); i++)
+            for (label i = 0; i < size(); ++i)
             {
                 volTot += operator[](i).volFrac();
             }

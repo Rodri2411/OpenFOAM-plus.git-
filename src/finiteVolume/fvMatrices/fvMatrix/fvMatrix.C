@@ -835,7 +835,7 @@ Foam::fvMatrix<Type>::H() const
     GeometricField<Type, fvPatchField, volMesh>& Hphi = tHphi.ref();
 
     // Loop over field components
-    for (direction cmpt=0; cmpt<Type::nComponents; cmpt++)
+    for (direction cmpt=0; cmpt<Type::nComponents; ++cmpt)
     {
         scalarField psiCmpt(psi_.primitiveField().component(cmpt));
 
@@ -858,7 +858,7 @@ Foam::fvMatrix<Type>::H() const
         psi_.mesh().template validComponents<Type>()
     );
 
-    for (direction cmpt=0; cmpt<Type::nComponents; cmpt++)
+    for (direction cmpt=0; cmpt<Type::nComponents; ++cmpt)
     {
         if (validComponents[cmpt] == -1)
         {
@@ -956,7 +956,7 @@ flux() const
 
     fieldFlux.setOriented();
 
-    for (direction cmpt=0; cmpt<pTraits<Type>::nComponents; cmpt++)
+    for (direction cmpt=0; cmpt<pTraits<Type>::nComponents; ++cmpt)
     {
         fieldFlux.primitiveFieldRef().replace
         (
@@ -2362,7 +2362,7 @@ Foam::operator&
     // Loop over field components
     if (M.hasDiag())
     {
-        for (direction cmpt=0; cmpt<pTraits<Type>::nComponents; cmpt++)
+        for (direction cmpt=0; cmpt<pTraits<Type>::nComponents; ++cmpt)
         {
             scalarField psiCmpt(psi.field().component(cmpt));
             scalarField boundaryDiagCmpt(M.diag());

@@ -120,11 +120,11 @@ void Foam::voxelMeshSearch::writeGrid
 {
     const vector s(cmptDivide(bb.span(), vector(g.x(), g.y(), g.z())));
 
-    for (label i = 1; i < g[0]; i++)
+    for (label i = 1; i < g[0]; ++i)
     {
-        for (label j = 0; j < g[1]; j++)
+        for (label j = 0; j < g[1]; ++j)
         {
-            for (label k = 0; k < g[2]; k++)
+            for (label k = 0; k < g[2]; ++k)
             {
                 point p1(bb.min()+point((i-1)*s[0], j*s[1], k*s[2]));
                 point p2(bb.min()+point(i*s[0], j*s[1], k*s[2]));
@@ -132,11 +132,11 @@ void Foam::voxelMeshSearch::writeGrid
             }
         }
     }
-    for (label i = 0; i < g[0]; i++)
+    for (label i = 0; i < g[0]; ++i)
     {
-        for (label j = 1; j < g[1]; j++)
+        for (label j = 1; j < g[1]; ++j)
         {
-            for (label k = 0; k < g[2]; k++)
+            for (label k = 0; k < g[2]; ++k)
             {
                 point p1(bb.min()+point(i*s[0], (j-1)*s[1], k*s[2]));
                 point p2(bb.min()+point(i*s[0], j*s[1], k*s[2]));
@@ -144,11 +144,11 @@ void Foam::voxelMeshSearch::writeGrid
             }
         }
     }
-    for (label i = 0; i < g[0]; i++)
+    for (label i = 0; i < g[0]; ++i)
     {
-        for (label j = 0; j < g[1]; j++)
+        for (label j = 0; j < g[1]; ++j)
         {
-            for (label k = 1; k < g[2]; k++)
+            for (label k = 1; k < g[2]; ++k)
             {
                 point p1(bb.min()+point(i*s[0], j*s[1], (k-1)*s[2]));
                 point p2(bb.min()+point(i*s[0], j*s[1], k*s[2]));

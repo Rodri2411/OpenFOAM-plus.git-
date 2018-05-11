@@ -279,7 +279,7 @@ bool Foam::functionObjects::scalarTransport::execute()
 
         // Solve
         tmp<surfaceScalarField> tTPhiUD;
-        for (label i = 0; i <= nCorr_; i++)
+        for (label i = 0; i <= nCorr_; ++i)
         {
             fvScalarMatrix sEqn
             (
@@ -306,7 +306,7 @@ bool Foam::functionObjects::scalarTransport::execute()
     {
         const volScalarField& rho = lookupObject<volScalarField>(rhoName_);
 
-        for (label i = 0; i <= nCorr_; i++)
+        for (label i = 0; i <= nCorr_; ++i)
         {
 
             fvScalarMatrix sEqn
@@ -327,7 +327,7 @@ bool Foam::functionObjects::scalarTransport::execute()
     }
     else if (phi.dimensions() == dimVolume/dimTime)
     {
-        for (label i = 0; i <= nCorr_; i++)
+        for (label i = 0; i <= nCorr_; ++i)
         {
             fvScalarMatrix sEqn
             (

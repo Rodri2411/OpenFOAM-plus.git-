@@ -316,7 +316,7 @@ void Foam::motionSmootherAlgo::getAffectedFacesAndPoints
     // Also update faces-to-be-checked to extend one layer beyond the points
     // that will get updated.
 
-    for (label i = 0; i < nPointIter; i++)
+    for (label i = 0; i < nPointIter; ++i)
     {
         pointSet nbrPoints(mesh_, "grownPoints", getPoints(nbrFaces.toc()));
 
@@ -1001,7 +1001,7 @@ bool Foam::motionSmootherAlgo::scaleMesh
 
         scalarField eWeights(calcEdgeWeights(oldPoints_));
 
-        for (label i = 0; i < nSmoothScale; i++)
+        for (label i = 0; i < nSmoothScale; ++i)
         {
             if (adaptPatchIDs_.size())
             {

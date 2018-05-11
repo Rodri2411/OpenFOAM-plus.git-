@@ -198,7 +198,7 @@ int main(int argc, char *argv[])
             }
         }
 
-        for (label i=0; i<nCols; i++)
+        for (label i=0; i<nCols; ++i)
         {
             if (sFields[i])
             {
@@ -227,7 +227,7 @@ int main(int argc, char *argv[])
                 << exit(FatalError);
         }
 
-        for (label i=0; i<nCols; i++)
+        for (label i=0; i<nCols; ++i)
         {
             smapFile >> value;
         }

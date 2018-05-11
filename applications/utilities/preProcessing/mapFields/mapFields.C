@@ -395,7 +395,7 @@ int main(int argc, char *argv[])
 
         Info<< "Target mesh size: " << meshTarget.nCells() << endl;
 
-        for (int proci=0; proci<nProcs; proci++)
+        for (int proci=0; proci<nProcs; ++proci)
         {
             Info<< nl << "Source processor " << proci << endl;
 
@@ -470,7 +470,7 @@ int main(int argc, char *argv[])
 
         Info<< "Source mesh size: " << meshSource.nCells() << endl;
 
-        for (int proci=0; proci<nProcs; proci++)
+        for (int proci=0; proci<nProcs; ++proci)
         {
             Info<< nl << "Target processor " << proci << endl;
 
@@ -535,7 +535,7 @@ int main(int argc, char *argv[])
         List<boundBox> bbsTarget(nProcsTarget);
         List<bool> bbsTargetSet(nProcsTarget, false);
 
-        for (int procISource=0; procISource<nProcsSource; procISource++)
+        for (int procISource=0; procISource<nProcsSource; ++procISource)
         {
             Info<< nl << "Source processor " << procISource << endl;
 
@@ -562,7 +562,7 @@ int main(int argc, char *argv[])
 
             boundBox bbSource(meshSource.bounds());
 
-            for (int procITarget=0; procITarget<nProcsTarget; procITarget++)
+            for (int procITarget=0; procITarget<nProcsTarget; ++procITarget)
             {
                 if
                 (

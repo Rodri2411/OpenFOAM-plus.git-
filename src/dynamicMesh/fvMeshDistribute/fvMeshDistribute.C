@@ -203,7 +203,7 @@ void Foam::fvMeshDistribute::checkEqualWordList
     Pstream::gatherList(allNames);
     Pstream::scatterList(allNames);
 
-    for (label proci = 1; proci < Pstream::nProcs(); proci++)
+    for (label proci = 1; proci < Pstream::nProcs(); ++proci)
     {
         if (allNames[proci] != allNames[0])
         {
@@ -2547,7 +2547,7 @@ Foam::autoPtr<Foam::mapDistributePolyMesh> Foam::fvMeshDistribute::distribute
                 (
                     label domainFaceI = domainMesh.nInternalFaces();
                     domainFaceI < domainMesh.nFaces();
-                    domainFaceI++
+                    ++domainFaceI
                 )
                 {
                     label newFaceI = map().addedFaceMap()[domainFaceI];

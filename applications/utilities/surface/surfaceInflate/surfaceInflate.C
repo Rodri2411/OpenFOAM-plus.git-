@@ -474,7 +474,7 @@ void lloydsSmoothing
     }
 
     // Do some smoothing (Lloyds algorithm) around problematic points
-    for (label i = 0; i < nSmooth; i++)
+    for (label i = 0; i < nSmooth; ++i)
     {
         const labelListList& pointFaces = s.pointFaces();
         const pointField& faceCentres = s.faceCentres();
@@ -811,7 +811,7 @@ int main(int argc, char *argv[])
 
         // Smear out lowering of scale so any edges not found are
         // still included
-        for (label i = 0; i < nSmooth; i++)
+        for (label i = 0; i < nSmooth; ++i)
         {
             triSurfacePointScalarField oldScale(scale);
             oldScale.rename("oldScale");

@@ -232,7 +232,7 @@ void Foam::dynamicOversetFvMesh::addInterpolation(fvMatrix<Type>& m) const
 
         const Field<Type>& psiInt = m.psi().primitiveField();
 
-        for (direction cmpt=0; cmpt<pTraits<Type>::nComponents; cmpt++)
+        for (direction cmpt=0; cmpt<pTraits<Type>::nComponents; ++cmpt)
         {
             if (component(validComponents, cmpt) != -1)
             {
@@ -293,7 +293,7 @@ void Foam::dynamicOversetFvMesh::addInterpolation(fvMatrix<Type>& m) const
             label startLabel = ownerStartAddr[celli];
             label endLabel = ownerStartAddr[celli + 1];
 
-            for (label facei = startLabel; facei < endLabel; facei++)
+            for (label facei = startLabel; facei < endLabel; ++facei)
             {
                 upper[facei] = 0.0;
             }
@@ -301,7 +301,7 @@ void Foam::dynamicOversetFvMesh::addInterpolation(fvMatrix<Type>& m) const
             startLabel = addr.losortStartAddr()[celli];
             endLabel = addr.losortStartAddr()[celli + 1];
 
-            for (label i = startLabel; i < endLabel; i++)
+            for (label i = startLabel; i < endLabel; ++i)
             {
                 label facei = losortAddr[i];
                 lower[facei] = 0.0;
@@ -486,7 +486,7 @@ void Foam::dynamicOversetFvMesh::write
         label startLabel = ownerStartAddr[celli];
         label endLabel = ownerStartAddr[celli + 1];
 
-        for (label facei = startLabel; facei < endLabel; facei++)
+        for (label facei = startLabel; facei < endLabel; ++facei)
         {
             os  << "    face:" << facei
                 << " nbr:" << upperAddr[facei] << " coeff:" << upper[facei]
@@ -496,7 +496,7 @@ void Foam::dynamicOversetFvMesh::write
         startLabel = addr.losortStartAddr()[celli];
         endLabel = addr.losortStartAddr()[celli + 1];
 
-        for (label i = startLabel; i < endLabel; i++)
+        for (label i = startLabel; i < endLabel; ++i)
         {
             label facei = losortAddr[i];
             os  << "    face:" << facei

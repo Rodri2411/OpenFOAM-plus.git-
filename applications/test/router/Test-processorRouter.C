@@ -226,7 +226,7 @@ int main(int argc, char *argv[])
                     // Dump route as lines.
                     labelList route(cellRouter.getRoute(-(pathI + 1)));
 
-                    for (label elemI = 1; elemI < route.size(); elemI++)
+                    for (label elemI = 1; elemI < route.size(); ++elemI)
                     {
                         objFile
                             << "l " << route[elemI-1]+1 << ' '

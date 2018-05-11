@@ -181,12 +181,12 @@ Foam::label Foam::fvMeshTools::addPatch
     // Create reordering list
     // patches before insert position stay as is
     labelList oldToNew(sz+1);
-    for (label i = 0; i < insertPatchi; i++)
+    for (label i = 0; i < insertPatchi; ++i)
     {
         oldToNew[i] = i;
     }
     // patches after insert position move one up
-    for (label i = insertPatchi; i < sz; i++)
+    for (label i = insertPatchi; i < sz; ++i)
     {
         oldToNew[i] = i+1;
     }
@@ -290,7 +290,7 @@ void Foam::fvMeshTools::trimPatches(fvMesh& mesh, const label nPatches)
     }
 
     label nFaces = 0;
-    for (label patchi = nPatches; patchi < polyPatches.size(); patchi++)
+    for (label patchi = nPatches; patchi < polyPatches.size(); ++patchi)
     {
         nFaces += polyPatches[patchi].size();
     }
@@ -473,7 +473,7 @@ Foam::autoPtr<Foam::fvMesh> Foam::fvMeshTools::newMesh
         (
             int slave=Pstream::firstSlave();
             slave<=Pstream::lastSlave();
-            slave++
+            ++slave
         )
         {
             OPstream toSlave(Pstream::commsTypes::scheduled, slave);

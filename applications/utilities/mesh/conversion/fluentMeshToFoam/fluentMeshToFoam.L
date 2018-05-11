@@ -609,7 +609,7 @@ endOfSection               {space}")"{space}
         {
             label lastIndex = cellGroupEndIndex.last();
 
-            for (; celli < lastIndex; celli++)
+            for (; celli < lastIndex; ++celli)
             {
                 fluentCellModelID[celli] = cellGroupElementType;
             }
@@ -646,7 +646,7 @@ endOfSection               {space}")"{space}
             Info<< "Reading uniform cells" << endl;
             label lastIndex = cellGroupEndIndex.last();
 
-            for (; celli < lastIndex; celli++)
+            for (; celli < lastIndex; ++celli)
             {
                 fluentCellModelID[celli] = cellGroupElementType;
             }
@@ -1624,7 +1624,7 @@ int main(int argc, char *argv[])
 
             // shift cell indizes by 1
             label nr=0;
-            for (label celli = (start() - 1); celli < end(); celli++)
+            for (label celli = (start() - 1); celli < end(); ++celli)
             {
                 cls[nr]=celli;
                 zoneCell.set(celli);
@@ -1743,7 +1743,7 @@ int main(int argc, char *argv[])
                 cellSet internal(pShapeMesh, name, end() - start());
 
                 // shift cell indizes by 1
-                for (label celli = start() - 1; celli <= end() - 1; celli++)
+                for (label celli = start() - 1; celli <= end() - 1; ++celli)
                 {
                     internal.insert(celli);
                 }

@@ -99,7 +99,7 @@ RRg() const
     if (this->chemistry_)
     {
         volScalarField::Internal& RRg = tRRg.ref();
-        for (label i=0; i < nGases_; i++)
+        for (label i=0; i < nGases_; ++i)
         {
             RRg += RRg_[i];
         }

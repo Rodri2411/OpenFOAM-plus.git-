@@ -154,7 +154,7 @@ const Foam::labelList& Foam::primitiveMesh::pointCells
             sort(storage);
 
             label n = 1;
-            for (label i = 1; i < storage.size(); i++)
+            for (label i = 1; i < storage.size(); ++i)
             {
                 if (storage[i-1] != storage[i])
                 {

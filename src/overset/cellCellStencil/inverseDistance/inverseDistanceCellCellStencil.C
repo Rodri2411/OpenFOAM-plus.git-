@@ -126,7 +126,7 @@ void Foam::cellCellStencils::inverseDistance::fill
     labelVector minIds(index3(bb, nDivs, subBb.min()));
     labelVector maxIds(index3(bb, nDivs, subBb.max()));
 
-    for (direction cmpt = 0; cmpt < 3; cmpt++)
+    for (direction cmpt = 0; cmpt < 3; ++cmpt)
     {
         if (maxIds[cmpt] < 0 || minIds[cmpt] > nDivs[cmpt])
         {
@@ -138,11 +138,11 @@ void Foam::cellCellStencils::inverseDistance::fill
     minIds = max(labelVector::zero, minIds);
     maxIds = min(maxIndex, maxIds);
 
-    for (label i = minIds[0]; i <= maxIds[0]; i++)
+    for (label i = minIds[0]; i <= maxIds[0]; ++i)
     {
-        for (label j = minIds[1]; j <= maxIds[1]; j++)
+        for (label j = minIds[1]; j <= maxIds[1]; ++j)
         {
-            for (label k = minIds[2]; k <= maxIds[2]; k++)
+            for (label k = minIds[2]; k <= maxIds[2]; ++k)
             {
                 label i1 = index(nDivs, labelVector(i, j, k));
                 elems[i1] = val;
@@ -278,7 +278,7 @@ bool Foam::cellCellStencils::inverseDistance::overlaps
     labelVector minIds(index3(bb, nDivs, subBb.min()));
     labelVector maxIds(index3(bb, nDivs, subBb.max()));
 
-    for (direction cmpt = 0; cmpt < 3; cmpt++)
+    for (direction cmpt = 0; cmpt < 3; ++cmpt)
     {
         if (maxIds[cmpt] < 0 || minIds[cmpt] > nDivs[cmpt])
         {
@@ -290,11 +290,11 @@ bool Foam::cellCellStencils::inverseDistance::overlaps
     minIds = max(labelVector::zero, minIds);
     maxIds = min(maxIndex, maxIds);
 
-    for (label i = minIds[0]; i <= maxIds[0]; i++)
+    for (label i = minIds[0]; i <= maxIds[0]; ++i)
     {
-        for (label j = minIds[1]; j <= maxIds[1]; j++)
+        for (label j = minIds[1]; j <= maxIds[1]; ++j)
         {
-            for (label k = minIds[2]; k <= maxIds[2]; k++)
+            for (label k = minIds[2]; k <= maxIds[2]; ++k)
             {
                 label i1 = index(nDivs, labelVector(i, j, k));
                 if (vals[i1] == patchCellType::PATCH)
@@ -365,7 +365,7 @@ void Foam::cellCellStencils::inverseDistance::markPatchesAsHoles
 
     // 2. Send over srcMesh bits that overlap tgt and do calculation
     pBufs.clear();
-    for (label procI = 0; procI < Pstream::nProcs(); procI++)
+    for (label procI = 0; procI < Pstream::nProcs(); ++procI)
     {
         if (procI != Pstream::myProcNo())
         {
@@ -382,7 +382,7 @@ void Foam::cellCellStencils::inverseDistance::markPatchesAsHoles
         }
     }
     pBufs.finishedSends();
-    for (label procI = 0; procI < Pstream::nProcs(); procI++)
+    for (label procI = 0; procI < Pstream::nProcs(); ++procI)
     {
         if (procI != Pstream::myProcNo())
         {
@@ -484,7 +484,7 @@ void Foam::cellCellStencils::inverseDistance::markDonors
     DynamicList<label> tgtOverlapProcs(Pstream::nProcs());
     // (remote) processors where the src overlaps my tgt
     DynamicList<label> srcOverlapProcs(Pstream::nProcs());
-    for (label procI = 0; procI < Pstream::nProcs(); procI++)
+    for (label procI = 0; procI < Pstream::nProcs(); ++procI)
     {
         if (procI != Pstream::myProcNo())
         {
@@ -919,7 +919,7 @@ void Foam::cellCellStencils::inverseDistance::findHoles
     boolList isBlockedFace(mesh.nFaces(), false);
     label nBlocked = 0;
 
-    for (label faceI = 0; faceI < mesh.nInternalFaces(); faceI++)
+    for (label faceI = 0; faceI < mesh.nInternalFaces(); ++faceI)
     {
         label ownType = cellTypes[own[faceI]];
         label neiType = cellTypes[nei[faceI]];
@@ -940,7 +940,7 @@ void Foam::cellCellStencils::inverseDistance::findHoles
     labelList nbrCellTypes;
     syncTools::swapBoundaryCellList(mesh, cellTypes, nbrCellTypes);
 
-    for (label faceI = mesh.nInternalFaces(); faceI < mesh.nFaces(); faceI++)
+    for (label faceI = mesh.nInternalFaces(); faceI < mesh.nFaces(); ++faceI)
     {
         label ownType = cellTypes[own[faceI]];
         label neiType = nbrCellTypes[faceI-mesh.nInternalFaces()];
@@ -1010,7 +1010,7 @@ void Foam::cellCellStencils::inverseDistance::findHoles
     // See if any regions borders blockage. Note: isBlockedFace is already
     // parallel synchronised.
     {
-        for (label faceI = 0; faceI < mesh.nInternalFaces(); faceI++)
+        for (label faceI = 0; faceI < mesh.nInternalFaces(); ++faceI)
         {
             if (isBlockedFace[faceI])
             {
@@ -1039,7 +1039,7 @@ void Foam::cellCellStencils::inverseDistance::findHoles
         (
             label faceI = mesh.nInternalFaces();
             faceI < mesh.nFaces();
-            faceI++
+            ++faceI
         )
         {
             if (isBlockedFace[faceI])
@@ -1231,7 +1231,7 @@ void Foam::cellCellStencils::inverseDistance::walkFront
         const labelList& own = mesh_.faceOwner();
         const labelList& nei = mesh_.faceNeighbour();
 
-        for (label faceI = 0; faceI < mesh_.nInternalFaces(); faceI++)
+        for (label faceI = 0; faceI < mesh_.nInternalFaces(); ++faceI)
         {
             label ownType = allCellTypes[own[faceI]];
             label neiType = allCellTypes[nei[faceI]];
@@ -1254,7 +1254,7 @@ void Foam::cellCellStencils::inverseDistance::walkFront
         (
             label faceI = mesh_.nInternalFaces();
             faceI < mesh_.nFaces();
-            faceI++
+            ++faceI
         )
         {
             label ownType = allCellTypes[own[faceI]];
@@ -1813,9 +1813,9 @@ bool Foam::cellCellStencils::inverseDistance::update()
 
     PstreamBuffers pBufs(Pstream::commsTypes::nonBlocking);
 
-    for (label srcI = 0; srcI < meshParts.size()-1; srcI++)
+    for (label srcI = 0; srcI < meshParts.size()-1; ++srcI)
     {
-        for (label tgtI = srcI+1; tgtI < meshParts.size(); tgtI++)
+        for (label tgtI = srcI+1; tgtI < meshParts.size(); ++tgtI)
         {
             markPatchesAsHoles
             (

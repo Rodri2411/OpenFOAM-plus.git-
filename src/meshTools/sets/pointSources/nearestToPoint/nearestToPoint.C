@@ -67,7 +67,7 @@ void Foam::nearestToPoint::combine(topoSet& set, const bool add) const
             label minPointi = 0;
             scalar minDistSqr = magSqr(pts[minPointi] - points_[pointi]);
 
-            for (label i = 1; i < pts.size(); i++)
+            for (label i = 1; i < pts.size(); ++i)
             {
                 scalar distSqr = magSqr(pts[i] - points_[pointi]);
 

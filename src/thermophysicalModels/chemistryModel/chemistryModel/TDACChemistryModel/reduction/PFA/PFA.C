@@ -41,7 +41,7 @@ Foam::chemistryReductionMethods::PFA<CompType, ThermoType>::PFA
 
     dictionary initSet = this->coeffsDict_.subDict("initialSet");
 
-    for (label i=0; i<chemistry.nSpecie(); i++)
+    for (label i=0; i<chemistry.nSpecie(); ++i)
     {
         if (initSet.found(chemistry.Y()[i].name()))
         {
@@ -80,7 +80,7 @@ void Foam::chemistryReductionMethods::PFA<CompType, ThermoType>::reduceMechanism
     scalarField& completeC(this->chemistry_.completeC());
     scalarField c1(this->chemistry_.nEqns(), 0.0);
 
-    for (label i=0; i<this->nSpecie_; i++)
+    for (label i=0; i<this->nSpecie_; ++i)
     {
         c1[i] = c[i];
         completeC[i] = c[i];
@@ -270,13 +270,13 @@ void Foam::chemistryReductionMethods::PFA<CompType, ThermoType>::reduceMechanism
 
     forAll(NbrABInit, A)
     {
-        for (int i=0; i<NbrABInit[A]; i++)
+        for (int i=0; i<NbrABInit[A]; ++i)
         {
             label ri = rABOtherSpec(A, i);
             scalar maxPACA = max(PA[ri],CA[ri]);
             if (maxPACA > VSMALL)
             {
-                for (int j=0; j<NbrABInit[ri]; j++)
+                for (int j=0; j<NbrABInit[ri]; ++j)
                 {
                     label B = rABOtherSpec(ri, j);
                     if (B != A) // if B!=A and also !=ri by definition
@@ -308,7 +308,7 @@ void Foam::chemistryReductionMethods::PFA<CompType, ThermoType>::reduceMechanism
 
     // set all species to inactive and activate them according
     // to rAB and initial set
-    for (label i=0; i<this->nSpecie_; i++)
+    for (label i=0; i<this->nSpecie_; ++i)
     {
         this->activeSpecies_[i] = false;
     }
@@ -317,7 +317,7 @@ void Foam::chemistryReductionMethods::PFA<CompType, ThermoType>::reduceMechanism
     const labelList& SIS(this->searchInitSet_);
     FIFOStack<label> Q;
 
-    for (label i=0; i<SIS.size(); i++)
+    for (label i=0; i<SIS.size(); ++i)
     {
         label q = SIS[i];
         this->activeSpecies_[q] = true;
@@ -334,7 +334,7 @@ void Foam::chemistryReductionMethods::PFA<CompType, ThermoType>::reduceMechanism
         if (Den!=0.0)
         {
             // first generation
-            for (label v=0; v<NbrABInit[u]; v++)
+            for (label v=0; v<NbrABInit[u]; ++v)
             {
                 label otherSpec = rABOtherSpec(u, v);
                 scalar rAB = (PAB(u, v)+CAB(u, v))/Den; // first generation
@@ -357,7 +357,7 @@ void Foam::chemistryReductionMethods::PFA<CompType, ThermoType>::reduceMechanism
 
             }
             // second generation link only (for those without first link)
-            for (label v=0; v<NbrABInit2nd[u]; v++)
+            for (label v=0; v<NbrABInit2nd[u]; ++v)
             {
                 label otherSpec = rABOtherSpec2nd(u, v);
                 scalar rAB = (PAB2nd(u, v)+CAB2nd(u, v))/Den;
@@ -413,7 +413,7 @@ void Foam::chemistryReductionMethods::PFA<CompType, ThermoType>::reduceMechanism
     Field<label>& c2s(this->chemistry_.completeToSimplifiedIndex());
 
     label j = 0;
-    for (label i=0; i<this->nSpecie_; i++)
+    for (label i=0; i<this->nSpecie_; ++i)
     {
         if (this->activeSpecies_[i])
         {

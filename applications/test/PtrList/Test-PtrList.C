@@ -303,7 +303,7 @@ int main(int argc, char *argv[])
         <<"list-appended: " << listApp << endl;
 
     Info<<"indirectly delete some items via set(.., 0) :" << endl;
-    for (label i = 0; i < 3; i++)
+    for (label i = 0; i < 3; ++i)
     {
         list1.set(i, nullptr);
     }

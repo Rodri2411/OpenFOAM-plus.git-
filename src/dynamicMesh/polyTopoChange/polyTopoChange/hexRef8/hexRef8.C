@@ -1570,7 +1570,7 @@ Foam::label Foam::hexRef8::faceConsistentRefinement
     label nChanged = 0;
 
     // Internal faces.
-    for (label facei = 0; facei < mesh_.nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh_.nInternalFaces(); ++facei)
     {
         label own = mesh_.faceOwner()[facei];
         label nei = mesh_.faceNeighbour()[facei];
@@ -1655,7 +1655,7 @@ void Foam::hexRef8::checkWantedRefinementLevels
 {
     bitSet refineCell(mesh_.nCells(), cellsToRefine);
 
-    for (label facei = 0; facei < mesh_.nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh_.nInternalFaces(); ++facei)
     {
         label own = mesh_.faceOwner()[facei];
         label nei = mesh_.faceNeighbour()[facei];
@@ -2481,7 +2481,7 @@ Foam::labelList Foam::hexRef8::consistentSlowRefinement
     // Seed all boundary faces with owner value. This is to make sure that
     // they are visited (probably only important for coupled faces since
     // these need to be visited from both sides)
-    for (label facei = mesh_.nInternalFaces(); facei < mesh_.nFaces(); facei++)
+    for (label facei = mesh_.nInternalFaces(); facei < mesh_.nFaces(); ++facei)
     {
         // Check if face already handled in loop above
         if (!allFaceInfo[facei].valid(dummyTrackData))
@@ -2651,7 +2651,7 @@ Foam::labelList Foam::hexRef8::consistentSlowRefinement
 
     if (debug)
     {
-        for (label facei = 0; facei < mesh_.nInternalFaces(); facei++)
+        for (label facei = 0; facei < mesh_.nInternalFaces(); ++facei)
         {
             label own = mesh_.faceOwner()[facei];
             label ownLevel =
@@ -3420,7 +3420,7 @@ Foam::labelListList Foam::hexRef8::setRefinement
     // <= anchorLevel. These are the corner points.
     labelList faceAnchorLevel(mesh_.nFaces());
 
-    for (label facei = 0; facei < mesh_.nFaces(); facei++)
+    for (label facei = 0; facei < mesh_.nFaces(); ++facei)
     {
         faceAnchorLevel[facei] = faceLevel(facei);
     }
@@ -3432,7 +3432,7 @@ Foam::labelListList Foam::hexRef8::setRefinement
 
     // Internal faces: look at cells on both sides. Uniquely determined since
     // face itself guaranteed to be same level as most refined neighbour.
-    for (label facei = 0; facei < mesh_.nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh_.nInternalFaces(); ++facei)
     {
         if (faceAnchorLevel[facei] >= 0)
         {
@@ -3712,7 +3712,7 @@ Foam::labelListList Foam::hexRef8::setRefinement
             newCellLevel[celli] = cellLevel_[celli]+1;
 
 
-            for (label i = 1; i < 8; i++)
+            for (label i = 1; i < 8; ++i)
             {
                 cAdded[i] = meshMod.setAction
                 (
@@ -4779,7 +4779,7 @@ void Foam::hexRef8::checkRefinementLevels
 
     {
         // Internal faces.
-        for (label facei = 0; facei < mesh_.nInternalFaces(); facei++)
+        for (label facei = 0; facei < mesh_.nInternalFaces(); ++facei)
         {
             label own = mesh_.faceOwner()[facei];
             label nei = mesh_.faceNeighbour()[facei];
@@ -5089,7 +5089,7 @@ Foam::labelList Foam::hexRef8::getSplitPoints() const
     // Unmark all with not 8 cells
     //const labelListList& pointCells = mesh_.pointCells();
 
-    for (label pointi = 0; pointi < mesh_.nPoints(); pointi++)
+    for (label pointi = 0; pointi < mesh_.nPoints(); ++pointi)
     {
         const labelList& pCells = mesh_.pointCells(pointi);
 
@@ -5160,7 +5160,7 @@ Foam::labelList Foam::hexRef8::getSplitPoints() const
     (
         label facei = mesh_.nInternalFaces();
         facei < mesh_.nFaces();
-        facei++
+        ++facei
     )
     {
         const face& f = mesh_.faces()[facei];
@@ -5313,7 +5313,7 @@ Foam::labelList Foam::hexRef8::consistentUnrefinement
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
         // Internal faces.
-        for (label facei = 0; facei < mesh_.nInternalFaces(); facei++)
+        for (label facei = 0; facei < mesh_.nInternalFaces(); ++facei)
         {
             label own = mesh_.faceOwner()[facei];
             label nei = mesh_.faceNeighbour()[facei];

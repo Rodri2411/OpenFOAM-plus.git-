@@ -132,7 +132,7 @@ void Foam::targetCoeffTrim::correctTrim
 
             // construct Jacobian by perturbing the pitch angles
             // by +/-(dTheta_/2)
-            for (label pitchI = 0; pitchI < 3; pitchI++)
+            for (label pitchI = 0; pitchI < 3; ++pitchI)
             {
                 theta_[pitchI] -= dTheta_/2.0;
                 vector cf0 = calcCoeffs(rho, U, thetag(), force);

@@ -290,7 +290,7 @@ Foam::label Foam::interpolation2DTable<Type>::Xi
         i = 0;
         while ((i < nX) && (valueX > t[i].first()))
         {
-            i++;
+            ++i;
         }
     }
     else
@@ -298,7 +298,7 @@ Foam::label Foam::interpolation2DTable<Type>::Xi
         i = t.size() - 1;
         while ((i > 0) && (valueX < t[i].first()))
         {
-            i--;
+            --i;
         }
     }
 

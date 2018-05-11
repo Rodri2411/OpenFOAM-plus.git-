@@ -157,7 +157,7 @@ void getBand
     {
         forAll(nIntersect, celli)
         {
-            for (label colI = celli-cellBandwidth[celli]; colI <= celli; colI++)
+            for (label colI = celli-cellBandwidth[celli]; colI <= celli; ++colI)
             {
                 nIntersect[colI] += 1.0;
             }
@@ -238,7 +238,7 @@ labelList getFaceOrder
     }
 
     // Leave patch faces intact.
-    for (label facei = newFacei; facei < mesh.nFaces(); facei++)
+    for (label facei = newFacei; facei < mesh.nFaces(); ++facei)
     {
         oldToNewFace[facei] = facei;
     }
@@ -342,7 +342,7 @@ labelList getRegionFaceOrder
         // Sort in increasing region
         SortableList<label> sortKey(mesh.nFaces(), labelMax);
 
-        for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
+        for (label facei = 0; facei < mesh.nInternalFaces(); ++facei)
         {
             label ownRegion = cellToRegion[mesh.faceOwner()[facei]];
             label neiRegion = cellToRegion[mesh.faceNeighbour()[facei]];
@@ -377,7 +377,7 @@ labelList getRegionFaceOrder
     }
 
     // Leave patch faces intact.
-    for (label facei = newFacei; facei < mesh.nFaces(); facei++)
+    for (label facei = newFacei; facei < mesh.nFaces(); ++facei)
     {
         oldToNewFace[facei] = facei;
     }

@@ -741,10 +741,10 @@ Foam::label Foam::triSurface::markZones
 
     label zoneI = 0;
 
-    for (label startFacei = 0;; zoneI++)
+    for (label startFacei = 0;; ++zoneI)
     {
         // Find first non-coloured face
-        for (; startFacei < size(); startFacei++)
+        for (; startFacei < size(); ++startFacei)
         {
             if (faceZone[startFacei] == -1)
             {

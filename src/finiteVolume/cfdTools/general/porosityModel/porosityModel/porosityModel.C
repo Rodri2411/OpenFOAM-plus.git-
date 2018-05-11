@@ -50,7 +50,7 @@ void Foam::porosityModel::adjustNegativeResistance(dimensionedVector& resist)
     else
     {
         vector& val = resist.value();
-        for (label cmpt = 0; cmpt < vector::nComponents; cmpt++)
+        for (label cmpt = 0; cmpt < vector::nComponents; ++cmpt)
         {
             if (val[cmpt] < 0)
             {

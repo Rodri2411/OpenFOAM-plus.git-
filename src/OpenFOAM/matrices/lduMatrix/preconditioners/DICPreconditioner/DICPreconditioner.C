@@ -68,7 +68,7 @@ void Foam::DICPreconditioner::calcReciprocalD
 
     // Calculate the DIC diagonal
     const label nFaces = matrix.upper().size();
-    for (label face=0; face<nFaces; face++)
+    for (label face=0; face<nFaces; ++face)
     {
         rDPtr[uPtr[face]] -= upperPtr[face]*upperPtr[face]/rDPtr[lPtr[face]];
     }
@@ -77,7 +77,7 @@ void Foam::DICPreconditioner::calcReciprocalD
     // Calculate the reciprocal of the preconditioned diagonal
     const label nCells = rD.size();
 
-    for (label cell=0; cell<nCells; cell++)
+    for (label cell=0; cell<nCells; ++cell)
     {
         rDPtr[cell] = 1.0/rDPtr[cell];
     }
@@ -106,12 +106,12 @@ void Foam::DICPreconditioner::precondition
     label nFaces = solver_.matrix().upper().size();
     label nFacesM1 = nFaces - 1;
 
-    for (label cell=0; cell<nCells; cell++)
+    for (label cell=0; cell<nCells; ++cell)
     {
         wAPtr[cell] = rDPtr[cell]*rAPtr[cell];
     }
 
-    for (label face=0; face<nFaces; face++)
+    for (label face=0; face<nFaces; ++face)
     {
         wAPtr[uPtr[face]] -= rDPtr[uPtr[face]]*upperPtr[face]*wAPtr[lPtr[face]];
     }

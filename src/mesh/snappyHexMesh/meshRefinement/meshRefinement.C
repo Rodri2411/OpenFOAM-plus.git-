@@ -989,7 +989,7 @@ Foam::label Foam::meshRefinement::splitFacesUndo
     // originalFaces : original face in current vertices
 
 
-    for (label iteration = 0; iteration < 100; iteration++)
+    for (label iteration = 0; iteration < 100; ++iteration)
     {
         Info<< nl
             << "Undo iteration " << iteration << nl
@@ -2008,12 +2008,12 @@ Foam::label Foam::meshRefinement::addPatch
     // Create reordering list
     // patches before insert position stay as is
     labelList oldToNew(addedPatchi+1);
-    for (label i = 0; i < insertPatchi; i++)
+    for (label i = 0; i < insertPatchi; ++i)
     {
         oldToNew[i] = i;
     }
     // patches after insert position move one up
-    for (label i = insertPatchi; i < addedPatchi; i++)
+    for (label i = insertPatchi; i < addedPatchi; ++i)
     {
         oldToNew[i] = i+1;
     }

@@ -153,7 +153,7 @@ Foam::projectCurveEdge::position(const scalarList& lambdas) const
 
     scalar initialResidual = 0.0;
 
-    for (label iter = 0; iter < maxIter; iter++)
+    for (label iter = 0; iter < maxIter; ++iter)
     {
         // Do projection
         {
@@ -192,7 +192,7 @@ Foam::projectCurveEdge::position(const scalarList& lambdas) const
         scalarField projLambdas(points.size());
         {
             projLambdas[0] = 0.0;
-            for (label i = 1; i < points.size(); i++)
+            for (label i = 1; i < points.size(); ++i)
             {
                 projLambdas[i] = projLambdas[i-1] + mag(points[i]-points[i-1]);
             }
@@ -205,7 +205,7 @@ Foam::projectCurveEdge::position(const scalarList& lambdas) const
         vectorField residual(points.size(), vector::zero);
         labelList indices;
         scalarField weights;
-        for (label i = 1; i < points.size() - 1; i++)
+        for (label i = 1; i < points.size() - 1; ++i)
         {
             interpolator.valueWeights(lambdas[i], indices, weights);
 

@@ -211,7 +211,7 @@ Foam::GAMGSolver::GAMGSolver
         (
             label fineLevelIndex = 0;
             fineLevelIndex <= matrixLevels_.size();
-            fineLevelIndex++
+            ++fineLevelIndex
         )
         {
             if (fineLevelIndex == 0 || matrixLevels_.set(fineLevelIndex-1))

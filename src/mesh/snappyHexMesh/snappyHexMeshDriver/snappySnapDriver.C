@@ -140,7 +140,7 @@ Foam::tmp<Foam::pointField> Foam::snappySnapDriver::smoothInternalDisplacement
 
     // Walk out from the surface a bit. Poor man's FaceCellWave.
     // Commented out for now - not sure if needed and if so how much
-    //for (label iter = 0; iter < 2; iter++)
+    //for (label iter = 0; iter < 2; ++iter)
     //{
     //    bitSet newIsFront(mesh.nFaces());
     //
@@ -178,7 +178,7 @@ Foam::tmp<Foam::pointField> Foam::snappySnapDriver::smoothInternalDisplacement
 
     label nInterface = 0;
 
-    for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
+    for (label facei = 0; facei < mesh.nInternalFaces(); ++facei)
     {
         label ownLevel = cellLevel[mesh.faceOwner()[facei]];
         label neiLevel = cellLevel[mesh.faceNeighbour()[facei]];
@@ -195,7 +195,7 @@ Foam::tmp<Foam::pointField> Foam::snappySnapDriver::smoothInternalDisplacement
     labelList neiCellLevel;
     syncTools::swapBoundaryCellList(mesh, cellLevel, neiCellLevel);
 
-    for (label facei = mesh.nInternalFaces(); facei < mesh.nFaces(); facei++)
+    for (label facei = mesh.nInternalFaces(); facei < mesh.nFaces(); ++facei)
     {
         label ownLevel = cellLevel[mesh.faceOwner()[facei]];
         label neiLevel = neiCellLevel[facei-mesh.nInternalFaces()];
@@ -409,7 +409,7 @@ Foam::tmp<Foam::pointField> Foam::snappySnapDriver::smoothPatchDisplacement
         // Note: no use of pointFaces
         const faceList& faces = mesh.faces();
 
-        for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
+        for (label facei = 0; facei < mesh.nInternalFaces(); ++facei)
         {
             const face& f = faces[facei];
             const point& fc = mesh.faceCentres()[facei];
@@ -618,7 +618,7 @@ Foam::tmp<Foam::pointField> Foam::snappySnapDriver::smoothPatchDisplacement
 //    const scalar lambda = 0.33;
 //    const scalar mu = 0.34;
 //
-//    for (label iter = 0; iter < iters; iter++)
+//    for (label iter = 0; iter < iters; ++iter)
 //    {
 //        // Lambda
 //        newLocalPoints =
@@ -837,7 +837,7 @@ void Foam::snappySnapDriver::preSmoothPatch
     (
         label smoothIter = 0;
         smoothIter < snapParams.nSmoothPatch();
-        smoothIter++
+        ++smoothIter
     )
     {
         Info<< "Smoothing iteration " << smoothIter << endl;
@@ -870,7 +870,7 @@ void Foam::snappySnapDriver::preSmoothPatch
 
         scalar oldErrorReduction = -1;
 
-        for (label snapIter = 0; snapIter < 2*snapParams.nSnap(); snapIter++)
+        for (label snapIter = 0; snapIter < 2*snapParams.nSnap(); ++snapIter)
         {
             Info<< nl << "Scaling iteration " << snapIter << endl;
 
@@ -1294,7 +1294,7 @@ void Foam::snappySnapDriver::detectNearSurfaces
     //            bool isCoplanar = false;
     //
     //            label rayi = 14*pointi;
-    //            for (label i = 0; i < 14; i++)
+    //            for (label i = 0; i < 14; ++i)
     //            {
     //                if (hit1[rayi].hit())
     //                {
@@ -1816,7 +1816,7 @@ Foam::vectorField Foam::snappySnapDriver::calcNearestSurface
 
                 const labelList surfacesToTest(1, surfi);
 
-                for (label regioni = 0; regioni < nRegions; regioni++)
+                for (label regioni = 0; regioni < nRegions; ++regioni)
                 {
                     label globali = surfaces.globalRegion(surfi, regioni);
                     label masterPatchi = globalToMasterPatch[globali];
@@ -2097,7 +2097,7 @@ void Foam::snappySnapDriver::smoothDisplacement
     // Get displacement field
     pointVectorField& disp = meshMover.displacement();
 
-    for (label iter = 0; iter < snapParams.nSmoothDispl(); iter++)
+    for (label iter = 0; iter < snapParams.nSmoothDispl(); ++iter)
     {
         if ((iter % 10) == 0)
         {
@@ -2167,7 +2167,7 @@ bool Foam::snappySnapDriver::scaleMesh
     bool meshOk = false;
 
     Info<< "Moving mesh ..." << endl;
-    for (label iter = 0; iter < 2*snapParams.nSnap(); iter++)
+    for (label iter = 0; iter < 2*snapParams.nSnap(); ++iter)
     {
         Info<< nl << "Iteration " << iter << endl;
 
@@ -2418,7 +2418,7 @@ void Foam::snappySnapDriver::detectWarpedFaces
             labelPair minDiag(-1, -1);
             scalar minCos(GREAT);
 
-            for (label startFp = 0; startFp < f.size()-2; startFp++)
+            for (label startFp = 0; startFp < f.size()-2; ++startFp)
             {
                 label minFp = f.rcIndex(startFp);
 
@@ -2426,13 +2426,13 @@ void Foam::snappySnapDriver::detectWarpedFaces
                 (
                     label endFp = f.fcIndex(f.fcIndex(startFp));
                     endFp < f.size() && endFp != minFp;
-                    endFp++
+                    ++endFp
                 )
                 {
                     // Form two faces
                     f0.setSize(endFp-startFp+1);
                     label i0 = 0;
-                    for (label fp = startFp; fp <= endFp; fp++)
+                    for (label fp = startFp; fp <= endFp; ++fp)
                     {
                         f0[i0++] = f[fp];
                     }
@@ -2704,7 +2704,7 @@ void Foam::snappySnapDriver::doSnap
         DynamicList<labelPair> splits;
 
 
-        for (label iter = 0; iter < nFeatIter; iter++)
+        for (label iter = 0; iter < nFeatIter; ++iter)
         {
             Info<< nl
                 << "Morph iteration " << iter << nl

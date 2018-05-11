@@ -127,7 +127,7 @@ void printMeshData(const polyMesh& mesh)
     label totProcPatches = 0;
     label maxProcFaces = 0;
 
-    for (label proci = 0; proci < Pstream::nProcs(); proci++)
+    for (label proci = 0; proci < Pstream::nProcs(); ++proci)
     {
         Info<< endl
             << "Processor " << proci << nl
@@ -234,11 +234,11 @@ autoPtr<polyMesh> generateHexMesh
         points.setSize((nCells[0]+1)*(nCells[1]+1)*(nCells[2]+1));
 
         // Generate points
-        for (label i = 0; i <= nCells[0]; i++)
+        for (label i = 0; i <= nCells[0]; ++i)
         {
-            for (label j = 0; j <= nCells[1]; j++)
+            for (label j = 0; j <= nCells[1]; ++j)
             {
-                for (label k = 0; k <= nCells[2]; k++)
+                for (label k = 0; k <= nCells[2]; ++k)
                 {
                     point pt = origin;
                     pt.x() += i*cellSize[0];
@@ -256,11 +256,11 @@ autoPtr<polyMesh> generateHexMesh
 
     labelList hexPoints(8);
     label celli = 0;
-    for (label i = 0; i < nCells[0]; i++)
+    for (label i = 0; i < nCells[0]; ++i)
     {
-        for (label j = 0; j < nCells[1]; j++)
+        for (label j = 0; j < nCells[1]; ++j)
         {
-            for (label k = 0; k < nCells[2]; k++)
+            for (label k = 0; k < nCells[2]; ++k)
             {
                 hexPoints[0] = vtxLabel(nCells, i,   j,   k);
                 hexPoints[1] = vtxLabel(nCells, i+1, j,   k);
@@ -672,7 +672,7 @@ int main(int argc, char *argv[])
         );
         {
             scalarField pointDistSqr(fvm.nPoints(), -sqr(GREAT));
-            for (label facei = 0; facei < fvm.nInternalFaces(); facei++)
+            for (label facei = 0; facei < fvm.nInternalFaces(); ++facei)
             {
                 label own = fvm.faceOwner()[facei];
                 label ownDistSqr = distSqr[own];

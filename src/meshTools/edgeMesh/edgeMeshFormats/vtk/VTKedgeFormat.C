@@ -140,7 +140,7 @@ bool Foam::fileFormats::VTKedgeFormat::read
     forAll(reader.lines(), lineI)
     {
         const labelList& verts = reader.lines()[lineI];
-        for (label i = 1; i < verts.size(); i++)
+        for (label i = 1; i < verts.size(); ++i)
         {
             storedEdges()[nEdges++] = edge(verts[i-1], verts[i]);
         }

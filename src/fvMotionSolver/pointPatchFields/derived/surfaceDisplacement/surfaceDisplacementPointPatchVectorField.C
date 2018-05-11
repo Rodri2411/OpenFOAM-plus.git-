@@ -443,7 +443,7 @@ void Foam::surfaceDisplacementPointPatchVectorField::updateCoeffs()
     {
         vector& d = offset[i];
 
-        for (direction cmpt = 0; cmpt < vector::nComponents; cmpt++)
+        for (direction cmpt = 0; cmpt < vector::nComponents; ++cmpt)
         {
             if (d[cmpt] < 0)
             {

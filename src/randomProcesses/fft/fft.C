@@ -54,7 +54,7 @@ void Foam::fft::fftRenumberRecurse
         nnprod /= nn[ii];
         label i_1(0);
 
-        for (label i=0; i<nn[ii]; i++)
+        for (label i=0; i<nn[ii]; ++i)
         {
             // Now evaluate the indices (both from array 1 and to
             // array 2). These get multiplied by nnprod to (cumulatively)
@@ -271,7 +271,7 @@ Foam::tmp<Foam::complexVectorField> Foam::fft::forwardTransform
 {
     auto tresult = tmp<complexVectorField>::New(tfield().size());
 
-    for (direction cmpt=0; cmpt<vector::nComponents; cmpt++)
+    for (direction cmpt=0; cmpt<vector::nComponents; ++cmpt)
     {
         tresult.ref().replace
         (
@@ -294,7 +294,7 @@ Foam::tmp<Foam::complexVectorField> Foam::fft::reverseTransform
 {
     auto tresult = tmp<complexVectorField>::New(tfield().size());
 
-    for (direction cmpt=0; cmpt<vector::nComponents; cmpt++)
+    for (direction cmpt=0; cmpt<vector::nComponents; ++cmpt)
     {
         tresult.ref().replace
         (

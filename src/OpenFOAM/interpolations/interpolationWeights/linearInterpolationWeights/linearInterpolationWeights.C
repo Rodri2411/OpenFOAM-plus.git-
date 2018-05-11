@@ -214,7 +214,7 @@ bool linearInterpolationWeights::integrationWeights
     weights = 0.0;
 
     // Sum from i1+1 to i2+1
-    for (label i = i1+1; i <= i2; i++)
+    for (label i = i1+1; i <= i2; ++i)
     {
         scalar d = samples_[i+1]-samples_[i];
         indices[i-i1] = i;

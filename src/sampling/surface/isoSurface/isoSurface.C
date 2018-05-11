@@ -1000,7 +1000,7 @@ Foam::triSurface Foam::isoSurface::stitchTriPoints
         label rawPointi = 0;
         DynamicList<label> newToOldTri(nTris);
 
-        for (label oldTriI = 0; oldTriI < nTris; oldTriI++)
+        for (label oldTriI = 0; oldTriI < nTris; ++oldTriI)
         {
             labelledTri tri
             (
@@ -1220,7 +1220,7 @@ void Foam::isoSurface::trimToBox
     triMap.setCapacity(nTris/16);
 
     label vertI = 0;
-    for (label triI = 0; triI < nTris; triI++)
+    for (label triI = 0; triI < nTris; ++triI)
     {
         const point& p0 = triPoints[vertI++];
         const point& p1 = triPoints[vertI++];
@@ -1235,7 +1235,7 @@ void Foam::isoSurface::trimToBox
         );
 
         label nCells = (newTriPoints.size()-oldNPoints)/3;
-        for (label i = 0; i < nCells; i++)
+        for (label i = 0; i < nCells; ++i)
         {
             triMap.append(triI);
         }
@@ -1285,14 +1285,14 @@ void Foam::isoSurface::trimToBox
         label oldTriI = triMap[triI];
 
         // Find point correspondence. Assumes coordinate is bit-copy.
-        for (label i = 0; i < 3; i++)
+        for (label i = 0; i < 3; ++i)
         {
             label pointI = 3*triI+i;
             const point& pt = triPoints[pointI];
 
             // Compare to old-triangle's points
             label matchPointI = -1;
-            for (label j = 0; j < 3; j++)
+            for (label j = 0; j < 3; ++j)
             {
                 label oldPointI = 3*oldTriI+j;
                 if (pt == oldTriPoints[oldPointI])

@@ -193,7 +193,7 @@ updateCoeffs()
     // avoids to used lagged qin
     scalarField Ir = dom.IRay(0).qin().boundaryField()[patchi];
 
-    for (label rayI=1; rayI < dom.nRay(); rayI++)
+    for (label rayI=1; rayI < dom.nRay(); ++rayI)
     {
         Ir += dom.IRay(rayI).qin().boundaryField()[patchi];
     }

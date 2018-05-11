@@ -58,7 +58,7 @@ Foam::dummyAgglomeration::dummyAgglomeration
     (
         label nCreatedLevels = 0;
         nCreatedLevels < nLevels_;
-        nCreatedLevels++
+        ++nCreatedLevels
     )
     {
         nCells_[nCreatedLevels] = nCoarseCells;

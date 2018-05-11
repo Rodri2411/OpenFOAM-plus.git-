@@ -34,7 +34,7 @@ bool Foam::SolverPerformance<Type>::checkSingularity
     const Type& wApA
 )
 {
-    for(direction cmpt=0; cmpt<pTraits<Type>::nComponents; cmpt++)
+    for (direction cmpt=0; cmpt<pTraits<Type>::nComponents; ++cmpt)
     {
         singular_[cmpt] =
             component(wApA, cmpt) < vsmall_;
@@ -47,7 +47,7 @@ bool Foam::SolverPerformance<Type>::checkSingularity
 template<class Type>
 bool Foam::SolverPerformance<Type>::singular() const
 {
-    for(direction cmpt=0; cmpt<pTraits<Type>::nComponents; cmpt++)
+    for (direction cmpt=0; cmpt<pTraits<Type>::nComponents; ++cmpt)
     {
         if (!singular_[cmpt]) return false;
     }
@@ -98,7 +98,7 @@ void Foam::SolverPerformance<Type>::print
     Ostream& os
 ) const
 {
-    for(direction cmpt=0; cmpt<pTraits<Type>::nComponents; cmpt++)
+    for (direction cmpt=0; cmpt<pTraits<Type>::nComponents; ++cmpt)
     {
         if (pTraits<Type>::nComponents == 1)
         {

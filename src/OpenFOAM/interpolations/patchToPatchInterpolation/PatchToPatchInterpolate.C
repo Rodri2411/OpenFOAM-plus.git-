@@ -138,7 +138,7 @@ PatchToPatchInterpolation<FromPatch, ToPatch>::faceInterpolate
             // first add the hit face
             result[facei] += ff[addr[facei]]*curWeights[0];
 
-            for (label wI = 1; wI < curWeights.size(); wI++)
+            for (label wI = 1; wI < curWeights.size(); ++wI)
             {
                 result[facei] += ff[hitFaceFaces[wI - 1]]*curWeights[wI];
             }

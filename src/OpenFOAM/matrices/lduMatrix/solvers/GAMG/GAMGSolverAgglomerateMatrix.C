@@ -312,7 +312,7 @@ void Foam::GAMGSolver::gatherMatrices
         otherTransforms.setSize(procIDs.size()-1);
         otherRanks.setSize(procIDs.size()-1);
 
-        for (label proci = 1; proci < procIDs.size(); proci++)
+        for (label proci = 1; proci < procIDs.size(); ++proci)
         {
             label otherI = proci-1;
 

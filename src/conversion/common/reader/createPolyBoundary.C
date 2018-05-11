@@ -332,7 +332,7 @@ void Foam::meshReader::createPolyBoundary()
         }
     }
 
-    for (label i = nInternalFaces_; i < markupFaces.size(); i++)
+    for (label i = nInternalFaces_; i < markupFaces.size(); ++i)
     {
         markupFaces[i]++;
     }

@@ -121,7 +121,7 @@ bool Foam::searchableSurfaceModifiers::autoPatch::modify
         {
             label nOldPatches = surf.patches().size();
 
-            for (label subI = 0; subI < nSub; subI++)
+            for (label subI = 0; subI < nSub; ++subI)
             {
                 geometricSurfacePatch patch
                 (
