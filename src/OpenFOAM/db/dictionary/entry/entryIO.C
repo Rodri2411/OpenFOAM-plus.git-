@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2018 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -89,7 +89,7 @@ bool Foam::entry::getKeyword(keyType& keyword, Istream& is)
         << "--> FOAM Warning :" << nl
         << "    From function " << FUNCTION_NAME << nl
         << "    in file " << __FILE__ << " at line " << __LINE__ << nl
-        << "    Reading " << is.name().c_str() << nl
+        << "    Reading " << is.name() << nl
         << "    found " << keyToken << nl
         << "    expected either " << token::END_BLOCK << " or EOF"
         << std::endl;
@@ -101,7 +101,8 @@ bool Foam::entry::New
 (
     dictionary& parentDict,
     Istream& is,
-    const entry::inputMode inMode
+    const entry::inputMode inMode,
+    const int endChar
 )
 {
     // The inputMode for dealing with duplicate entries
@@ -133,8 +134,27 @@ bool Foam::entry::New
     if (!valid)
     {
         // Do some more checking
-        if (keyToken == token::END_BLOCK || is.eof())
+        if (keyToken == token::END_BLOCK)
         {
+            if (token::END_BLOCK != endChar)
+            {
+                std::cerr
+                    << "--> FOAM Warning :" << nl
+                    << "    Unexpected '}' while reading \""
+                    << is.name() << "\" at line "
+                    << is.lineNumber() << std::endl;
+            }
+            return false;
+        }
+        if (is.eof())
+        {
+            if (endChar)
+            {
+                std::cerr
+                    << "--> FOAM Warning :" << nl
+                    << "    Unexpected EOF while reading \""
+                    << is.name() << "\"" << std::endl;
+            }
             return false;
         }
 
@@ -157,7 +177,7 @@ bool Foam::entry::New
             << "--> FOAM Warning :" << nl
             << "    From function " << FUNCTION_NAME << nl
             << "    in file " << __FILE__ << " at line " << __LINE__ << nl
-            << "    Reading " << is.name().c_str() << nl
+            << "    Reading " << is.name() << nl
             << "    found " << keyToken << nl
             << "    expected either " << token::END_BLOCK << " or EOF"
             << std::endl;

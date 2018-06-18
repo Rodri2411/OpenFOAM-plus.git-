@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2017-2018 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -138,11 +138,13 @@ public:
         virtual autoPtr<entry> clone() const;
 
         //- Construct from Istream and insert into dictionary
+        //  \param endChar the expected end character (eg, a closing brace)
         static bool New
         (
             dictionary& parentDict,
             Istream& is,
-            const inputMode inMode = inputMode::GLOBAL
+            const inputMode inMode = inputMode::GLOBAL,
+            const int endChar = 0
         );
 
         //- Construct on freestore from Istream and return
@@ -153,8 +155,7 @@ public:
 
 
     //- Destructor
-    virtual ~entry()
-    {}
+    virtual ~entry() = default;
 
 
     // Member functions
