@@ -88,7 +88,9 @@ Foam::labelToPoint::labelToPoint
 :
     topoSetSource(mesh),
     labels_(checkIs(is))
-{}
+{
+    check(labels_, mesh.nPoints());
+}
 
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //

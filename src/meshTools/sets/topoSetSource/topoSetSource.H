@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2018 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -125,6 +125,13 @@ protected:
     // Protected data
 
         const polyMesh& mesh_;
+
+
+    // Protected Member Functions
+
+        //- Detect and remove any values less than 0 or ge maxLabel.
+        //  \return false if invalid elements were detected (and removed)
+        static bool check(labelList& list, const label maxLabel);
 
         //- Add (if bool) celli to set or delete celli from set.
         void addOrDelete(topoSet& set, const label celli, const bool) const;

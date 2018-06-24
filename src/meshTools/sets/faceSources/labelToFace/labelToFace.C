@@ -88,7 +88,9 @@ Foam::labelToFace::labelToFace
 :
     topoSetSource(mesh),
     labels_(checkIs(is))
-{}
+{
+    check(labels_, mesh.nFaces());
+}
 
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //

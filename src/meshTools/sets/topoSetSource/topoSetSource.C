@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2018 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -63,6 +63,41 @@ const Foam::string Foam::topoSetSource::illegalSource_
 );
 
 
+// * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * //
+
+bool Foam::topoSetSource::check(labelList& list, const label maxLabel)
+{
+    const label len = list.size();
+
+    label nGood = 0;
+
+    for (label i=0; i < len; ++i)
+    {
+        const label val = list[i];
+
+        if (val >= 0 && val < maxLabel)
+        {
+            if (nGood != i)
+            {
+                list[nGood] = val;
+            }
+            ++nGood;
+        }
+    }
+
+    const label nReject = (len - nGood);
+
+    if (nReject)
+    {
+        list.resize(nGood);
+
+        // Report?
+    }
+
+    return !nReject;
+}
+
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -118,13 +153,11 @@ Foam::Istream& Foam::topoSetSource::checkIs(Istream& is)
     {
         return is;
     }
-    else
-    {
-        FatalErrorInFunction
-            << exit(FatalError);
 
-        return is;
-    }
+    FatalErrorInFunction
+        << exit(FatalError);
+
+    return is;
 }
 
 

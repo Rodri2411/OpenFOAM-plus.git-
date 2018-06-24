@@ -88,7 +88,9 @@ Foam::labelToCell::labelToCell
 :
     topoSetSource(mesh),
     labels_(checkIs(is))
-{}
+{
+    check(labels_, mesh.nCells());
+}
 
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
