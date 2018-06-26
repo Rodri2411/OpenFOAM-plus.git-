@@ -9,5 +9,4 @@ LIB_LIBS = \
     -lmeshTools \
     -ldynamicMesh \
     -lfiniteVolume \
-    -lregionCoupled \
-    -lregionModels
+    -lregionCoupled
