@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2018 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -112,6 +112,9 @@ protected:
         //- Name of the non-Isotropic alpha (default: Anialpha)
         const word alphaAniName_;
 
+        //- Name of thermal diffusivity
+        const word alphaName_;
+
 
 public:
 
@@ -155,8 +158,17 @@ public:
             return kappaName_;
         }
 
+        //- Name of thermal diffusivity field
+        const word& alphaName() const
+        {
+            return alphaName_;
+        }
+
         //- Given patch temperature calculate corresponding K field
         tmp<scalarField> kappa(const scalarField& Tp) const;
+
+        //- Given patch temperature calculate corresponding alphaEff field
+        tmp<scalarField> alpha(const scalarField& Tp) const;
 
         //- Write
         void write(Ostream&) const;
