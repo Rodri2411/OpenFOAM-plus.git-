@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2014-2015 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2014-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::hyperbolic
+    Foam::blendingMethods::hyperbolic
 
 Description
 
@@ -54,7 +54,7 @@ class hyperbolic
     // Private data
 
         //- Minimum fraction of phases which can be considered continuous
-        HashTable<dimensionedScalar> minContinuousAlpha_;
+        HashTable<dimensionedScalar, word, word::hash> minContinuousAlpha_;
 
         //- Width of the transition
         const dimensionedScalar transitionAlphaScale_;

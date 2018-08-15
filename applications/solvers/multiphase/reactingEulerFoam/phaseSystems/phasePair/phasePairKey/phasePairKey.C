@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2014-2015 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2014-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -27,6 +27,14 @@ License
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
+Foam::phasePairKey::hash::hash()
+{}
+
+
+Foam::phasePairKey::phasePairKey()
+{}
+
+
 Foam::phasePairKey::phasePairKey
 (
     const word& name1,
@@ -36,6 +44,12 @@ Foam::phasePairKey::phasePairKey
 :
     Pair<word>(name1, name2),
     ordered_(ordered)
+{}
+
+
+// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
+
+Foam::phasePairKey::~phasePairKey()
 {}
 
 
@@ -63,8 +77,12 @@ Foam::label Foam::phasePairKey::hash::operator()
                 word::hash()(key.second())
             );
     }
-
-    return word::hash()(key.first()) + word::hash()(key.second());
+    else
+    {
+        return
+            word::hash()(key.first())
+          + word::hash()(key.second());
+    }
 }
 
 
@@ -76,13 +94,14 @@ bool Foam::operator==
     const phasePairKey& b
 )
 {
-    const auto cmp = Pair<word>::compare(a,b);
+    const label c = Pair<word>::compare(a, b);
 
     return
-    (
         (a.ordered_ == b.ordered_)
-     && (a.ordered_ ? (cmp == 1) : cmp)
-    );
+     && (
+            (a.ordered_ && (c == 1))
+         || (!a.ordered_ && (c != 0))
+        );
 }
 
 

@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2014-2016 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2014-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -40,14 +40,15 @@ SourceFiles
 namespace Foam
 {
 
-// Forward declarations
+// Forward declaration of friend functions and operators
+
 class phasePairKey;
 
-bool operator==(const phasePairKey& a, const phasePairKey& b);
-bool operator!=(const phasePairKey& a, const phasePairKey& b);
+bool operator==(const phasePairKey&, const phasePairKey&);
+bool operator!=(const phasePairKey&, const phasePairKey&);
 
-Istream& operator>>(Istream& is, phasePairKey& key);
-Ostream& operator<<(Ostream& os, const phasePairKey& key);
+Istream& operator>>(Istream&, phasePairKey&);
+Ostream& operator<<(Ostream&, const phasePairKey&);
 
 
 /*---------------------------------------------------------------------------*\
@@ -58,6 +59,29 @@ class phasePairKey
 :
     public Pair<word>
 {
+public:
+
+        class hash
+        :
+            public Hash<phasePairKey>
+        {
+        public:
+
+            // Constructors
+
+                // Construct null
+                hash();
+
+
+            // Member operators
+
+                // Generate a hash from a phase pair key
+                label operator()(const phasePairKey& key) const;
+        };
+
+
+private:
+
     // Private data
 
         //- Flag to indicate whether ordering is important
@@ -66,20 +90,12 @@ class phasePairKey
 
 public:
 
-        //- Ordered or unordered hashing of word pair
-        struct hash
-        {
-            //- Generate a hash from a phase pair key
-            label operator()(const phasePairKey& key) const;
-        };
-
-
     // Constructors
 
         //- Construct null
-        phasePairKey() {} // = default
+        phasePairKey();
 
-        //- Construct from names and optional ordering flag
+        //- Construct from names and the ordering flag
         phasePairKey
         (
             const word& name1,
@@ -88,8 +104,8 @@ public:
         );
 
 
-    //- Destructor
-    virtual ~phasePairKey() = default;
+    // Destructor
+    virtual ~phasePairKey();
 
 
     // Access
@@ -100,16 +116,16 @@ public:
 
     // Friend Operators
 
-        //- Test for equality
+        //- Test if keys are equal
         friend bool operator==(const phasePairKey& a, const phasePairKey& b);
 
-        //- Test for inequality
+        //- Test if keys are unequal
         friend bool operator!=(const phasePairKey& a, const phasePairKey& b);
 
-        //- Read from Istream
+        //- Read from stdin
         friend Istream& operator>>(Istream& is, phasePairKey& key);
 
-        //- Write to Ostream
+        //- Write to stdout
         friend Ostream& operator<<(Ostream& os, const phasePairKey& key);
 };
 

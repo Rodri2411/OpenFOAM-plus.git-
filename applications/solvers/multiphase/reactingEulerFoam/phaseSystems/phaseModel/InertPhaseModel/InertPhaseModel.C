@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2015-2016 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2015-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -67,16 +67,19 @@ template<class BasePhaseModel>
 Foam::tmp<Foam::volScalarField>
 Foam::InertPhaseModel<BasePhaseModel>::Qdot() const
 {
-    return tmp<volScalarField>::New
+    return tmp<volScalarField>
     (
-        IOobject
+        new volScalarField
         (
-            IOobject::groupName("Qdot", this->name()),
-            this->mesh().time().timeName(),
-            this->mesh()
-        ),
-        this->mesh(),
-        dimensionedScalar(dimEnergy/dimTime/dimVolume, Zero)
+            IOobject
+            (
+                IOobject::groupName("Qdot", this->name()),
+                this->mesh().time().timeName(),
+                this->mesh()
+            ),
+            this->mesh(),
+            dimensionedScalar("zero", dimEnergy/dimTime/dimVolume, 0)
+        )
     );
 }
 

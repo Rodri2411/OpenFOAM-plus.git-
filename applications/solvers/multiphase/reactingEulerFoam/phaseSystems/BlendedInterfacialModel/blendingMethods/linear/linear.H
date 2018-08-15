@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2014-2015 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2014-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::linear
+    Foam::blendingMethods::linear
 
 Description
 
@@ -54,10 +54,12 @@ class linear
     // Private data
 
         //- Minimum fraction of phases which can be considered fully continuous
-        HashTable<dimensionedScalar> minFullyContinuousAlpha_;
+        HashTable<dimensionedScalar, word, word::hash>
+            minFullyContinuousAlpha_;
 
         //- Minimum fraction of phases which can be considered partly continuous
-        HashTable<dimensionedScalar> minPartlyContinuousAlpha_;
+        HashTable<dimensionedScalar, word, word::hash>
+            minPartlyContinuousAlpha_;
 
 
 public:
