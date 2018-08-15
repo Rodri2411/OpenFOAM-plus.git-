@@ -92,6 +92,14 @@ namespace Foam
     )
     makeReactions(incompressibleGasHThermoPhysics, incompressibleGasHReaction)
     makeReactions(icoPoly8HThermoPhysics, icoPoly8HReaction)
+    makeReactions(constFluidHThermoPhysics, constFluidHReaction)
+    makeReactions
+    (
+        constAdiabaticFluidHThermoPhysics,
+        constAdiabaticFluidHReaction
+    )
+    makeReactions(constHThermoPhysics, constHReaction)
+
 
     makeReactions(constGasEThermoPhysics, constGasEReaction)
     makeReactions(gasEThermoPhysics, gasEReaction)
@@ -102,6 +110,13 @@ namespace Foam
     )
     makeReactions(incompressibleGasEThermoPhysics, incompressibleGasEReaction)
     makeReactions(icoPoly8EThermoPhysics, icoPoly8EReaction)
+    makeReactions(constFluidEThermoPhysics, constFluidEReaction)
+    makeReactions
+    (
+        constAdiabaticFluidEThermoPhysics,
+        constAdiabaticFluidEReaction
+    )
+    makeReactions(constEThermoPhysics, constEReaction)
 }
 
 // ************************************************************************* //

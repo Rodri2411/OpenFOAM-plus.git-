@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -53,11 +53,11 @@ class frictionalStressModel
 {
     // Private member functions
 
-        //- No copy construct
-        frictionalStressModel(const frictionalStressModel&) = delete;
+        //- Disallow default bitwise copy construct
+        frictionalStressModel(const frictionalStressModel&);
 
-        //- No copy assignment
-        void operator=(const frictionalStressModel&) = delete;
+        //- Disallow default bitwise assignment
+        void operator=(const frictionalStressModel&);
 
 
 protected:

@@ -23,7 +23,7 @@ volVectorField U
         IOobject::AUTO_WRITE
     ),
     mesh,
-    dimensionedVector(dimVelocity, Zero)
+    dimensionedVector("U", dimVelocity, Zero)
 );
 
 surfaceScalarField phi
@@ -37,7 +37,7 @@ surfaceScalarField phi
         IOobject::AUTO_WRITE
     ),
     mesh,
-    dimensionedScalar(dimArea*dimVelocity, Zero)
+    dimensionedScalar("phi", dimArea*dimVelocity, 0)
 );
 
 multiphaseSystem fluid(U, phi);

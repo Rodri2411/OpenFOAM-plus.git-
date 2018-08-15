@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2015 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2015-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -104,14 +104,16 @@ NonRandomTwoLiquid
     (
         saturationModel::New
         (
-            dict.subDict(species1Name_).subDict("interaction")
+            dict.subDict(species1Name_).subDict("interaction"),
+            pair.phase1().mesh()
         ).ptr()
     );
     saturationModel21_.reset
     (
         saturationModel::New
         (
-            dict.subDict(species2Name_).subDict("interaction")
+            dict.subDict(species2Name_).subDict("interaction"),
+            pair.phase1().mesh()
         ).ptr()
     );
 
@@ -153,20 +155,30 @@ update
     const volScalarField& Tf
 )
 {
-    volScalarField W(this->thermo_.composition().W());
+    volScalarField W(this->thermo_.W());
 
     volScalarField X1
     (
         this->thermo_.composition().Y(species1Index_)
        *W
-       /this->thermo_.composition().W(species1Index_)
+       /dimensionedScalar
+        (
+            "W",
+            dimMass/dimMoles,
+            this->thermo_.composition().W(species1Index_)
+        )
     );
 
     volScalarField X2
     (
         this->thermo_.composition().Y(species2Index_)
        *W
-       /this->thermo_.composition().W(species2Index_)
+       /dimensionedScalar
+        (
+            "W",
+            dimMass/dimMoles,
+            this->thermo_.composition().W(species2Index_)
+        )
     );
 
     volScalarField alpha12(alpha12_ + Tf*beta12_);
@@ -214,7 +226,7 @@ Foam::interfaceCompositionModels::NonRandomTwoLiquid<Thermo, OtherThermo>::Yf
            *speciesModel1_->Yf(speciesName, Tf)
            *gamma1_;
     }
-    else if(speciesName == species2Name_)
+    else if (speciesName == species2Name_)
     {
         return
             this->otherThermo_.composition().Y(speciesName)
@@ -246,7 +258,7 @@ YfPrime
            *speciesModel1_->YfPrime(speciesName, Tf)
            *gamma1_;
     }
-    else if(speciesName == species2Name_)
+    else if (speciesName == species2Name_)
     {
         return
             this->otherThermo_.composition().Y(speciesName)

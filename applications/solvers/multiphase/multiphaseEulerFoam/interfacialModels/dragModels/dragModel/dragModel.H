@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -128,13 +128,13 @@ public:
             return residualSlip_;
         }
 
-        //- The drag function K used in the momentum eq.
+        //- The dragfunction K used in the momentum eq.
         //    ddt(alpha1*rho1*U1) + ... = ... alpha1*alpha2*K*(U1-U2)
         //    ddt(alpha2*rho2*U2) + ...  = ... alpha1*alpha2*K*(U2-U1)
         // ********************************** NB! *****************************
         // for numerical reasons alpha1 and alpha2 has been
         // extracted from the dragFunction K,
-        // so you MUST divide K by alpha1*alpha2 when implementing the drag
+        // so you MUST divide K by alpha1*alpha2 when implemnting the drag
         // function
         // ********************************** NB! *****************************
         virtual tmp<volScalarField> K(const volScalarField& Ur) const = 0;

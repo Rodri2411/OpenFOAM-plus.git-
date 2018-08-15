@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2014-2016 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2014-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -76,7 +76,7 @@ Foam::BlendedInterfacialModel<modelType>::BlendedInterfacialModel
 {
     if (modelTable.found(pair_))
     {
-        model_.reset
+        model_.set
         (
             modelType::New
             (
@@ -88,7 +88,7 @@ Foam::BlendedInterfacialModel<modelType>::BlendedInterfacialModel
 
     if (modelTable.found(pair1In2_))
     {
-        model1In2_.reset
+        model1In2_.set
         (
             modelType::New
             (
@@ -100,7 +100,7 @@ Foam::BlendedInterfacialModel<modelType>::BlendedInterfacialModel
 
     if (modelTable.found(pair2In1_))
     {
-        model2In1_.reset
+        model2In1_.set
         (
             modelType::New
             (
@@ -151,7 +151,7 @@ Foam::BlendedInterfacialModel<modelType>::K() const
                 false
             ),
             pair_.phase1().mesh(),
-            dimensionedScalar(modelType::dimK, Zero)
+            dimensionedScalar("zero", modelType::dimK, 0)
         )
     );
 
@@ -219,7 +219,7 @@ Foam::BlendedInterfacialModel<modelType>::Kf() const
                 false
             ),
             pair_.phase1().mesh(),
-            dimensionedScalar(modelType::dimK, Zero)
+            dimensionedScalar("zero", modelType::dimK, 0)
         )
     );
 
@@ -282,7 +282,7 @@ Foam::BlendedInterfacialModel<modelType>::F() const
                 false
             ),
             pair_.phase1().mesh(),
-            dimensioned<Type>(modelType::dimF, Zero)
+            dimensioned<Type>("zero", modelType::dimF, Zero)
         )
     );
 
@@ -350,7 +350,7 @@ Foam::BlendedInterfacialModel<modelType>::Ff() const
                 false
             ),
             pair_.phase1().mesh(),
-            dimensionedScalar(modelType::dimF*dimArea, Zero)
+            dimensionedScalar("zero", modelType::dimF*dimArea, 0)
         )
     );
 
@@ -412,7 +412,7 @@ Foam::BlendedInterfacialModel<modelType>::D() const
                 false
             ),
             pair_.phase1().mesh(),
-            dimensionedScalar(modelType::dimD, Zero)
+            dimensionedScalar("zero", modelType::dimD, 0)
         )
     );
 
@@ -451,11 +451,9 @@ bool Foam::BlendedInterfacialModel<modelType>::hasModel
 ) const
 {
     return
-    (
-        &phase == &(pair_.phase1())
+       &phase == &(pair_.phase1())
       ? model1In2_.valid()
-      : model2In1_.valid()
-    );
+      : model2In1_.valid();
 }
 
 
@@ -465,7 +463,7 @@ const modelType& Foam::BlendedInterfacialModel<modelType>::phaseModel
     const class phaseModel& phase
 ) const
 {
-    return &phase == &(pair_.phase1()) ? *model1In2_ : *model2In1_;
+    return &phase == &(pair_.phase1()) ? model1In2_ : model2In1_;
 }
 
 

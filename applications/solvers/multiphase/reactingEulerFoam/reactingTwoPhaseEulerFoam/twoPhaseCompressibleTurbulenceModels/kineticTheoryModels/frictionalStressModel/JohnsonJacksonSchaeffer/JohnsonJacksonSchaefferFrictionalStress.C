@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2016-2017 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2016-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -107,10 +107,10 @@ JohnsonJacksonSchaeffer::frictionalPressurePrime
 
     return Fr_*
     (
-        eta_*pow(max(alpha - alphaMinFriction, scalar(0)), eta_ - 1.0)
-       *(alphaMax-alpha)
+        eta_*pow(max(alpha - alphaMinFriction, scalar(0)), eta_ - 1)
+       *(alphaMax - alpha)
       + p_*pow(max(alpha - alphaMinFriction, scalar(0)), eta_)
-    )/pow(max(alphaMax - alpha, alphaDeltaMin_), p_ + 1.0);
+    )/pow(max(alphaMax - alpha, alphaDeltaMin_), p_ + 1);
 }
 
 
@@ -141,7 +141,7 @@ JohnsonJacksonSchaeffer::nu
                 false
             ),
             phase.mesh(),
-            dimensionedScalar(dimensionSet(0, 2, -1, 0, 0), Zero)
+            dimensionedScalar("nu", dimensionSet(0, 2, -1, 0, 0), 0.0)
         )
     );
 

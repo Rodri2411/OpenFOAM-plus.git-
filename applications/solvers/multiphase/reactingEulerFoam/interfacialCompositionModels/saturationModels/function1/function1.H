@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2017 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2017-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -72,8 +72,8 @@ SourceFiles
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef saturationModels_function1_H
-#define saturationModels_function1_H
+#ifndef function1_H
+#define function1_H
 
 #include "saturationModel.H"
 #include "Function1.H"
@@ -107,7 +107,7 @@ public:
     // Constructors
 
         //- Construct from a dictionary
-        function1(const dictionary& dict);
+        function1(const dictionary& dict, const objectRegistry& db);
 
 
     //- Destructor
@@ -119,7 +119,7 @@ public:
         //- Saturation pressure
         virtual tmp<volScalarField> pSat(const volScalarField& T) const;
 
-        //- Saturation pressure derivative w.r.t. temperature
+        //- Saturation pressure derivetive w.r.t. temperature
         virtual tmp<volScalarField> pSatPrime(const volScalarField& T) const;
 
         //- Natural log of the saturation pressure

@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2014-2015 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2014-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -35,19 +35,20 @@ Foam::swarmCorrection::New
     const phasePair& pair
 )
 {
-    const word modelType(dict.lookup("type"));
+    word swarmCorrectionType(dict.lookup("type"));
 
     Info<< "Selecting swarmCorrection for "
-        << pair << ": " << modelType << endl;
+        << pair << ": " << swarmCorrectionType << endl;
 
-    auto cstrIter = dictionaryConstructorTablePtr_->cfind(modelType);
+    dictionaryConstructorTable::iterator cstrIter =
+        dictionaryConstructorTablePtr_->find(swarmCorrectionType);
 
-    if (!cstrIter.found())
+    if (cstrIter == dictionaryConstructorTablePtr_->end())
     {
         FatalErrorInFunction
-            << "Unknown swarmCorrection type "
-            << modelType << nl << nl
-            << "Valid swarmCorrection types :" << endl
+            << "Unknown swarmCorrectionType type "
+            << swarmCorrectionType << endl << endl
+            << "Valid swarmCorrection types are : " << endl
             << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }

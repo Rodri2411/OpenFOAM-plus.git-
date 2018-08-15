@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2013-2016 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2013-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -70,7 +70,7 @@ Foam::RASModels::phasePressureModel::phasePressureModel
         coeffDict_.lookup("g0")
     )
 {
-    nut_ == dimensionedScalar(nut_.dimensions(), Zero);
+    nut_ == dimensionedScalar("zero", nut_.dimensions(), 0.0);
 
     if (type == typeName)
     {
@@ -133,18 +133,26 @@ Foam::RASModels::phasePressureModel::epsilon() const
 Foam::tmp<Foam::volSymmTensorField>
 Foam::RASModels::phasePressureModel::R() const
 {
-    return tmp<volSymmTensorField>::New
+    return tmp<volSymmTensorField>
     (
-        IOobject
+        new volSymmTensorField
         (
-            IOobject::groupName("R", U_.group()),
-            runTime_.timeName(),
+            IOobject
+            (
+                IOobject::groupName("R", U_.group()),
+                runTime_.timeName(),
+                mesh_,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE
+            ),
             mesh_,
-            IOobject::NO_READ,
-            IOobject::NO_WRITE
-        ),
-        mesh_,
-        dimensioned<symmTensor>(dimensionSet(0, 2, -2, 0, 0), Zero)
+            dimensioned<symmTensor>
+            (
+                "R",
+                dimensionSet(0, 2, -2, 0, 0),
+                Zero
+            )
+        )
     );
 }
 
@@ -208,20 +216,25 @@ Foam::RASModels::phasePressureModel::pPrimef() const
 Foam::tmp<Foam::volSymmTensorField>
 Foam::RASModels::phasePressureModel::devRhoReff() const
 {
-    return tmp<volSymmTensorField>::New
+    return tmp<volSymmTensorField>
     (
-        IOobject
+        new volSymmTensorField
         (
-            IOobject::groupName("devRhoReff", U_.group()),
-            runTime_.timeName(),
+            IOobject
+            (
+                IOobject::groupName("devRhoReff", U_.group()),
+                runTime_.timeName(),
+                mesh_,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE
+            ),
             mesh_,
-            IOobject::NO_READ,
-            IOobject::NO_WRITE
-        ),
-        mesh_,
-        dimensioned<symmTensor>
-        (
-            rho_.dimensions()*dimensionSet(0, 2, -2, 0, 0), Zero
+            dimensioned<symmTensor>
+            (
+                "R",
+                rho_.dimensions()*dimensionSet(0, 2, -2, 0, 0),
+                Zero
+            )
         )
     );
 }

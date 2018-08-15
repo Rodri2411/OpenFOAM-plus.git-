@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -24,11 +24,8 @@ License
 Application
     multiphaseEulerFoam
 
-Group
-    grpMultiphaseSolvers
-
 Description
-    Solver for a system of many compressible fluid phases including
+    Solver for a system of many incompressible fluid phases including
     heat-transfer.
 
 \*---------------------------------------------------------------------------*/
@@ -50,8 +47,7 @@ int main(int argc, char *argv[])
 {
     #include "postProcess.H"
 
-    #include "addCheckCaseOptions.H"
-    #include "setRootCase.H"
+    #include "setRootCaseLists.H"
     #include "createTime.H"
     #include "createMesh.H"
     #include "createControl.H"
@@ -71,7 +67,7 @@ int main(int argc, char *argv[])
     (
         "maxSlamVelocity",
         dimVelocity,
-        fluid.lookupOrDefault<scalar>("maxSlamVelocity", GREAT)
+        fluid.lookupOrDefault<scalar>("maxSlamVelocity", great)
     );
 
     turbulence->validate();
@@ -86,7 +82,7 @@ int main(int argc, char *argv[])
         #include "CourantNo.H"
         #include "setDeltaT.H"
 
-        ++runTime;
+        runTime++;
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
         // --- Pressure-velocity PIMPLE corrector loop
@@ -111,7 +107,9 @@ int main(int argc, char *argv[])
 
         runTime.write();
 
-        runTime.printExecutionTime(Info);
+        Info<< "ExecutionTime = "
+            << runTime.elapsedCpuTime()
+            << " s\n\n" << endl;
     }
 
     Info<< "End\n" << endl;

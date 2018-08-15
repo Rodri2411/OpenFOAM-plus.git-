@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2014-2015 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2014-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -34,19 +34,20 @@ Foam::autoPtr<Foam::virtualMassModel> Foam::virtualMassModel::New
     const phasePair& pair
 )
 {
-    const word modelType(dict.lookup("type"));
+    word virtualMassModelType(dict.lookup("type"));
 
     Info<< "Selecting virtualMassModel for "
-        << pair << ": " << modelType << endl;
+        << pair << ": " << virtualMassModelType << endl;
 
-    auto cstrIter = dictionaryConstructorTablePtr_->cfind(modelType);
+    dictionaryConstructorTable::iterator cstrIter =
+        dictionaryConstructorTablePtr_->find(virtualMassModelType);
 
-    if (!cstrIter.found())
+    if (cstrIter == dictionaryConstructorTablePtr_->end())
     {
         FatalErrorInFunction
-            << "Unknown virtualMassModel type "
-            << modelType << nl << nl
-            << "Valid virtualMassModel types :" << endl
+            << "Unknown virtualMassModelType type "
+            << virtualMassModelType << endl << endl
+            << "Valid virtualMassModel types are : " << endl
             << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }

@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2014-2017 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2014-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -253,8 +253,8 @@ void Foam::JohnsonJacksonParticleThetaFvPatchScalarField::updateCoeffs()
             *alpha
             *gs0
             *(scalar(1) - sqr(restitutionCoefficient_.value()))
-            *sqrt(3.0*Theta)
-            /max(4.0*kappa*alphaMax.value(), SMALL)
+            *sqrt(3*Theta)
+            /max(4*kappa*alphaMax.value(), SMALL)
         );
 
         this->valueFraction() = c/(c + patch().deltaCoeffs());
@@ -272,11 +272,11 @@ void Foam::JohnsonJacksonParticleThetaFvPatchScalarField::updateCoeffs()
            *specularityCoefficient_.value()
            *alpha
            *gs0
-           *sqrt(3.0*Theta)
+           *sqrt(3*Theta)
            *magSqr(U)
-           /max(6.0*kappa*alphaMax.value(), SMALL);
+           /max(6*kappa*alphaMax.value(), SMALL);
 
-        this->valueFraction() = 0.0;
+        this->valueFraction() = 0;
     }
 
     mixedFvPatchScalarField::updateCoeffs();
@@ -289,8 +289,10 @@ void Foam::JohnsonJacksonParticleThetaFvPatchScalarField::write
 ) const
 {
     fvPatchScalarField::write(os);
-    os.writeEntry("restitutionCoefficient", restitutionCoefficient_);
-    os.writeEntry("specularityCoefficient", specularityCoefficient_);
+    os.writeKeyword("restitutionCoefficient")
+        << restitutionCoefficient_ << token::END_STATEMENT << nl;
+    os.writeKeyword("specularityCoefficient")
+        << specularityCoefficient_ << token::END_STATEMENT << nl;
     writeEntry("value", os);
 }
 

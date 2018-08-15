@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -142,7 +142,7 @@ Foam::RASModels::kineticTheoryModel::kineticTheoryModel
             IOobject::NO_WRITE
         ),
         U.mesh(),
-        dimensionedScalar(dimensionSet(0, 2, -1, 0, 0), Zero)
+        dimensionedScalar("zero", dimensionSet(0, 2, -1, 0, 0), 0.0)
     ),
 
     gs0_
@@ -156,7 +156,7 @@ Foam::RASModels::kineticTheoryModel::kineticTheoryModel
             IOobject::NO_WRITE
         ),
         U.mesh(),
-        dimensionedScalar(dimensionSet(0, 0, 0, 0, 0), Zero)
+        dimensionedScalar("zero", dimensionSet(0, 0, 0, 0, 0), 0.0)
     ),
 
     kappa_
@@ -170,7 +170,7 @@ Foam::RASModels::kineticTheoryModel::kineticTheoryModel
             IOobject::NO_WRITE
         ),
         U.mesh(),
-        dimensionedScalar(dimensionSet(1, -1, -1, 0, 0), Zero)
+        dimensionedScalar("zero", dimensionSet(1, -1, -1, 0, 0), 0.0)
     ),
 
     nuFric_
@@ -184,7 +184,7 @@ Foam::RASModels::kineticTheoryModel::kineticTheoryModel
             IOobject::AUTO_WRITE
         ),
         U.mesh(),
-        dimensionedScalar(dimensionSet(0, 2, -1, 0, 0), Zero)
+        dimensionedScalar("zero", dimensionSet(0, 2, -1, 0, 0), 0.0)
     )
 {
     if (type == typeName)
@@ -361,12 +361,12 @@ Foam::RASModels::kineticTheoryModel::divDevRhoReff
 void Foam::RASModels::kineticTheoryModel::correct()
 {
     // Local references
+    const twoPhaseSystem& fluid = refCast<const twoPhaseSystem>(phase_.fluid());
     volScalarField alpha(max(alpha_, scalar(0)));
     const volScalarField& rho = phase_.rho();
     const surfaceScalarField& alphaRhoPhi = alphaRhoPhi_;
     const volVectorField& U = U_;
-    const volVectorField& Uc_ =
-        refCast<const twoPhaseSystem>(phase_.fluid()).otherPhase(phase_).U();
+    const volVectorField& Uc_ = fluid.otherPhase(phase_).U();
 
     const scalar sqrtPi = sqrt(constant::mathematical::pi);
     dimensionedScalar ThetaSmall("ThetaSmall", Theta_.dimensions(), 1.0e-6);
@@ -410,7 +410,11 @@ void Foam::RASModels::kineticTheoryModel::correct()
         // Drag
         volScalarField beta
         (
-            refCast<const twoPhaseSystem>(phase_.fluid()).drag(phase_).K()
+            fluid.lookupSubModel<dragModel>
+            (
+                phase_,
+                fluid.otherPhase(phase_)
+            ).K()
         );
 
         // Eq. 3.25, p. 50 Js = J1 - J2

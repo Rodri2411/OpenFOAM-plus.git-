@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2014-2015 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2014-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -35,19 +35,20 @@ Foam::turbulentDispersionModel::New
     const phasePair& pair
 )
 {
-    const word modelType(dict.lookup("type"));
+    word turbulentDispersionModelType(dict.lookup("type"));
 
     Info<< "Selecting turbulentDispersionModel for "
-        << pair << ": " << modelType << endl;
+        << pair << ": " << turbulentDispersionModelType << endl;
 
-    auto cstrIter = dictionaryConstructorTablePtr_->cfind(modelType);
+    dictionaryConstructorTable::iterator cstrIter =
+        dictionaryConstructorTablePtr_->find(turbulentDispersionModelType);
 
-    if (!cstrIter.found())
+    if (cstrIter == dictionaryConstructorTablePtr_->end())
     {
         FatalErrorInFunction
-            << "Unknown turbulentDispersionModel type "
-            << modelType << nl << nl
-            << "Valid turbulentDispersionModel types :" << endl
+            << "Unknown turbulentDispersionModelType type "
+            << turbulentDispersionModelType << endl << endl
+            << "Valid turbulentDispersionModel types are : " << endl
             << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }

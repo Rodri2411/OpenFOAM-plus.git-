@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2015 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2015-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -35,6 +35,7 @@ SourceFiles
 #ifndef saturationModel_H
 #define saturationModel_H
 
+#include "IOdictionary.H"
 #include "volFields.H"
 #include "dictionary.H"
 #include "runTimeSelectionTables.H"
@@ -49,14 +50,16 @@ namespace Foam
 \*---------------------------------------------------------------------------*/
 
 class saturationModel
+:
+    public IOdictionary
 {
     // Private Member Functions
 
-        //- No copy construct
-        saturationModel(const saturationModel&) = delete;
+        //- Disallow default bitwise copy construct
+        saturationModel(const saturationModel&);
 
-        //- No copy assignment
-        void operator=(const saturationModel&) = delete;
+        //- Disallow default bitwise assignment
+        void operator=(const saturationModel&);
 
 
 public:
@@ -72,22 +75,26 @@ public:
         saturationModel,
         dictionary,
         (
-            const dictionary& dict
+            const dictionary& dict, const objectRegistry& db
         ),
-        (dict)
+        (dict, db)
     );
 
 
     // Constructors
 
         //- Construct null
-        saturationModel();
+        saturationModel(const objectRegistry& db);
 
 
     // Selectors
 
         //- Select null constructed
-        static autoPtr<saturationModel> New(const dictionary& dict);
+        static autoPtr<saturationModel> New
+        (
+            const dictionary& dict,
+            const objectRegistry& db
+        );
 
 
     //- Destructor
@@ -102,7 +109,7 @@ public:
             const volScalarField& T
         ) const = 0;
 
-        //- Saturation pressure derivative w.r.t. temperature
+        //- Saturation pressure derivetive w.r.t. temperature
         virtual tmp<volScalarField> pSatPrime
         (
             const volScalarField& T

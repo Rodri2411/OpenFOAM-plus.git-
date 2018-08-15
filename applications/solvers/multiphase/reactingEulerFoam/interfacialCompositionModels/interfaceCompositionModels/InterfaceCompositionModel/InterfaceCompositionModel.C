@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2015-2016 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2015-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -149,7 +149,7 @@ Foam::InterfaceCompositionModel<Thermo, OtherThermo>::D
                 p.mesh()
             ),
             p.mesh(),
-            dimensionedScalar(dimArea/dimTime, Zero)
+            dimensionedScalar("zero", dimArea/dimTime, 0)
         )
     );
 
@@ -203,7 +203,7 @@ Foam::InterfaceCompositionModel<Thermo, OtherThermo>::L
                 p.mesh()
             ),
             p.mesh(),
-            dimensionedScalar(dimEnergy/dimMass, Zero)
+            dimensionedScalar("zero", dimEnergy/dimMass, 0)
         )
     );
 

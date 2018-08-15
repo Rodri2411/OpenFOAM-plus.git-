@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2015-2016 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2015-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -55,7 +55,7 @@ Foam::interfaceCompositionModels::Raoult<Thermo, OtherThermo>::Raoult
             pair.phase1().mesh()
         ),
         pair.phase1().mesh(),
-        dimensionedScalar(dimless/dimTemperature, Zero)
+        dimensionedScalar("zero", dimless/dimTemperature, 0)
     )
 {
     forAllConstIter(hashedWordList, this->speciesNames_, iter)

@@ -61,6 +61,8 @@ public:
 
     // Member Operators
 
+        inline operator Type() const;
+
         inline Type operator[](const label) const;
 
         inline UniformField field() const;

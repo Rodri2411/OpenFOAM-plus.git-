@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -26,7 +26,7 @@ Class
 
 Description
     Contact-angle boundary condition for multi-phase interface-capturing
-    simulations.  Used in conjuction with multiphaseSystem.
+    simulations.  Used in conjunction with multiphaseSystem.
 
 SourceFiles
     alphaContactAngleFvPatchScalarField.C
@@ -45,7 +45,7 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                  Class alphaContactAngleFvPatch Declaration
+                           Class alphaContactAngleFvPatch Declaration
 \*---------------------------------------------------------------------------*/
 
 class alphaContactAngleFvPatchScalarField

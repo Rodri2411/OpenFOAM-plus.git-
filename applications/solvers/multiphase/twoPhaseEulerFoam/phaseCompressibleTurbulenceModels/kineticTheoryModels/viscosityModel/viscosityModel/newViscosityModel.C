@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -33,20 +33,23 @@ Foam::kineticTheoryModels::viscosityModel::New
     const dictionary& dict
 )
 {
-    const word modelName(dict.lookup("viscosityModel"));
+    word viscosityModelType(dict.lookup("viscosityModel"));
 
-    Info<< "Selecting viscosityModel " << modelName << endl;
+    Info<< "Selecting viscosityModel "
+        << viscosityModelType << endl;
 
-    auto cstrIter = dictionaryConstructorTablePtr_->cfind(modelName);
+    dictionaryConstructorTable::iterator cstrIter =
+        dictionaryConstructorTablePtr_->find(viscosityModelType);
 
-    if (!cstrIter.found())
+    if (cstrIter == dictionaryConstructorTablePtr_->end())
     {
-        FatalErrorInFunction
-            << "Unknown viscosityModel type "
-            << modelName << nl << nl
-            << "Valid viscosityModel types :" << nl
-            << dictionaryConstructorTablePtr_->sortedToc()
-            << exit(FatalError);
+        FatalError
+            << "viscosityModel::New(const dictionary&) : " << endl
+            << "    unknown viscosityModelType type "
+            << viscosityModelType
+            << ", constructor not in hash table" << endl << endl
+            << "    Valid viscosityModelType types are :" << endl;
+        Info<< dictionaryConstructorTablePtr_->sortedToc() << abort(FatalError);
     }
 
     return autoPtr<viscosityModel>(cstrIter()(dict));

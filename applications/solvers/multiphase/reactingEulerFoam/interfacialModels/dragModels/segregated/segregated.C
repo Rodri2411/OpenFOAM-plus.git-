@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2014-2016 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2014-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -101,7 +101,7 @@ Foam::tmp<Foam::volScalarField> Foam::dragModels::segregated::K() const
             mesh
         ),
         mesh,
-        dimensionedScalar(dimLength, Zero),
+        dimensionedScalar("L", dimLength, 0),
         zeroGradientFvPatchField<scalar>::typeName
     );
     L.primitiveFieldRef() = cbrt(mesh.V());

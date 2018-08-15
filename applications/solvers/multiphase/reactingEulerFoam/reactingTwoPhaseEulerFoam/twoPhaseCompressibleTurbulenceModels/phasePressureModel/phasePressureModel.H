@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2013-2016 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2013-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::phasePressureModel
+    Foam::RASModels::phasePressureModel
 
 Description
     Particle-particle phase-pressure RAS model
@@ -102,11 +102,11 @@ class phasePressureModel
         void correctNut()
         {}
 
-        //- No copy construct
-        phasePressureModel(const phasePressureModel&) = delete;
+        //- Disallow default bitwise copy construct
+        phasePressureModel(const phasePressureModel&);
 
-        //- No copy assignment
-        void operator=(const phasePressureModel&) = delete;
+        //- Disallow default bitwise assignment
+        void operator=(const phasePressureModel&);
 
 
 public:

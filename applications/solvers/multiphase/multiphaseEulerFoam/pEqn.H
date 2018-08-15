@@ -5,10 +5,10 @@
     // tmp<fvScalarMatrix> pEqnComp1;
     // tmp<fvScalarMatrix> pEqnComp2;
 
-    // //if (transonic)
+    // // if (transonic)
     // //{
     // //}
-    // //else
+    // // else
     // {
     //     surfaceScalarField phid1("phid1", fvc::interpolate(psi1)*phi1);
     //     surfaceScalarField phid2("phid2", fvc::interpolate(psi2)*phi2);
@@ -55,7 +55,7 @@
             IOobject::AUTO_WRITE
         ),
         mesh,
-        dimensionedScalar(dimArea*dimVelocity, Zero)
+        dimensionedScalar("phiHbyA", dimArea*dimVelocity, 0)
     );
 
     volScalarField rho("rho", fluid.rho());
@@ -176,7 +176,7 @@
             mesh
         ),
         mesh,
-        dimensionedScalar(dimensionSet(-1, 3, 1, 0, 0), Zero)
+        dimensionedScalar("rAUf", dimensionSet(-1, 3, 1, 0, 0), 0)
     );
 
     phasei = 0;
@@ -288,7 +288,7 @@
                         )
                     )/phase.rho();
 
-                //phase.U() = fvc::reconstruct(phase.phi());
+                // phase.U() = fvc::reconstruct(phase.phi());
                 phase.U().correctBoundaryConditions();
 
                 U += alpha*phase.U();
@@ -298,7 +298,7 @@
         }
     }
 
-    //p = max(p, pMin);
+    // p = max(p, pMin);
 
     #include "continuityErrs.H"
 

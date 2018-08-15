@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2013 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2013-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -46,16 +46,19 @@ namespace IATEsources
 Foam::tmp<Foam::volScalarField>
 Foam::diameterModels::IATEsources::dummy::R() const
 {
-    return tmp<volScalarField>::New
+    return tmp<volScalarField>
     (
-        IOobject
+        new volScalarField
         (
-            "R",
-            iate_.phase().U().time().timeName(),
-            iate_.phase().mesh()
-        ),
-        iate_.phase().U().mesh(),
-        dimensionedScalar(dimless/dimTime, Zero)
+            IOobject
+            (
+                "R",
+                iate_.phase().U().time().timeName(),
+                iate_.phase().mesh()
+            ),
+            iate_.phase().U().mesh(),
+            dimensionedScalar("R", dimless/dimTime, 0)
+        )
     );
 }
 

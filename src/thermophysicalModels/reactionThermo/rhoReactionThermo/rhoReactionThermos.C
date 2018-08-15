@@ -350,6 +350,33 @@ makeThermoPhysicsReactionThermos
     icoPoly8EThermoPhysics
 );
 
+makeThermoPhysicsReactionThermos
+(
+    rhoThermo,
+    rhoReactionThermo,
+    heRhoThermo,
+    reactingMixture,
+    constFluidEThermoPhysics
+);
+
+makeThermoPhysicsReactionThermos
+(
+    rhoThermo,
+    rhoReactionThermo,
+    heRhoThermo,
+    reactingMixture,
+    constAdiabaticFluidEThermoPhysics
+);
+
+makeThermoPhysicsReactionThermos
+(
+    rhoThermo,
+    rhoReactionThermo,
+    heRhoThermo,
+    reactingMixture,
+    constEThermoPhysics
+);
+
 
 // Single-step reaction thermo for internal energy
 
@@ -583,6 +610,33 @@ makeThermoPhysicsReactionThermos
     heRhoThermo,
     reactingMixture,
     icoPoly8HThermoPhysics
+);
+
+makeThermoPhysicsReactionThermos
+(
+    rhoThermo,
+    rhoReactionThermo,
+    heRhoThermo,
+    reactingMixture,
+    constFluidHThermoPhysics
+);
+
+makeThermoPhysicsReactionThermos
+(
+    rhoThermo,
+    rhoReactionThermo,
+    heRhoThermo,
+    reactingMixture,
+    constAdiabaticFluidHThermoPhysics
+);
+
+makeThermoPhysicsReactionThermos
+(
+    rhoThermo,
+    rhoReactionThermo,
+    heRhoThermo,
+    reactingMixture,
+    constHThermoPhysics
 );
 
 

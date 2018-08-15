@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2015 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2015-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -32,7 +32,7 @@ Foam::autoPtr<Foam::twoPhaseSystem> Foam::twoPhaseSystem::New
     const fvMesh& mesh
 )
 {
-    const word systemType
+    const word twoPhaseSystemType
     (
         IOdictionary
         (
@@ -48,16 +48,18 @@ Foam::autoPtr<Foam::twoPhaseSystem> Foam::twoPhaseSystem::New
         ).lookup("type")
     );
 
-    Info<< "Selecting twoPhaseSystem " << systemType << endl;
+    Info<< "Selecting twoPhaseSystem "
+        << twoPhaseSystemType << endl;
 
-    auto cstrIter = dictionaryConstructorTablePtr_->cfind(systemType);
+    dictionaryConstructorTable::iterator cstrIter =
+        dictionaryConstructorTablePtr_->find(twoPhaseSystemType);
 
-    if (!cstrIter.found())
+    if (cstrIter == dictionaryConstructorTablePtr_->end())
     {
         FatalErrorInFunction
-            << "Unknown twoPhaseSystem type "
-            << systemType << nl << nl
-            << "Valid twoPhaseSystem types :" << endl
+            << "Unknown twoPhaseSystemType type "
+            << twoPhaseSystemType << endl << endl
+            << "Valid twoPhaseSystem types are : " << endl
             << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }

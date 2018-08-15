@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -35,7 +35,7 @@ Foam::autoPtr<Foam::heatTransferModel> Foam::heatTransferModel::New
     const phaseModel& phase2
 )
 {
-    const word modelType
+    word heatTransferModelType
     (
         interfaceDict.lookup("heatTransferModel" + phase1.name())
     );
@@ -43,16 +43,17 @@ Foam::autoPtr<Foam::heatTransferModel> Foam::heatTransferModel::New
     Info<< "Selecting heatTransferModel for phase "
         << phase1.name()
         << ": "
-        << modelType << endl;
+        << heatTransferModelType << endl;
 
-    auto cstrIter = dictionaryConstructorTablePtr_->cfind(modelType);
+    dictionaryConstructorTable::iterator cstrIter =
+        dictionaryConstructorTablePtr_->find(heatTransferModelType);
 
-    if (!cstrIter.found())
+    if (cstrIter == dictionaryConstructorTablePtr_->end())
     {
         FatalErrorInFunction
-            << "Unknown heatTransferModel type "
-            << modelType << nl << nl
-            << "Valid heatTransferModel types :" << endl
+            << "Unknown heatTransferModelType type "
+            << heatTransferModelType << endl << endl
+            << "Valid heatTransferModel types are : " << endl
             << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }

@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -24,9 +24,6 @@ License
 Application
     reactingTwoPhaseEulerFoam
 
-Group
-    grpMultiphaseSolvers
-
 Description
     Solver for a system of 2 compressible fluid phases with a common pressure,
     but otherwise separate properties. The type of phase model is run time
@@ -42,34 +39,6 @@ Description
 #include "pimpleControl.H"
 #include "localEulerDdtScheme.H"
 #include "fvcSmooth.H"
-
-namespace Foam
-{
-    tmp<volScalarField> byDt(const volScalarField& vf)
-    {
-        if (fv::localEulerDdt::enabled(vf.mesh()))
-        {
-            return fv::localEulerDdt::localRDeltaT(vf.mesh())*vf;
-        }
-        else
-        {
-            return vf/vf.mesh().time().deltaT();
-        }
-    }
-
-    tmp<surfaceScalarField> byDt(const surfaceScalarField& sf)
-    {
-        if (fv::localEulerDdt::enabled(sf.mesh()))
-        {
-            return fv::localEulerDdt::localRDeltaTf(sf.mesh())*sf;
-        }
-        else
-        {
-            return sf/sf.mesh().time().deltaT();
-        }
-    }
-}
-
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -92,21 +61,12 @@ int main(int argc, char *argv[])
         #include "setInitialDeltaT.H"
     }
 
-    bool faceMomentum
+    Switch faceMomentum
     (
-        pimple.dict().lookupOrDefault("faceMomentum", false)
-    );
-
-    bool implicitPhasePressure
-    (
-        mesh.solverDict(alpha1.name()).lookupOrDefault
-        (
-            "implicitPhasePressure", false
-        )
+        pimple.dict().lookupOrDefault<Switch>("faceMomentum", false)
     );
 
     #include "pUf/createRDeltaTf.H"
-    #include "pUf/createDDtU.H"
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -135,7 +95,7 @@ int main(int argc, char *argv[])
             #include "setDeltaT.H"
         }
 
-        ++runTime;
+        runTime++;
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
         // --- Pressure-velocity PIMPLE corrector loop
@@ -151,7 +111,6 @@ int main(int argc, char *argv[])
                 #include "pUf/UEqns.H"
                 #include "EEqns.H"
                 #include "pUf/pEqn.H"
-                #include "pUf/DDtU.H"
             }
             else
             {
@@ -170,7 +129,9 @@ int main(int argc, char *argv[])
 
         runTime.write();
 
-        runTime.printExecutionTime(Info);
+        Info<< "ExecutionTime = "
+            << runTime.elapsedCpuTime()
+            << " s\n\n" << endl;
     }
 
     Info<< "End\n" << endl;

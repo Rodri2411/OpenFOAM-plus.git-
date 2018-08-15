@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -70,19 +70,22 @@ Foam::tmp<Foam::volScalarField> Foam::dragModels::interface::K
     const volScalarField& Ur
 ) const
 {
-    return tmp<volScalarField>::New
+    return tmp<volScalarField>
     (
-        IOobject
+        new volScalarField
         (
-            "K",
-            Ur.mesh().time().timeName(),
+            IOobject
+            (
+                "K",
+                Ur.mesh().time().timeName(),
+                Ur.mesh(),
+                IOobject::NO_READ,
+                IOobject::NO_WRITE,
+                false
+            ),
             Ur.mesh(),
-            IOobject::NO_READ,
-            IOobject::NO_WRITE,
-            false
-        ),
-        Ur.mesh(),
-        dimensionedScalar(dimDensity/dimTime, Zero)
+            dimensionedScalar("K", dimDensity/dimTime, 0)
+        )
     );
 }
 

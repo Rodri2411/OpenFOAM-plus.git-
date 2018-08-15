@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -50,14 +50,15 @@ Foam::diameterModels::IATEsource::New
     const dictionary& dict
 )
 {
-    auto cstrIter = dictionaryConstructorTablePtr_->cfind(type);
+    dictionaryConstructorTable::iterator cstrIter =
+        dictionaryConstructorTablePtr_->find(type);
 
-    if (!cstrIter.found())
+    if (cstrIter == dictionaryConstructorTablePtr_->end())
     {
         FatalErrorInFunction
             << "Unknown IATE source type "
             << type << nl << nl
-            << "Valid IATE source types :" << endl
+            << "Valid IATE source types : " << endl
             << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
@@ -86,12 +87,12 @@ Foam::tmp<Foam::volScalarField> Foam::diameterModels::IATEsource::Ur() const
 
 Foam::tmp<Foam::volScalarField> Foam::diameterModels::IATEsource::Ut() const
 {
-    return sqrt(2*otherPhase().turbulence().k());
+    return sqrt(2*otherPhase().k());
 }
 
 Foam::tmp<Foam::volScalarField> Foam::diameterModels::IATEsource::Re() const
 {
-    return max(Ur()*phase().d()/otherPhase().nu(), scalar(1.0e-3));
+    return max(Ur()*phase().d()/otherPhase().nu(), scalar(1e-3));
 }
 
 Foam::tmp<Foam::volScalarField> Foam::diameterModels::IATEsource::CD() const

@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2014-2016 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2014-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -70,19 +70,22 @@ Foam::turbulentDispersionModels::noTurbulentDispersion::D() const
 {
     const fvMesh& mesh(this->pair_.phase1().mesh());
 
-    return tmp<volScalarField>::New
+    return tmp<volScalarField>
     (
-        IOobject
+        new volScalarField
         (
-            "zero",
-            mesh.time().timeName(),
+            IOobject
+            (
+                "zero",
+                mesh.time().timeName(),
+                mesh,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE,
+                false
+            ),
             mesh,
-            IOobject::NO_READ,
-            IOobject::NO_WRITE,
-            false
-        ),
-        mesh,
-        dimensionedScalar(dimD, Zero)
+            dimensionedScalar("zero", dimD, 0)
+        )
     );
 }
 
@@ -92,17 +95,21 @@ Foam::turbulentDispersionModels::noTurbulentDispersion::F() const
 {
     const fvMesh& mesh(this->pair_.phase1().mesh());
 
-    return tmp<volVectorField>::New
-    (
-        IOobject
+    return
+        tmp<volVectorField>
         (
-            "zero",
-            mesh.time().timeName(),
-            mesh
-        ),
-        mesh,
-        dimensionedVector(dimF, Zero)
-    );
+            new volVectorField
+            (
+                IOobject
+                (
+                    "zero",
+                    mesh.time().timeName(),
+                    mesh
+                ),
+                mesh,
+                dimensionedVector("zero", dimF, Zero)
+            )
+        );
 }
 
 

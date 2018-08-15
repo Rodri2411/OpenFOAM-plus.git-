@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -33,20 +33,24 @@ Foam::kineticTheoryModels::radialModel::New
     const dictionary& dict
 )
 {
-    const word modelType(dict.lookup("radialModel"));
+    word radialModelType(dict.lookup("radialModel"));
 
-    Info<< "Selecting radialModel " << modelType << endl;
+    Info<< "Selecting radialModel "
+        << radialModelType << endl;
 
-    auto cstrIter = dictionaryConstructorTablePtr_->cfind(modelType);
+    dictionaryConstructorTable::iterator cstrIter =
+        dictionaryConstructorTablePtr_->find(radialModelType);
 
-    if (!cstrIter.found())
+    if (cstrIter == dictionaryConstructorTablePtr_->end())
     {
-        FatalErrorInFunction
-            << "Unknown radialModel type "
-            << modelType << nl << nl
-            << "Valid radialModel types :" << endl
-            << dictionaryConstructorTablePtr_->sortedToc()
-            << exit(FatalError);
+        FatalError
+            << "radialModel::New(const dictionary&) : " << endl
+            << "    unknown radialModelType type "
+            << radialModelType
+            << ", constructor not in hash table" << endl << endl
+            << "    Valid radialModelType types are :" << endl;
+        Info<< dictionaryConstructorTablePtr_->sortedToc()
+            << abort(FatalError);
     }
 
     return autoPtr<radialModel>(cstrIter()(dict));

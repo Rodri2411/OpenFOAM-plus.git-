@@ -219,6 +219,11 @@ public:
         template<class StringType>
         static inline word groupName(StringType name, const word& group);
 
+        //- Return group (extension part of name)
+        static word group(const word& name);
+
+        //- Return member (name without the extension)
+        static word member(const word& name);
 
     // Constructors
 

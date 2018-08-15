@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2014-2015 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2014-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -65,17 +65,21 @@ Foam::liftModels::constantLiftCoefficient::Cl() const
 {
     const fvMesh& mesh(this->pair_.phase1().mesh());
 
-    return tmp<volScalarField>::New
-    (
-        IOobject
+    return
+        tmp<volScalarField>
         (
-            "zero",
-            mesh.time().timeName(),
-            mesh
-        ),
-        mesh,
-        Cl_
-    );
+            new volScalarField
+            (
+                IOobject
+                (
+                    "zero",
+                    mesh.time().timeName(),
+                    mesh
+                ),
+                mesh,
+                Cl_
+            )
+        );
 }
 
 

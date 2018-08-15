@@ -50,6 +50,7 @@ SourceFiles
 #include "zero.H"
 #include "zeroField.H"
 #include "UPtrList.H"
+#include "UniformField.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -103,6 +104,28 @@ void explicitSolve
     const scalar psiMin
 );
 
+
+template
+<
+    class RhoType,
+    class SpType,
+    class SuType,
+    class PsiMaxType,
+    class PsiMinType
+>
+void explicitSolve
+(
+    const RhoType& rho,
+    volScalarField& psi,
+    const surfaceScalarField& phiBD,
+    surfaceScalarField& phiPsi,
+    const SpType& Sp,
+    const SuType& Su,
+    const PsiMaxType& psiMax,
+    const PsiMinType& psiMin
+);
+
+
 template<class RdeltaTType, class RhoType, class SpType, class SuType>
 void limiter
 (
@@ -116,6 +139,29 @@ void limiter
     const SuType& Su,
     const scalar psiMax,
     const scalar psiMin
+);
+
+template
+<
+    class RdeltaTType,
+    class RhoType,
+    class SpType,
+    class SuType,
+    class PsiMaxType,
+    class PsiMinType
+>
+void limiter
+(
+    scalarField& allLambda,
+    const RdeltaTType& rDeltaT,
+    const RhoType& rho,
+    const volScalarField& psi,
+    const surfaceScalarField& phiBD,
+    const surfaceScalarField& phiCorr,
+    const SpType& Sp,
+    const SuType& Su,
+    const PsiMaxType& psiMax,
+    const PsiMinType& psiMin
 );
 
 template<class RdeltaTType, class RhoType, class SpType, class SuType>
@@ -134,11 +180,71 @@ void limit
 );
 
 
+template
+<
+    class RdeltaTType,
+    class RhoType,
+    class SpType,
+    class SuType,
+    class PsiMaxType,
+    class PsiMinType
+>
+void limit
+(
+    const RdeltaTType& rDeltaT,
+    const RhoType& rho,
+    const volScalarField& psi,
+    const surfaceScalarField& phi,
+    surfaceScalarField& phiPsi,
+    const SpType& Sp,
+    const SuType& Su,
+    const PsiMaxType& psiMax,
+    const PsiMinType& psiMin,
+    const bool returnCorr
+);
+
+
+template
+<
+    class RhoType,
+    class SpType,
+    class SuType,
+    class PsiMaxType,
+    class PsiMinType
+>
+void limit
+(
+    const RhoType& rho,
+    const volScalarField& psi,
+    const surfaceScalarField& phi,
+    surfaceScalarField& phiPsi,
+    const SpType& Sp,
+    const SuType& Su,
+    const PsiMaxType& psiMax,
+    const PsiMinType& psiMin,
+    const bool returnCorr
+);
+
+
 void limitSum(UPtrList<scalarField>& phiPsiCorrs);
 
 template<class SurfaceScalarFieldList>
 void limitSum(SurfaceScalarFieldList& phiPsiCorrs);
 
+void limitSum
+(
+    const UPtrList<const scalarField>& alphas,
+    UPtrList<scalarField>& phiPsiCorrs,
+    const labelHashSet& fixed
+);
+
+template<class SurfaceScalarFieldList>
+void limitSum
+(
+    const SurfaceScalarFieldList& alphas,
+    SurfaceScalarFieldList& phiPsiCorrs,
+    const labelHashSet& fixed
+);
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2013-2016 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2013-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -75,7 +75,7 @@ Foam::diameterModels::IATEsources::turbulentBreakUp::R
             iate_.phase().mesh()
         ),
         iate_.phase().mesh(),
-        dimensionedScalar(kappai.dimensions()/dimTime, Zero)
+        dimensionedScalar("R", kappai.dimensions()/dimTime, 0)
     );
 
     const scalar Cti = Cti_.value();

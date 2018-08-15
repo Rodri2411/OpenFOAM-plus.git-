@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2014-2015 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2014-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -58,11 +58,11 @@ class wallDependentModel
 
     // Private Member Functions
 
-        //- No copy construct
-        wallDependentModel(const wallDependentModel&) = delete;
+        //- Disallow default bitwise copy construct
+        wallDependentModel(const wallDependentModel&);
 
-        //- No copy assignment
-        void operator=(const wallDependentModel&) = delete;
+        //- Disallow default bitwise assignment
+        void operator=(const wallDependentModel&);
 
 
 public:

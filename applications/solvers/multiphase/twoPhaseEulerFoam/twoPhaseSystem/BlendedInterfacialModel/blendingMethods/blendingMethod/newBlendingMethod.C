@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2014-2015 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2014-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -33,19 +33,20 @@ Foam::autoPtr<Foam::blendingMethod> Foam::blendingMethod::New
     const wordList& phaseNames
 )
 {
-    const word methodName(dict.lookup("type"));
+    word blendingMethodType(dict.lookup("type"));
 
     Info<< "Selecting " << dict.dictName() << " blending method: "
-        << methodName << endl;
+        << blendingMethodType << endl;
 
-    auto cstrIter = dictionaryConstructorTablePtr_->cfind(methodName);
+    dictionaryConstructorTable::iterator cstrIter =
+        dictionaryConstructorTablePtr_->find(blendingMethodType);
 
-    if (!cstrIter.found())
+    if (cstrIter == dictionaryConstructorTablePtr_->end())
     {
         FatalErrorInFunction
-            << "Unknown blendingMethod type "
-            << methodName << nl << nl
-            << "Valid blendingMethod types :" << endl
+            << "Unknown blendingMethodType type "
+            << blendingMethodType << endl << endl
+            << "Valid blendingMethod types are : " << endl
             << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }

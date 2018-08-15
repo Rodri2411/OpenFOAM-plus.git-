@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2013 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -28,12 +28,12 @@ Description
     Constant dispersed-phase particle diameter model.
 
 SourceFiles
-    constantDiameter.C
+    constant.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef diameterModels_constant_H
-#define diameterModels_constant_H
+#ifndef constantDiameter_H
+#define constantDiameter_H
 
 #include "diameterModel.H"
 

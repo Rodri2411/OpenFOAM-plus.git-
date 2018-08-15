@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2015 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2015-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -34,19 +34,20 @@ Foam::autoPtr<Foam::massTransferModel> Foam::massTransferModel::New
     const phasePair& pair
 )
 {
-    const word modelType(dict.lookup("type"));
+    word massTransferModelType(dict.lookup("type"));
 
     Info<< "Selecting massTransferModel for "
-        << pair << ": " << modelType << endl;
+        << pair << ": " << massTransferModelType << endl;
 
-    auto cstrIter = dictionaryConstructorTablePtr_->cfind(modelType);
+    dictionaryConstructorTable::iterator cstrIter =
+        dictionaryConstructorTablePtr_->find(massTransferModelType);
 
-    if (!cstrIter.found())
+    if (cstrIter == dictionaryConstructorTablePtr_->end())
     {
         FatalErrorInFunction
-            << "Unknown massTransferModel type "
-            << modelType << nl << nl
-            << "Valid massTransferModel types :" << endl
+            << "Unknown massTransferModelType type "
+            << massTransferModelType << endl << endl
+            << "Valid massTransferModel types are : " << endl
             << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }

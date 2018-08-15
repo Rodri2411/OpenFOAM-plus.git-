@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -33,20 +33,23 @@ Foam::kineticTheoryModels::conductivityModel::New
     const dictionary& dict
 )
 {
-    const word modelType(dict.lookup("conductivityModel"));
+    word conductivityModelType(dict.lookup("conductivityModel"));
 
-    Info<< "Selecting conductivityModel " << modelType << endl;
+    Info<< "Selecting conductivityModel "
+        << conductivityModelType << endl;
 
-    auto cstrIter = dictionaryConstructorTablePtr_->cfind(modelType);
+    dictionaryConstructorTable::iterator cstrIter =
+        dictionaryConstructorTablePtr_->find(conductivityModelType);
 
-    if (!cstrIter.found())
+    if (cstrIter == dictionaryConstructorTablePtr_->end())
     {
-        FatalErrorInFunction
-            << "Unknown conductivityModel type "
-            << modelType << nl << nl
-            << "Valid conductivityModel types :" << endl
-            << dictionaryConstructorTablePtr_->sortedToc()
-            << exit(FatalError);
+        FatalError
+            << "conductivityModel::New(const dictionary&) : " << endl
+            << "    unknown conductivityModelType type "
+            << conductivityModelType
+            << ", constructor not in hash table" << endl << endl
+            << "    Valid conductivityModelType types are :" << endl;
+        Info<< dictionaryConstructorTablePtr_->sortedToc() << abort(FatalError);
     }
 
     return autoPtr<conductivityModel>(cstrIter()(dict));

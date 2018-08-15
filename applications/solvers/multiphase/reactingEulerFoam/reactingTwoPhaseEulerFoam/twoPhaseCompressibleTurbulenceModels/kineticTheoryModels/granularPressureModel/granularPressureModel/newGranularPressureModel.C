@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -33,20 +33,24 @@ Foam::kineticTheoryModels::granularPressureModel::New
     const dictionary& dict
 )
 {
-    const word modelType(dict.lookup("granularPressureModel"));
+    word granularPressureModelType(dict.lookup("granularPressureModel"));
 
-    Info<< "Selecting granularPressureModel " << modelType << endl;
+    Info<< "Selecting granularPressureModel "
+        << granularPressureModelType << endl;
 
-    auto cstrIter = dictionaryConstructorTablePtr_->cfind(modelType);
+    dictionaryConstructorTable::iterator cstrIter =
+        dictionaryConstructorTablePtr_->find(granularPressureModelType);
 
-    if (!cstrIter.found())
+    if (cstrIter == dictionaryConstructorTablePtr_->end())
     {
-        FatalErrorInFunction
-            << "Unknown granularPressureModel type "
-            << modelType << nl << nl
-            << "Valid granularPressureModel types : " << nl
-            << dictionaryConstructorTablePtr_->sortedToc()
-            << exit(FatalError);
+        FatalError
+            << "granularPressureModel::New(const dictionary&) : " << endl
+            << "    unknown granularPressureModelType type "
+            << granularPressureModelType
+            << ", constructor not in hash table" << endl << endl
+            << "    Valid granularPressureModelType types are :" << endl;
+        Info<< dictionaryConstructorTablePtr_->sortedToc()
+            << abort(FatalError);
     }
 
     return autoPtr<granularPressureModel>(cstrIter()(dict));

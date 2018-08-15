@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2014-2015 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2014-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -35,19 +35,20 @@ Foam::aspectRatioModel::New
     const phasePair& pair
 )
 {
-    const word modelType(dict.lookup("type"));
+    word aspectRatioModelType(dict.lookup("type"));
 
     Info<< "Selecting aspectRatioModel for "
-        << pair << ": " << modelType << endl;
+        << pair << ": " << aspectRatioModelType << endl;
 
-    auto cstrIter = dictionaryConstructorTablePtr_->cfind(modelType);
+    dictionaryConstructorTable::iterator cstrIter =
+        dictionaryConstructorTablePtr_->find(aspectRatioModelType);
 
-    if (!cstrIter.found())
+    if (cstrIter == dictionaryConstructorTablePtr_->end())
     {
         FatalErrorInFunction
-            << "Unknown aspectRatioModel type "
-            << modelType << nl << nl
-            << "Valid aspectRatioModel types :" << endl
+            << "Unknown aspectRatioModelType type "
+            << aspectRatioModelType << endl << endl
+            << "Valid aspectRatioModel types are : " << endl
             << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }

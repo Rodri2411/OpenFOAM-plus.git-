@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2014-2015 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2014-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -34,19 +34,20 @@ Foam::autoPtr<Foam::wallLubricationModel> Foam::wallLubricationModel::New
     const phasePair& pair
 )
 {
-    const word modelType(dict.lookup("type"));
+    word wallLubricationModelType(dict.lookup("type"));
 
     Info<< "Selecting wallLubricationModel for "
-        << pair << ": " << modelType << endl;
+        << pair << ": " << wallLubricationModelType << endl;
 
-    auto cstrIter = dictionaryConstructorTablePtr_->cfind(modelType);
+    dictionaryConstructorTable::iterator cstrIter =
+        dictionaryConstructorTablePtr_->find(wallLubricationModelType);
 
-    if (!cstrIter.found())
+    if (cstrIter == dictionaryConstructorTablePtr_->end())
     {
         FatalErrorInFunction
-            << "Unknown wallLubricationModel type "
-            << modelType << nl << nl
-            << "Valid wallLubricationModel types :" << endl
+            << "Unknown wallLubricationModelType type "
+            << wallLubricationModelType << endl << endl
+            << "Valid wallLubricationModel types are : " << endl
             << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }

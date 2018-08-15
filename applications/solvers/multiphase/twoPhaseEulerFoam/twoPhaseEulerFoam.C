@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -24,9 +24,6 @@ License
 Application
     twoPhaseEulerFoam
 
-Group
-    grpMultiphaseSolvers
-
 Description
     Solver for a system of 2 compressible fluid phases with one phase
     dispersed, e.g. gas bubbles in a liquid including heat-transfer.
@@ -46,8 +43,7 @@ int main(int argc, char *argv[])
 {
     #include "postProcess.H"
 
-    #include "addCheckCaseOptions.H"
-    #include "setRootCase.H"
+    #include "setRootCaseLists.H"
     #include "createTime.H"
     #include "createMesh.H"
     #include "createControl.H"
@@ -57,14 +53,14 @@ int main(int argc, char *argv[])
     #include "CourantNos.H"
     #include "setInitialDeltaT.H"
 
-    bool faceMomentum
+    Switch faceMomentum
     (
-        pimple.dict().lookupOrDefault("faceMomentum", false)
+        pimple.dict().lookupOrDefault<Switch>("faceMomentum", false)
     );
 
-    bool implicitPhasePressure
+    Switch implicitPhasePressure
     (
-        mesh.solverDict(alpha1.name()).lookupOrDefault
+        mesh.solverDict(alpha1.name()).lookupOrDefault<Switch>
         (
             "implicitPhasePressure", false
         )
@@ -83,7 +79,7 @@ int main(int argc, char *argv[])
         #include "CourantNos.H"
         #include "setDeltaT.H"
 
-        ++runTime;
+        runTime++;
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
         // --- Pressure-velocity PIMPLE corrector loop
@@ -117,7 +113,9 @@ int main(int argc, char *argv[])
 
         #include "write.H"
 
-        runTime.printExecutionTime(Info);
+        Info<< "ExecutionTime = "
+            << runTime.elapsedCpuTime()
+            << " s\n\n" << endl;
     }
 
     Info<< "End\n" << endl;

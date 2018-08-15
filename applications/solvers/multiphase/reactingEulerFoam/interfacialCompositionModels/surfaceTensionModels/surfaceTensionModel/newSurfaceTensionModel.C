@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2015 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2015-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -35,20 +35,21 @@ Foam::surfaceTensionModel::New
     const phasePair& pair
 )
 {
-    const word modelType(dict.lookup("type"));
+    word surfaceTensionModelType(dict.lookup("type"));
 
     Info<< "Selecting surfaceTensionModel for "
-        << pair << ": " << modelType << endl;
+        << pair << ": " << surfaceTensionModelType << endl;
 
-    auto cstrIter = multiphaseConstructorTablePtr_->cfind(modelType);
+    dictionaryConstructorTable::iterator cstrIter =
+        dictionaryConstructorTablePtr_->find(surfaceTensionModelType);
 
-    if (!cstrIter.found())
+    if (cstrIter == dictionaryConstructorTablePtr_->end())
     {
         FatalErrorInFunction
-            << "Unknown surfaceTensionModel type "
-            << modelType << nl << nl
-            << "Valid surfaceTensionModel types :" << endl
-            << multiphaseConstructorTablePtr_->sortedToc()
+            << "Unknown surfaceTensionModelType type "
+            << surfaceTensionModelType << endl << endl
+            << "Valid surfaceTensionModel types are : " << endl
+            << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalError);
     }
 

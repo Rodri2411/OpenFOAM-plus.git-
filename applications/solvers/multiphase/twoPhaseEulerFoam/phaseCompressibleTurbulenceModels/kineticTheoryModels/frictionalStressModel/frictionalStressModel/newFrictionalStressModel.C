@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -33,20 +33,24 @@ Foam::kineticTheoryModels::frictionalStressModel::New
     const dictionary& dict
 )
 {
-    const word modelType(dict.lookup("frictionalStressModel"));
+    word frictionalStressModelType(dict.lookup("frictionalStressModel"));
 
-    Info<< "Selecting frictionalStressModel " << modelType << endl;
+    Info<< "Selecting frictionalStressModel "
+        << frictionalStressModelType << endl;
 
-    auto cstrIter = dictionaryConstructorTablePtr_->cfind(modelType);
+    dictionaryConstructorTable::iterator cstrIter =
+        dictionaryConstructorTablePtr_->find(frictionalStressModelType);
 
-    if (!cstrIter.found())
+    if (cstrIter == dictionaryConstructorTablePtr_->end())
     {
-        FatalErrorInFunction
-            << "Unknown frictionalStressModel type "
-            << modelType << nl << nl
-            << "Valid frictionalStressModelType types :" << endl
-            << dictionaryConstructorTablePtr_->sortedToc()
-            << exit(FatalError);
+        FatalError
+            << "frictionalStressModel::New(const dictionary&) : " << endl
+            << "    unknown frictionalStressModelType type "
+            << frictionalStressModelType
+            << ", constructor not in hash table" << endl << endl
+            << "    Valid frictionalStressModelType types are :" << endl;
+        Info<< dictionaryConstructorTablePtr_->sortedToc()
+            << abort(FatalError);
     }
 
     return autoPtr<frictionalStressModel>(cstrIter()(dict));

@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -58,7 +58,7 @@ Foam::phaseModel::phaseModel
             IOobject::AUTO_WRITE
         ),
         fluid.mesh(),
-        dimensionedScalar(dimless, Zero)
+        dimensionedScalar("alpha", dimless, 0)
     ),
     fluid_(fluid),
     name_(phaseName),
@@ -95,7 +95,7 @@ Foam::phaseModel::phaseModel
             fluid.mesh()
         ),
         fluid.mesh(),
-        dimensionedScalar(dimensionSet(0, 3, -1, 0, 0), Zero)
+        dimensionedScalar("0", dimensionSet(0, 3, -1, 0, 0), 0)
     ),
     alphaRhoPhi_
     (
@@ -106,12 +106,9 @@ Foam::phaseModel::phaseModel
             fluid.mesh()
         ),
         fluid.mesh(),
-        dimensionedScalar(dimensionSet(1, 0, -1, 0, 0), Zero)
+        dimensionedScalar("0", dimensionSet(1, 0, -1, 0, 0), 0)
     )
 {
-    alphaPhi_.setOriented();
-    alphaRhoPhi_.setOriented();
-
     thermo_->validate("phaseModel " + name_, "h", "e");
 
     const word phiName = IOobject::groupName("phi", name_);
@@ -227,14 +224,14 @@ Foam::tmp<Foam::volScalarField> Foam::phaseModel::d() const
 Foam::PhaseCompressibleTurbulenceModel<Foam::phaseModel>&
 Foam::phaseModel::turbulence()
 {
-    return *turbulence_;
+    return turbulence_();
 }
 
 
 const Foam::PhaseCompressibleTurbulenceModel<Foam::phaseModel>&
 Foam::phaseModel::turbulence() const
 {
-    return *turbulence_;
+    return turbulence_();
 }
 
 

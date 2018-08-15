@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -99,7 +99,7 @@ Foam::phaseModel::phaseModel
             mesh
         ),
         mesh,
-        dimensionedVector(dimVelocity/dimTime, Zero)
+        dimensionedVector("0", dimVelocity/dimTime, Zero)
     ),
     alphaPhi_
     (
@@ -110,11 +110,9 @@ Foam::phaseModel::phaseModel
             mesh
         ),
         mesh,
-        dimensionedScalar(dimensionSet(0, 3, -1, 0, 0), Zero)
+        dimensionedScalar("0", dimensionSet(0, 3, -1, 0, 0), 0)
     )
 {
-    alphaPhi_.setOriented();
-
     const word phiName = IOobject::groupName("phi", name_);
 
     IOobject phiHeader
@@ -205,14 +203,14 @@ Foam::phaseModel::~phaseModel()
 Foam::autoPtr<Foam::phaseModel> Foam::phaseModel::clone() const
 {
     NotImplemented;
-    return nullptr;
+    return autoPtr<phaseModel>(nullptr);
 }
 
 
 
 void Foam::phaseModel::correct()
 {
-    //nuModel_->correct();
+    // nuModel_->correct();
 }
 
 
@@ -220,7 +218,7 @@ bool Foam::phaseModel::read(const dictionary& phaseDict)
 {
     phaseDict_ = phaseDict;
 
-    //if (nuModel_->read(phaseDict_))
+    // if (nuModel_->read(phaseDict_))
     {
         phaseDict_.lookup("nu") >> nu_.value();
         phaseDict_.lookup("kappa") >> kappa_.value();

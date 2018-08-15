@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -28,7 +28,7 @@ Description
     Incompressible multi-phase mixture with built in solution for the
     phase fractions with interface compression for interface-capturing.
 
-    Derived from transportModel so that it can be unsed in conjunction with
+    Derived from transportModel so that it can be used in conjunction with
     the incompressible turbulence models.
 
     Surface tension and contact-angle is handled for the interface
@@ -74,16 +74,30 @@ public:
     {
     public:
 
-        struct symmHash
+        class symmHash
+        :
+            public Hash<interfacePair>
         {
+        public:
+
+            symmHash()
+            {}
+
             label operator()(const interfacePair& key) const
             {
                 return word::hash()(key.first()) + word::hash()(key.second());
             }
         };
 
-        struct hash
+        class hash
+        :
+            public Hash<interfacePair>
         {
+        public:
+
+            hash()
+            {}
+
             label operator()(const interfacePair& key) const
             {
                 return word::hash()(key.first(), word::hash()(key.second()));
@@ -93,7 +107,8 @@ public:
 
         // Constructors
 
-            interfacePair() {} // = default
+            interfacePair()
+            {}
 
             interfacePair(const word& alpha1Name, const word& alpha2Name)
             :
@@ -172,6 +187,9 @@ private:
         //- Stabilisation for normalisation of the interface normal
         const dimensionedScalar deltaN_;
 
+        //- Conversion factor for degrees into radians
+        static const scalar convertToRad;
+
 
     // Private member functions
 
@@ -218,7 +236,8 @@ public:
 
 
     //- Destructor
-    virtual ~multiphaseSystem() = default;
+    virtual ~multiphaseSystem()
+    {}
 
 
     // Member Functions

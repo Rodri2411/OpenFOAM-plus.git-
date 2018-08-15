@@ -39,7 +39,7 @@
 #------------------------------------------------------------------------------
 
 export WM_PROJECT=OpenFOAM
-export WM_PROJECT_VERSION=plus
+export WM_PROJECT_VERSION=plus.feature-EulerEulerSolvers
 
 # [FOAM_INST_DIR] - parent directory containing the OpenFOAM installation.
 # \- When this file is located as $WM_PROJECT_DIR/etc/bashrc, the next lines
@@ -90,7 +90,7 @@ export WM_COMPILE_OPTION=Opt
 # [WM_MPLIB] - MPI implementation:
 # = SYSTEMOPENMPI | OPENMPI | SYSTEMMPI | MPI | MPICH | MPICH-GM |
 #   HPMPI | CRAY-MPICH | FJMPI | QSMPI | SGIMPI | INTELMPI | USERMPI
-export WM_MPLIB=SYSTEMOPENMPI
+export WM_MPLIB=OPENMPI
 
 
 #------------------------------------------------------------------------------
