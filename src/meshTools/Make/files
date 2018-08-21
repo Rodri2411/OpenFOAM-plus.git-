@@ -273,4 +273,6 @@ output/foamVtkWriteCellSetFaces.C
 
 tetOverlapVolume/tetOverlapVolume.C
 
+regionProperties/regionProperties.C
+
 LIB = $(FOAM_LIBBIN)/libmeshTools
