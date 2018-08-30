@@ -260,7 +260,7 @@ forAll(fluidRegions, i)
 
     turbulence[i].validate();
 
-    pRefCellFluid[i] = 0;
+    pRefCellFluid[i] = -1;
     pRefValueFluid[i] = 0.0;
 
     if (p_rghFluid[i].needReference())
