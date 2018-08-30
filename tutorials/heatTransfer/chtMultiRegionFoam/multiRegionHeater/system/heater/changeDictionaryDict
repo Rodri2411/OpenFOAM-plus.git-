@@ -43,7 +43,7 @@ T
         }
         "heater_to_.*"
         {
-            type            compressible::turbulentTemperatureCoupledBaffleMixed;
+            type            compressible::turbulentTemperatureRadCoupledMixed;
             Tnbr            T;
             kappaMethod     solidThermo;
             value           uniform 300;
@@ -51,7 +51,7 @@ T
 
         heater_to_leftSolid
         {
-            type            compressible::turbulentTemperatureCoupledBaffleMixed;
+            type            compressible::turbulentTemperatureRadCoupledMixed;
             Tnbr            T;
             kappaMethod     solidThermo;
             thicknessLayers (1e-3);

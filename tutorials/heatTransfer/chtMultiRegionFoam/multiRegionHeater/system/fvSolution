@@ -14,6 +14,22 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+// Enable region-coupled energy solution
+//coupled on;
+
+// Solver specification for region-coupled energy equation
+solver
+{
+    he
+    {
+        solver          GAMG;
+        agglomerator    assembledFaceAreaPair;
+        smoother        symGaussSeidel;
+        tolerance       1e-7;
+        relTol          0;
+    }
+}
+
 PIMPLE
 {
     nOuterCorrectors 1;
