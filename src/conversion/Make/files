@@ -27,7 +27,6 @@ polyDualMesh/polyDualMesh.C
 vtk/output/foamVtkFieldTypes.C
 vtk/output/foamVtkInternalWriter.H
 vtk/output/foamVtkPatchWriter.H
-vtk/output/foamVtkSurfaceMeshWriter.C
 vtk/output/foamVtkWriteSurfFields.C
 
 LIB = $(FOAM_LIBBIN)/libconversion
