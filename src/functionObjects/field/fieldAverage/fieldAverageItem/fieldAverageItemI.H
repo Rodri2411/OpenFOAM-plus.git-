@@ -190,17 +190,21 @@ Foam::word Foam::functionObjects::fieldAverageItem::windowFieldName
 }
 
 
-bool Foam::functionObjects::fieldAverageItem::inWindow(const scalar t) const
+bool Foam::functionObjects::fieldAverageItem::inWindow
+(
+    const scalar dt,
+    const scalar t
+) const
 {
     switch (base_)
     {
         case baseType::ITER:
         {
-            return round(t) <= round(window_) + 1;
+            return windowTimes_.size() <= round(window_); //  + 1;
         }
         case baseType::TIME:
         {
-            return t <= window_;
+            return t - dt <= window_;
         }
         default:
         {

@@ -85,8 +85,6 @@ bool Foam::functionObjects::fieldAverageItem::calculateMeanField
                     //       needs to do 1 field lookup
 
                     label n = windowTimes_.size();
-                    const Type& lastField =
-                        obr.lookupObject<Type>(windowFieldNames_.first());
 
                     if (n <= round(window_))
                     {
@@ -95,6 +93,8 @@ bool Foam::functionObjects::fieldAverageItem::calculateMeanField
                     }
                     else
                     {
+                        const Type& lastField =
+                            obr.lookupObject<Type>(windowFieldNames_.first());
                         meanField += (baseField - lastField)/scalar(n - 1);
                     }
 
@@ -102,39 +102,55 @@ bool Foam::functionObjects::fieldAverageItem::calculateMeanField
                 }
                 case baseType::TIME:
                 {
-                    // Assuming non-uniform time step
-                    // Note: looks up all window fields from the registry
-
-                    meanField = 0*baseField;
-                    FIFOStack<scalar>::const_iterator timeIter =
-                        windowTimes_.begin();
-                    FIFOStack<word>::const_iterator nameIter =
-                        windowFieldNames_.begin();
-
-                    const Type* wOld = nullptr;
-
-                    for
-                    (
-                        ;
-                        timeIter != windowTimes_.end();
-                        ++timeIter, ++nameIter
-                    )
+                    if (windowTimes_.size() < 2)
                     {
-                        const word& fieldName = nameIter();
-                        const scalar dt = timeIter();
-                        const Type* w = obr.lookupObjectPtr<Type>(fieldName);
+                        meanField = 1*baseField;
+                    }
+                    else
+                    {
+                        meanField = 0*baseField;
+                        FIFOStack<scalar>::const_iterator timeIter =
+                            windowTimes_.begin();
+                        FIFOStack<word>::const_iterator nameIter =
+                            windowFieldNames_.begin();
 
-                        meanField += dt*(*w);
+                        const Type* w0Ptr =
+                            obr.lookupObjectPtr<Type>(nameIter());
 
-                        if (wOld)
+                        ++nameIter;
+                        scalar t0 = timeIter();
+                        ++timeIter;
+
+                        for
+                        (
+                            ;
+                            timeIter != windowTimes_.end();
+                            ++timeIter, ++nameIter
+                        )
                         {
-                            meanField -= dt*(*wOld);
+                            const Type* wPtr =
+                                obr.lookupObjectPtr<Type>(nameIter());
+                            const scalar t = timeIter();
+                            const Type& w = *wPtr;
+                            const Type& w0 = *w0Ptr;
+
+                            if (t0 > window_)
+                            {
+                                scalar tStar = max(0, window_ - t);
+                                meanField +=
+                                    ((w0 - w)/(t0 - t)*tStar + 2*w)*tStar;
+                            }
+                            else
+                            {
+                                meanField += (w + w0)*(t0 - t);
+                            }
+
+                            w0Ptr = wPtr;
+                            t0 = t;
                         }
 
-                        wOld = w;
+                        meanField /= 2*min(windowTimes_.first(), window_);
                     }
-
-                    meanField /= windowTimes_.first();
 
                     break;
                 }
@@ -221,57 +237,106 @@ bool Foam::functionObjects::fieldAverageItem::calculatePrime2MeanField
         }
         case windowType::EXACT:
         {
-            // Not storing old time mean fields - treat all as TIME (integrated)
-            prime2MeanField = 0*prime2MeanField;
             FIFOStack<scalar>::const_iterator timeIter =
                 windowTimes_.begin();
             FIFOStack<word>::const_iterator nameIter =
                 windowFieldNames_.begin();
 
-            switch (base_)
+            if (windowFieldNames_.size() < 2)
             {
-                case baseType::ITER:
-                {
-                    // ITER method stores an additional entry compared to TIME
-                    ++timeIter;
-                    ++nameIter;
-
-                    if (timeIter == windowTimes_.end()) return false;
-
-                    break;
-                }
-                default:
-                {}
+                prime2MeanField = sqr(baseField - meanField);
             }
-
-
-            scalar windowLength = timeIter();
-
-            const Type1* wOld = nullptr;
-
-            for
-            (
-                ;
-                timeIter != windowTimes_.end();
-                ++timeIter, ++nameIter
-            )
+            else
             {
-                const word& fieldName = nameIter();
-                const scalar dt = timeIter();
-                const Type1* w = obr.lookupObjectPtr<Type1>(fieldName);
-
-                prime2MeanField += dt*(sqr((*w) - meanField));
-
-                if (wOld)
+                switch (base_)
                 {
-                    prime2MeanField -= dt*(sqr((*wOld) - meanField));
+                    case baseType::ITER:
+                    {
+                        prime2MeanField = 0*prime2MeanField;
+                        label n = min(windowFieldNames_.size(), window_);
+                        DebugVar(windowFieldNames_.size());
+                        DebugVar(window_);
+                        if (windowFieldNames_.size() > window_)
+                        {
+                            ++nameIter;
+                            ++timeIter;
+                        }
+
+                        for
+                        (
+                            ;
+                            nameIter != windowFieldNames_.end();
+                            ++nameIter
+                        )
+                        {
+                            const Type1* wPtr =
+                                obr.lookupObjectPtr<Type1>(nameIter());
+                            const Type1& w = *wPtr;
+
+                            prime2MeanField += sqr(w - meanField);
+                        }
+
+                        prime2MeanField /= n;
+
+                        break;
+                    }
+                    case baseType::TIME:
+                    {
+                        prime2MeanField = 0*prime2MeanField;
+                        const Type1* w0Ptr =
+                            obr.lookupObjectPtr<Type1>(nameIter());
+
+                        ++nameIter;
+                        scalar t0 = timeIter();
+                        ++timeIter;
+                        for
+                        (
+                            ;
+                            timeIter != windowTimes_.end();
+                            ++timeIter, ++nameIter
+                        )
+                        {
+                            const Type1* w1Ptr =
+                                obr.lookupObjectPtr<Type1>(nameIter());
+                            const scalar t1 = timeIter();
+
+                            const Type1& w0 = *w0Ptr;
+                            const Type1& w1 = *w1Ptr;
+
+                            if (t0 > window_)
+                            {
+                                scalar tStar = max(0, window_ - t1);
+                                prime2MeanField +=
+                                    tStar
+                                   *sqr
+                                    (
+                                        0.5*((w1 - w0)/(t1 - t0)*tStar + 2*w1)
+                                      - meanField
+                                    );
+                            }
+                            else
+                            {
+                                prime2MeanField +=
+                                    (t0 - t1)*(sqr(0.5*(w0 + w1) - meanField));
+                            }
+
+                            w0Ptr = w1Ptr;
+                            t0 = t1;
+                        }
+
+                        prime2MeanField /= min(windowTimes_.first(), window_);
+
+                        break;
+                    }
+                    default:
+                    {
+                        FatalErrorInFunction
+                            << "Unhandled baseType enumeration "
+                            << baseTypeNames_[base_]
+                            << abort(FatalError);
+                    }
                 }
-
-                wOld = w;
             }
-
-            prime2MeanField /= windowLength;
-
 
             break;
         }

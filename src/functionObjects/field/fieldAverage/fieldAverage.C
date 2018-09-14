@@ -207,7 +207,12 @@ void Foam::functionObjects::fieldAverage::writeAveragingProperties()
 
 void Foam::functionObjects::fieldAverage::readAveragingProperties()
 {
-    if (restartOnRestart_ || restartOnOutput_)
+    if
+    (
+        time_.timeIndex() == time_.startTimeIndex()
+     || restartOnRestart_
+     || restartOnOutput_
+    )
     {
         Info<< "    Starting averaging at time "
             << obr().time().timeOutputValue()
@@ -278,12 +283,6 @@ Foam::functionObjects::fieldAverage::fieldAverage
 {
     read(dict);
 }
-
-
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-Foam::functionObjects::fieldAverage::~fieldAverage()
-{}
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //

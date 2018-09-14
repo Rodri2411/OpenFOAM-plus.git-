@@ -123,15 +123,20 @@ void Foam::functionObjects::fieldAverageItem::addToWindow
     const scalar deltaT
 )
 {
-    windowTimes_.push(deltaT);
+//    windowTimes_.push(deltaT);
+    windowTimes_.push(0);
     windowFieldNames_.push(fieldName);
 }
 
 
 void Foam::functionObjects::fieldAverageItem::evolve(const objectRegistry& obr)
 {
+    const scalar dt = obr.time().deltaTValue();
+
     totalIter_++;
-    totalTime_ += obr.time().deltaTValue();
+    totalTime_ += dt;
+
+    // Advance time previous fields have existed
     forAllIters(windowTimes_, timeIter)
     {
         timeIter() += obr.time().deltaTValue();
@@ -142,7 +147,7 @@ void Foam::functionObjects::fieldAverageItem::evolve(const objectRegistry& obr)
 
     while (removeItem && windowTimes_.size())
     {
-        removeItem = !(inWindow(windowTimes_.first()));
+        removeItem = !(inWindow(dt, windowTimes_.first()));
 
         if (removeItem)
         {

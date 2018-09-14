@@ -299,7 +299,7 @@ public:
 
 
     //- Destructor
-    virtual ~fieldAverage();
+    virtual ~fieldAverage() = default;
 
 
     // Member Functions

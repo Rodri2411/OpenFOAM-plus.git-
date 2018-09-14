@@ -255,7 +255,7 @@ public:
             inline word windowFieldName(const word& prefix) const;
 
             //- Return true if time is inside window (including boundaries)
-            inline bool inWindow(const scalar t) const;
+            inline bool inWindow(const scalar dt, const scalar t) const;
 
             //- Return true if we wish to store window fields
             inline bool storeWindowFields() const;
