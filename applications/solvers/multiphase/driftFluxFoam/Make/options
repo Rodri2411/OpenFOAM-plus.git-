@@ -20,4 +20,5 @@ EXE_LIBS = \
     -lfvOptions \
     -lcompressibleTransportModels \
     -lturbulenceModels \
-    -lcompressibleTurbulenceModels
+    -lcompressibleTurbulenceModels \
+    -lturbulentFluidFvPatchFields

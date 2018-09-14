@@ -28,4 +28,5 @@ EXE_LIBS = \
     -lradiationModels \
     -lfvOptions \
     -lregionModels \
-    -lsampling
+    -lsampling \
+    -lturbulentFluidFvPatchFields

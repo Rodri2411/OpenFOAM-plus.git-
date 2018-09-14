@@ -33,4 +33,5 @@ EXE_LIBS = \
     -lsurfaceFilmModels \
     -ldynamicMesh \
     -ldynamicFvMesh \
-    -ltopoChangerFvMesh
+    -ltopoChangerFvMesh \
+    -lturbulentFluidFvPatchFields

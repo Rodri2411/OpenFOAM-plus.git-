@@ -44,5 +44,6 @@ EXE_LIBS = \
     -lcombustionModels \
     -lfvOptions \
     -lsampling \
-    -lcoalCombustion
+    -lcoalCombustion \
+    -lturbulentFluidFvPatchFields
 

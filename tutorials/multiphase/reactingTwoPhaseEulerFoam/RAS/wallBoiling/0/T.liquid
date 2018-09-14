@@ -35,7 +35,13 @@ boundaryField
     }
     wall1
     {
-        type            zeroGradient;
+        type            externalWallHeatFluxTemperature;
+        mode            coefficient;
+        kappaMethod     phaseSystem;
+
+        Ta              constant 300.0;
+        h               uniform 10.0;
+        value           $internalField;
     }
     wall2
     {

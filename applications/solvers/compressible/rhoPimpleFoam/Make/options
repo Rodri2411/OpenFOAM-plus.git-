@@ -23,4 +23,5 @@ EXE_LIBS = \
     -ldynamicFvMesh \
     -ltopoChangerFvMesh \
     -ldynamicMesh \
-    -latmosphericModels
+    -latmosphericModels \
+    -lturbulentFluidFvPatchFields

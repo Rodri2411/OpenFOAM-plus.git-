@@ -22,4 +22,5 @@ EXE_LIBS = \
     -lcompressibleTurbulenceModels \
     -lfiniteVolume \
     -lfvOptions \
-    -lmeshTools
+    -lmeshTools \
+    -lturbulentFluidFvPatchFields

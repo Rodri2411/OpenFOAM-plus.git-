@@ -23,4 +23,5 @@ EXE_LIBS = \
     -lfiniteVolume \
     -lfvOptions \
     -lsampling \
-    -lmeshTools
+    -lmeshTools \
+    -lturbulentFluidFvPatchFields

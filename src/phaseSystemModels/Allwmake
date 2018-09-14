@@ -1,0 +1,23 @@
+#!/bin/sh
+cd ${0%/*} || exit 1    # Run from this directory
+
+# Parse arguments for library compilation
+. $WM_PROJECT_DIR/wmake/scripts/AllwmakeParseArguments
+
+wmakeLnInclude interfacialCompositionModels
+wmakeLnInclude interfacialModels
+wmakeLnInclude derivedFvPatchFields
+
+wmake $targetType phaseSystems
+wmake $targetType interfacialModels
+wmake $targetType interfacialCompositionModels
+wmake $targetType derivedFvPatchFields
+
+wmake $targetType multiphaseSystem
+wmake $targetType multiphaseCompressibleTurbulenceModels
+
+wmake $targetType twoPhaseSystem
+wmake $targetType twoPhaseCompressibleTurbulenceModels
+
+
+#------------------------------------------------------------------------------

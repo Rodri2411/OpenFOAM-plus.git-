@@ -19,4 +19,5 @@ EXE_LIBS = \
     -lspecie \
     -lturbulenceModels \
     -lcompressibleTurbulenceModels \
-    -latmosphericModels
+    -latmosphericModels \
+    -lturbulentFluidFvPatchFields

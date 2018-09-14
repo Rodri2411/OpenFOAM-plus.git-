@@ -21,4 +21,5 @@ LIB_LIBS = \
     -lcompressibleEulerianInterfacialModels \
     -lfiniteVolume \
     -lfvOptions \
-    -lmeshTools
+    -lmeshTools \
+    -lturbulentFluidFvPatchFields

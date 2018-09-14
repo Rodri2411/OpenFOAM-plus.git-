@@ -45,4 +45,5 @@ EXE_LIBS = \
     -llagrangianIntermediate \
     -llagrangianTurbulence \
     -lODE \
-    -lcombustionModels
+    -lcombustionModels \
+    -lturbulentFluidFvPatchFields

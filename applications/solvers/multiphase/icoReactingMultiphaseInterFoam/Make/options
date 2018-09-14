@@ -32,4 +32,5 @@ EXE_LIBS = \
     -lsolidThermo \
     -lsolidSpecie \
     -ltwoPhaseProperties \
-    -llaserDTRM
+    -llaserDTRM \
+    -lturbulentFluidFvPatchFields

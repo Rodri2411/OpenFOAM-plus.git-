@@ -22,4 +22,5 @@ EXE_LIBS = \
     -loverset \
     -lfvOptions \
     -ldynamicFvMesh \
-    -ltopoChangerFvMesh
+    -ltopoChangerFvMesh \
+    -lturbulentFluidFvPatchFields

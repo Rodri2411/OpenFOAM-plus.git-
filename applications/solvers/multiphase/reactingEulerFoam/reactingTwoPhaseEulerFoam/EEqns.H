@@ -45,3 +45,12 @@ for (int Ecorr=0; Ecorr<nEnergyCorrectors; Ecorr++)
     fluid.correctThermo();
     fluid.correct();
 }
+/*
+// Update kappa's
+kappam =
+    alpha1*phase1.kappaEff()
+  + alpha2*phase2.kappaEff();
+kappam.correctBoundaryConditions();
+
+Tm = alpha1*thermo1.T() + alpha2*thermo2.T();
+*/

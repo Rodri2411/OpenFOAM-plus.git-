@@ -32,4 +32,5 @@ EXE_LIBS = \
     -lmeshTools \
     -ldynamicFvMesh \
     -lfiniteVolume \
-    -lfvOptions
+    -lfvOptions \
+    -lturbulentFluidFvPatchFields

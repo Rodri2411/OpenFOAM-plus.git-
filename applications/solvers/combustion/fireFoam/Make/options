@@ -48,4 +48,6 @@ EXE_LIBS = \
     -lregionCoupling \
     -llagrangianIntermediate \
     -llagrangianTurbulence \
-    -lODE
+    -lODE \
+    -lturbulentFluidFvPatchFields
+

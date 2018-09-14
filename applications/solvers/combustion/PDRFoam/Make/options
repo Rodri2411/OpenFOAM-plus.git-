@@ -11,6 +11,7 @@ EXE_INC = \
     -I$(LIB_SRC)/thermophysicalModels/reactionThermo/lnInclude \
     -I$(LIB_SRC)/TurbulenceModels/turbulenceModels/lnInclude \
     -I$(LIB_SRC)/TurbulenceModels/compressible/lnInclude \
+    -I$(LIB_SRC)/TurbulenceModels/compressible/turbulentFluidThermoModels/turbulentFluidFvPatchFields/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/laminarFlameSpeed/lnInclude \
     -I$(LIB_SRC)/finiteVolume/lnInclude \
     -I$(LIB_SRC)/dynamicFvMesh/lnInclude \
@@ -30,4 +31,5 @@ EXE_LIBS = \
     -llaminarFlameSpeedModels \
     -lfiniteVolume \
     -ldynamicFvMesh \
-    -lfvOptions
+    -lfvOptions \
+    -lturbulentFluidFvPatchFields

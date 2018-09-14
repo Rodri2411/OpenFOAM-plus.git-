@@ -19,9 +19,9 @@ type    thermalPhaseChangeTwoPhaseSystem;
 
 phases (gas liquid);
 
-volatile    "water";
+//volatile    "water";
 
-massTransfer on;
+phaseChange on;
 
 gas
 {
@@ -206,6 +206,9 @@ massTransfer.liquid
 ();
 
 lift
+();
+
+phaseTransfer
 ();
 
 wallLubrication

@@ -18,4 +18,5 @@ EXE_LIBS = \
     -lsampling \
     -lmeshTools \
     -lfvOptions \
-    -latmosphericModels
+    -latmosphericModels \
+    -lturbulentFluidFvPatchFields

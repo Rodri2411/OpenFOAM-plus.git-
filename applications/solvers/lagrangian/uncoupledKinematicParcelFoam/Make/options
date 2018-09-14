@@ -27,4 +27,5 @@ EXE_LIBS = \
     -lfvOptions \
     -lmeshTools \
     -lregionModels \
-    -lsurfaceFilmModels
+    -lsurfaceFilmModels \
+    -lturbulentFluidFvPatchFields

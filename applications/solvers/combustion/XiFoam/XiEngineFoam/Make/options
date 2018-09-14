@@ -24,4 +24,5 @@ EXE_LIBS = \
     -lfluidThermophysicalModels \
     -lreactionThermophysicalModels \
     -lspecie \
-    -llaminarFlameSpeedModels
+    -llaminarFlameSpeedModels \
+    -lturbulentFluidFvPatchFields

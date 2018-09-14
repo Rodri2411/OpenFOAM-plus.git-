@@ -20,4 +20,5 @@ EXE_LIBS = \
     -lturbulenceModels \
     -lcompressibleTurbulenceModels \
     -lmeshTools \
-    -latmosphericModels
+    -latmosphericModels \
+    -lturbulentFluidFvPatchFields

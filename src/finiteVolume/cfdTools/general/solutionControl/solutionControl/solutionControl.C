@@ -35,7 +35,7 @@ namespace Foam
 
 // * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * //
 
-void Foam::solutionControl::read(const bool absTolOnly)
+bool Foam::solutionControl::read(const bool absTolOnly)
 {
     const dictionary& solutionDict = this->dict();
 
@@ -131,12 +131,14 @@ void Foam::solutionControl::read(const bool absTolOnly)
                 << "    iniResid : " << fd.initialResidual << endl;
         }
     }
+
+    return true;
 }
 
 
-void Foam::solutionControl::read()
+bool Foam::solutionControl::read()
 {
-    read(false);
+    return read(false);
 }
 
 
@@ -260,16 +262,36 @@ Foam::Pair<Foam::scalar> Foam::solutionControl::maxResidual
 }
 
 
+// * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * //
+
+bool Foam::solutionControl::writeData(Ostream&) const
+{
+    NotImplemented;
+    return false;
+}
+
+
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 Foam::solutionControl::solutionControl(fvMesh& mesh, const word& algorithmName)
 :
-    IOobject
+    regIOobject
     (
-        "solutionControl",
-        mesh.time().timeName(),
-        mesh
+        IOobject
+        (
+            typeName,
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        )
     ),
+//     IOobject
+//     (
+//         "solutionControl",
+//         mesh.time().timeName(),
+//         mesh
+//     ),
     mesh_(mesh),
     residualControl_(),
     algorithmName_(algorithmName),

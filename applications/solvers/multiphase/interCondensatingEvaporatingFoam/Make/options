@@ -28,4 +28,5 @@ EXE_LIBS = \
     -lmeshTools \
     -lfvOptions \
     -lsampling \
-    -lfluidThermophysicalModels
+    -lfluidThermophysicalModels \
+    -lturbulentFluidFvPatchFields

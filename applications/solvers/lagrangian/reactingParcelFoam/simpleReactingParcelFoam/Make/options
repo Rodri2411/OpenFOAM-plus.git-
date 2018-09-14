@@ -46,4 +46,5 @@ EXE_LIBS = \
     -lsurfaceFilmModels \
     -lcombustionModels \
     -lfvOptions \
-    -lsampling
+    -lsampling \
+    -lturbulentFluidFvPatchFields

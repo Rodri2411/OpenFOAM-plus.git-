@@ -22,4 +22,5 @@ LIB_LIBS = \
     -lcompressibleTurbulenceModels \
     -lincompressibleTransportModels \
     -lfiniteVolume \
-    -lmeshTools
+    -lmeshTools \
+    -lturbulentFluidFvPatchFields
