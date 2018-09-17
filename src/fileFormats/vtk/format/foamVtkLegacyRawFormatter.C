@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2016-2017 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2016-2018 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -79,11 +79,10 @@ const char* Foam::vtk::legacyRawFormatter::encoding() const
 }
 
 
-void Foam::vtk::legacyRawFormatter::writeSize
-(
-    const uint64_t ignored
-)
-{/*nop*/}
+bool Foam::vtk::legacyRawFormatter::writeSize(const uint64_t)
+{
+    return false;
+}
 
 
 void Foam::vtk::legacyRawFormatter::write

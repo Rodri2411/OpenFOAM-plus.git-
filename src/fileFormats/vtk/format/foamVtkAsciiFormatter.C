@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2016-2017 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2016-2018 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -112,8 +112,10 @@ const char* Foam::vtk::asciiFormatter::encoding() const
 }
 
 
-void Foam::vtk::asciiFormatter::writeSize(const uint64_t ignored)
-{/*nop*/}
+bool Foam::vtk::asciiFormatter::writeSize(const uint64_t)
+{
+    return false;
+}
 
 
 void Foam::vtk::asciiFormatter::write(const uint8_t val)
@@ -150,8 +152,7 @@ void Foam::vtk::asciiFormatter::flush()
 }
 
 
-std::size_t
-Foam::vtk::asciiFormatter::encodedLength(std::size_t ignored) const
+std::size_t Foam::vtk::asciiFormatter::encodedLength(std::size_t) const
 {
     return 0;
 }

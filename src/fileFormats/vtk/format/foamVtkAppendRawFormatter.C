@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2016-2017 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2016-2018 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -51,7 +51,8 @@ void Foam::vtk::appendRawFormatter::write
 
 Foam::vtk::appendRawFormatter::appendRawFormatter(std::ostream& os)
 :
-    formatter(os)
+    formatter(os),
+    offset_(0)
 {}
 
 
@@ -76,9 +77,22 @@ const char* Foam::vtk::appendRawFormatter::encoding() const
 }
 
 
-void Foam::vtk::appendRawFormatter::writeSize(const uint64_t nBytes)
+uint64_t Foam::vtk::appendRawFormatter::offset(const uint64_t numbytes)
 {
-    write(reinterpret_cast<const char*>(&nBytes), sizeof(uint64_t));
+    uint64_t prev = offset_;
+
+    if (formatter::npos != numbytes)
+    {
+        offset_ += this->encodedLength(sizeof(uint64_t) + numbytes);
+    }
+    return prev;
+}
+
+
+bool Foam::vtk::appendRawFormatter::writeSize(const uint64_t numbytes)
+{
+    write(reinterpret_cast<const char*>(&numbytes), sizeof(uint64_t));
+    return true;
 }
 
 
