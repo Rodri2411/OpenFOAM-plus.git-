@@ -971,7 +971,7 @@ void alphatWallBoilingWallFunctionFvPatchScalarField::updateCoeffs()
 
                 scalarField TsupPrev(max((Tw - Tsatw), scalar(0)));
                 // NOTE: lagging Tw update.
-                const_cast<fvPatchScalarField&>(Tw).evaluate();
+                //const_cast<fvPatchScalarField&>(Tw).evaluate();
                 scalarField TsupNew(max((Tw - Tsatw), scalar(0)));
 
                 scalar maxErr(max(mag(TsupPrev - TsupNew)));
