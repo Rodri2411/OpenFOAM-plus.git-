@@ -419,7 +419,6 @@ Foam::ThermalPhaseChangePhaseSystem<BasePhaseSystem>::correctInterfaceThermo()
                 (
                     "alphat." +  phase.name()
                 )
-             && phaseChange_
             )
             {
                 const volScalarField& alphat =

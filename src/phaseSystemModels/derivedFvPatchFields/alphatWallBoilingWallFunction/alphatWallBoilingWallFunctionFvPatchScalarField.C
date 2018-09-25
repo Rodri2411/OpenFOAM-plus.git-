@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2015-2018 OpenFOAM Foundation
+   \\    /   O peration     | Copyright (C) 2015-2018 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2018 OpenCFD Ltd
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -81,7 +81,14 @@ alphatWallBoilingWallFunctionFvPatchScalarField
     partitioningModel_(nullptr),
     nucleationSiteModel_(nullptr),
     departureDiamModel_(nullptr),
-    departureFreqModel_(nullptr)
+    departureFreqModel_(nullptr),
+    filmBoilingModel_(nullptr),
+    LeidenfrostModel_(nullptr),
+    CHFModel_(nullptr),
+    CHFSoobModel_(nullptr),
+    MHFModel_(nullptr),
+    TDNBModel_(nullptr),
+    wp_(0)
 {
     AbyV_ = this->patch().magSf();
     forAll(AbyV_, facei)
@@ -112,7 +119,14 @@ alphatWallBoilingWallFunctionFvPatchScalarField
     partitioningModel_(nullptr),
     nucleationSiteModel_(nullptr),
     departureDiamModel_(nullptr),
-    departureFreqModel_(nullptr)
+    departureFreqModel_(nullptr),
+    filmBoilingModel_(nullptr),
+    LeidenfrostModel_(nullptr),
+    CHFModel_(nullptr),
+    CHFSoobModel_(nullptr),
+    MHFModel_(nullptr),
+    TDNBModel_(nullptr),
+    wp_(1)
 {
 
     // Check that otherPhaseName != this phase
@@ -134,6 +148,18 @@ alphatWallBoilingWallFunctionFvPatchScalarField
                 wallBoilingModels::partitioningModel::New
                 (
                     dict.subDict("partitioningModel")
+                );
+
+             LeidenfrostModel_ =
+                wallBoilingModels::LeidenfrostModel::New
+                (
+                    dict.subDict("LeidenfrostModel")
+                );
+
+            filmBoilingModel_ =
+                wallBoilingModels::filmBoilingModel::New
+                (
+                    dict.subDict("filmBoilingModel")
                 );
 
             dmdt_ = 0;
@@ -166,6 +192,42 @@ alphatWallBoilingWallFunctionFvPatchScalarField
                     dict.subDict("departureFreqModel")
                 );
 
+            LeidenfrostModel_ =
+                wallBoilingModels::LeidenfrostModel::New
+                (
+                    dict.subDict("LeidenfrostModel")
+                );
+
+            CHFModel_ =
+                wallBoilingModels::CHFModel::New
+                (
+                    dict.subDict("CHFModel")
+                );
+
+            CHFSoobModel_ =
+                wallBoilingModels::CHFSubCoolModel::New
+                (
+                    dict.subDict("CHFSubCoolModel")
+                );
+
+            MHFModel_ =
+                wallBoilingModels::MHFModel::New
+                (
+                    dict.subDict("MHFModel")
+                );
+
+            TDNBModel_ =
+                wallBoilingModels::TDNBModel::New
+                (
+                    dict.subDict("TDNBModel")
+                );
+
+            filmBoilingModel_ =
+                wallBoilingModels::filmBoilingModel::New
+                (
+                    dict.subDict("filmBoilingModel")
+                );
+
             if (dict.found("dDep"))
             {
                 dDep_ = scalarField("dDep", dict, p.size());
@@ -174,6 +236,11 @@ alphatWallBoilingWallFunctionFvPatchScalarField
             if (dict.found("K"))
             {
                 dict.lookup("K") >> K_;
+            }
+
+            if (dict.found("wp"))
+            {
+                dict.lookup("wp") >> wp_;
             }
 
             if (dict.found("qQuenching"))
@@ -226,7 +293,13 @@ alphatWallBoilingWallFunctionFvPatchScalarField
     partitioningModel_(psf.partitioningModel_),
     nucleationSiteModel_(psf.nucleationSiteModel_),
     departureDiamModel_(psf.departureDiamModel_),
-    departureFreqModel_(psf.departureFreqModel_)
+    filmBoilingModel_(psf.filmBoilingModel_),
+    LeidenfrostModel_(psf.LeidenfrostModel_),
+    CHFModel_(psf.CHFModel_),
+    CHFSoobModel_(psf.CHFSoobModel_),
+    MHFModel_(psf.MHFModel_),
+    TDNBModel_(psf.TDNBModel_),
+    wp_(psf.wp_)
 {}
 
 
@@ -248,7 +321,13 @@ alphatWallBoilingWallFunctionFvPatchScalarField
     partitioningModel_(psf.partitioningModel_),
     nucleationSiteModel_(psf.nucleationSiteModel_),
     departureDiamModel_(psf.departureDiamModel_),
-    departureFreqModel_(psf.departureFreqModel_)
+    filmBoilingModel_(psf.filmBoilingModel_),
+    LeidenfrostModel_(psf.LeidenfrostModel_),
+    CHFModel_(psf.CHFModel_),
+    CHFSoobModel_(psf.CHFSoobModel_),
+    MHFModel_(psf.MHFModel_),
+    TDNBModel_(psf.TDNBModel_),
+    wp_(psf.wp_)
 {}
 
 
@@ -271,7 +350,13 @@ alphatWallBoilingWallFunctionFvPatchScalarField
     partitioningModel_(psf.partitioningModel_),
     nucleationSiteModel_(psf.nucleationSiteModel_),
     departureDiamModel_(psf.departureDiamModel_),
-    departureFreqModel_(psf.departureFreqModel_)
+    filmBoilingModel_(psf.filmBoilingModel_),
+    LeidenfrostModel_(psf.LeidenfrostModel_),
+    CHFModel_(psf.CHFModel_),
+    CHFSoobModel_(psf.CHFSoobModel_),
+    MHFModel_(psf.MHFModel_),
+    TDNBModel_(psf.TDNBModel_),
+    wp_(psf.wp_)
 {}
 
 
@@ -360,26 +445,110 @@ void alphatWallBoilingWallFunctionFvPatchScalarField::updateCoeffs()
                 fluid.phases()[internalField().group()]
             );
 
+            const phaseModel& liquid(fluid.phases()[otherPhaseName_]);
+
             // Vapor Liquid phase fraction at the wall
             const scalarField vaporw(vapor.boundaryField()[patchi]);
 
+            const fvPatchScalarField& Tw =
+                liquid.thermo().T().boundaryField()[patchi];
+            const scalarField Tc(Tw.patchInternalField());
+
+             // Saturation temperature
+            const tmp<volScalarField> tTsat =
+                satModel.Tsat(liquid.thermo().p());
+            const volScalarField& Tsat = tTsat();
+            const fvPatchScalarField& Tsatw(Tsat.boundaryField()[patchi]);
+            const scalarField Tsatc(Tsatw.patchInternalField());
+
+            const fvPatchScalarField& hew =
+                liquid.thermo().he().boundaryField()[patchi];
+
+            const fvPatchScalarField& pw =
+                liquid.thermo().p().boundaryField()[patchi];
+
+            const scalarField L
+            (
+                vapor.thermo().he(pw, Tsatc, patchi) - hew.patchInternalField()
+            );
+
+            // htc for film boiling
+            const scalarField htcFilmBoiling
+            (
+                filmBoilingModel_->htcFilmBoil
+                (
+                    liquid,
+                    vapor,
+                    patchi,
+                    Tc,
+                    Tsatw,
+                    L
+                )
+            );
+            // Leidenfrost Temperature
+            const scalarField TLeiden
+            (
+                LeidenfrostModel_->TLeid
+                (
+                    liquid,
+                    vapor,
+                    patchi,
+                    Tc,
+                    Tsatw,
+                    L
+                )
+            );
+
+            const scalarField qFilm(htcFilmBoiling*max(Tw - Tsatw, scalar(0)));
+
             // NOTE! Assumes 1-thisPhase for liquid fraction in
             // multiphase simulations
-
             const scalarField fLiquid
             (
                 partitioningModel_->fLiquid(1-vaporw)
             );
 
-            operator==
-            (
-                calcAlphat(*this)*(1 - fLiquid)/max(vaporw, scalar(1e-8))
-            );
+            const tmp<scalarField> talphaw = vapor.thermo().alpha(patchi);
+            const scalarField& alphaw = talphaw();
+
+            const scalarField heSnGrad(max(hew.snGrad(), scalar(1e-16)));
+
+            // Convective thermal diffusivity for single phase
+            const scalarField alphatv(calcAlphat(*this));
+
+            forAll (*this, i)
+            {
+                if (Tw[i] > TLeiden[i])
+                {
+                    this->operator[](i) =
+                    (
+                        max
+                        (
+                            (1 - fLiquid[i])
+                           *(qFilm[i]/heSnGrad[i]/max(vaporw[i], scalar(1e-8))),
+                            1e-16
+                        )
+                    );
+                }
+                else
+                {
+                    this->operator[](i) =
+                    (
+                        (1 - fLiquid[i]))*((alphatv[i] + alphaw[i])
+                       /max(vaporw[i], scalar(1e-8))
+                    );
+                }
+            }
 
             if (debug)
             {
                 Info<< "  alphat: " << gMin(*this) << " - "
                     << gMax(*this) << endl;
+
+                const scalarField qEff(vaporw*(*this)*hew.snGrad());
+
+                scalar Qeff = gSum(qEff*patch().magSf());
+                Info<< " Effective heat transfer rate to vapor:" << Qeff << endl;
             }
             break;
         }
@@ -460,7 +629,7 @@ void alphatWallBoilingWallFunctionFvPatchScalarField::updateCoeffs()
             const fvPatchScalarField& rhow =
                 turbModel.rho().boundaryField()[patchi];
             const fvPatchScalarField& hew =
-            liquid.thermo().he().boundaryField()[patchi];
+                liquid.thermo().he().boundaryField()[patchi];
 
             const fvPatchScalarField& Tw =
                 liquid.thermo().T().boundaryField()[patchi];
@@ -511,21 +680,118 @@ void alphatWallBoilingWallFunctionFvPatchScalarField::updateCoeffs()
 
             const scalarField fLiquid(partitioningModel_->fLiquid(liquidw));
 
-            // Convective thermal diffusivity
-            alphatConv_ = calcAlphat(alphatConv_);
-
             for (label i=0; i<10; i++)
             {
                 // Liquid temperature at y+=250 is estimated from logarithmic
                 // thermal wall function (Koncar, Krepper & Egorov, 2005)
                 const scalarField Tplus_y250(Prt_*(log(E_*250)/kappa_ + P));
-
                 const scalarField Tplus(Prt_*(log(E_*yPlus)/kappa_ + P));
                 scalarField Tl(Tw - (Tplus_y250/Tplus)*(Tw - Tc));
-                //Tl = max(Tc - 40, Tl);
-                Tl = max(Tc, Tl);
+                Tl = max(Tc - 40, Tl);
 
-                // Nucleation site density:
+                const scalarField CHF
+                (
+                    CHFModel_->CHF
+                    (
+                        liquid,
+                        vapor,
+                        patchi,
+                        Tl,
+                        Tsatw,
+                        L
+                    )
+                );
+
+                const scalarField CHFSubCool
+                (
+                    CHFSoobModel_->CHFSubCool
+                    (
+                        liquid,
+                        vapor,
+                        patchi,
+                        Tl,
+                        Tsatw,
+                        L
+                    )
+                );
+
+                const scalarField CHFtotal(CHF*CHFSubCool);
+
+                const scalarField tDNB
+                (
+                    TDNBModel_->TDNB
+                    (
+                        liquid,
+                        vapor,
+                        patchi,
+                        Tl,
+                        Tsatw,
+                        L
+                    )
+                );
+
+                const scalarField MHF
+                (
+                    MHFModel_->MHF
+                    (
+                        liquid,
+                        vapor,
+                        patchi,
+                        Tl,
+                        Tsatw,
+                        L
+                    )
+                );
+
+                const scalarField TLeiden
+                (
+                    LeidenfrostModel_->TLeid
+                    (
+                        liquid,
+                        vapor,
+                        patchi,
+                        Tl,
+                        Tsatw,
+                        L
+                    )
+                );
+
+                // htc for film boiling
+                const scalarField htcFilmBoiling
+                (
+                    filmBoilingModel_->htcFilmBoil
+                    (
+                        liquid,
+                        vapor,
+                        patchi,
+                        Tl,
+                        Tsatw,
+                        L
+                    )
+                );
+
+                // htc for film transition boiling
+
+                // Indicator between CHF (phi = 1) and MHF (phi = 0)
+                const scalarField phi
+                (
+                    min
+                    (
+                        max
+                        (
+                            wp_*(Tw - tDNB)/(TLeiden - tDNB),
+                            scalar(0)
+                        )
+                        , scalar(1)
+                    )
+                );
+
+                const scalarField Qtb
+                (
+                    CHFtotal*phi + (1 - phi)*MHF
+                );
+
+                // Sub-cool boiling Nucleation
                 const scalarField N
                 (
                     nucleationSiteModel_->N
@@ -562,68 +828,141 @@ void alphatWallBoilingWallFunctionFvPatchScalarField::updateCoeffs()
                     )
                 );
 
-                // Area fractions:
+                // Convective thermal diffusivity for single phase
+                alphatConv_ = calcAlphat(alphatConv_);
 
-                // Del Valle & Kenning (1985)
-                /*
-                const scalarField Ja
-                (
-                    rhoLiquidw*Cpw*(Tsatw - Tl)/(rhoVaporw*L)
-                );
+                // Convective heat transfer area for Sub-cool boiling
+                scalarField A1(this->size(), 0);
 
-                const scalarField Al
-                (
-                    fLiquid*4.8*exp(min(-Ja/80, log(VGREAT)))
-                );
-                */
+                // Use to identify regimes per face
+                labelField regimeTypes(A1.size() -1);
 
-                //const scalarField A2(min(pi*sqr(dDep_)*N*Al/4, scalar(1)));
-                // More simple method to calculate area affected by bubbles
-                const scalarField A2(min(pi*sqr(dDep_)*N*K_/4, scalar(1)));
+                forAll (*this, i)
+                {
+                    if (Tw[i] > Tsatw[i])
+                    {
+                        // Sub-cool boiling
+                        if (Tw[i] < tDNB[i])
+                        {
+                            regimeTypes[i] = regimeType::subcool; // Sub-cool boiling
 
-                const scalarField A1(max(1 - A2, 0.0));
-                //const scalarField A1(max(1 - A2, scalar(1e-4)));
-                //const scalarField A2E(min(pi*sqr(dDep_)*N*Al/4, scalar(5)));
-                //const scalarField A2E(min(pi*sqr(dDep_)*N*K/4, scalar(5)));
+                            Tl = (Tw - (Tplus_y250/Tplus)*(Tw - Tc));
+                            Tl = max(Tc - 40, Tl);
 
-                // Following Bowring(1962)
-                const scalarField A2E(min(pi*sqr(dDep_)*N, scalar(5)));
+                            // Area fractions:
 
-                // Volumetric mass source in the near wall cell due to the
-                // wall boiling
-                dmdt_ =
-                    fLiquid
-                  * (
-                        (1 - relax_)*dmdt_
-                      + relax_*(1.0/6.0)*A2E*dDep_*rhoVaporw*fDep*AbyV_
-                    );
+                            // Del Valle & Kenning (1985)
+                            /*
+                            const scalarField Ja
+                            (
+                                rhoLiquidw*Cpw*(Tsatw - Tl)/(rhoVaporw*L)
+                            );
 
-                // Volumetric source in the near wall cell due to the wall
-                // boiling
-                mDotL_ = dmdt_*L;
+                            const scalarField Al
+                            (
+                                fLiquid*4.8*exp(min(-Ja/80, log(VGREAT)))
+                            );
+                            */
 
-                // Quenching heat transfer coefficient
-                const scalarField hQ
-                (
-                    2*(alphaw*Cpw)*fDep*sqrt((0.8/fDep)/(pi*alphaw/rhow))
-                );
+                            // More simple method to calculate area affected by bubbles
+                            const scalar A2(min(pi*sqr(dDep_[i])*N[i]*K_/4, scalar(1)));
+                            A1[i] = max(1 - A2, 0.0);
 
-                // Quenching heat flux
-                qq_ =
-                    fLiquid
-                   *(
-                       (1 - relax_)*qq_
-                     + relax_*A2*hQ*max(Tw - Tl, scalar(0))
-                    );
+                            // Following Bowring(1962)
+                            const scalar A2E(min(pi*sqr(dDep_[i])*N[i], scalar(5)));
 
-                // Effective thermal diffusivity that corresponds to the
-                // calculated convective, quenching and evaporative heat fluxes
+                            // Volumetric mass source in the near wall cell due to the
+                            // wall boiling
+                            dmdt_[i] =
+                                fLiquid[i]
+                                * (
+                                    (1 - relax_)*dmdt_[i]
+                                  + relax_*(1.0/6.0)*A2E*dDep_[i]*rhoVaporw[i]
+                                  * fDep[i]*AbyV_[i]
+                                );
+
+                            // Volumetric source in the near wall cell due to the wall
+                            // boiling
+                            mDotL_[i] = dmdt_[i]*L[i];
+
+                            // Quenching heat transfer coefficient
+                            const scalar hQ
+                            (
+                                2*(alphaw[i]*Cpw[i])*fDep[i]
+                                *sqrt
+                                (
+                                    (0.8/fDep[i])/(pi*alphaw[i]/rhow[i])
+                                )
+                            );
+
+                            // Quenching heat flux in Sub-cool boiling
+                            qq_[i] =
+                                fLiquid[i]
+                                *(
+                                    (1 - relax_)*qq_[i]
+                                  + relax_*A2*hQ*max(Tw[i] - Tl[i], scalar(0))
+                                );
+                        }
+                        else if (Tw[i] > tDNB[i] && Tw[i] < TLeiden[i])
+                        {
+                            regimeTypes[i] = regimeType::transient; // transient boiling
+
+                            // No convective heat tranfer
+                            alphatConv_[i] = 0.0;
+
+                            // transient boiling
+                            dmdt_[i] =
+                                fLiquid[i]
+                                *(
+                                    relax_*Qtb[i] + (1 - relax_)*dmdt_[i]
+                                )*AbyV_[i]/L[i];
+
+                            mDotL_[i] = dmdt_[i]*L[i];
+
+                            // No quenching flux
+                            qq_[i] = 0.0;
+                        }
+                        else if (Tw[i] > TLeiden[i])
+                        {
+                            regimeTypes[i] = 2; // film boiling
+
+                            // No convective heat tranfer
+                            alphatConv_[i] = 0.0;
+
+                            // Film boiling
+                            dmdt_[i] =
+                                 fLiquid[i]
+                                *(
+                                    relax_*htcFilmBoiling[i]*max(Tw[i] - Tsatw[i], 0)
+                                  + (1 - relax_)*dmdt_[i]
+                                )*AbyV_[i]/L[i];
+
+                            mDotL_[i] = dmdt_[i]*L[i];
+
+                            // No quenching flux
+                            qq_[i] = 0.0;
+                        }
+                    }
+                    else
+                    {
+                        // Tw below Tsat. No boiling single phase convection
+                        regimeTypes[i] = regimeType::nonBoiling; //Single phase
+                        A1 = 1.0;
+                        qq_[i] = 0.0;
+                        mDotL_[i] = 0.0;
+                    }
+                }
+
+                // Effective thermal diffusivity
+                // Adding alpha laminar to the single phase regime as the inter region BC
+                // substracts it.
+                // On the other regimes this alpha is used as the total alpha
                 operator==
                 (
                     max
                     (
                         (
-                           fLiquid*A1*alphatConv_
+                           fLiquid*A1*(alphatConv_ + alphaw)
                          + (qq_ + qe())/max(hew.snGrad(), scalar(1e-16))
                         )/max(liquidw, scalar(1e-8)),
                         1e-16
@@ -632,65 +971,107 @@ void alphatWallBoilingWallFunctionFvPatchScalarField::updateCoeffs()
 
                 scalarField TsupPrev(max((Tw - Tsatw), scalar(0)));
                 // NOTE: lagging Tw update.
-                //const_cast<fvPatchScalarField&>(Tw).evaluate();
+                const_cast<fvPatchScalarField&>(Tw).evaluate();
                 scalarField TsupNew(max((Tw - Tsatw), scalar(0)));
 
                 scalar maxErr(max(mag(TsupPrev - TsupNew)));
 
                 if (debug)
                 {
-                    const scalarField qc
-                    (
-                        fLiquid*A1*(alphatConv_ + alphaw)*hew.snGrad()
-                    );
-
                     const scalarField qEff
                     (
-                        liquidw*(*this + alphaw)*hew.snGrad()
+                        liquidw*(*this)*hew.snGrad()
                     );
 
-                    Info<< "  L: " << gMin(L) << " - " << gMax(L) << endl;
-                    Info<< "  Tl: " << gMin(Tl) << " - " << gMax(Tl) << endl;
-                    Info<< "  N: " << gMin(N) << " - " << gMax(N) << endl;
-                    Info<< "  dDep: " << gMin(dDep_) << " - "
-                        << gMax(dDep_) << endl;
-                    Info<< "  fDep: " << gMin(fDep) << " - "
-                        << gMax(fDep) << endl;
-                    //Info<< "  Al: " << gMin(Al) << " - " << gMax(Al) << endl;
-                    Info<< "  A1: " << gMin(A1) << " - " << gMax(A1) << endl;
-                    Info<< "  A2: " << gMin(A2) << " - " << gMax(A2) << endl;
-                    Info<< "  A2E: " << gMin(A2E) << " - "
-                        << gMax(A2E) << endl;
-                    Info<< "  dmdtW: " << gMin(dmdt_) << " - "
-                        << gMax(dmdt_) << endl;
-                    Info<< "  qc: " << gMin(qc) << " - " << gMax(qc) << endl;
-                    Info<< "  qq: " << gMin(qq()) << " - "
-                        << gMax(qq()) << endl;
-                    Info<< "  qe: " << gMin(qe()) << " - "
-                        << gMax(qe()) << endl;
-                    Info<< "  qEff: " << gMin(qEff) << " - "
-                        << gMax(qEff) << endl;
+                    scalar Qeff = gSum(qEff*patch().magSf());
+                    Info<< " Effective heat transfer rate to liquid:" << Qeff << endl;
+
                     Info<< "  alphat: " << gMin(*this) << " - "
                         << gMax(*this) << endl;
-                    Info<< "  alphatConv: " << gMin(alphatConv_)
-                        << " - " << gMax(alphatConv_) << endl;
-                    Info<< "  fLiquid: " << gMin(fLiquid) << " - "
-                        << gMax(fLiquid) << endl;
 
-                    scalar Qc = gSum(qc*patch().magSf());
-                    Info<< " Convective heat transfer rate:" << Qc << endl;
+                    Info<< "  dmdtW: " << gMin(dmdt_) << " - "
+                        << gMax(dmdt_) << endl;
 
-                    scalar Qeff = gSum(qEff*patch().magSf());
-                    Info<< " Effective heat transfer rate:" << Qeff << endl;
+                    if (debug && 2)
+                    {
+                        scalar nSubCool(0);
+                        scalar nTransient(0);
+                        scalar nFilm(0);
+                        scalar nNonBoiling(0);
 
-                    scalar Qq = gSum(qq_*patch().magSf());
-                    Info<< " Quenching heat transfer rate:" << Qq << endl;
+                        scalarField nSubCools(this->size(), 0);
+                        scalarField nTransients(this->size(), 0);
+                        scalarField nFilms(this->size(), 0);
+                        scalarField nNonBoilings(this->size(), 0);
 
-                    scalar Qe = gSum(qe()*patch().magSf());
-                    Info<< " Evaporating heat transfer rate:" << Qe << endl;
+                        forAll (*this, i)
+                        {
+                            switch (regimeTypes[i])
+                            {
+                                case regimeType::subcool:
+                                    nSubCool++;
+                                    nSubCools[i] = 1;
+                                break;
 
-                    Info<< " Quenching heat transfer rate: " << qq_ << endl;
-                    Info<< " fLiquid: " << fLiquid << endl;
+                                case regimeType::transient:
+                                    nTransient++;
+                                    nTransients[i] = 1;
+                                break;
+
+                                case regimeType::film:
+                                    nFilm++;
+                                    nFilms[i] = 1;
+                                break;
+
+                                case regimeType::nonBoiling:
+                                    nNonBoiling++;
+                                    nNonBoilings[i] = 1;
+                                break;
+                            }
+                        }
+
+                        Info<< "Sub Cool faces : " << nSubCool << endl;
+                        Info<< "Transient faces : " << nTransient << endl;
+                        Info<< "Film faces : " << nFilm << endl;
+                        Info<< "Non Boiling faces : " << nNonBoiling << endl;
+                        Info<< "Total faces : " << this->size() << endl;
+
+                        const scalarField qc
+                        (
+                            nNonBoilings*fLiquid*A1*(alphatConv_ + alphaw)*hew.snGrad()
+                        );
+
+                        scalar Qc = gSum(qc*patch().magSf());
+                        Info<< " Convective heat transfer:" << Qc << endl;
+
+                        const scalarField qFilm
+                        (
+                            fLiquid*nFilms*htcFilmBoiling*(Tw - Tsatw)
+                        );
+
+                        scalar QFilm = gSum(qFilm*patch().magSf());
+                        Info<< " Film boiling heat transfer: " << QFilm << endl;
+
+                        Info<< " Htc Film Boiling coeff: " << gMin(htcFilmBoiling)
+                            << " - "
+                            << gMax(htcFilmBoiling) << endl;
+
+                        scalar Qtbtot= gSum(nTransients*Qtb*patch().magSf());
+                        Info<< " Transient boiling heat transfer:" << Qtbtot << endl;
+
+                        scalar QsubCool= gSum(nSubCools*(qq_ + qe())*patch().magSf());
+                        Info<< " Sub Cool boiling heat transfer:" << QsubCool << endl;
+
+                        Info<< "  N: " << gMin(nSubCools*N) << " - "
+                            << gMax(nSubCools*N) << endl;
+                        Info<< "  dDep: " << gMin(nSubCools*dDep_) << " - "
+                            << gMax(nSubCools*dDep_) << endl;
+                        Info<< "  fDep: " << gMin(nSubCools*fDep) << " - "
+                            << gMax(nSubCools*fDep) << endl;
+                        Info<< "  A1: " << gMin(nSubCools*A1) << " - "
+                            << gMax(nSubCools*A1) << endl;
+
+                    }
 
                 }
 
@@ -736,6 +1117,17 @@ void alphatWallBoilingWallFunctionFvPatchScalarField::write(Ostream& os) const
             os  << indent << token::BEGIN_BLOCK << incrIndent << nl;
             partitioningModel_->write(os);
             os << decrIndent << indent << token::END_BLOCK << nl;
+
+            os.writeKeyword("filmBoilingModel") << nl;
+            os << indent << token::BEGIN_BLOCK << incrIndent << nl;
+            filmBoilingModel_->write(os);
+            os << decrIndent << indent << token::END_BLOCK << nl;
+
+            os.writeKeyword("LeidenfrostModel") << nl;
+            os << indent << token::BEGIN_BLOCK << incrIndent << nl;
+            LeidenfrostModel_->write(os);
+            os << decrIndent << indent << token::END_BLOCK << nl;
+
             break;
         }
         case liquidPhase:
@@ -755,13 +1147,43 @@ void alphatWallBoilingWallFunctionFvPatchScalarField::write(Ostream& os) const
             departureDiamModel_->write(os);
             os << decrIndent << indent << token::END_BLOCK << nl;
 
-            os.writeKeyword("departureFreqModel") << nl;
+            os.writeKeyword("departureFrqModel") << nl;
             os << indent << token::BEGIN_BLOCK << incrIndent << nl;
             departureFreqModel_->write(os);
             os << decrIndent << indent << token::END_BLOCK << nl;
 
-            os.writeKeyword("K") << K_ << token::END_STATEMENT << nl;
+            os.writeKeyword("filmBoilingModel") << nl;
+            os << indent << token::BEGIN_BLOCK << incrIndent << nl;
+            filmBoilingModel_->write(os);
+            os << decrIndent << indent << token::END_BLOCK << nl;
 
+            os.writeKeyword("LeidenfrostModel") << nl;
+            os << indent << token::BEGIN_BLOCK << incrIndent << nl;
+            LeidenfrostModel_->write(os);
+            os << decrIndent << indent << token::END_BLOCK << nl;
+
+            os.writeKeyword("CHFModel") << nl;
+            os << indent << token::BEGIN_BLOCK << incrIndent << nl;
+            CHFModel_->write(os);
+            os << decrIndent << indent << token::END_BLOCK << nl;
+
+            os.writeKeyword("CHFSubCoolModel") << nl;
+            os << indent << token::BEGIN_BLOCK << incrIndent << nl;
+            CHFSoobModel_->write(os);
+            os << decrIndent << indent << token::END_BLOCK << nl;
+
+            os.writeKeyword("MHFModel") << nl;
+            os << indent << token::BEGIN_BLOCK << incrIndent << nl;
+            MHFModel_->write(os);
+            os << decrIndent << indent << token::END_BLOCK << nl;
+
+            os.writeKeyword("TDNBModel") << nl;
+            os << indent << token::BEGIN_BLOCK << incrIndent << nl;
+            TDNBModel_->write(os);
+            os << decrIndent << indent << token::END_BLOCK << nl;
+
+            os.writeKeyword("K") << K_ << token::END_STATEMENT << nl;
+            os.writeKeyword("wp") << wp_ << token::END_STATEMENT << nl;
             break;
         }
     }

@@ -13,6 +13,7 @@ diameterModels/diameterModel/newDiameterModel.C
 diameterModels/constantDiameter/constantDiameter.C
 diameterModels/isothermalDiameter/isothermalDiameter.C
 diameterModels/velocityGroup/velocityGroup.C
+diameterModels/thermalDiameter/thermalDiameter.C
 
 populationBalanceModel/populationBalanceModel/populationBalanceModel.C
 diameterModels/velocityGroup/sizeGroup/sizeGroup.C
