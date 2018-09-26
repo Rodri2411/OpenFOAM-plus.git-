@@ -32,7 +32,6 @@ wallBoilingSubModels/filmBoilingModels/Bromley/Bromley.C
 
 wallBoilingSubModels/LeidenfrostModels/LeidenfrostModel/LeidenfrostModel.C
 wallBoilingSubModels/LeidenfrostModels/LeidenfrostModel/newLeidenfrostModel.C
-wallBoilingSubModels/LeidenfrostModels/Cheng/Cheng.C
 wallBoilingSubModels/LeidenfrostModels/Spiegler/Spiegler.C
 
 wallBoilingSubModels/MHFModels/MHFModel/MHFModel.C

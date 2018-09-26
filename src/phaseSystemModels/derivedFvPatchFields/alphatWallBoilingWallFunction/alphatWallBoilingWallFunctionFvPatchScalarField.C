@@ -1147,7 +1147,7 @@ void alphatWallBoilingWallFunctionFvPatchScalarField::write(Ostream& os) const
             departureDiamModel_->write(os);
             os << decrIndent << indent << token::END_BLOCK << nl;
 
-            os.writeKeyword("departureFrqModel") << nl;
+            os.writeKeyword("departureFreqModel") << nl;
             os << indent << token::BEGIN_BLOCK << incrIndent << nl;
             departureFreqModel_->write(os);
             os << decrIndent << indent << token::END_BLOCK << nl;
