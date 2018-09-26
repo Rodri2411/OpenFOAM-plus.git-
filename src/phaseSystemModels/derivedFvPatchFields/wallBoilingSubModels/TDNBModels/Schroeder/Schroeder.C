@@ -95,6 +95,15 @@ Foam::wallBoilingModels::TDNBModels::Schroeder::TDNB
 }
 
 
+void Foam::wallBoilingModels::TDNBModels::Schroeder::write
+(
+    Ostream& os
+) const
+{
+    TDNBModel::write(os);
+    os.writeKeyword("kg") << kg_ << token::END_STATEMENT << nl;
+}
+
 // ************************************************************************* //
 
 

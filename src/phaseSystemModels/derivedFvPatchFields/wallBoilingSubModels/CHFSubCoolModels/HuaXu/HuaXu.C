@@ -118,6 +118,16 @@ Foam::wallBoilingModels::CHFModels::HuaXu::CHFSubCool
 }
 
 
+void Foam::wallBoilingModels::CHFModels::HuaXu::write
+(
+    Ostream& os
+) const
+{
+    CHFSubCoolModel::write(os);
+    os.writeKeyword("Kburn") << Kburn_ << token::END_STATEMENT << nl;
+}
+
+
 // ************************************************************************* //
 
 

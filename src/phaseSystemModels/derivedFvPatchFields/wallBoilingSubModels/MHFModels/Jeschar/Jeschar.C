@@ -101,6 +101,16 @@ Foam::wallBoilingModels::CHFModels::Jeschar::MHF
 }
 
 
+void Foam::wallBoilingModels::CHFModels::Jeschar::write
+(
+    Ostream& os
+) const
+{
+    MHFModel::write(os);
+    os.writeKeyword("Kmhf") << Kmhf_ << token::END_STATEMENT << nl;
+}
+
+
 // ************************************************************************* //
 
 

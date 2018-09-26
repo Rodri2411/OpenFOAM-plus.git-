@@ -107,6 +107,16 @@ Foam::wallBoilingModels::filmBoilingModels::Bromley::htcFilmBoil
 }
 
 
+void Foam::wallBoilingModels::filmBoilingModels::Bromley::write
+(
+    Ostream& os
+) const
+{
+    filmBoilingModel::write(os);
+    os.writeKeyword("Cn") << Cn_ << token::END_STATEMENT << nl;
+}
+
+
 // ************************************************************************* //
 
 

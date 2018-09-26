@@ -95,6 +95,9 @@ public:
             const scalarField& Tsatw,
             const scalarField& L
         ) const;
+
+
+        virtual void write(Ostream& os) const;
 };
 
 

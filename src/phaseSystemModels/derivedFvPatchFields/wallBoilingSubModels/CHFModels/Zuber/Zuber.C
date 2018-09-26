@@ -101,6 +101,13 @@ Foam::wallBoilingModels::CHFModels::Zuber::CHF
 }
 
 
+void Foam::wallBoilingModels::CHFModels::Zuber::write(Ostream& os) const
+{
+    CHFModel::write(os);
+    os.writeKeyword("Cn") << Cn_ << token::END_STATEMENT << nl;
+}
+
+
 // ************************************************************************* //
 
 

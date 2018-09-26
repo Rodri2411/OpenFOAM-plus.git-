@@ -54,7 +54,7 @@ Foam::wallBoilingModels::nucleationSiteModels::LemmertChawla::LemmertChawla
 )
 :
     nucleationSiteModel(),
-    Cn_(dict.lookupOrDefault<scalar>("Cn", 210))
+    Cn_(dict.lookupOrDefault<scalar>("Cn", 1))
 {}
 
 

@@ -85,4 +85,14 @@ Foam::wallBoilingModels::LeidenfrostModels::Spiegler::TLeid
     );
 }
 
+
+void Foam::wallBoilingModels::LeidenfrostModels::Spiegler::write
+(
+    Ostream& os
+) const
+{
+    LeidenfrostModel::write(os);
+    os.writeKeyword("Tcrit") << Tcrit_ << token::END_STATEMENT << nl;
+}
+
 // ************************************************************************* //
