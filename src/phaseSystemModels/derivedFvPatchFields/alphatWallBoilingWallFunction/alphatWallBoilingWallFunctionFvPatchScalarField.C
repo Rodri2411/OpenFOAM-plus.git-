@@ -788,7 +788,7 @@ void alphatWallBoilingWallFunctionFvPatchScalarField::updateCoeffs()
 
                 const scalarField Qtb
                 (
-                    CHFtotal*phi + (1 - phi)*MHF
+                    CHFtotal*(1 - phi) + phi*MHF
                 );
 
                 // Sub-cool boiling Nucleation
@@ -1058,6 +1058,8 @@ void alphatWallBoilingWallFunctionFvPatchScalarField::updateCoeffs()
 
                         scalar Qtbtot= gSum(nTransients*Qtb*patch().magSf());
                         Info<< " Transient boiling heat transfer:" << Qtbtot << endl;
+                        Info<< "  phi: " << gMin(nTransients*phi) << " - "
+                            << gMax(nTransients*phi) << endl;
 
                         scalar QsubCool= gSum(nSubCools*(qq_ + qe())*patch().magSf());
                         Info<< " Sub Cool boiling heat transfer:" << QsubCool << endl;
