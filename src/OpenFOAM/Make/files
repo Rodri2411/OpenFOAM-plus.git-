@@ -264,6 +264,7 @@ $(regIOobject)/regIOobjectRead.C
 $(regIOobject)/regIOobjectWrite.C
 
 db/IOobjectList/IOobjectList.C
+db/IOobjectNames/IOobjectNames.C
 db/objectRegistry/objectRegistry.C
 db/CallbackRegistry/CallbackRegistryName.C
 
