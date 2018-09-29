@@ -24,6 +24,7 @@ starcd/STARCDMeshWriter.C
 
 polyDualMesh/polyDualMesh.C
 
+vtk/output/foamVtkFieldTypes.C
 vtk/output/foamVtkInternalWriter.H
 vtk/output/foamVtkPatchWriter.H
 vtk/output/foamVtkSurfaceMeshWriter.C
