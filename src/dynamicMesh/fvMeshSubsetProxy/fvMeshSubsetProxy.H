@@ -37,6 +37,7 @@ SourceFiles
 #ifndef fvMeshSubsetProxy_H
 #define fvMeshSubsetProxy_H
 
+#include "wordRes.H"
 #include "fvMeshSubset.H"
 #include "zeroGradientFvPatchField.H"
 
@@ -56,12 +57,13 @@ class fvMeshSubsetProxy
 {
 public:
 
-        //- Internal book-keeping for subset type
+        //- Internal bookkeeping for subset type
         enum subsetType
         {
-            NONE = 0,   //<! Not a subset
-            SET,        //<! Using a cellSet for the subset
-            ZONE        //<! Using a cellZone for the subset
+            NONE = 0,       //<! No subset
+            SET  = 0x1,     //<! Subset with a cellSet
+            ZONE = 0x2,     //<! Subset with a cellZone
+            ZONES = 0x4     //<! Subset with multiple cellZones
         };
 
 
@@ -72,17 +74,23 @@ private:
         //- Reference to mesh
         fvMesh& baseMesh_;
 
-        //- Subsetting engine + sub-fvMesh
+        //- Subsetting engine
         fvMeshSubset subsetter_;
 
-        //- Subset type if any.
-        const subsetType type_;
+        //- Patch ID for exposed internal faces
+        label exposedPatchId_;
 
-        //- Name of current cellSet/cellZone (or empty)
+        //- Subsetting type. From subsetType enum and bounds flag.
+        unsigned type_;
+
+        //- Name of the cellSet/cellZone (or empty)
         const word name_;
 
-        //- Patch ID for exposed internal faces
-        const label exposedPatchId_;
+        //- Selection for multiple cell zones
+        wordRes zones_;
+
+        //- Optional bounding box
+        boundBox bounds_;
 
 
     // Private Member Functions
@@ -98,16 +106,33 @@ public:
 
     // Constructors
 
-        //- Construct from components
-        fvMeshSubsetProxy(fvMesh& baseMesh);
+        //- Construct a pass-through proxy. No correct() invoked or required.
+        explicit fvMeshSubsetProxy(fvMesh& baseMesh);
+
+        //- Construct from mesh with bounding box limiter.
+        //  Invokes correct() if the bounding is non-empty.
+        fvMeshSubsetProxy(fvMesh& baseMesh, const boundBox& bounds);
 
         //- Construct from components
+        //  Optionally defer invoking correct(), which can be useful
+        //  when adding a bounding box
         fvMeshSubsetProxy
         (
             fvMesh& baseMesh,
             const subsetType,
             const word& name,
-            const label exposedPatchId = -1
+            const boundBox& bounds = boundBox::invertedBox,
+            label exposedPatchId = -1
+        );
+
+        //- Construct from components
+        fvMeshSubsetProxy
+        (
+            fvMesh& baseMesh,
+            const wordRes& zones,
+            const word& name,
+            const boundBox& bounds = boundBox::invertedBox,
+            label exposedPatchId = -1
         );
 
 
@@ -153,55 +178,93 @@ public:
 
     // Edit
 
-        //- Update mesh subset
+        //- Define/change bounding limits.
+        void bounds(const boundBox& bounds);
+
+        //- Update of mesh subset
         void correct(bool verbose = false);
 
         //- Read mesh. Correct on topo-change
         polyMesh::readUpdateState readUpdate();
 
 
+    // Fields
+
         //- Construct volField (with zeroGradient) from an internal field
         template<class Type>
         static tmp<GeometricField<Type, fvPatchField, volMesh>>
         zeroGradientField
         (
-            const typename GeometricField
-            <
-                Type,
-                fvPatchField,
-                volMesh
-            >::Internal& fld
+            const DimensionedField<Type, volMesh>& df
+        );
+
+        //- Convert an internal field to a volume field (with zeroGradient)
+        template<class Type>
+        static tmp<GeometricField<Type, fvPatchField, volMesh>>
+        interpolateInternal
+        (
+            const fvMeshSubset& subsetter,
+            const DimensionedField<Type, volMesh>& df
+        );
+
+        //- Convert an internal field to a volume field (with zeroGradient)
+        //  Currently no proper memory reuse
+        template<class Type>
+        static tmp<GeometricField<Type, fvPatchField, volMesh>>
+        interpolateInternal
+        (
+            const fvMeshSubset& subsetter,
+            const tmp<DimensionedField<Type, volMesh>>& tdf
+        );
+
+        //- Wrapper for field or the subsetted field.
+        //  Pass through or forward to fvMeshSubset::interpolate()
+        template<class GeoField>
+        static tmp<GeoField> interpolate
+        (
+            const fvMeshSubset& subsetter,
+            const GeoField& fld
+        );
+
+        //- Wrapper for field or the subsetted field.
+        //  Pass through or forward to fvMeshSubset::interpolate()
+        template<class GeoField>
+        static tmp<GeoField> interpolate
+        (
+            const fvMeshSubset& subsetter,
+            const tmp<GeoField>& fld
         );
 
 
+    // Fields
+
+        //- Convert an internal field to a volume field (with zeroGradient)
+        template<class Type>
+        tmp<GeometricField<Type, fvPatchField, volMesh>>
+        interpolateInternal
+        (
+            const DimensionedField<Type, volMesh>& df
+        ) const;
+
+        //- Convert an internal field to a volume field (with zeroGradient)
+        //  Currently no proper memory reuse
+        template<class Type>
+        tmp<GeometricField<Type, fvPatchField, volMesh>>
+        interpolateInternal
+        (
+            const tmp<DimensionedField<Type, volMesh>>& tdf
+        ) const;
+
+
         //- Wrapper for field or the subsetted field.
-        //  Map volume field (does in fact do very little interpolation;
-        //  just copied from fvMeshSubset)
-        template<class Type>
-        tmp<GeometricField<Type, fvPatchField, volMesh>>
-        interpolate
-        (
-            const GeometricField<Type, fvPatchField, volMesh>& fld
-        ) const;
-
-
-        //- Convert an internal field to a volume field
-        template<class Type>
-        tmp<GeometricField<Type, fvPatchField, volMesh>>
-        interpolate
-        (
-            const typename GeometricField
-            <
-                Type,
-                fvPatchField,
-                volMesh
-            >::Internal& fld
-        ) const;
-
-
-        //- Map volume field. Just forwards to fvMeshSubset
+        //  Pass through or forward to fvMeshSubset::interpolate()
         template<class GeoField>
         tmp<GeoField> interpolate(const GeoField& fld) const;
+
+        //- Wrapper for field or the subsetted field.
+        //  Pass through or forward to fvMeshSubset::interpolate()
+        template<class GeoField>
+        tmp<GeoField> interpolate(const tmp<GeoField>& fld) const;
 };
 
 
