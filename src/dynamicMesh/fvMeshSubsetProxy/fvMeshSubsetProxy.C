@@ -30,69 +30,199 @@ License
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
+Foam::fvMeshSubsetProxy::fvMeshSubsetProxy(fvMesh& baseMesh)
+:
+    fvMeshSubsetProxy(baseMesh, boundBox::invertedBox)
+{}
+
+
 Foam::fvMeshSubsetProxy::fvMeshSubsetProxy
 (
-    fvMesh& baseMesh
+    fvMesh& baseMesh,
+    const boundBox& bounds
 )
 :
     baseMesh_(baseMesh),
     subsetter_(baseMesh),
+    exposedPatchId_(-1),
     type_(NONE),
     name_(),
-    exposedPatchId_(-1)
+    zones_(),
+    bounds_(bounds)
 {
-    correct();
+    if (!bounds.empty())
+    {
+        type_ |= 0x100;   // Use bounding box
+    }
+
+    if (useSubMesh())
+    {
+        correct();
+    }
 }
 
 
 Foam::fvMeshSubsetProxy::fvMeshSubsetProxy
 (
     fvMesh& baseMesh,
-    const subsetType type,
+    subsetType type,
     const word& name,
-    const label exposedPatchId
+    const boundBox& bounds,
+    label exposedPatchId
 )
 :
     baseMesh_(baseMesh),
     subsetter_(baseMesh),
+    exposedPatchId_(exposedPatchId),
     type_(name.empty() ? NONE : type),
     name_(name),
-    exposedPatchId_(exposedPatchId)
+    zones_(),
+    bounds_(bounds)
 {
-    correct();
+    if (type_ == ZONES)
+    {
+        // Ensure wordRes is populated for ZONES
+        zones_.resize(1);
+        zones_.first() = name_;
+    }
+
+    if (!bounds.empty())
+    {
+        type_ |= 0x100;   // Use bounding box
+    }
+
+    if (useSubMesh())
+    {
+        correct();
+    }
+}
+
+
+Foam::fvMeshSubsetProxy::fvMeshSubsetProxy
+(
+    fvMesh& baseMesh,
+    const wordRes& zones,
+    const word& name,
+    const boundBox& bounds,
+    label exposedPatchId
+)
+:
+    baseMesh_(baseMesh),
+    subsetter_(baseMesh),
+    exposedPatchId_(exposedPatchId),
+    type_(ZONES),
+    name_(name),
+    zones_(zones),
+    bounds_(bounds)
+{
+    if (!bounds.empty())
+    {
+        type_ |= 0x100;   // Use bounding box
+    }
+
+    if (useSubMesh())
+    {
+        correct();
+    }
 }
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
+void Foam::fvMeshSubsetProxy::bounds(const boundBox& bounds)
+{
+    if (!bounds.empty())
+    {
+        bounds_ = bounds;
+        type_ |= 0x100;   // Use bounding box
+    }
+}
+
+
 void Foam::fvMeshSubsetProxy::correct(bool verbose)
 {
-    if (type_ == SET)
+    if (type_ == NONE)
+    {
+        subsetter_.clear();
+        return;
+    }
+
+    const label nCells = baseMesh_.nCells();
+
+    bitSet selectedCells;
+
+    if ((type_ & SET) != 0)
     {
         if (verbose)
         {
             Info<< "Subsetting mesh based on cellSet " << name_ << endl;
         }
 
-        subsetter_.setCellSubset
-        (
-            cellSet(baseMesh_, name_),
-            exposedPatchId_
-        );
+        cellSet cset(baseMesh_, name_);
+
+        selectedCells.resize(nCells);
+        for (const label idx : cset)
+        {
+            selectedCells.set(idx);
+        }
     }
-    else if (type_ == ZONE)
+    else if ((type_ & ZONE) != 0)
     {
         if (verbose)
         {
             Info<< "Subsetting mesh based on cellZone " << name_ << endl;
         }
 
-        subsetter_.setCellSubset
-        (
-            baseMesh_.cellZones()[name_],
-            exposedPatchId_
-        );
+        selectedCells.resize(nCells);
+        selectedCells.set(baseMesh_.cellZones()[name_]);
     }
+    else if ((type_ & ZONES) != 0)
+    {
+        if (verbose)
+        {
+            Info<< "Subsetting mesh based on cellZones" << endl;
+        }
+
+        selectedCells = baseMesh_.cellZones().selection(zones_);
+    }
+
+    if (((type_ & 0x100) != 0) && !bounds_.empty())
+    {
+        // Accept/reject based on cell centres
+        const auto& cc = baseMesh_.C();
+
+        if (verbose)
+        {
+            Info<< "Subsetting mesh based on bounding box" << endl;
+        }
+
+        if ((type_ & ~0x100) == NONE)
+        {
+            // Select all
+            selectedCells.resize(nCells, true);
+
+            for (label celli=0; celli < nCells; ++celli)
+            {
+                if (!bounds_.contains(cc[celli]))
+                {
+                    selectedCells.unset(celli);
+                }
+            }
+        }
+        else
+        {
+            // Sub-selection
+            for (const label celli : selectedCells)
+            {
+                if (!bounds_.contains(cc[celli]))
+                {
+                    selectedCells.unset(celli);
+                }
+            }
+        }
+    }
+
+    subsetter_.setCellSubset(selectedCells, exposedPatchId_);
 }
 
 
