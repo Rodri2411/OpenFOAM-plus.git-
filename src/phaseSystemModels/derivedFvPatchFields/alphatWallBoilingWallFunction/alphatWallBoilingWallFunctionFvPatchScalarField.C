@@ -525,7 +525,10 @@ void alphatWallBoilingWallFunctionFvPatchScalarField::updateCoeffs()
                         max
                         (
                             (1 - fLiquid[i])
-                           *(qFilm[i]/heSnGrad[i]/max(vaporw[i], scalar(1e-8))),
+                           *(
+                               qFilm[i]/heSnGrad[i] - alphaw[i]
+                              /max(vaporw[i], scalar(1e-8))
+                            ),
                             1e-16
                         )
                     );
@@ -534,7 +537,7 @@ void alphatWallBoilingWallFunctionFvPatchScalarField::updateCoeffs()
                 {
                     this->operator[](i) =
                     (
-                        (1 - fLiquid[i]))*((alphatv[i] + alphaw[i])
+                        (1 - fLiquid[i])*(alphatv[i])// + alphaw[i])
                        /max(vaporw[i], scalar(1e-8))
                     );
                 }
@@ -542,10 +545,10 @@ void alphatWallBoilingWallFunctionFvPatchScalarField::updateCoeffs()
 
             if (debug)
             {
-                Info<< "  alphat: " << gMin(*this) << " - "
+                Info<< "  alphatv: " << gMin(*this) << " - "
                     << gMax(*this) << endl;
 
-                const scalarField qEff(vaporw*(*this)*hew.snGrad());
+                const scalarField qEff(vaporw*(*this + alphaw)*hew.snGrad());
 
                 scalar Qeff = gSum(qEff*patch().magSf());
                 Info<< " Effective heat transfer rate to vapor:" << Qeff << endl;
@@ -648,9 +651,6 @@ void alphatWallBoilingWallFunctionFvPatchScalarField::updateCoeffs()
             const scalarField P(this->Psmooth(Prat));
 
             const scalarField yPlusTherm(this->yPlusTherm(P, Prat));
-
-            //const fvPatchScalarField& rhoLiquidw =
-            //    turbModel.rho().boundaryField()[patchi];
 
             const fvPatchScalarField& rhoVaporw =
                 vaporTurbModel.rho().boundaryField()[patchi];
@@ -834,6 +834,8 @@ void alphatWallBoilingWallFunctionFvPatchScalarField::updateCoeffs()
                 // Convective heat transfer area for Sub-cool boiling
                 scalarField A1(this->size(), 0);
 
+                const scalarField hewSn(hew.snGrad());
+
                 // Use to identify regimes per face
                 labelField regimeTypes(A1.size() -1);
 
@@ -942,21 +944,45 @@ void alphatWallBoilingWallFunctionFvPatchScalarField::updateCoeffs()
                             // No quenching flux
                             qq_[i] = 0.0;
                         }
+
+                        // Effective thermal diffusivity for boiling regimes.
+                        // alphaw is substracted as it is added by
+                        // kappaEff. These correlations take into account
+                        // the total htc
+                        this->operator[](i) =
+                        (
+                            max
+                            (
+                                (
+                                    (qq_[i] + mDotL_[i]/AbyV_[i])
+                                   /max(hewSn[i], scalar(1e-16)) - alphaw[i]
+                                )/max(liquidw[i], scalar(1e-8)),
+                                1e-16
+                            )
+                        );
                     }
                     else
                     {
                         // Tw below Tsat. No boiling single phase convection
                         regimeTypes[i] = regimeType::nonBoiling; //Single phase
-                        A1 = 1.0;
+                        A1[i] = 1.0;
                         qq_[i] = 0.0;
                         mDotL_[i] = 0.0;
+
+                        // Turbulente thermal diffusivity for single phase.
+                        this->operator[](i) =
+                        (
+                            max
+                            (
+                                fLiquid[i]*A1[i]*(alphatConv_[i])
+                               /max(liquidw[i], scalar(1e-8)),
+                                1e-16
+                            )
+                        );
                     }
                 }
 
-                // Effective thermal diffusivity
-                // Adding alpha laminar to the single phase regime as the inter region BC
-                // substracts it.
-                // On the other regimes this alpha is used as the total alpha
+                /*
                 operator==
                 (
                     max
@@ -964,10 +990,12 @@ void alphatWallBoilingWallFunctionFvPatchScalarField::updateCoeffs()
                         (
                            fLiquid*A1*(alphatConv_ + alphaw)
                          + (qq_ + qe())/max(hew.snGrad(), scalar(1e-16))
+                         - alphaw
                         )/max(liquidw, scalar(1e-8)),
                         1e-16
                     )
                 );
+                */
 
                 scalarField TsupPrev(max((Tw - Tsatw), scalar(0)));
                 // NOTE: lagging Tw update.
@@ -980,14 +1008,14 @@ void alphatWallBoilingWallFunctionFvPatchScalarField::updateCoeffs()
                 {
                     const scalarField qEff
                     (
-                        liquidw*(*this)*hew.snGrad()
+                        liquidw*(*this + alphaw)*hew.snGrad()
                     );
+
+                    Info<< "  alphatl: " << gMin(*this) << " - "
+                        << gMax(*this) << endl;
 
                     scalar Qeff = gSum(qEff*patch().magSf());
                     Info<< " Effective heat transfer rate to liquid:" << Qeff << endl;
-
-                    Info<< "  alphat: " << gMin(*this) << " - "
-                        << gMax(*this) << endl;
 
                     Info<< "  dmdtW: " << gMin(dmdt_) << " - "
                         << gMax(dmdt_) << endl;
@@ -1052,16 +1080,19 @@ void alphatWallBoilingWallFunctionFvPatchScalarField::updateCoeffs()
                         scalar QFilm = gSum(qFilm*patch().magSf());
                         Info<< " Film boiling heat transfer: " << QFilm << endl;
 
-                        Info<< " Htc Film Boiling coeff: " << gMin(htcFilmBoiling)
+                        Info<< " Htc Film Boiling coeff: " << gMin(nFilms*htcFilmBoiling)
                             << " - "
-                            << gMax(htcFilmBoiling) << endl;
+                            << gMax(nFilms*htcFilmBoiling) << endl;
 
-                        scalar Qtbtot= gSum(nTransients*Qtb*patch().magSf());
+                        scalar Qtbtot= gSum(fLiquid*nTransients*Qtb*patch().magSf());
                         Info<< " Transient boiling heat transfer:" << Qtbtot << endl;
                         Info<< "  phi: " << gMin(nTransients*phi) << " - "
                             << gMax(nTransients*phi) << endl;
 
-                        scalar QsubCool= gSum(nSubCools*(qq_ + qe())*patch().magSf());
+                        scalar QsubCool= gSum
+                        (
+                            fLiquid*nSubCools*(qq_ + qe())*patch().magSf()
+                        );
                         Info<< " Sub Cool boiling heat transfer:" << QsubCool << endl;
 
                         Info<< "  N: " << gMin(nSubCools*N) << " - "
