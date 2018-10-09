@@ -4,7 +4,7 @@
 HashTable<HashTable<word>> cloudFields;
 
 // Identify if lagrangian data exist at any time step.
-if (timeDirs.size() && !noLagrangian)
+if (timeDirs.size() && doLagrangian)
 {
     const fileName& baseDir = mesh.time().path();
     const fileName cloudPrefix(regionPrefix/cloud::prefix);
