@@ -837,7 +837,7 @@ void alphatWallBoilingWallFunctionFvPatchScalarField::updateCoeffs()
                 const scalarField hewSn(hew.snGrad());
 
                 // Use to identify regimes per face
-                labelField regimeTypes(A1.size() -1);
+                labelField regimeTypes(A1.size(), -1);
 
                 forAll (*this, i)
                 {
