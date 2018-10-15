@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2018 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2018 OpenCFD Ltd.
+     \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -50,9 +50,10 @@ void kEpsilonLopesdaCosta<BasicTurbulenceModel>::setPorosityCoefficient
 
         const scalar Cpm = pm.dict().get<scalar>(C.name());
 
-        for (const label zonei : cellZoneIDs)
+        forAll(cellZoneIDs, zonei)
         {
-            const labelList& cells = this->mesh_.cellZones()[zonei];
+            const labelList& cells =
+                this->mesh_.cellZones()[cellZoneIDs[zonei]];
 
             for (const label celli : cells)
             {
@@ -77,14 +78,14 @@ void kEpsilonLopesdaCosta<BasicTurbulenceModel>::setCdSigma
 
         const scalar Cpm = pm.dict().get<scalar>(C.name());
 
-        for (const label zonei : cellZoneIDs)
+        forAll(cellZoneIDs, zonei)
         {
-            const labelList& cells = this->mesh_.cellZones()[zonei];
+            const labelList& cells =
+                this->mesh_.cellZones()[cellZoneIDs[zonei]];
 
-            forAll(cells, i)
+            for (const label celli : cells)
             {
-                const label celli = cells[i];
-                C[celli] = Cpm*Sigma[i];
+                C[celli] = Cpm*Sigma[celli];
             }
         }
     }

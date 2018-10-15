@@ -44,7 +44,7 @@ atmBoundaryLayerInletVelocityFvPatchVectorField
 )
 :
     inletOutletFvPatchVectorField(p, iF),
-    atmBoundaryLayer()
+    atmBoundaryLayer(iF.time(), p.patch())
 {}
 
 
@@ -57,7 +57,7 @@ atmBoundaryLayerInletVelocityFvPatchVectorField
 )
 :
     inletOutletFvPatchVectorField(p, iF),
-    atmBoundaryLayer(patch().Cf(), dict)
+    atmBoundaryLayer(iF.time(), p.patch(), dict)
 {
     phiName_ = dict.lookupOrDefault<word>("phi", "phi");
 
@@ -103,6 +103,19 @@ atmBoundaryLayerInletVelocityFvPatchVectorField
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+
+void atmBoundaryLayerInletVelocityFvPatchVectorField::updateCoeffs()
+{
+    if (updated())
+    {
+        return;
+    }
+
+    refValue() = U(patch().Cf());
+
+    inletOutletFvPatchVectorField::updateCoeffs();
+}
+
 
 void atmBoundaryLayerInletVelocityFvPatchVectorField::autoMap
 (
