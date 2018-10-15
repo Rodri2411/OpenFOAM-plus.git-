@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
-     \\/     M anipulation  |
+     \\/     M anipulation  | Copyright (C) 2018 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -77,6 +77,11 @@ class freestreamFvPatchField
 :
     public inletOutletFvPatchField<Type>
 {
+    // Private data
+
+        //- BC to supply the freestream value
+        tmp<fvPatchField<Type>> freestreamBCPtr_;
+
 
 public:
 
@@ -146,6 +151,22 @@ public:
 
 
     // Member functions
+
+        // Mapping functions
+
+            //- Map (and resize as needed) from self given a mapping object
+            virtual void autoMap(const fvPatchFieldMapper& mapper);
+
+            //- Reverse map the given fvPatchField onto this fvPatchField
+            virtual void rmap
+            (
+                const fvPatchField<Type>& ptf,
+                const labelList& addr
+            );
+
+
+        //- Update the coefficients associated with the patch field
+        virtual void updateCoeffs();
 
         // Return defining fields
 
