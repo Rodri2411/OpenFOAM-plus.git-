@@ -62,7 +62,7 @@ void Foam::vtkSurfaceWriter::writeGeometry
         title = "sampleSurface";
     }
 
-    // header
+    // Header
     os
         << "# vtk DataFile Version 2.0" << nl
         << title.c_str() << nl
@@ -71,11 +71,11 @@ void Foam::vtkSurfaceWriter::writeGeometry
 
     // Write vertex coords
     os  << "POINTS " << points.size() << " double" << nl;
-    for (const point& pt : points)
+    for (const point& p : points)
     {
-        os  << float(pt.x()) << ' '
-            << float(pt.y()) << ' '
-            << float(pt.z()) << nl;
+        os  << float(p.x()) << ' '
+            << float(p.y()) << ' '
+            << float(p.z()) << nl;
     }
     os  << nl;
 
@@ -104,7 +104,6 @@ void Foam::vtkSurfaceWriter::writeGeometry
 
 namespace Foam
 {
-
     template<>
     void Foam::vtkSurfaceWriter::writeData
     (
@@ -264,7 +263,6 @@ Foam::vtkSurfaceWriter::vtkSurfaceWriter(const dictionary& options)
 
 Foam::fileName Foam::vtkSurfaceWriter::write
 (
-    const fileName& outputDir,
     const fileName& surfaceName,
     const meshedSurf& surf,
     const bool verbose
@@ -272,22 +270,24 @@ Foam::fileName Foam::vtkSurfaceWriter::write
 {
     // geometry:  rootdir/time/surfaceName.{vtk|vtp}
 
-    if (!isDir(outputDir))
-    {
-        mkDir(outputDir);
-    }
-
-    OFstream os(outputDir/surfaceName + ".vtk");
-    os.precision(precision_);
+    fileName outputFile(outputDirectory()/timeName()/surfaceName + ".vtk");
 
     if (verbose)
     {
-        Info<< "Writing geometry to " << os.name() << endl;
+        Info<< "Writing geometry to " << outputFile << endl;
     }
+
+    if (!isDir(outputFile.path()))
+    {
+        mkDir(outputFile.path());
+    }
+
+    OFstream os(outputFile);
+    os.precision(writePrecision_);
 
     writeGeometry(os, surf, surfaceName);
 
-    return os.name();
+    return outputFile;
 }
 
 

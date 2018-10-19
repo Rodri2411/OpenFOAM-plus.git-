@@ -51,7 +51,6 @@ void Foam::vtkSurfaceWriter::writeData
 template<class Type>
 Foam::fileName Foam::vtkSurfaceWriter::writeTemplate
 (
-    const fileName& outputDir,
     const fileName& surfaceName,
     const meshedSurf& surf,
     const word& fieldName,
@@ -62,20 +61,37 @@ Foam::fileName Foam::vtkSurfaceWriter::writeTemplate
 {
     // field:  rootdir/time/<field>_surfaceName.{vtk|vtp}
 
-    if (!isDir(outputDir))
-    {
-        mkDir(outputDir);
-    }
-
-    OFstream os(outputDir/fieldName + '_' + surfaceName + ".vtk");
-    os.precision(precision_);
+    const fileName outputFile
+    (
+        outputDirectory() / timeName()
+      / fieldName + '_' + surfaceName + ".vtk"
+    );
 
     if (verbose)
     {
-        Info<< "Writing field " << fieldName << " to " << os.name() << endl;
+        Info<< "Writing field " << fieldName << " to " << outputFile << endl;
     }
 
-    writeGeometry(os, surf);
+    if (!isDir(outputFile.path()))
+    {
+        mkDir(outputFile.path());
+    }
+
+    OFstream os(outputFile);
+    os.precision(writePrecision_);
+
+    // Title for legacy
+    std::string title(surfaceName);
+
+    if (hasTime())
+    {
+        title +=
+        (
+            " time='" + timeName() + "'"
+        );
+    }
+
+    writeGeometry(os, surf, title);
 
     // start writing data
     if (isNodeValues)
@@ -94,7 +110,7 @@ Foam::fileName Foam::vtkSurfaceWriter::writeTemplate
     // Write data
     writeData(os, values);
 
-    return os.name();
+    return outputFile;
 }
 
 
