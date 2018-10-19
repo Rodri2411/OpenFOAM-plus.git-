@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2012-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015-2017 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2015-2018 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -142,7 +142,6 @@ Foam::Ostream& Foam::nastranSurfaceWriter::writeFaceValue
 template<class Type>
 Foam::fileName Foam::nastranSurfaceWriter::writeTemplate
 (
-    const fileName& outputDir,
     const fileName& surfaceName,
     const meshedSurf& surf,
     const word& fieldName,
@@ -166,27 +165,28 @@ Foam::fileName Foam::nastranSurfaceWriter::writeTemplate
 
     // field:  rootdir/time/field/surfaceName.nas
 
-
-    if (!isDir(outputDir/fieldName))
-    {
-        mkDir(outputDir/fieldName);
-    }
-
-    // const scalar timeValue = Foam::name(this->mesh().time().timeValue());
-    const scalar timeValue = 0.0;
-
-    OFstream os(outputDir/fieldName/surfaceName + ".nas");
-    fileFormats::NASCore::setPrecision(os, writeFormat_);
+    const fileName outputFile
+    (
+        outputDirectory()/timeName()/fieldName/surfaceName + ".nas"
+    );
 
     if (verbose)
     {
-        Info<< "Writing nastran file to " << os.name() << endl;
+        Info<< "Writing nastran file to " << outputFile << endl;
     }
+
+    if (!isDir(outputFile.path()))
+    {
+        mkDir(outputFile.path());
+    }
+
+    OFstream os(outputFile);
+    fileFormats::NASCore::setPrecision(os, writeFormat_);
 
     os  << "TITLE=OpenFOAM " << surfaceName.c_str()
         << " " << fieldName << " data" << nl
         << "$" << nl
-        << "TIME " << timeValue << nl
+        << "TIME " << (hasTime() ? timeName() : "0") << nl
         << "$" << nl
         << "BEGIN BULK" << nl;
 
@@ -231,7 +231,7 @@ Foam::fileName Foam::nastranSurfaceWriter::writeTemplate
     writeFooter(os, surf)
         << "ENDDATA" << endl;
 
-    return os.name();
+    return outputFile;
 }
 
 

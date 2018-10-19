@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2012-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2015-2018 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -36,6 +36,7 @@ namespace Foam
     makeSurfaceWriterType(nastranSurfaceWriter);
     addToRunTimeSelectionTable(surfaceWriter, nastranSurfaceWriter, wordDict);
 }
+
 
 const Foam::Enum
 <
@@ -366,7 +367,6 @@ Foam::nastranSurfaceWriter::nastranSurfaceWriter(const dictionary& options)
 
 Foam::fileName Foam::nastranSurfaceWriter::write
 (
-    const fileName& outputDir,
     const fileName& surfaceName,
     const meshedSurf& surf,
     const bool verbose
@@ -374,18 +374,23 @@ Foam::fileName Foam::nastranSurfaceWriter::write
 {
     // geometry:  rootdir/time/surfaceName.nas
 
-    if (!isDir(outputDir))
-    {
-        mkDir(outputDir);
-    }
-
-    OFstream os(outputDir/surfaceName + ".nas");
-    fileFormats::NASCore::setPrecision(os, writeFormat_);
+    const fileName outputFile
+    (
+        outputDirectory()/timeName() / surfaceName + ".nas"
+    );
 
     if (verbose)
     {
-        Info<< "Writing nastran file to " << os.name() << endl;
+        Info<< "Writing nastran file to " << outputFile << endl;
     }
+
+    if (!isDir(outputFile.path()))
+    {
+        mkDir(outputFile.path());
+    }
+
+    OFstream os(outputFile);
+    fileFormats::NASCore::setPrecision(os, writeFormat_);
 
     os  << "TITLE=OpenFOAM " << surfaceName.c_str()
         << " mesh" << nl
