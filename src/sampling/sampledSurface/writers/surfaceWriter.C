@@ -24,10 +24,8 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "surfaceWriter.H"
-
 #include "MeshedSurfaceProxy.H"
 #include "proxySurfaceWriter.H"
-
 #include "HashTable.H"
 #include "word.H"
 #include "addToRunTimeSelectionTable.H"
@@ -49,7 +47,7 @@ namespace Foam
 }
 
 
-// * * * * * * * * * * * * * Static Member Functions * * * * * * * * * * * * //
+// * * * * * * * * * * * * * * * * Selectors * * * * * * * * * * * * * * * * //
 
 Foam::autoPtr<Foam::surfaceWriter>
 Foam::surfaceWriter::New(const word& writeType)
@@ -94,6 +92,54 @@ Foam::surfaceWriter::New(const word& writeType, const dictionary& options)
     }
 
     return autoPtr<surfaceWriter>(cstrIter()(options));
+}
+
+
+// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+
+void Foam::surfaceWriter::setTime(const instant& inst)
+{
+    currTime_ = inst;
+}
+
+
+void Foam::surfaceWriter::setTime(scalar timeValue)
+{
+    currTime_ = instant(timeValue);
+}
+
+
+void Foam::surfaceWriter::setTime(const word& timeName)
+{
+    currTime_ = instant(timeName);
+}
+
+
+void Foam::surfaceWriter::setTime(scalar timeValue, const word& timeName)
+{
+    currTime_.value() = timeValue;
+    currTime_.name() = timeName;
+}
+
+
+void Foam::surfaceWriter::unsetTime()
+{
+    currTime_.value() = 0;
+    currTime_.name().clear();
+}
+
+
+bool Foam::surfaceWriter::outputDirectory(const fileName& directory)
+{
+    outputDir_ = directory;
+
+    return true;
+}
+
+
+const Foam::fileName& Foam::surfaceWriter::outputDirectory() const
+{
+    return outputDir_;
 }
 
 

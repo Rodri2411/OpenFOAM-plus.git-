@@ -38,6 +38,7 @@ SourceFiles
 #include "typeInfo.H"
 #include "autoPtr.H"
 #include "fileName.H"
+#include "instant.H"
 #include "meshedSurfRef.H"
 #include "runTimeSelectionTables.H"
 
@@ -52,6 +53,32 @@ namespace Foam
 
 class surfaceWriter
 {
+protected:
+
+    // Protected data
+
+        //- The current time value/name
+        instant currTime_;
+
+        //- The base output directory
+        fileName outputDir_;
+
+
+    // Protected Member Functions
+
+        //- The current time value/name
+        inline const word& timeName() const
+        {
+            return currTime_.name();
+        }
+
+        //- The current time value/name
+        inline scalar timeValue() const
+        {
+            return currTime_.name().empty() ? 0 : currTime_.value();
+        }
+
+
 public:
 
     //- Runtime type information
@@ -83,14 +110,14 @@ public:
     // Selectors
 
         //- Return a reference to the selected surfaceWriter
-        static autoPtr<surfaceWriter> New(const word& writeType);
+        static autoPtr<surfaceWriter> New(const word& writerType);
 
         //- Return a reference to the selected surfaceWriter
         //  Select with extra write option
         static autoPtr<surfaceWriter> New
         (
-            const word& writeType,
-            const dictionary& writeOptions
+            const word& writerType,
+            const dictionary& writerOptions
         );
 
 
@@ -106,6 +133,34 @@ public:
 
     // Member Functions
 
+        //- True if there is a known time
+        bool hasTime() const
+        {
+            return currTime_.name().size();
+        }
+
+        //- Set the current time
+        void setTime(const instant& inst);
+
+        //- Set current time from timeValue, auto generating the name
+        void setTime(scalar timeValue);
+
+        //- Set current time from timeName, parsing timeName for a value
+        void setTime(const word& timeName);
+
+        //- Set current time from timeValue and timeName
+        void setTime(scalar timeValue, const word& timeName);
+
+        //- Clear the current time
+        void unsetTime();
+
+        //- Set the base output directory
+        virtual bool outputDirectory(const fileName& directory);
+
+        //- Get the base output directory
+        virtual const fileName& outputDirectory() const;
+
+
         //- True if the surface format supports geometry in a separate file.
         //  False if geometry and field must be in a single file
         virtual bool separateGeometry() const
@@ -118,15 +173,13 @@ public:
         //  is improved.
         virtual void updateMesh
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName     //!< Name of surface
-        ) const
-        {}
+        ) const {}
+
 
         //- Write single surface geometry to file.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const bool verbose = false      //!< Additional verbosity
@@ -139,7 +192,6 @@ public:
         //  One value per face or vertex.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field
@@ -155,7 +207,6 @@ public:
         //  One value per face or vertex.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field
@@ -171,7 +222,6 @@ public:
         //  One value per face or vertex.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field
@@ -187,7 +237,6 @@ public:
         //  One value per face or vertex.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field
@@ -203,7 +252,6 @@ public:
         //  One value per face or vertex.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field
