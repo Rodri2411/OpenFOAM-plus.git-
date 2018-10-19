@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2015-2016 OpenCFD Ltd.
-     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2016-2018 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -26,8 +26,8 @@ Class
 
 Description
     A surfaceWriter for outputting to a form useable for the
-    timeVaryingMapped boundary condition. This reads the data from
-    constant/boundaryData/\<patch\> directory
+    timeVaryingMapped boundary condition, which reads data from
+    \c constant/boundaryData/\<patch\> directory
 
     Typical way of working:
     - use a sampledSurface of type 'patch' (to sample a patch):
@@ -96,7 +96,6 @@ SourceFiles
 
 #include "surfaceWriter.H"
 
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
@@ -116,7 +115,6 @@ class boundaryDataSurfaceWriter
         template<class Type>
         fileName writeTemplate
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field
@@ -146,18 +144,15 @@ public:
         //- Write single surface geometry to file.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const bool verbose = false      //!< Additional verbosity
         ) const; // override
 
-
         //- Write scalarField for a single surface to file.
         //  One value per face or vertex.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field
@@ -170,7 +165,6 @@ public:
         //  One value per face or vertex.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field
@@ -183,7 +177,6 @@ public:
         //  One value per face or vertex.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field
@@ -209,7 +202,6 @@ public:
         //  One value per face or vertex.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field

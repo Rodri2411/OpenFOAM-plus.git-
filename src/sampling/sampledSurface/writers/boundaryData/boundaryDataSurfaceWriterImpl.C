@@ -35,7 +35,6 @@ License
 template<class Type>
 Foam::fileName Foam::boundaryDataSurfaceWriter::writeTemplate
 (
-    const fileName& outputDir,
     const fileName& surfaceName,
     const meshedSurf& surf,
     const word& fieldName,
@@ -47,8 +46,8 @@ Foam::fileName Foam::boundaryDataSurfaceWriter::writeTemplate
     // geometry: rootdir/surfaceName/"points"
     // field:    rootdir/surfaceName/time/field
 
-    const fileName baseDir(outputDir.path()/surfaceName);
-    const fileName timeName(outputDir.name());
+    const fileName base(outputDirectory() / surfaceName);
+    const fileName outputFile(base / timeName() / fieldName);
 
     const pointField& points = surf.points();
     const faceList&    faces = surf.faces();
@@ -72,7 +71,7 @@ Foam::fileName Foam::boundaryDataSurfaceWriter::writeTemplate
     (
         IOobject
         (
-            baseDir/"points",
+            base/"points",
             dummyTime,
             IOobject::NO_READ,
             IOobject::NO_WRITE,
@@ -85,7 +84,8 @@ Foam::fileName Foam::boundaryDataSurfaceWriter::writeTemplate
     {
         if (verbose)
         {
-            Info<< "Writing points to " << baseDir/"points" << endl;
+            Info<< "Writing points to "
+                << pts.objectPath() << endl;
         }
         pts = points;
     }
@@ -93,7 +93,8 @@ Foam::fileName Foam::boundaryDataSurfaceWriter::writeTemplate
     {
         if (verbose)
         {
-            Info<< "Writing face centres to " << baseDir/"points" << endl;
+            Info<< "Writing face centres to "
+                << pts.objectPath() << endl;
         }
 
         primitivePatch pp(SubList<face>(faces, faces.size()), points);
@@ -117,13 +118,12 @@ Foam::fileName Foam::boundaryDataSurfaceWriter::writeTemplate
 
     // Write field
     {
-        fileName valsDir(baseDir/timeName);
-        mkDir(valsDir);
-        OFstream os(valsDir/fieldName);
-        os  << values;
+        mkDir(outputFile.path());
+        OFstream os(outputFile);
+        os << values;
     }
 
-    return baseDir;
+    return base;
 }
 
 

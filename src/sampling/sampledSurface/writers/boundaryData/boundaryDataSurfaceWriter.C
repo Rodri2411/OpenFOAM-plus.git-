@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2015 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2016-2018 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -31,6 +31,9 @@ License
 namespace Foam
 {
     makeSurfaceWriterType(boundaryDataSurfaceWriter);
+
+    // Field writing methods
+    defineSurfaceWriterWriteFields(boundaryDataSurfaceWriter);
 }
 
 
@@ -47,7 +50,6 @@ defineSurfaceWriterWriteFields(Foam::boundaryDataSurfaceWriter);
 
 Foam::fileName Foam::boundaryDataSurfaceWriter::write
 (
-    const fileName& outputDir,
     const fileName& surfaceName,
     const meshedSurf& surf,
     const bool verbose
@@ -56,10 +58,10 @@ Foam::fileName Foam::boundaryDataSurfaceWriter::write
     // geometry: rootdir/surfaceName/"points"
     // field:    rootdir/surfaceName/time/field
 
-    const fileName baseDir(outputDir.path()/surfaceName);
-    const fileName timeName(outputDir.name());
+    const fileName base(outputDirectory() / surfaceName);
 
     const pointField& points = surf.points();
+
 
     // Dummy time to use as an objectRegistry
     const fileName caseDir(getEnv("FOAM_CASE"));
@@ -77,14 +79,14 @@ Foam::fileName Foam::boundaryDataSurfaceWriter::write
     // Write points
     if (verbose)
     {
-        Info<< "Writing points to " << baseDir/"points" << endl;
+        Info<< "Writing points to " << base/"points" << endl;
     }
 
     pointIOField pts
     (
         IOobject
         (
-            baseDir/"points",
+            base/"points",
             dummyTime,
             IOobject::NO_READ,
             IOobject::NO_WRITE,
@@ -106,7 +108,7 @@ Foam::fileName Foam::boundaryDataSurfaceWriter::write
         //pts.writeEndDivider(os);
     }
 
-    return baseDir;
+    return base;
 }
 
 
