@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2015-2018 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -35,7 +35,6 @@ namespace Foam
     makeSurfaceWriterType(rawSurfaceWriter);
     addToRunTimeSelectionTable(surfaceWriter, rawSurfaceWriter, wordDict);
 }
-
 
 // * * * * * * * * * * * * * * * Local Functions * * * * * * * * * * * * * * //
 
@@ -84,7 +83,6 @@ Foam::rawSurfaceWriter::rawSurfaceWriter(const dictionary& options)
 
 Foam::fileName Foam::rawSurfaceWriter::write
 (
-    const fileName& outputDir,
     const fileName& surfaceName,
     const meshedSurf& surf,
     const bool verbose
@@ -92,27 +90,33 @@ Foam::fileName Foam::rawSurfaceWriter::write
 {
     // geometry:  rootdir/time/surfaceName.raw
 
-    const pointField& points = surf.points();
-    const faceList&    faces = surf.faces();
-
-
-    if (!isDir(outputDir))
-    {
-        mkDir(outputDir);
-    }
-
-    OFstream os
+    const fileName outputFile
     (
-        outputDir/surfaceName + ".raw",
-        IOstream::ASCII,
-        IOstream::currentVersion,
-        writeCompression_
+        outputDirectory()/timeName()/surfaceName + ".raw"
     );
 
     if (verbose)
     {
-        Info<< "Writing geometry to " << os.name() << endl;
+        Info<< "Writing geometry to " << outputFile << nl;
     }
+
+    const pointField& points = surf.points();
+    const faceList&    faces = surf.faces();
+
+
+    if (!isDir(outputFile.path()))
+    {
+        mkDir(outputFile.path());
+    }
+
+
+    OFstream os
+    (
+        outputFile,
+        IOstream::ASCII,
+        IOstream::currentVersion,
+        writeCompression_
+    );
 
     // Header
     os  << "# geometry NO_DATA " << faces.size() << nl
@@ -127,7 +131,7 @@ Foam::fileName Foam::rawSurfaceWriter::write
 
     os  << nl;
 
-    return os.name();
+    return outputFile;
 }
 
 

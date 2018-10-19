@@ -101,7 +101,6 @@ namespace Foam
 template<class Type>
 Foam::fileName Foam::rawSurfaceWriter::writeTemplate
 (
-    const fileName& outputDir,
     const fileName& surfaceName,
     const meshedSurf& surf,
     const word& fieldName,
@@ -112,20 +111,27 @@ Foam::fileName Foam::rawSurfaceWriter::writeTemplate
 {
     // field:  rootdir/time/<field>_surfaceName.raw
 
+    const fileName outputFile
+    (
+        outputDirectory()/timeName() / fieldName + '_' + surfaceName + ".raw"
+    );
+
     const pointField& points = surf.points();
     const faceList&    faces = surf.faces();
 
-    if (!isDir(outputDir))
-    {
-        mkDir(outputDir);
-    }
-
-    OFstream os(outputDir/fieldName + '_' + surfaceName + ".raw");
 
     if (verbose)
     {
-        Info<< "Writing field " << fieldName << " to " << os.name() << endl;
+        Info<< "Writing field " << fieldName << " to " << outputFile << endl;
     }
+
+
+    if (!isDir(outputFile.path()))
+    {
+        mkDir(outputFile.path());
+    }
+
+    OFstream os(outputFile);
 
     // Header
     os  << "# " << fieldName;
@@ -161,7 +167,7 @@ Foam::fileName Foam::rawSurfaceWriter::writeTemplate
         }
     }
 
-    return os.name();
+    return outputFile;
 }
 
 

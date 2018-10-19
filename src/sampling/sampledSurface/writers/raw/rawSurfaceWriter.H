@@ -99,7 +99,6 @@ class rawSurfaceWriter
         template<class Type>
         fileName writeTemplate
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field
@@ -130,21 +129,19 @@ public:
 
     // Member Functions
 
+
         //- Write single surface geometry to file.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const bool verbose = false      //!< Additional verbosity
         ) const; // override
 
-
         //- Write scalarField for a single surface to file.
         //  One value per face or vertex.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field
@@ -157,7 +154,6 @@ public:
         //  One value per face or vertex.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field
@@ -170,7 +166,6 @@ public:
         //  One value per face or vertex.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field
@@ -183,7 +178,6 @@ public:
         //  One value per face or vertex.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field
@@ -196,7 +190,6 @@ public:
         //  One value per face or vertex.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field
