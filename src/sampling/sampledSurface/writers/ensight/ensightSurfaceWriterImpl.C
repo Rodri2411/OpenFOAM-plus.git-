@@ -36,7 +36,6 @@ License
 template<class Type>
 Foam::fileName Foam::ensightSurfaceWriter::writeUncollated
 (
-    const fileName& outputDir,
     const fileName& surfaceName,
     const meshedSurf& surf,
     const word& fieldName,
@@ -65,12 +64,10 @@ Foam::fileName Foam::ensightSurfaceWriter::writeUncollated
     // - VAR2/SURF1.0000.mesh
     // - VAR2/SURF1.0001.VAR2
 
-    const fileName baseDir = outputDir/varName;
-    const fileName timeDir = outputDir.name();
-    // Convert timeDir to a value (if possible - use 0.0 otherwise)
-    scalar timeValue = 0.0;
-    readScalar(timeDir, timeValue);
+    const fileName baseDir = outputDirectory()/timeName()/varName;
 
+    // Current timeValue (or 0 if unset)
+    const scalar timeValue = this->timeValue();
 
     if (!isDir(baseDir))
     {
@@ -155,7 +152,6 @@ Foam::fileName Foam::ensightSurfaceWriter::writeUncollated
 template<class Type>
 Foam::fileName Foam::ensightSurfaceWriter::writeCollated
 (
-    const fileName& outputDir,
     const fileName& surfaceName,
     const meshedSurf& surf,
     const word& fieldName,
@@ -187,11 +183,11 @@ Foam::fileName Foam::ensightSurfaceWriter::writeCollated
     const char* fmt  = "%08d";
     const char* mask = "data/********/";
 
-    const fileName baseDir = outputDir.path()/surfName;
-    const fileName timeDir = outputDir.name();
-    // Convert timeDir to a value (if possible - use 0.0 otherwise)
-    scalar timeValue = 0.0;
-    readScalar(timeDir, timeValue);
+    const fileName baseDir = outputDirectory()/surfName;
+
+    // Current timeValue (or 0 if unset)
+    const scalar timeValue = this->timeValue();
+
 
     scalar meshValue = 0;
 
@@ -459,7 +455,6 @@ Foam::fileName Foam::ensightSurfaceWriter::writeCollated
 template<class Type>
 Foam::fileName Foam::ensightSurfaceWriter::writeTemplate
 (
-    const fileName& outputDir,
     const fileName& surfaceName,
     const meshedSurf& surf,
     const word& fieldName,
@@ -472,7 +467,6 @@ Foam::fileName Foam::ensightSurfaceWriter::writeTemplate
     {
         return writeCollated
         (
-            outputDir,
             surfaceName,
             surf,
             fieldName,
@@ -485,7 +479,6 @@ Foam::fileName Foam::ensightSurfaceWriter::writeTemplate
     {
         return writeUncollated
         (
-            outputDir,
             surfaceName,
             surf,
             fieldName,

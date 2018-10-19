@@ -33,6 +33,9 @@ namespace Foam
 {
     makeSurfaceWriterType(ensightSurfaceWriter);
     addToRunTimeSelectionTable(surfaceWriter, ensightSurfaceWriter, wordDict);
+
+    // Field writing methods
+    defineSurfaceWriterWriteFields(ensightSurfaceWriter);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -141,7 +144,6 @@ bool Foam::ensightSurfaceWriter::separateGeometry() const
 
 void Foam::ensightSurfaceWriter::updateMesh
 (
-    const fileName& outputDir,
     const fileName& surfaceName
 ) const
 {
@@ -149,12 +151,10 @@ void Foam::ensightSurfaceWriter::updateMesh
     {
         const ensight::FileName surfName(surfaceName);
 
-        const fileName baseDir = outputDir.path()/surfName;
-        const fileName timeDir = outputDir.name();
+        const fileName baseDir = outputDirectory()/surfName;
 
-        // Convert timeDir to a value (if possible - use 0.0 otherwise)
-        scalar timeValue = 0.0;
-        readScalar(timeDir, timeValue);
+        // Current timeValue (or 0 if unset)
+        const scalar timeValue = this->timeValue();
 
         if (!isDir(baseDir))
         {
@@ -185,7 +185,6 @@ void Foam::ensightSurfaceWriter::updateMesh
 
 Foam::fileName Foam::ensightSurfaceWriter::write
 (
-    const fileName& outputDir,
     const fileName& surfaceName,
     const meshedSurf& surf,
     const bool verbose
@@ -198,15 +197,17 @@ Foam::fileName Foam::ensightSurfaceWriter::write
     // geometry:  rootdir/time/surfaceName.case
     // geometry:  rootdir/time/surfaceName.00000000.mesh
 
-    if (!isDir(outputDir))
+    const fileName baseDir = outputDirectory()/timeName();
+
+    if (!isDir(baseDir))
     {
-        mkDir(outputDir);
+        mkDir(baseDir);
     }
 
-    OFstream osCase(outputDir/surfName + ".case");
+    OFstream osCase(baseDir/surfName + ".case");
     ensightGeoFile osGeom
     (
-        outputDir,
+        baseDir,
         surfName + ".00000000.mesh",
         writeFormat_
     );
@@ -240,6 +241,7 @@ Foam::fileName Foam::ensightSurfaceWriter::write
     // ========
     // geometry:  rootdir/surfaceName/surfaceName.case
     // geometry:  rootdir/surfaceName/surfaceName.mesh
+
 }
 
 

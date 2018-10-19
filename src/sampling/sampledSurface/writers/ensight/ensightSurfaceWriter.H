@@ -96,11 +96,23 @@ class ensightSurfaceWriter
         );
 
 
+        //- Templated write operation
+        template<class Type>
+        fileName writeTemplate
+        (
+            const fileName& surfaceName,    //!< Name of surface
+            const meshedSurf& surf,         //!< Surface geometry
+            const word& fieldName,          //!< Name of field
+            const Field<Type>& values,      //!< Field values to write
+            const bool isNodeValues = false,//!< Values are per-vertex
+            const bool verbose = false      //!< Additional verbosity
+        ) const;
+
+
         //- Templated write operation - one file per timestep
         template<class Type>
         fileName writeCollated
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field
@@ -113,20 +125,6 @@ class ensightSurfaceWriter
         template<class Type>
         fileName writeUncollated
         (
-            const fileName& outputDir,      //!< output-dir
-            const fileName& surfaceName,    //!< Name of surface
-            const meshedSurf& surf,         //!< Surface geometry
-            const word& fieldName,          //!< Name of field
-            const Field<Type>& values,      //!< Field values to write
-            const bool isNodeValues = false,//!< Values are per-vertex
-            const bool verbose = false      //!< Additional verbosity
-        ) const;
-
-        //- Templated write operation
-        template<class Type>
-        fileName writeTemplate
-        (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field
@@ -164,26 +162,22 @@ public:
         //  \note this is a stop-gap solution
         virtual void updateMesh
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName     //!< Name of surface
         ) const; // override
 
 
-        //- Write single surface geometry to file.
+        //- Write single surface geometry to file (uncollated).
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const bool verbose = false      //!< Additional verbosity
         ) const; // override
 
-
         //- Write scalarField for a single surface to file.
         //  One value per face or vertex.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field
@@ -196,7 +190,6 @@ public:
         //  One value per face or vertex.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field
@@ -209,7 +202,6 @@ public:
         //  One value per face or vertex.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field
@@ -222,7 +214,6 @@ public:
         //  One value per face or vertex.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field
@@ -235,7 +226,6 @@ public:
         //  One value per face or vertex.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field
