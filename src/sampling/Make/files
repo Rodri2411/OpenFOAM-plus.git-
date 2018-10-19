@@ -48,6 +48,7 @@ sampledSurface/distanceSurface/sampledDistanceSurface.C
 sampledSurface/sampledCuttingPlane/sampledCuttingPlane.C
 sampledSurface/sampledCuttingSurface/sampledCuttingSurface.C
 sampledSurface/sampledSurface/sampledSurface.C
+sampledSurface/sampledSurface/sampledSurfaceProxy.C
 sampledSurface/sampledSurfaces/sampledSurfaces.C
 sampledSurface/sampledSurfaces/sampledSurfacesGrouping.C
 sampledSurface/sampledTriSurfaceMesh/sampledTriSurfaceMesh.C
@@ -58,23 +59,23 @@ sampledSurface/thresholdCellFaces/sampledThresholdCellFaces.C
 /* sampledSurface/triSurfaceMesh/sampledDiscreteSurface.C */
 
 
-surfWriters = sampledSurface/writers
+writers = sampledSurface/writers
 
-$(surfWriters)/surfaceWriter.C
-$(surfWriters)/ensight/ensightSurfaceWriter.C
-$(surfWriters)/foam/foamSurfaceWriter.C
-$(surfWriters)/nastran/nastranSurfaceWriter.C
-$(surfWriters)/proxy/proxySurfaceWriter.C
-$(surfWriters)/raw/rawSurfaceWriter.C
-$(surfWriters)/starcd/starcdSurfaceWriter.C
-$(surfWriters)/vtk/vtkSurfaceWriter.C
-$(surfWriters)/boundaryData/boundaryDataSurfaceWriter.C
+$(writers)/surfaceWriter.C
+$(writers)/ensight/ensightSurfaceWriter.C
+$(writers)/foam/foamSurfaceWriter.C
+$(writers)/nastran/nastranSurfaceWriter.C
+$(writers)/proxy/proxySurfaceWriter.C
+$(writers)/raw/rawSurfaceWriter.C
+$(writers)/starcd/starcdSurfaceWriter.C
+$(writers)/vtk/vtkSurfaceWriter.C
+$(writers)/boundaryData/boundaryDataSurfaceWriter.C
 
-surfReaders = sampledSurface/readers
+readers = sampledSurface/readers
 
-$(surfReaders)/surfaceReader.C
-$(surfReaders)/surfaceReaderNew.C
-$(surfReaders)/ensight/ensightSurfaceReader.C
+$(readers)/surfaceReader.C
+$(readers)/surfaceReaderNew.C
+$(readers)/ensight/ensightSurfaceReader.C
 
 graphField/writePatchGraph.C
 graphField/writeCellGraph.C
