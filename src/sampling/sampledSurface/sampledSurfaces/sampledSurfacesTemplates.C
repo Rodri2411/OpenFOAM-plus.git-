@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2015-2018 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -34,21 +34,23 @@ License
 template<class Type>
 void Foam::sampledSurfaces::writeSurface
 (
-    const Field<Type>& values,
-    const label surfi,
+    sampledSurfaceProxy& proxy,
     const word& fieldName,
-    const fileName& outputDir
+    const Field<Type>& values
 )
 {
-    const sampledSurface& s = operator[](surfi);
-
-    if (changedGeom_[surfi])
+    if (proxy.staged())
     {
         // Trigger any changes
-        formatter_->updateMesh(outputDir, s.name());
-        changedGeom_[surfi] = false;
+        formatter_->updateMesh(proxy.surface().name());
+        proxy.handled();
     }
 
+    Info<<"sampled " << fieldName << " on "
+        << proxy.name() << " = " << proxy << nl;
+
+
+    fileName sampleFile;
     if (Pstream::parRun())
     {
         // Collect values from all processors
@@ -56,7 +58,6 @@ void Foam::sampledSurfaces::writeSurface
         gatheredValues[Pstream::myProcNo()] = values;
         Pstream::gatherList(gatheredValues);
 
-        fileName sampleFile;
         if (Pstream::master())
         {
             // Combine values into single field
@@ -70,56 +71,45 @@ void Foam::sampledSurfaces::writeSurface
             );
 
             // Renumber (point data) to correspond to merged points
-            if (mergedList_[surfi].pointsMap().size() == allValues.size())
-            {
-                inplaceReorder(mergedList_[surfi].pointsMap(), allValues);
-                allValues.setSize(mergedList_[surfi].points().size());
-            }
+            proxy.renumberPointData(allValues);
 
-            // Write to time directory under outputPath_
-            // skip surface without faces (eg, a failed cut-plane)
-            if (mergedList_[surfi].size())
+            // Skip surface without faces (eg, a failed cut-plane)
+            if (proxy.hasGeometry())
             {
                 sampleFile = formatter_->write
                 (
-                    outputDir,
-                    s.name(),
-                    mergedList_[surfi],
+                    proxy.surface().name(),
+                    proxy.geometry(),
                     fieldName,
                     allValues,
-                    s.interpolate()
+                    proxy.surface().interpolate()
                 );
             }
         }
 
         Pstream::scatter(sampleFile);
-        if (sampleFile.size())
-        {
-            dictionary propsDict;
-            propsDict.add("file", sampleFile);
-            setProperty(fieldName, propsDict);
-        }
     }
     else
     {
-        // Write to time directory under outputPath_
-        // skip surface without faces (eg, a failed cut-plane)
-        if (s.faces().size())
+        // Skip surface without faces (eg, a failed cut-plane)
+        if (proxy.hasGeometry())
         {
-            fileName fName = formatter_->write
+            sampleFile = formatter_->write
             (
-                outputDir,
-                s.name(),
-                s,
+                proxy.surface().name(),
+                proxy.geometry(),
                 fieldName,
                 values,
-                s.interpolate()
+                proxy.surface().interpolate()
             );
-
-            dictionary propsDict;
-            propsDict.add("file", fName);
-            setProperty(fieldName, propsDict);
         }
+    }
+
+    if (sampleFile.size())
+    {
+        dictionary propsDict;
+        propsDict.add("file", sampleFile);
+        setProperty(fieldName, propsDict);
     }
 }
 
@@ -130,46 +120,42 @@ void Foam::sampledSurfaces::sampleAndWrite
     const GeometricField<Type, fvPatchField, volMesh>& vField
 )
 {
-    // sampler/interpolator for this field
-    autoPtr<interpolation<Type>> interpPtr;
+    // Formatter timeValue/timeName already updated in caller
+
+    // The sampler/interpolator for this field
+    autoPtr<interpolation<Type>> interp;
 
     const word& fieldName = vField.name();
-    const fileName outputDir = outputPath_/vField.time().timeName();
 
-    forAll(*this, surfi)
+    const auto& surfs = surfaces();
+
+    forAll(surfs, surfi)
     {
-        const sampledSurface& s = operator[](surfi);
+        const sampledSurface& s = surfs[surfi];
+        sampledSurfaceProxy& proxy = proxies_[surfi];
 
         Field<Type> values;
 
         if (s.interpolate())
         {
-            if (interpPtr.empty())
+            if (!interp)
             {
-                interpPtr = interpolation<Type>::New
-                (
-                    sampleNodeScheme_,
-                    vField
-                );
+                interp = interpolation<Type>::New(sampleNodeScheme_, vField);
             }
 
-            values = s.interpolate(*interpPtr);
+            values = s.interpolate(*interp);
         }
         else
         {
-            if (interpPtr.empty())
+            if (!interp)
             {
-                interpPtr = interpolation<Type>::New
-                (
-                    sampleFaceScheme_,
-                    vField
-                );
+                interp = interpolation<Type>::New(sampleFaceScheme_, vField);
             }
 
-            values = s.sample(*interpPtr);
+            values = s.sample(*interp);
         }
 
-        writeSurface<Type>(values, surfi, fieldName, outputDir);
+        writeSurface<Type>(proxy, fieldName, values);
     }
 }
 
@@ -180,14 +166,20 @@ void Foam::sampledSurfaces::sampleAndWrite
     const GeometricField<Type, fvsPatchField, surfaceMesh>& sField
 )
 {
+    // Formatter timeValue/timeName already updated in caller
+
     const word& fieldName = sField.name();
     const fileName outputDir = outputPath_/sField.time().timeName();
 
-    forAll(*this, surfi)
+    const auto& surfs = surfaces();
+
+    forAll(surfs, surfi)
     {
-        const sampledSurface& s = operator[](surfi);
+        const sampledSurface& s = surfs[surfi];
+        sampledSurfaceProxy& proxy = proxies_[surfi];
+
         Field<Type> values(s.sample(sField));
-        writeSurface<Type>(values, surfi, fieldName, outputDir);
+        writeSurface<Type>(proxy, fieldName,  values);
     }
 }
 

@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2017 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2017-2018 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -30,36 +30,35 @@ License
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
-Foam::label Foam::sampledSurfaces::classifyFields()
+Foam::IOobjectNames Foam::sampledSurfaces::classifyFields() const
 {
-    label nFields = 0;
+    wordList allFields;    // For warnings
 
-    wordList allFields;    // Just needed for warnings
-    HashTable<wordHashSet> available;
+    IOobjectNames objNames;
 
     if (loadFromFiles_)
     {
         // Check files for a particular time
         IOobjectList objects(obr_, obr_.time().timeName());
 
-        allFields = objects.names();
-        available = objects.classes(fieldSelection_);
+        allFields = objects.sortedNames();
+        objNames = IOobjectNames(objects, fieldSelection_);
     }
     else
     {
         // Check currently available fields
-        allFields = obr_.names();
-        available = obr_.classes(fieldSelection_);
+        allFields = obr_.sortedNames();
+        objNames  = IOobjectNames(obr_, fieldSelection_);
     }
 
-    DynamicList<label> missed(fieldSelection_.size());
+    DynamicList<word> missed(fieldSelection_.size());
 
     // Detect missing fields
-    forAll(fieldSelection_, i)
+    for (const wordRe& pattern : fieldSelection_)
     {
-        if (findStrings(fieldSelection_[i], allFields).empty())
+        if (pattern.isLiteral() && !allFields.found(pattern))
         {
-            missed.append(i);
+            missed.append(pattern);
         }
     }
 
@@ -67,20 +66,14 @@ Foam::label Foam::sampledSurfaces::classifyFields()
     {
         WarningInFunction
             << nl
-            << "Cannot find "
-            << (loadFromFiles_ ? "field file" : "registered field")
-            << " matching "
-            << UIndirectList<wordRe>(fieldSelection_, missed) << endl;
+            << "Cannot find specified "
+            << (loadFromFiles_ ? "field file(s)" : "registered field(s)")
+            << nl << "    " << flatOutput(missed) << nl << endl;
     }
 
+    objNames.retainClasses(fieldTypeNames);
 
-    // Total number selected
-    forAllConstIters(available, iter)
-    {
-        nFields += iter.object().size();
-    }
-
-    return nFields;
+    return objNames;
 }
 
 

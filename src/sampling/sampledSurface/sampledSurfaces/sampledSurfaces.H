@@ -102,12 +102,13 @@ SourceFiles
 
 #include "regionFunctionObject.H"
 #include "sampledSurface.H"
+#include "sampledSurfaceProxy.H"
 #include "surfaceWriter.H"
-#include "mergedSurf.H"
 #include "volFieldsFwd.H"
 #include "surfaceFieldsFwd.H"
 #include "wordRes.H"
 #include "IOobjectList.H"
+#include "IOobjectNames.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -136,6 +137,9 @@ class sampledSurfaces
         //- Tolerance for merging points (fraction of mesh bounding box)
         static scalar mergeTol_;
 
+        //- Types of input fields supported
+        static const wordList fieldTypeNames;
+
 
     // Private data
 
@@ -163,11 +167,8 @@ class sampledSurfaces
 
     // Surfaces
 
-        //- Merged meshed surfaces (parallel only)
-        List<mergedSurf> mergedList_;
-
-        //- Track which surfaces have changed
-        List<bool> changedGeom_;
+        //- Track merged surfaces (parallel) and which surfaces have changed
+        mutable PtrList<sampledSurfaceProxy> proxies_;
 
 
     // Calculated
@@ -190,8 +191,9 @@ class sampledSurfaces
             return *this;
         }
 
+
         //- Return number of fields
-        label classifyFields();
+        IOobjectNames classifyFields() const;
 
         //- Write geometry only
         void writeGeometry() const;
@@ -203,10 +205,9 @@ class sampledSurfaces
         template<class Type>
         void writeSurface
         (
-            const Field<Type>& values,
-            const label surfi,
+            sampledSurfaceProxy& proxy,
             const word& fieldName,
-            const fileName& outputDir
+            const Field<Type>& values
         );
 
         //- Sample and write a particular volume field

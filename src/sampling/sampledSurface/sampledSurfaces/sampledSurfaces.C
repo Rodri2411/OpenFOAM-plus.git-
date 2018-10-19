@@ -39,7 +39,7 @@ License
 
 namespace Foam
 {
-    defineTypeNameAndDebug(sampledSurfaces, 0);
+    defineTypeNameAndDebug(sampledSurfaces, 1);
 
     addToRunTimeSelectionTable
     (
@@ -52,6 +52,27 @@ namespace Foam
 bool Foam::sampledSurfaces::verbose_ = false;
 Foam::scalar Foam::sampledSurfaces::mergeTol_ = 1e-10;
 
+const Foam::wordList Foam::sampledSurfaces::fieldTypeNames
+({
+    Foam::volScalarField::typeName,
+    Foam::volVectorField::typeName,
+    Foam::volSphericalTensorField::typeName,
+    Foam::volSymmTensorField::typeName,
+    Foam::volTensorField::typeName,
+
+    Foam::volScalarField::Internal::typeName,
+    Foam::volVectorField::Internal::typeName,
+    Foam::volSphericalTensorField::Internal::typeName,
+    Foam::volSymmTensorField::Internal::typeName,
+    Foam::volTensorField::Internal::typeName,
+
+    Foam::surfaceScalarField::typeName,
+    Foam::surfaceVectorField::typeName,
+    Foam::surfaceSphericalTensorField::typeName,
+    Foam::surfaceSymmTensorField::typeName,
+    Foam::surfaceTensorField::typeName
+});
+
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
@@ -60,27 +81,13 @@ void Foam::sampledSurfaces::writeGeometry() const
     // Write to time directory under outputPath_
     // Skip surfaces without faces (eg, a failed cut-plane)
 
-    const fileName outputDir = outputPath_/time_.timeName();
-
-    forAll(*this, surfi)
+    for (sampledSurfaceProxy& proxy : proxies_)
     {
-        const sampledSurface& s = operator[](surfi);
+        if (proxy.hasGeometry())
+        {
+            formatter_->write(proxy.name(), proxy.geometry());
 
-        if (Pstream::parRun())
-        {
-            if (Pstream::master() && mergedList_[surfi].size())
-            {
-                formatter_->write
-                (
-                    outputDir,
-                    s.name(),
-                    mergedList_[surfi]
-                );
-            }
-        }
-        else if (s.faces().size())
-        {
-            formatter_->write(outputDir, s.name(), s);
+            proxy.handled();
         }
     }
 }
@@ -89,24 +96,24 @@ void Foam::sampledSurfaces::writeGeometry() const
 void Foam::sampledSurfaces::writeOriginalIds()
 {
     const word fieldName = "Ids";
-    const fileName outputDir = outputPath_/time_.timeName();
 
-    forAll(*this, surfi)
+    for (sampledSurfaceProxy& proxy : proxies_)
     {
-        const sampledSurface& s = operator[](surfi);
+        const sampledSurface& s = proxy.surface();
 
         if (s.hasFaceIds())
         {
-            const labelList& idLst = s.originalIds();
-
             // Transcribe from label to scalar
-            Field<scalar> ids(idLst.size());
-            forAll(idLst, i)
-            {
-                ids[i] = idLst[i];
-            }
+            Field<scalar> ids
+            (
+                ListOps::create<scalar>
+                (
+                    s.originalIds(),
+                    [](const label& val) -> scalar { return scalar(val); }
+                )
+            );
 
-            writeSurface(ids, surfi, fieldName, outputDir);
+            writeSurface<scalar>(proxy, fieldName, ids);
         }
     }
 }
@@ -132,8 +139,7 @@ Foam::sampledSurfaces::sampledSurfaces
     fieldSelection_(),
     sampleFaceScheme_(),
     sampleNodeScheme_(),
-    mergedList_(),
-    changedGeom_(),
+    proxies_(),
     formatter_(nullptr)
 {
     outputPath_.clean();  // Remove unneeded ".."
@@ -161,8 +167,7 @@ Foam::sampledSurfaces::sampledSurfaces
     fieldSelection_(),
     sampleFaceScheme_(),
     sampleNodeScheme_(),
-    mergedList_(),
-    changedGeom_(),
+    proxies_(),
     formatter_(nullptr)
 {
     outputPath_.clean();  // Remove unneeded ".."
@@ -192,18 +197,19 @@ bool Foam::sampledSurfaces::write()
         return true;
     }
 
-
     // Finalize surfaces, merge points etc.
     update();
 
-    const label nFields = classifyFields();
+    // Update time values for output
+    formatter_->setTime(time_.value(), time_.timeName());
+
+    IOobjectNames objNames(classifyFields());
 
     // Write geometry first if required,
     // or when no fields would otherwise be written
-    if (formatter_->separateGeometry() || !nFields)
+    if (formatter_->separateGeometry() || objNames.empty())
     {
         writeGeometry();
-        changedGeom_ = false;
     }
 
     const IOobjectList objects(obr_, obr_.time().timeName());
@@ -243,27 +249,41 @@ bool Foam::sampledSurfaces::read(const dictionary& dict)
             dict.subOrEmptyDict("formatOptions").subOrEmptyDict(writeType)
         );
 
-        PtrList<sampledSurface> newList
+        // Set the output directory
+        formatter_->outputDirectory(outputPath_);
+
+        // Set the output time value
+        formatter_->setTime(time_.value(), time_.timeName());
+
+
+        PtrList<sampledSurface>& surfs = surfaces();
+
+        surfs = PtrList<sampledSurface>
         (
             dict.lookup("surfaces"),
             sampledSurface::iNew(mesh_)
         );
-        transfer(newList);
 
-        if (Pstream::parRun())
+        proxies_.resize(surfs.size());
+
+        forAll(proxies_, surfi)
         {
-            mergedList_.setSize(size());
+            proxies_.set
+            (
+                surfi,
+                new sampledSurfaceProxy(surfs[surfi])
+            );
         }
 
-        // Ensure all surfaces and merge information are expired
+        // Ensure all surfaces and merge information are properly expired
         expire();
 
-        if (this->size())
+        if (surfs.size())
         {
             Info<< "Reading surface description:" << nl;
-            forAll(*this, surfi)
+            for (const sampledSurface& s : surfs)
             {
-                Info<< "    " << operator[](surfi).name() << nl;
+                Info<< "    " << s.name() << nl;
             }
             Info<< endl;
         }
@@ -274,16 +294,12 @@ bool Foam::sampledSurfaces::read(const dictionary& dict)
         Pout<< "sample fields:" << fieldSelection_ << nl
             << "sample surfaces:" << nl << "(" << nl;
 
-        forAll(*this, surfi)
+        for (const sampledSurface& s : surfaces())
         {
-            Pout<< "  " << operator[](surfi) << nl;
+            Pout<< "  " << s << nl;
         }
         Pout<< ")" << endl;
     }
-
-    // New geometry
-    changedGeom_.resize(size());
-    changedGeom_ = true;
 
     return true;
 }
@@ -320,9 +336,9 @@ void Foam::sampledSurfaces::readUpdate(const polyMesh::readUpdateState state)
 
 bool Foam::sampledSurfaces::needsUpdate() const
 {
-    forAll(*this, surfi)
+    for (const sampledSurface& s : surfaces())
     {
-        if (operator[](surfi).needsUpdate())
+        if (s.needsUpdate())
         {
             return true;
         }
@@ -334,26 +350,18 @@ bool Foam::sampledSurfaces::needsUpdate() const
 
 bool Foam::sampledSurfaces::expire()
 {
-    bool justExpired = false;
+    label nChanged = 0;
 
-    forAll(*this, surfi)
+    for (sampledSurfaceProxy& proxy : proxies_)
     {
-        if (operator[](surfi).expire())
+        if (proxy.expire())
         {
-            justExpired = true;
-        }
-
-        // Clear merge information
-        if (Pstream::parRun())
-        {
-            mergedList_[surfi].clear();
+            ++nChanged;
         }
     }
 
-    changedGeom_ = true;
-
-    // true if any surfaces just expired
-    return justExpired;
+    // True if anything just expired
+    return nChanged;
 }
 
 
@@ -364,48 +372,28 @@ bool Foam::sampledSurfaces::update()
         return false;
     }
 
-    bool updated = false;
-
-    // Serial: quick and easy, no merging required
-    if (!Pstream::parRun())
-    {
-        forAll(*this, surfi)
-        {
-            sampledSurface& s = operator[](surfi);
-
-            if (s.update())
-            {
-                updated = true;
-                changedGeom_[surfi] = true;
-            }
-        }
-
-        return updated;
-    }
+    label nChanged = 0;
 
 
     // Dimension as fraction of mesh bounding box
     const scalar mergeDim = mergeTol_*mesh_.bounds().mag();
 
-    if (Pstream::master() && debug)
+    if (Pstream::parRun())
     {
-        Pout<< nl << "Merging all points within "
-            << mergeDim << " metre" << endl;
+        DebugInfo
+            << nl << "Merging all points within "
+            << mergeDim << " metre" << nl;
     }
 
-    forAll(*this, surfi)
+    for (sampledSurfaceProxy& proxy : proxies_)
     {
-        sampledSurface& s = operator[](surfi);
-
-        if (s.update())
+        if (proxy.update(mergeDim))
         {
-            updated = true;
-            changedGeom_[surfi] = true;
-            mergedList_[surfi].merge(s, mergeDim);
+            ++nChanged;
         }
     }
 
-    return updated;
+    return nChanged;
 }
 
 
