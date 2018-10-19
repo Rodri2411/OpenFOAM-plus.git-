@@ -31,7 +31,6 @@ License
 template<class Type>
 Foam::fileName Foam::foamSurfaceWriter::writeTemplate
 (
-    const fileName& outputDir,
     const fileName& surfaceName,
     const meshedSurf& surf,
     const word& fieldName,
@@ -50,8 +49,15 @@ Foam::fileName Foam::foamSurfaceWriter::writeTemplate
         word(pTraits<Type>::typeName) + FieldBase::typeName
     );
 
-    const fileName base(outputDir/surfaceName);
-    const fileName outputFile(base / fieldTypeName / fieldName);
+    const fileName base
+    (
+        outputDirectory() / timeName() / surfaceName
+    );
+    const fileName outputFile
+    (
+        base / fieldTypeName / fieldName
+    );
+
 
     if (verbose)
     {
@@ -65,10 +71,11 @@ Foam::fileName Foam::foamSurfaceWriter::writeTemplate
     }
 
     // Write field
-    OFstream os(outputFile);
-    os << values;
+    {
+        OFstream(outputFile)() << values;
+    }
 
-    return os.name();
+    return outputFile;
 }
 
 

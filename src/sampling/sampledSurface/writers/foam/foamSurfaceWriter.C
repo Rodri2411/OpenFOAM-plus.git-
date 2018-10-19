@@ -3,7 +3,7 @@
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
     \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2015-2016 OpenCFD Ltd.
+     \\/     M anipulation  | Copyright (C) 2015-2018 OpenCFD Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -32,6 +32,9 @@ License
 namespace Foam
 {
     makeSurfaceWriterType(foamSurfaceWriter);
+
+    // Field writing methods
+    defineSurfaceWriterWriteFields(foamSurfaceWriter);
 }
 
 
@@ -48,7 +51,6 @@ defineSurfaceWriterWriteFields(Foam::foamSurfaceWriter);
 
 Foam::fileName Foam::foamSurfaceWriter::write
 (
-    const fileName& outputDir,
     const fileName& surfaceName,
     const meshedSurf& surf,
     const bool verbose
@@ -57,39 +59,46 @@ Foam::fileName Foam::foamSurfaceWriter::write
     // Output:
     // - rootdir/time/surfaceName/{points,faces}
 
-    fileName surfaceDir(outputDir/surfaceName);
+    const fileName base(outputDirectory() / timeName() / surfaceName);
 
-    if (!isDir(surfaceDir))
+    if (!isDir(base))
     {
-        mkDir(surfaceDir);
+        mkDir(base);
     }
 
     if (verbose)
     {
-        Info<< "Writing geometry to " << surfaceDir << endl;
+        Info<< "Writing geometry to " << base << endl;
     }
 
     const pointField& points = surf.points();
     const faceList&    faces = surf.faces();
 
     // Points
-    OFstream(surfaceDir/"points")() << points;
-
-    // Faces
-    OFstream(surfaceDir/"faces")() << faces;
-
-    // Face centers. Not really necessary but very handy when reusing as inputs
-    // for e.g. timeVaryingMapped bc.
-    pointField faceCentres(faces.size(), Zero);
-
-    forAll(faces, facei)
     {
-        faceCentres[facei] = faces[facei].centre(points);
+        OFstream(base/"points")() << points;
     }
 
-    OFstream(surfaceDir/"faceCentres")() << faceCentres;
+    // Faces
+    {
+        OFstream(base/"faces")() << faces;
+    }
 
-    return surfaceDir;
+    // Face centers.
+    // Not really necessary but very handy when reusing as inputs,
+    // e.g. for timeVaryingMapped BC.
+    {
+        pointField faceCentres(faces.size(), Zero);
+
+        forAll(faces, facei)
+        {
+            faceCentres[facei] = faces[facei].centre(points);
+        }
+
+        OFstream(base/"faceCentres")() << faceCentres;
+    }
+
+    return base;
 }
 
 
