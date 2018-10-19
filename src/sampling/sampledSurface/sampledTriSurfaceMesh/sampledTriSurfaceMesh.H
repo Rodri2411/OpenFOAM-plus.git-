@@ -290,7 +290,7 @@ public:
         //- If element ids/order of the original surface are kept
         virtual bool hasFaceIds() const
         {
-            return keepIds_;
+            return keepIds_ && originalIds_.size();
         }
 
         //- List of element ids/order of the original surface,

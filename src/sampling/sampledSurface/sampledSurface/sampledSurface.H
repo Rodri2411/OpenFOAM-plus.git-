@@ -78,6 +78,19 @@ class sampledSurface
 :
     public meshedSurf
 {
+public:
+
+    // Public data types
+
+        //- Enumeration defining topology state.
+        enum updateState
+        {
+            UNCHANGED,  //!< No changes
+            STAGED,     //!< No changes, but unacknowledged (ie, by writer)
+            TOPO_CHANGE //!< Points or topology changed
+        };
+
+
 private:
 
     // Private data
@@ -125,6 +138,7 @@ protected:
 
         //- Construct null
         explicit sampledSurface(const word& name, std::nullptr_t);
+
 
 public:
 
@@ -311,7 +325,6 @@ public:
             const interpolation<tensor>& sampler
         ) const = 0;
 
-
         //- Sample surface field onto surface
         virtual tmp<scalarField> sample
         (
@@ -396,6 +409,7 @@ public:
 
 //- Ostream operator
 Ostream& operator<<(Ostream& os, const sampledSurface& s);
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

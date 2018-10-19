@@ -186,7 +186,7 @@ public:
         }
 
         //- List of element ids/order of the original surface,
-        //  when keepIds is active.
+        //- when keepIds is active.
         virtual const labelList& originalIds() const
         {
             return MeshStorage::originalIds();
