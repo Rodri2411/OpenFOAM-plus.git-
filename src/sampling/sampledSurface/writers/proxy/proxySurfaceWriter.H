@@ -25,8 +25,20 @@ Class
     Foam::proxySurfaceWriter
 
 Description
-    A surfaceWriter that writes the geometry via the MeshedSurfaceProxy, but
-    which does not support any fields.
+    A surfaceWriter that writes the geometry via the MeshedSurfaceProxy.
+    No fields are output.
+
+    \heading Output file locations
+
+    The \c rootdir normally corresponds to something like
+    \c postProcessing/\<name\>
+
+    \subheading Geometry
+    \verbatim
+    rootdir
+    `-- timeName
+        `-- surfaceName.{obj|stl|..}
+    \endverbatim
 
     \heading Output file locations
 
@@ -69,7 +81,6 @@ class proxySurfaceWriter
         //- The file extension associated with the proxy
         word fileExtension_;
 
-
 public:
 
     //- Runtime type information
@@ -88,7 +99,6 @@ public:
 
     // Member Functions
 
-
         //- True if the surface format supports geometry in a separate file.
         //  False if geometry and field must be in a single file
         virtual bool separateGeometry() const
@@ -96,11 +106,9 @@ public:
             return true;
         }
 
-
         //- Write single surface geometry to file.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const bool verbose = false      //!< Additional verbosity

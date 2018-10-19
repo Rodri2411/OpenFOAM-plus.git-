@@ -49,7 +49,6 @@ Foam::proxySurfaceWriter::proxySurfaceWriter(const word& fileExt)
 
 Foam::fileName Foam::proxySurfaceWriter::write
 (
-    const fileName& outputDir,
     const fileName& surfaceName,
     const meshedSurf& surf,
     const bool verbose
@@ -61,16 +60,19 @@ Foam::fileName Foam::proxySurfaceWriter::write
         return fileName::null;
     }
 
-    fileName outputFile(outputDir/surfaceName + '.' + fileExtension_);
-
-    if (!isDir(outputFile.path()))
-    {
-        mkDir(outputFile.path());
-    }
+    const fileName outputFile
+    (
+        outputDirectory()/timeName() / surfaceName + '.' + fileExtension_
+    );
 
     if (verbose)
     {
         Info<< "Writing geometry to " << outputFile << endl;
+    }
+
+    if (!isDir(outputFile.path()))
+    {
+        mkDir(outputFile.path());
     }
 
     MeshedSurfaceProxy<face>(surf.points(), surf.faces())
