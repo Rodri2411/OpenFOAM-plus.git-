@@ -47,7 +47,6 @@ defineSurfaceWriterWriteFields(Foam::starcdSurfaceWriter);
 
 Foam::fileName Foam::starcdSurfaceWriter::write
 (
-    const fileName& outputDir,
     const fileName& surfaceName,
     const meshedSurf& surf,
     const bool verbose
@@ -55,7 +54,10 @@ Foam::fileName Foam::starcdSurfaceWriter::write
 {
     // geometry:  rootdir/time/surfaceName.{raw,vrt,inp}
 
-    fileName outputFile(outputDir/surfaceName + ".inp");
+    const fileName outputFile
+    (
+        outputDirectory()/timeName()/surfaceName + ".inp"
+    );
 
     if (verbose)
     {

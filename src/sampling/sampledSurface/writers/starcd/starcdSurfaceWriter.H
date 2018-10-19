@@ -90,7 +90,6 @@ class starcdSurfaceWriter
         template<class Type>
         fileName writeTemplate
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field
@@ -128,7 +127,6 @@ public:
         //- Write single surface geometry to file.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const bool verbose = false      //!< Additional verbosity
@@ -139,7 +137,6 @@ public:
         //  One value per face or vertex.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field
@@ -152,7 +149,6 @@ public:
         //  One value per face or vertex.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field
@@ -165,7 +161,6 @@ public:
         //  One value per face or vertex.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field
@@ -178,7 +173,6 @@ public:
         //  One value per face or vertex.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field
@@ -191,7 +185,6 @@ public:
         //  One value per face or vertex.
         virtual fileName write
         (
-            const fileName& outputDir,      //!< output-dir
             const fileName& surfaceName,    //!< Name of surface
             const meshedSurf& surf,         //!< Surface geometry
             const word& fieldName,          //!< Name of field

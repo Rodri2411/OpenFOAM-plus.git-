@@ -50,7 +50,6 @@ namespace Foam
 template<class Type>
 Foam::fileName Foam::starcdSurfaceWriter::writeTemplate
 (
-    const fileName& outputDir,
     const fileName& surfaceName,
     const meshedSurf&,
     const word& fieldName,
@@ -61,17 +60,23 @@ Foam::fileName Foam::starcdSurfaceWriter::writeTemplate
 {
     // field:  rootdir/time/<field>_surfaceName.usr
 
-    if (!isDir(outputDir))
-    {
-        mkDir(outputDir);
-    }
+    const fileName outputFile
+    (
+        outputDirectory()/timeName() / fieldName + '_' + surfaceName + ".usr"
+    );
 
-    OFstream os(outputDir/fieldName + '_' + surfaceName + ".usr");
 
     if (verbose)
     {
-        Info<< "Writing field " << fieldName << " to " << os.name() << endl;
+        Info<< "Writing field " << fieldName << " to " << outputFile << endl;
     }
+
+    if (!isDir(outputFile.path()))
+    {
+        mkDir(outputFile.path());
+    }
+
+    OFstream os(outputFile);
 
     // 1-based ids
     label elemId = 1;
@@ -85,7 +90,7 @@ Foam::fileName Foam::starcdSurfaceWriter::writeTemplate
         ++elemId;
     }
 
-    return os.name();
+    return outputFile;
 }
 
 
